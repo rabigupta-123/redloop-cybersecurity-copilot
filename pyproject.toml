@@ -1,0 +1,69 @@
+[project]
+name = "redloop"
+version = "0.1.0"
+description = "Locally-run autonomous security testing agent for authorized pentesting, learning labs, and CTFs."
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [{ name = "RedLoop" }]
+license = { text = "MIT" }
+keywords = ["security", "pentest", "agent", "ollama", "langgraph"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Topic :: Security",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "typer>=0.12",
+    "rich>=13",
+    "pydantic>=2",
+    "pydantic-settings>=2",
+    "httpx>=0.27",
+    "litellm>=1.44",
+    "python-dotenv>=1",
+    "docker>=7",
+    "PyYAML>=6",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+forensics = ["yara-python>=4.5"]
+dashboard = [
+    "fastapi>=0.110",
+    "uvicorn>=0.27",
+    "python-multipart>=0.0.9",
+    "pypdf>=5",
+]
+learning-service = [
+    "fastapi>=0.110",
+    "uvicorn[standard]>=0.27",
+    "sqlalchemy>=2",
+    "python-multipart>=0.0.9",
+    "openai>=1",
+]
+streamlit-dashboard = [
+    "streamlit>=1.35",
+    "pandas>=2",
+    "plotly>=5",
+    "requests>=2",
+]
+recon = ["python-nmap>=0.7.1", "dnspython>=2.6.1"]
+
+[project.scripts]
+redloop = "redloop.cli:app"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/redloop"]
+
+[dependency-groups]
+dev = ["pytest>=8"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests", "self-learning-agent/tests"]
+pythonpath = [".", "src", "self-learning-agent"]
+markers = [
+    "integration: uses real localhost services or installed local dependencies",
+]

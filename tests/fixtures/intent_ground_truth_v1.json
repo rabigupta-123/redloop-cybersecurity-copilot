@@ -1,0 +1,662 @@
+[
+  {
+    "id": "gt-001",
+    "prompt": "Explain what DNS is and how resolution works.",
+    "expected_intent": "GENERAL_CHAT",
+    "category": "concept"
+  },
+  {
+    "id": "gt-002",
+    "prompt": "What is the difference between TCP and UDP protocols?",
+    "expected_intent": "GENERAL_CHAT",
+    "category": "concept"
+  },
+  {
+    "id": "gt-003",
+    "prompt": "How does the TLS 1.3 handshake improve over TLS 1.2?",
+    "expected_intent": "GENERAL_CHAT",
+    "category": "concept"
+  },
+  {
+    "id": "gt-004",
+    "prompt": "Tell me about the history of the Morris worm.",
+    "expected_intent": "GENERAL_CHAT",
+    "category": "concept"
+  },
+  {
+    "id": "gt-005",
+    "prompt": "Describe the principles of defense in depth.",
+    "expected_intent": "GENERAL_CHAT",
+    "category": "concept"
+  },
+  {
+    "id": "gt-006",
+    "prompt": "Explain what ARP spoofing is and how switches mitigate it.",
+    "expected_intent": "GENERAL_CHAT",
+    "category": "concept"
+  },
+  {
+    "id": "gt-007",
+    "prompt": "What are the core components of the OWASP Top 10?",
+    "expected_intent": "GENERAL_CHAT",
+    "category": "concept"
+  },
+  {
+    "id": "gt-008",
+    "prompt": "Define the zero trust security model architecture.",
+    "expected_intent": "GENERAL_CHAT",
+    "category": "concept"
+  },
+  {
+    "id": "gt-009",
+    "prompt": "Why does certificate transparency exist?",
+    "expected_intent": "GENERAL_CHAT",
+    "category": "concept"
+  },
+  {
+    "id": "gt-010",
+    "prompt": "Teach me the basics of symmetric versus asymmetric encryption.",
+    "expected_intent": "GENERAL_CHAT",
+    "category": "concept"
+  },
+  {
+    "id": "gt-011",
+    "prompt": "Write a Java program for sorting an array of integers.",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding"
+  },
+  {
+    "id": "gt-012",
+    "prompt": "Write a Python script to parse a CSV file and count occurrences.",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding"
+  },
+  {
+    "id": "gt-013",
+    "prompt": "Write a C program to reverse a linked list.",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding"
+  },
+  {
+    "id": "gt-014",
+    "prompt": "Write a bash script to monitor disk space usage and alert on 90%.",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding"
+  },
+  {
+    "id": "gt-015",
+    "prompt": "Write a python script to calculate SHA-256 hashes of all files in a folder.",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding"
+  },
+  {
+    "id": "gt-016",
+    "prompt": "Implement an algorithm for binary search in Python.",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding"
+  },
+  {
+    "id": "gt-017",
+    "prompt": "Write code in Rust to read environment variables safely.",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding"
+  },
+  {
+    "id": "gt-018",
+    "prompt": "Write a python script that sends HTTP requests with retry logic.",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding"
+  },
+  {
+    "id": "gt-019",
+    "prompt": "Write a simple proof of concept exploit script in Python demonstrating SQL injection.",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding"
+  },
+  {
+    "id": "gt-020",
+    "prompt": "Develop exploit POC script in Python for a buffer overflow demonstration.",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding"
+  },
+  {
+    "id": "gt-021",
+    "prompt": "Here is my Nmap output; what next?\nPORT 80/tcp open http Apache 2.4\nPORT 443/tcp open ssl/http",
+    "expected_intent": "TERMINAL_OUTPUT_ANALYSIS",
+    "category": "terminal"
+  },
+  {
+    "id": "gt-022",
+    "prompt": "What does this scan result mean? PORT 8080/tcp open http-proxy",
+    "expected_intent": "TERMINAL_OUTPUT_ANALYSIS",
+    "category": "terminal"
+  },
+  {
+    "id": "gt-023",
+    "prompt": "Parse output from my Gobuster run: /admin (Status: 301) [Size: 178]",
+    "expected_intent": "TERMINAL_OUTPUT_ANALYSIS",
+    "category": "terminal"
+  },
+  {
+    "id": "gt-024",
+    "prompt": "Nmap scan report for 10.0.0.5\nPORT 22/tcp open ssh OpenSSH 8.2\nPORT 3306/tcp open mysql",
+    "expected_intent": "TERMINAL_OUTPUT_ANALYSIS",
+    "category": "terminal"
+  },
+  {
+    "id": "gt-025",
+    "prompt": "Analyze terminal output: Nikto found OSVDB-3092: /test/: This might be interesting.",
+    "expected_intent": "TERMINAL_OUTPUT_ANALYSIS",
+    "category": "terminal"
+  },
+  {
+    "id": "gt-026",
+    "prompt": "Here is my nmap scan:\nPORT 21/tcp open ftp vsftpd 2.3.4\nWhat should I investigate next?",
+    "expected_intent": "TERMINAL_OUTPUT_ANALYSIS",
+    "category": "terminal"
+  },
+  {
+    "id": "gt-027",
+    "prompt": "Gobuster output shows /backup.zip (Status: 200). What does this mean?",
+    "expected_intent": "TERMINAL_OUTPUT_ANALYSIS",
+    "category": "terminal"
+  },
+  {
+    "id": "gt-028",
+    "prompt": "22/tcp open ssh OpenSSH 7.9p1 Debian 10\n80/tcp closed http",
+    "expected_intent": "TERMINAL_OUTPUT_ANALYSIS",
+    "category": "terminal"
+  },
+  {
+    "id": "gt-029",
+    "prompt": "gobuster dir -u http://127.0.0.1 -w /usr/share/wordlists/dirb/common.txt returned /secret (Status: 403)",
+    "expected_intent": "TERMINAL_OUTPUT_ANALYSIS",
+    "category": "terminal"
+  },
+  {
+    "id": "gt-030",
+    "prompt": "Terminal output: 445/tcp open microsoft-ds Windows 10 Pro 19041 smb2",
+    "expected_intent": "TERMINAL_OUTPUT_ANALYSIS",
+    "category": "terminal"
+  },
+  {
+    "id": "gt-031",
+    "prompt": "How to use nmap on Kali Linux for UDP scanning?",
+    "expected_intent": "KALI_COMMAND_ASSISTANCE",
+    "category": "troubleshooting"
+  },
+  {
+    "id": "gt-032",
+    "prompt": "Suggest a Wireshark filter for inspecting DNS queries and responses.",
+    "expected_intent": "KALI_COMMAND_ASSISTANCE",
+    "category": "troubleshooting"
+  },
+  {
+    "id": "gt-033",
+    "prompt": "My command failed with permission denied in Kali terminal.",
+    "expected_intent": "KALI_COMMAND_ASSISTANCE",
+    "category": "troubleshooting"
+  },
+  {
+    "id": "gt-034",
+    "prompt": "What is the syntax for hydra command against ssh service?",
+    "expected_intent": "KALI_COMMAND_ASSISTANCE",
+    "category": "troubleshooting"
+  },
+  {
+    "id": "gt-035",
+    "prompt": "Suggest a Kali command for wireless interface monitoring.",
+    "expected_intent": "KALI_COMMAND_ASSISTANCE",
+    "category": "troubleshooting"
+  },
+  {
+    "id": "gt-036",
+    "prompt": "Debug this command: tcpdump -i eth0 port 80",
+    "expected_intent": "KALI_COMMAND_ASSISTANCE",
+    "category": "troubleshooting"
+  },
+  {
+    "id": "gt-037",
+    "prompt": "What is the hashcat mode for NTLM v2 hashes?",
+    "expected_intent": "KALI_COMMAND_ASSISTANCE",
+    "category": "troubleshooting"
+  },
+  {
+    "id": "gt-038",
+    "prompt": "Execute command: uname -a",
+    "expected_intent": "KALI_COMMAND_ASSISTANCE",
+    "category": "troubleshooting"
+  },
+  {
+    "id": "gt-039",
+    "prompt": "Explain this command: nmap -sC -sV -p- 127.0.0.1",
+    "expected_intent": "KALI_COMMAND_ASSISTANCE",
+    "category": "troubleshooting"
+  },
+  {
+    "id": "gt-040",
+    "prompt": "Terminal error: command not found gobuster on my Kali machine.",
+    "expected_intent": "KALI_COMMAND_ASSISTANCE",
+    "category": "troubleshooting"
+  },
+  {
+    "id": "gt-041",
+    "prompt": "Solve this CTF challenge and find the real flag.",
+    "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS",
+    "category": "ctf"
+  },
+  {
+    "id": "gt-042",
+    "prompt": "Decode this base64 encoded flag string: ZmxhZ3tsb2NhbF9jaGFsbGVuZ2VfMTMzfQ==",
+    "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS",
+    "category": "ctf"
+  },
+  {
+    "id": "gt-043",
+    "prompt": "Identify the real flag: we found decoy flag flag{fake_decoy_not_real} and challenge text.",
+    "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS",
+    "category": "ctf"
+  },
+  {
+    "id": "gt-044",
+    "prompt": "Decode this rot13 cipher text: synt{ebg13_punyyratr_synt}",
+    "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS",
+    "category": "ctf"
+  },
+  {
+    "id": "gt-045",
+    "prompt": "Identify hash format: 5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8",
+    "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS",
+    "category": "ctf"
+  },
+  {
+    "id": "gt-046",
+    "prompt": "Decode this JWT token header and payload to inspect claims.",
+    "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS",
+    "category": "ctf"
+  },
+  {
+    "id": "gt-047",
+    "prompt": "CTF challenge: decode this XOR encrypted message with single-byte key.",
+    "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS",
+    "category": "ctf"
+  },
+  {
+    "id": "gt-048",
+    "prompt": "Decode this base32 string: MZXW6YTBOI======",
+    "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS",
+    "category": "ctf"
+  },
+  {
+    "id": "gt-049",
+    "prompt": "Reconstruct flag from split fragments in this CTF memory dump.",
+    "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS",
+    "category": "ctf"
+  },
+  {
+    "id": "gt-050",
+    "prompt": "Find the flag in this hexadecimal encoded challenge stream.",
+    "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS",
+    "category": "ctf"
+  },
+  {
+    "id": "gt-051",
+    "prompt": "Scan this authorized lab target 127.0.0.1 for open ports.",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE",
+    "category": "authorized_scan"
+  },
+  {
+    "id": "gt-052",
+    "prompt": "Run nmap port scan on 127.0.0.1 to detect services.",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE",
+    "category": "authorized_scan"
+  },
+  {
+    "id": "gt-053",
+    "prompt": "Enumerate ports on authorized host 127.0.0.1.",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE",
+    "category": "authorized_scan"
+  },
+  {
+    "id": "gt-054",
+    "prompt": "Check ports 80, 443, 8080 on 127.0.0.1.",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE",
+    "category": "authorized_scan"
+  },
+  {
+    "id": "gt-055",
+    "prompt": "Run gobuster directory search on http://127.0.0.1:8080.",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE",
+    "category": "authorized_scan"
+  },
+  {
+    "id": "gt-056",
+    "prompt": "Run nikto web vulnerability scanner on 127.0.0.1:80.",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE",
+    "category": "authorized_scan"
+  },
+  {
+    "id": "gt-057",
+    "prompt": "Run tls scan against 127.0.0.1:443 to inspect certificate and cipher suites.",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE",
+    "category": "authorized_scan"
+  },
+  {
+    "id": "gt-058",
+    "prompt": "Perform web scan to crawl target 127.0.0.1 and check web headers.",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE",
+    "category": "authorized_scan"
+  },
+  {
+    "id": "gt-059",
+    "prompt": "Run api scan to inspect openapi and swagger endpoints on 127.0.0.1.",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE",
+    "category": "authorized_scan"
+  },
+  {
+    "id": "gt-060",
+    "prompt": "Run dns scan and enumerate dns records for target local.lan.",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE",
+    "category": "authorized_scan"
+  },
+  {
+    "id": "gt-061",
+    "prompt": "Run comprehensive security assessment against 127.0.0.1.",
+    "expected_intent": "VULNERABILITY_ASSESSMENT",
+    "category": "authorized_scan"
+  },
+  {
+    "id": "gt-062",
+    "prompt": "Perform full assessment on scoped target 127.0.0.1.",
+    "expected_intent": "VULNERABILITY_ASSESSMENT",
+    "category": "authorized_scan"
+  },
+  {
+    "id": "gt-063",
+    "prompt": "Run quick security assessment on 127.0.0.1.",
+    "expected_intent": "VULNERABILITY_ASSESSMENT",
+    "category": "authorized_scan"
+  },
+  {
+    "id": "gt-064",
+    "prompt": "Run deep vulnerability scan against 127.0.0.1.",
+    "expected_intent": "VULNERABILITY_ASSESSMENT",
+    "category": "authorized_scan"
+  },
+  {
+    "id": "gt-065",
+    "prompt": "Evaluate security posture and assess 127.0.0.1.",
+    "expected_intent": "VULNERABILITY_ASSESSMENT",
+    "category": "authorized_scan"
+  },
+  {
+    "id": "gt-066",
+    "prompt": "Conduct security audit assessment of authorized target 127.0.0.1.",
+    "expected_intent": "VULNERABILITY_ASSESSMENT",
+    "category": "authorized_scan"
+  },
+  {
+    "id": "gt-067",
+    "prompt": "Perform full scan and risk assessment on 127.0.0.1.",
+    "expected_intent": "VULNERABILITY_ASSESSMENT",
+    "category": "authorized_scan"
+  },
+  {
+    "id": "gt-068",
+    "prompt": "Run assessment with standard depth against 127.0.0.1.",
+    "expected_intent": "VULNERABILITY_ASSESSMENT",
+    "category": "authorized_scan"
+  },
+  {
+    "id": "gt-069",
+    "prompt": "Investigate this public IP 8.8.8.8 for threat reputation.",
+    "expected_intent": "OSINT_IP",
+    "category": "osint_ip"
+  },
+  {
+    "id": "gt-070",
+    "prompt": "Investigate public IP 1.1.1.1 via RDAP and WHOIS.",
+    "expected_intent": "OSINT_IP",
+    "category": "osint_ip"
+  },
+  {
+    "id": "gt-071",
+    "prompt": "Lookup IP intelligence and geolocation for 9.9.9.9.",
+    "expected_intent": "OSINT_IP",
+    "category": "osint_ip"
+  },
+  {
+    "id": "gt-072",
+    "prompt": "Investigate this public IP 208.67.222.222 on Shodan.",
+    "expected_intent": "OSINT_IP",
+    "category": "osint_ip"
+  },
+  {
+    "id": "gt-073",
+    "prompt": "Check IP footprint and autonomous system number for 142.250.190.46.",
+    "expected_intent": "OSINT_IP",
+    "category": "osint_ip"
+  },
+  {
+    "id": "gt-074",
+    "prompt": "OSINT lookup on public IP 4.4.4.4.",
+    "expected_intent": "OSINT_IP",
+    "category": "osint_ip"
+  },
+  {
+    "id": "gt-075",
+    "prompt": "Investigate IP 198.51.100.25 for reported malicious activity.",
+    "expected_intent": "OSINT_IP",
+    "category": "osint_ip"
+  },
+  {
+    "id": "gt-076",
+    "prompt": "RDAP and WHOIS lookup for IP 151.101.65.140.",
+    "expected_intent": "OSINT_IP",
+    "category": "osint_ip"
+  },
+  {
+    "id": "gt-077",
+    "prompt": "Investigate domain example.com for DNS records and registrar info.",
+    "expected_intent": "OSINT_DOMAIN",
+    "category": "osint_domain"
+  },
+  {
+    "id": "gt-078",
+    "prompt": "Lookup subdomains for github.com via crt.sh certificate transparency.",
+    "expected_intent": "OSINT_DOMAIN",
+    "category": "osint_domain"
+  },
+  {
+    "id": "gt-079",
+    "prompt": "Investigate domain redloop.local whois and nameservers.",
+    "expected_intent": "OSINT_DOMAIN",
+    "category": "osint_domain"
+  },
+  {
+    "id": "gt-080",
+    "prompt": "Domain intelligence and DNS footprint for owasp.org.",
+    "expected_intent": "OSINT_DOMAIN",
+    "category": "osint_domain"
+  },
+  {
+    "id": "gt-081",
+    "prompt": "Perform WHOIS domain query on target-org.internal.",
+    "expected_intent": "OSINT_DOMAIN",
+    "category": "osint_domain"
+  },
+  {
+    "id": "gt-082",
+    "prompt": "Investigate domain cloudflare.com passive footprint.",
+    "expected_intent": "OSINT_DOMAIN",
+    "category": "osint_domain"
+  },
+  {
+    "id": "gt-083",
+    "prompt": "Search subdomains for mozilla.org.",
+    "expected_intent": "OSINT_DOMAIN",
+    "category": "osint_domain"
+  },
+  {
+    "id": "gt-084",
+    "prompt": "OSINT investigation on domain wikipedia.org.",
+    "expected_intent": "OSINT_DOMAIN",
+    "category": "osint_domain"
+  },
+  {
+    "id": "gt-085",
+    "prompt": "Summarize the findings from our previous investigation.",
+    "expected_intent": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "category": "concept"
+  },
+  {
+    "id": "gt-086",
+    "prompt": "What did we find in the last investigation?",
+    "expected_intent": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "category": "concept"
+  },
+  {
+    "id": "gt-087",
+    "prompt": "Provide active investigation summary of findings.",
+    "expected_intent": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "category": "concept"
+  },
+  {
+    "id": "gt-088",
+    "prompt": "Explain finding find-8b3c9a12 details and risk.",
+    "expected_intent": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "category": "concept"
+  },
+  {
+    "id": "gt-089",
+    "prompt": "Explain evidence evi-4f81c90a collected during the scan.",
+    "expected_intent": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "category": "concept"
+  },
+  {
+    "id": "gt-090",
+    "prompt": "Recap our previous investigation on target 127.0.0.1.",
+    "expected_intent": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "category": "concept"
+  },
+  {
+    "id": "gt-091",
+    "prompt": "Generate technical report for assessment asmt-1029.",
+    "expected_intent": "REPORT_GENERATION",
+    "category": "concept"
+  },
+  {
+    "id": "gt-092",
+    "prompt": "Create executive report summarizing findings.",
+    "expected_intent": "REPORT_GENERATION",
+    "category": "concept"
+  },
+  {
+    "id": "gt-093",
+    "prompt": "Export report in markdown format for the audit.",
+    "expected_intent": "REPORT_GENERATION",
+    "category": "concept"
+  },
+  {
+    "id": "gt-094",
+    "prompt": "Download report for our latest assessment.",
+    "expected_intent": "REPORT_GENERATION",
+    "category": "concept"
+  },
+  {
+    "id": "gt-095",
+    "prompt": "Generate report for compliance team.",
+    "expected_intent": "REPORT_GENERATION",
+    "category": "concept"
+  },
+  {
+    "id": "gt-096",
+    "prompt": "Show investigation graph for active target.",
+    "expected_intent": "GRAPH_AND_INVESTIGATION",
+    "category": "concept"
+  },
+  {
+    "id": "gt-097",
+    "prompt": "Display cytoscape relationship graph of discovered assets.",
+    "expected_intent": "GRAPH_AND_INVESTIGATION",
+    "category": "concept"
+  },
+  {
+    "id": "gt-098",
+    "prompt": "Show entity graph of all nodes and services.",
+    "expected_intent": "GRAPH_AND_INVESTIGATION",
+    "category": "concept"
+  },
+  {
+    "id": "gt-099",
+    "prompt": "Extract metadata from this image file.",
+    "expected_intent": "FILE_METADATA_ANALYSIS",
+    "category": "terminal"
+  },
+  {
+    "id": "gt-100",
+    "prompt": "Inspect exif image metadata for geolocation tags.",
+    "expected_intent": "FILE_METADATA_ANALYSIS",
+    "category": "terminal"
+  },
+  {
+    "id": "gt-101",
+    "prompt": "Analyze file metadata and verify file signature.",
+    "expected_intent": "FILE_METADATA_ANALYSIS",
+    "category": "terminal"
+  },
+  {
+    "id": "gt-102",
+    "prompt": "Calculate sha256 of file suspect_sample.bin.",
+    "expected_intent": "FILE_METADATA_ANALYSIS",
+    "category": "terminal"
+  },
+  {
+    "id": "gt-103",
+    "prompt": "Explain how Nmap SYN scanning operates at the packet level.",
+    "expected_intent": "GENERAL_CHAT",
+    "category": "adversarial"
+  },
+  {
+    "id": "gt-104",
+    "prompt": "Write a python script to scan open ports on localhost.",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "adversarial"
+  },
+  {
+    "id": "gt-105",
+    "prompt": "What is SQL injection and how do parameterized queries stop it?",
+    "expected_intent": "GENERAL_CHAT",
+    "category": "adversarial"
+  },
+  {
+    "id": "gt-106",
+    "prompt": "Explain what a cross-site scripting attack looks like.",
+    "expected_intent": "GENERAL_CHAT",
+    "category": "adversarial"
+  },
+  {
+    "id": "gt-107",
+    "prompt": "Write a bash script to parse auth.log for failed ssh attempts.",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "adversarial"
+  },
+  {
+    "id": "gt-108",
+    "prompt": "Here is my Nmap output; what next?\nStarting Nmap 7.92\nHost is up (0.00021s latency).\n80/tcp open http",
+    "expected_intent": "TERMINAL_OUTPUT_ANALYSIS",
+    "category": "adversarial"
+  },
+  {
+    "id": "gt-109",
+    "prompt": "Investigate this public IP 8.8.4.4 for DNS resolution and RDAP data.",
+    "expected_intent": "OSINT_IP",
+    "category": "adversarial"
+  },
+  {
+    "id": "gt-110",
+    "prompt": "Scan this authorized lab target 127.0.0.1 with nmap.",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE",
+    "category": "adversarial"
+  }
+]

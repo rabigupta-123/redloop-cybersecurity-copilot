@@ -1,0 +1,37 @@
+# Example authorized scope. Copy to scope.yaml, edit, then sign it:
+#   redloop scope init --in scope.yaml.example --out scope.yaml
+# Anything the agent executes must match a target below AND the date range.
+# Actions are matched exactly; there is no fallback. List every action you use:
+#   recon, scan, check, assess, web_test, web_check, tls_check, dns_check,
+#   api_check, file_triage, config_security, host_security, exploit_simulation
+# Ports: if a target declares `ports`, port-scoped actions must name one of
+# those ports explicitly. Omitting the port is denied.
+version: 1
+id: "lab-2026-q4"
+authorized_by: "student-rabig"
+signed_at: "2026-10-21T00:00:00Z"
+expires_at: "2026-12-31T23:59:59Z"
+targets:
+  - cidr: "192.168.56.0/24"
+    label: "victim-lab"
+    authorized_from: "2026-10-01"
+    authorized_until: "2026-12-31"
+    allowed_actions: ["recon", "web_test", "exploit"]
+    ports: [80, 443, 8080, 22]
+    notes: "Authorized vuln lab VM range."
+  - cidr: "127.0.0.1/32"
+    label: "localhost-lab"
+    authorized_from: "2026-10-01"
+    authorized_until: "2026-12-31"
+    allowed_actions: ["recon", "web_test"]
+    ports: [80, 443, 8080]
+    notes: "Containerized lab services on the host."
+  - domain: "lab.local"
+    label: "lab-hostname"
+    authorized_from: "2026-10-01"
+    authorized_until: "2026-12-31"
+    allowed_actions: ["recon", "web_test"]
+    ports: [80, 443]
+    notes: "Resolved hostnames for the lab."
+notes: "Student cybersecurity portfolio project. Authorized testing only."
+signature: "REPLACE_WITH_SIGNATURE"

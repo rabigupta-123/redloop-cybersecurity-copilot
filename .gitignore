@@ -1,0 +1,45 @@
+# Environment & Secrets
+.env
+.env.*
+!.env.example
+
+# Local Cryptographic Keys & Runtime Databases
+data/.ephemeral_vault_key
+data/key_salt.bin
+data/*.sqlite
+data/*.sqlite3
+data/*.db
+data/*.sig
+data/*checkpoint*
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Python Bytecode & Build Artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Logs & Scratch Workspace
+logs/
+*.log
+*.err
+*.out
+scratch/
+
+# Temporary / Backup Files
+*.bak
+addl.py
+add_fix3.py
+patch.py
+light_tokens.css
+test_scope*.yaml

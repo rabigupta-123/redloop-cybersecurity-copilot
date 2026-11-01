@@ -1,0 +1,32 @@
+authorized_by: real-integration-test
+expires_at: '2026-11-24T23:59:59Z'
+id: loopback-verification-real-nmap
+notes: Localhost 3-port verification
+signature: 2aeda2952a14be6cc7eee680a1374979e5b5beafaf8b9172aa4a19479eec2740
+signed_at: '2026-10-24T10:00:00Z'
+targets:
+- allowed_actions:
+  - api_check
+  - assess
+  - check
+  - config_security
+  - dns_check
+  - exploit_simulation
+  - file_triage
+  - host_security
+  - recon
+  - scan
+  - tls_check
+  - web_check
+  - web_test
+  authorized_from: '2026-10-24'
+  authorized_until: '2026-11-24'
+  cidr: 127.0.0.1/32
+  label: localhost-3ports-test
+  notes: Authorized ports for real integration test
+  ports:
+  - 8080
+  - 8081
+  - 8082
+  - 8765
+version: 1
