@@ -1579,14 +1579,15 @@ tr:hover td { background: rgba(79, 140, 255, 0.03); }
 .chart-caption { margin: 10px 0 0; color: var(--fg-muted); font-size: var(--text-xs); }
 .chart-caption.is-error { color: var(--critical); }
 .severity-legend {
-  list-style: none; display: flex; flex-wrap: wrap; gap: 8px 16px;
+  list-style: none; display: flex; flex-wrap: wrap; gap: 8px 12px;
   margin: 12px 0 0; padding: 0;
 }
 .severity-legend li {
-  display: inline-flex; align-items: center; gap: 6px;
-  font-size: var(--text-xs); color: var(--fg-muted); font-family: var(--font-mono);
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 10.5px; color: var(--fg-muted); font-family: var(--font-mono);
 }
-.legend-swatch { width: 9px; height: 9px; border-radius: 3px; display: inline-block; }
+.legend-swatch { width: 8px; height: 8px; border-radius: 3px; display: inline-block; }
+#ov-tools-count, #ov-activity-count { flex-shrink: 0; white-space: nowrap; }
 @keyframes chartDraw { to { stroke-dashoffset: 0; } }
 @keyframes chartBarIn { from { transform: scaleY(0); } to { transform: scaleY(1); } }
 
