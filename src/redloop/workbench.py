@@ -6,6 +6,7 @@ import base64
 import hashlib
 import ipaddress
 import json
+import os
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Annotated, Any
@@ -25,7 +26,14 @@ from redloop.assessment.scope_guard import AssessmentScopeGuard, ScopeBlockedErr
 from redloop.assessment.orchestrator import TaskOrchestrator, TaskStore
 from redloop.assessment.tool_registry import get_tool_registry
 from redloop.assessment.controlled_runner import ControlledToolRunner
-from redloop.assessment.kali_copilot import KaliCommandRunner, KaliCopilot, get_kali_copilot
+from redloop.assessment.kali_copilot import (
+    KaliCommandRunner,
+    KaliCopilot,
+    TerminalCommandRequest,
+    TerminalCommandResponse,
+    detect_wsl_status,
+    get_kali_copilot,
+)
 from redloop.investigation import Investigation, InvestigationStore, get_investigation_store
 from redloop.assessment.task_graph import TaskGraphStore
 from redloop.audit import AuditLogger
@@ -119,9 +127,7 @@ class ToolExecuteRequest(BaseModel):
     args: list[str] | dict[str, Any] | None = None
 
 
-class KaliExecuteRequest(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-    command: str = Field(min_length=1, max_length=1024)
+KaliExecuteRequest = TerminalCommandRequest
 
 
 class AssessmentStartRequest(BaseModel):
@@ -3545,15 +3551,38 @@ def register_workbench_routes(
             return JSONResponse(res.to_dict(), status_code=403)
         return JSONResponse(res.to_dict())
 
+    @app.post("/api/terminal/execute")
     @app.post("/api/kali/execute")
-    def execute_kali_command(payload: KaliExecuteRequest, request: Request):
+    def execute_terminal_command(payload: TerminalCommandRequest, request: Request):
         _require_same_origin(request)
         guard = AssessmentScopeGuard(scope_manager, audit) if scope_manager else None
         runner = KaliCommandRunner(scope_guard=guard, audit=audit)
-        res = runner.execute(payload.command)
-        if res.get("state") == "BLOCKED":
-            return JSONResponse(res, status_code=403)
-        return JSONResponse(res)
+        res = runner.execute_terminal(payload)
+        if res.state == "BLOCKED":
+            return JSONResponse(res.model_dump(), status_code=403)
+        return JSONResponse(res.model_dump())
+
+    @app.get("/api/terminal/environments")
+    def get_terminal_environments():
+        wsl_info = detect_wsl_status()
+        return JSONResponse({
+            "host": {
+                "available": True,
+                "os": os.name,
+                "label": "Windows Host" if os.name == "nt" else "Local Host",
+            },
+            "wsl": {
+                "available": wsl_info["wsl_available"],
+                "distributions": wsl_info["distributions"],
+                "default": wsl_info.get("default_distro"),
+                "error": wsl_info.get("error"),
+            },
+            "kali": {
+                "available": wsl_info["kali_available"],
+                "distro": wsl_info.get("kali_distro"),
+                "status": "READY" if wsl_info["kali_available"] else "NOT_INSTALLED",
+            }
+        })
 
     @app.get("/api/investigations")
     def list_investigations():

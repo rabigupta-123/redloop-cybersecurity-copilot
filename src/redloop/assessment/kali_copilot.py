@@ -24,11 +24,128 @@ import subprocess
 import time
 from dataclasses import asdict, dataclass, field
 from enum import Enum
-from typing import Any
+from pathlib import Path
+from typing import Any, Literal
+from pydantic import BaseModel, ConfigDict, Field
 
 from redloop.assessment.models import Evidence, EvidenceProvenance, StageStatus
 from redloop.assessment.scope_guard import AssessmentScopeGuard
 from redloop.audit import AuditLogger
+
+
+class TerminalCommandRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    command: str = Field(min_length=1, max_length=2048)
+    execution_environment: Literal["wsl", "kali", "host"] = "host"
+    target: str | None = Field(default=None, max_length=253)
+    working_directory: str | None = Field(default=None, max_length=1024)
+    timeout_seconds: int = Field(default=30, ge=1, le=120)
+
+
+class TerminalCommandResponse(BaseModel):
+    success: bool
+    stdout: str
+    stderr: str
+    exit_code: int
+    execution_environment: str
+    duration_ms: float
+    error: str | None = None
+    timed_out: bool = False
+    command: str | None = None
+    state: str | None = None
+    reason: str | None = None
+    evidence_id: str | None = None
+
+
+def detect_wsl_status() -> dict[str, Any]:
+    """Detect available WSL distributions and identify whether Kali Linux is registered."""
+    if os.name != "nt":
+        return {
+            "wsl_available": False,
+            "distributions": [],
+            "kali_available": False,
+            "kali_distro": None,
+            "default_distro": None,
+            "error": "WSL execution is only supported on a Windows host.",
+        }
+    wsl_exe = shutil.which("wsl.exe") or shutil.which("wsl")
+    if not wsl_exe:
+        return {
+            "wsl_available": False,
+            "distributions": [],
+            "kali_available": False,
+            "kali_distro": None,
+            "default_distro": None,
+            "error": "wsl.exe was not found on system PATH.",
+        }
+    try:
+        proc = subprocess.run(
+            [wsl_exe, "--list", "--quiet"],
+            capture_output=True,
+            timeout=5,
+        )
+        raw = proc.stdout
+        try:
+            text = raw.decode("utf-16-le")
+        except Exception:
+            text = raw.decode("utf-8", errors="replace")
+
+        if proc.returncode != 0:
+            err_text = ""
+            for out_b in (proc.stderr, proc.stdout):
+                if out_b:
+                    try:
+                        err_text += out_b.decode("utf-16-le") + " "
+                    except Exception:
+                        err_text += out_b.decode("utf-8", errors="replace") + " "
+            clean_err = "".join(c for c in err_text if c.isprintable()).strip()
+            return {
+                "wsl_available": False,
+                "distributions": [],
+                "kali_available": False,
+                "kali_distro": None,
+                "default_distro": None,
+                "error": clean_err or f"wsl.exe returned exit code {proc.returncode}.",
+            }
+
+        lines = [line.strip().replace("\x00", "") for line in text.splitlines()]
+        distros = []
+        for line in lines:
+            cleaned = "".join(c for c in line if c.isprintable()).strip()
+            if cleaned and not any(w in cleaned.lower() for w in ("error", "wsl/e_", "access is denied")):
+                distros.append(cleaned)
+
+        kali_distro = None
+        for d in distros:
+            if "kali" in d.lower():
+                kali_distro = d
+                break
+
+        preferred_wsl = None
+        for d in distros:
+            if "docker" not in d.lower():
+                preferred_wsl = d
+                break
+        if not preferred_wsl and distros:
+            preferred_wsl = distros[0]
+
+        return {
+            "wsl_available": len(distros) > 0,
+            "distributions": distros,
+            "kali_available": kali_distro is not None,
+            "kali_distro": kali_distro,
+            "default_distro": preferred_wsl,
+            "error": None if distros else "No registered WSL distributions found.",
+        }
+    except Exception as exc:
+        return {
+            "wsl_available": False,
+            "distributions": [],
+            "kali_available": False,
+            "kali_distro": None,
+            "default_distro": None,
+            "error": f"Failed to probe WSL status: {exc}",
+        }
 
 
 class KaliCommandState(str, Enum):
@@ -201,87 +318,221 @@ class KaliCommandRunner:
         self.scope_guard = scope_guard
         self.audit = audit
 
-    def execute(self, command: str, timeout_seconds: float = 20.0, operation_id: str = "op-kali") -> dict[str, Any]:
-        """Execute command safely. Strictly verifies scope for network probes."""
+    def execute_terminal(
+        self,
+        req: TerminalCommandRequest,
+        operation_id: str = "op-terminal",
+    ) -> TerminalCommandResponse:
+        """Execute terminal command across Windows host, WSL, or Kali environments with scope validation."""
         t0 = time.monotonic()
-        parsed = KaliCommandParser.parse(command)
+        env = req.execution_environment
+
+        cmd_str = req.command.strip()
+        if not cmd_str:
+            return TerminalCommandResponse(
+                success=False,
+                stdout="",
+                stderr="Command cannot be empty.",
+                exit_code=-1,
+                execution_environment=env,
+                duration_ms=0.0,
+                error="Empty command.",
+                command=req.command,
+                state=KaliCommandState.FAILED.value,
+                reason="Empty command.",
+            )
+
+        if req.working_directory:
+            wd = Path(req.working_directory)
+            if not wd.exists() or not wd.is_dir():
+                return TerminalCommandResponse(
+                    success=False,
+                    stdout="",
+                    stderr=f"Working directory '{req.working_directory}' does not exist or is not a directory.",
+                    exit_code=-1,
+                    execution_environment=env,
+                    duration_ms=0.0,
+                    error=f"Invalid working directory: {req.working_directory}",
+                    command=req.command,
+                    state=KaliCommandState.FAILED.value,
+                    reason=f"Working directory '{req.working_directory}' does not exist.",
+                )
+
+        parsed = KaliCommandParser.parse(cmd_str)
 
         # 1. Block dangerous commands
         if parsed.is_dangerous:
             if self.audit:
                 self.audit.blocked(
                     "local",
-                    "kali_execute",
-                    "kali_runner",
-                    f"Blocked dangerous command: {command}",
+                    "terminal_execute",
+                    "terminal_runner",
+                    f"Blocked dangerous command: {cmd_str}",
                 )
-            return {
-                "command": command,
-                "state": KaliCommandState.BLOCKED.value,
-                "exit_code": -1,
-                "stdout": "",
-                "stderr": parsed.reason,
-                "duration_seconds": round(time.monotonic() - t0, 3),
-                "reason": parsed.reason,
-                "target": None,
-                "is_network": False,
-            }
+            return TerminalCommandResponse(
+                success=False,
+                stdout="",
+                stderr=parsed.reason,
+                exit_code=-1,
+                execution_environment=env,
+                duration_ms=round((time.monotonic() - t0) * 1000, 2),
+                error=parsed.reason,
+                command=cmd_str,
+                state=KaliCommandState.BLOCKED.value,
+                reason=parsed.reason,
+            )
 
-        # 2. Central scope check for network tools
+        # 2. Scope check for network tools
+        clean_target = None
         if parsed.is_network:
-            target = parsed.target or "127.0.0.1"
-            # Normalize target URL/hostname
-            clean_target = re.sub(r"^https?://", "", target).split("/")[0].split(":")[0]
+            raw_target = req.target or parsed.target or "127.0.0.1"
+            clean_target = re.sub(r"^https?://", "", raw_target).split("/")[0].split(":")[0]
             if not self.scope_guard or not self.scope_guard.is_authorized(clean_target):
                 if self.audit:
                     self.audit.blocked(
                         clean_target,
-                        "kali_execute",
-                        "kali_runner",
-                        f"Target '{clean_target}' outside active signed scope contract for command: {command}",
+                        "terminal_execute",
+                        "terminal_runner",
+                        f"Target '{clean_target}' outside active signed scope contract for command: {cmd_str}",
                     )
-                return {
-                    "command": command,
-                    "state": KaliCommandState.BLOCKED.value,
-                    "exit_code": -1,
-                    "stdout": "",
-                    "stderr": f"Target '{clean_target}' is not authorized by the active signed scope policy.",
-                    "duration_seconds": round(time.monotonic() - t0, 3),
-                    "reason": f"Target unauthorized. Command execution blocked by scope policy.",
-                    "target": clean_target,
-                    "is_network": True,
-                }
+                return TerminalCommandResponse(
+                    success=False,
+                    stdout="",
+                    stderr=f"Target '{clean_target}' is not authorized by the active signed scope policy.",
+                    exit_code=-1,
+                    execution_environment=env,
+                    duration_ms=round((time.monotonic() - t0) * 1000, 2),
+                    error=f"Target '{clean_target}' unauthorized by scope policy.",
+                    command=cmd_str,
+                    state=KaliCommandState.BLOCKED.value,
+                    reason="Target unauthorized. Command execution blocked by scope policy.",
+                )
 
-        # 3. Binary lookup
-        bin_path = shutil.which(parsed.binary)
-        if not bin_path and parsed.binary == "nmap" and os.name == "nt":
-            for c in [r"C:\Program Files (x86)\Nmap\nmap.exe", r"C:\Program Files\Nmap\nmap.exe"]:
-                if os.path.exists(c):
-                    bin_path = c
-                    break
+        # 3. Environment Dispatch
+        if env == "kali":
+            wsl_info = detect_wsl_status()
+            if not wsl_info["wsl_available"]:
+                err = f"WSL is not available: {wsl_info.get('error') or 'WSL not installed'}"
+                return TerminalCommandResponse(
+                    success=False,
+                    stdout="",
+                    stderr=err,
+                    exit_code=-1,
+                    execution_environment=env,
+                    duration_ms=round((time.monotonic() - t0) * 1000, 2),
+                    error=err,
+                    command=cmd_str,
+                    state=KaliCommandState.FAILED.value,
+                    reason=err,
+                )
+            if not wsl_info["kali_available"]:
+                distros = ", ".join(wsl_info.get("distributions", [])) or "none"
+                err = f"Kali Linux distribution is not installed in WSL. Available WSL distributions: {distros}."
+                return TerminalCommandResponse(
+                    success=False,
+                    stdout="",
+                    stderr=err,
+                    exit_code=-1,
+                    execution_environment=env,
+                    duration_ms=round((time.monotonic() - t0) * 1000, 2),
+                    error=err,
+                    command=cmd_str,
+                    state=KaliCommandState.FAILED.value,
+                    reason=err,
+                )
+            exec_args = ["wsl.exe", "-d", wsl_info["kali_distro"], "--", parsed.binary] + parsed.args
 
-        if not bin_path:
-            return {
-                "command": command,
-                "state": KaliCommandState.FAILED.value,
-                "exit_code": -1,
-                "stdout": "",
-                "stderr": f"Binary '{parsed.binary}' not found in system PATH.",
-                "duration_seconds": round(time.monotonic() - t0, 3),
-                "reason": f"Executable unavailable: '{parsed.binary}' is not installed.",
-                "target": parsed.target,
-                "is_network": parsed.is_network,
-            }
+        elif env == "wsl":
+            wsl_info = detect_wsl_status()
+            if not wsl_info["wsl_available"]:
+                err = f"WSL is not available: {wsl_info.get('error') or 'WSL not installed'}"
+                return TerminalCommandResponse(
+                    success=False,
+                    stdout="",
+                    stderr=err,
+                    exit_code=-1,
+                    execution_environment=env,
+                    duration_ms=round((time.monotonic() - t0) * 1000, 2),
+                    error=err,
+                    command=cmd_str,
+                    state=KaliCommandState.FAILED.value,
+                    reason=err,
+                )
+            distro = wsl_info.get("default_distro")
+            if not distro:
+                err = "No active WSL distribution found."
+                return TerminalCommandResponse(
+                    success=False,
+                    stdout="",
+                    stderr=err,
+                    exit_code=-1,
+                    execution_environment=env,
+                    duration_ms=round((time.monotonic() - t0) * 1000, 2),
+                    error=err,
+                    command=cmd_str,
+                    state=KaliCommandState.FAILED.value,
+                    reason=err,
+                )
+            exec_args = ["wsl.exe", "-d", distro, "--", parsed.binary] + parsed.args
 
-        # 4. Controlled Execution (NO shell=True)
-        exec_args = [bin_path] + parsed.args
+        else:  # "host"
+            if parsed.binary == "pwd":
+                cwd_val = req.working_directory or os.getcwd()
+                return TerminalCommandResponse(
+                    success=True,
+                    stdout=f"{cwd_val}\n",
+                    stderr="",
+                    exit_code=0,
+                    execution_environment=env,
+                    duration_ms=round((time.monotonic() - t0) * 1000, 2),
+                    command=cmd_str,
+                    state=KaliCommandState.COMPLETED.value,
+                    reason="Command executed with exit code 0.",
+                )
+
+            bin_path = shutil.which(parsed.binary)
+            if not bin_path and os.name == "nt":
+                sys32 = os.path.join(os.environ.get("SystemRoot", r"C:\Windows"), "System32")
+                for candidate in [
+                    os.path.join(sys32, f"{parsed.binary}.exe"),
+                    os.path.join(sys32, f"{parsed.binary}"),
+                ]:
+                    if os.path.exists(candidate):
+                        bin_path = candidate
+                        break
+                if not bin_path and parsed.binary == "nmap":
+                    for candidate in [
+                        r"C:\Program Files (x86)\Nmap\nmap.exe",
+                        r"C:\Program Files\Nmap\nmap.exe",
+                    ]:
+                        if os.path.exists(candidate):
+                            bin_path = candidate
+                            break
+
+            if not bin_path:
+                err = f"Executable '{parsed.binary}' not found in host PATH."
+                return TerminalCommandResponse(
+                    success=False,
+                    stdout="",
+                    stderr=err,
+                    exit_code=-1,
+                    execution_environment=env,
+                    duration_ms=round((time.monotonic() - t0) * 1000, 2),
+                    error=err,
+                    command=cmd_str,
+                    state=KaliCommandState.FAILED.value,
+                    reason=err,
+                )
+            exec_args = [bin_path] + parsed.args
+
+        # 4. Controlled Subprocess Execution (NO shell=True)
         if self.audit:
             self.audit.log(
-                parsed.target or "localhost",
-                "kali_execute",
+                clean_target or "localhost",
+                "terminal_execute",
                 parsed.binary,
                 "started",
-                {"command": command},
+                {"command": cmd_str, "env": env},
             )
 
         try:
@@ -289,46 +540,55 @@ class KaliCommandRunner:
                 exec_args,
                 capture_output=True,
                 text=True,
-                timeout=timeout_seconds,
+                timeout=req.timeout_seconds,
+                cwd=req.working_directory,
             )
             stdout = proc.stdout
             stderr = proc.stderr
             exit_code = proc.returncode
-            duration = round(time.monotonic() - t0, 2)
-            state = KaliCommandState.COMPLETED if exit_code == 0 else KaliCommandState.FAILED
+            duration_ms = round((time.monotonic() - t0) * 1000, 2)
+            success = (exit_code == 0)
+            state = KaliCommandState.COMPLETED if success else KaliCommandState.FAILED
+            timed_out = False
+            error = None if success else f"Process exited with code {exit_code}."
         except subprocess.TimeoutExpired:
-            return {
-                "command": command,
-                "state": KaliCommandState.FAILED.value,
-                "exit_code": -1,
-                "stdout": "",
-                "stderr": f"Command timed out after {timeout_seconds} seconds.",
-                "duration_seconds": round(time.monotonic() - t0, 2),
-                "reason": f"Execution timed out after {timeout_seconds}s.",
-                "target": parsed.target,
-                "is_network": parsed.is_network,
-            }
+            duration_ms = round((time.monotonic() - t0) * 1000, 2)
+            return TerminalCommandResponse(
+                success=False,
+                stdout="",
+                stderr=f"Command timed out after {req.timeout_seconds} seconds.",
+                exit_code=-1,
+                execution_environment=env,
+                duration_ms=duration_ms,
+                error="Command timed out.",
+                timed_out=True,
+                command=cmd_str,
+                state=KaliCommandState.FAILED.value,
+                reason=f"Execution timed out after {req.timeout_seconds}s.",
+            )
         except Exception as exc:
-            return {
-                "command": command,
-                "state": KaliCommandState.FAILED.value,
-                "exit_code": -1,
-                "stdout": "",
-                "stderr": str(exc),
-                "duration_seconds": round(time.monotonic() - t0, 2),
-                "reason": f"Execution failed: {exc}",
-                "target": parsed.target,
-                "is_network": parsed.is_network,
-            }
+            duration_ms = round((time.monotonic() - t0) * 1000, 2)
+            return TerminalCommandResponse(
+                success=False,
+                stdout="",
+                stderr=str(exc),
+                exit_code=-1,
+                execution_environment=env,
+                duration_ms=duration_ms,
+                error=str(exc),
+                command=cmd_str,
+                state=KaliCommandState.FAILED.value,
+                reason=f"Execution failed: {exc}",
+            )
 
-        # 5. Create cryptographic evidence for successful commands
+        # 5. Evidence & Audit
         ev_id = None
         if stdout:
             evidence = Evidence(
                 operation_id=operation_id,
-                target=parsed.target or "localhost",
-                source=f"kali_{parsed.binary}",
-                request_metadata={"command": command, "binary": parsed.binary},
+                target=clean_target or "localhost",
+                source=f"{env}_{parsed.binary}",
+                request_metadata={"command": cmd_str, "binary": parsed.binary, "env": env},
                 response_metadata={"exit_code": exit_code},
                 tool_output=stdout,
                 response_excerpt=stdout[:1000],
@@ -337,24 +597,50 @@ class KaliCommandRunner:
 
         if self.audit:
             self.audit.log(
-                parsed.target or "localhost",
-                "kali_execute",
+                clean_target or "localhost",
+                "terminal_execute",
                 parsed.binary,
-                "success" if exit_code == 0 else "failed",
-                {"exit_code": exit_code, "duration_seconds": duration, "evidence_id": ev_id},
+                "success" if success else "failed",
+                {"exit_code": exit_code, "duration_ms": duration_ms, "evidence_id": ev_id},
             )
 
+        return TerminalCommandResponse(
+            success=success,
+            stdout=stdout,
+            stderr=stderr,
+            exit_code=exit_code,
+            execution_environment=env,
+            duration_ms=duration_ms,
+            error=error,
+            timed_out=timed_out,
+            command=cmd_str,
+            state=state.value,
+            reason=f"Command executed with exit code {exit_code}.",
+            evidence_id=ev_id,
+        )
+
+    def execute(self, command: str, timeout_seconds: float = 20.0, operation_id: str = "op-kali") -> dict[str, Any]:
+        """Execute command safely (legacy adapter). Strictly verifies scope for network probes."""
+        req = TerminalCommandRequest(
+            command=command,
+            execution_environment="host",
+            timeout_seconds=max(1, min(120, int(timeout_seconds))),
+        )
+        res = self.execute_terminal(req, operation_id=operation_id)
+        parsed = KaliCommandParser.parse(command)
         return {
             "command": command,
-            "state": state.value,
-            "exit_code": exit_code,
-            "stdout": stdout,
-            "stderr": stderr,
-            "duration_seconds": duration,
-            "reason": f"Command executed with exit code {exit_code}.",
+            "state": res.state or ("COMPLETED" if res.success else "FAILED"),
+            "exit_code": res.exit_code,
+            "stdout": res.stdout,
+            "stderr": res.stderr,
+            "duration_seconds": round(res.duration_ms / 1000.0, 3),
+            "reason": res.reason or res.error or "",
             "target": parsed.target,
             "is_network": parsed.is_network,
-            "evidence_id": ev_id,
+            "execution_environment": res.execution_environment,
+            "success": res.success,
+            "evidence_id": res.evidence_id,
         }
 
 

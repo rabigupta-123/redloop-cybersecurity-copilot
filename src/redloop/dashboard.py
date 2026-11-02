@@ -1255,24 +1255,35 @@ def create_app(
       <section id="section-terminal" class="spa-section">
         <div class="card-panel">
           <div class="panel-header">
-            <span class="panel-title">Kali Terminal Intelligence &amp; WSL Command Runner</span>
-            <span class="badge badge-success">READY</span>
+            <div>
+              <span class="panel-title">Terminal Intelligence &amp; Execution Console</span>
+              <p style="color:var(--fg-muted); font-size:12px; margin:4px 0 0 0;">Multi-environment command dispatch (Windows Host, WSL Linux, Kali Linux).</p>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <label for="terminal-env" style="font-size:12px; color:var(--fg-muted); font-weight:600;">ENV:</label>
+              <select id="terminal-env" style="background:var(--surface-2); border:1px solid var(--border); color:var(--fg); padding:4px 10px; border-radius:6px; font-size:12px; font-family:var(--font-mono);" onchange="updateTerminalEnv()">
+                <option value="host">Host (Windows)</option>
+                <option value="wsl">WSL (Ubuntu)</option>
+                <option value="kali">Kali Linux (WSL)</option>
+              </select>
+              <span id="terminal-env-badge" class="badge badge-success">READY</span>
+            </div>
           </div>
-          <p style="color:var(--fg-muted); margin-bottom:14px;">Sandboxed execution of verified cybersecurity utilities with strict authorization checking.</p>
           <div style="background:#050811; border:1px solid var(--border); border-radius:8px; padding:16px; margin-bottom:14px;">
             <pre id="terminal-output" style="font-family:var(--font-mono); font-size:12px; color:#4fd17a; min-height:240px; max-height:400px; overflow-y:auto; margin:0; white-space:pre-wrap;">REDLOOP Terminal Intelligence Console v2.0
-Target Scoped: {escape(active_target)}
-Type an authorized command below (e.g. nmap -sV 127.0.0.1 or ss -tulpn)...</pre>
+Environments: Host (Windows) [READY] | WSL (Ubuntu) [READY] | Kali Linux [NOT INSTALLED]
+Enter a host/system command (e.g. whoami, hostname, uname -a, pwd) or network probe (e.g. nmap -sV 127.0.0.1)...</pre>
           </div>
           <div style="display:flex; gap:10px; align-items:center;">
-            <span style="font-family:var(--font-mono); font-weight:700; color:var(--accent);">$</span>
-            <input type="text" id="terminal-input" class="chat-input" placeholder="Enter shell command (e.g. nmap -sV 127.0.0.1)..." onkeydown="if(event.key==='Enter') runTerminal();">
+            <span id="terminal-prompt-sym" style="font-family:var(--font-mono); font-weight:700; color:var(--accent);">[host] $</span>
+            <input type="text" id="terminal-input" class="chat-input" placeholder="Enter command (e.g. whoami, hostname, or nmap -sV 127.0.0.1)..." onkeydown="if(event.key==='Enter') runTerminal();">
             <button class="btn-action btn-primary" onclick="runTerminal()">Execute</button>
           </div>
           <div class="quick-chips" style="margin-top:12px;">
+            <span class="quick-chip" onclick="document.getElementById('terminal-input').value='whoami'; runTerminal();">whoami</span>
+            <span class="quick-chip" onclick="document.getElementById('terminal-input').value='hostname'; runTerminal();">hostname</span>
             <span class="quick-chip" onclick="document.getElementById('terminal-input').value='nmap -sV 127.0.0.1'; runTerminal();">nmap -sV 127.0.0.1</span>
             <span class="quick-chip" onclick="document.getElementById('terminal-input').value='ss -tulpn'; runTerminal();">ss -tulpn</span>
-            <span class="quick-chip" onclick="document.getElementById('terminal-input').value='openssl s_client -connect 127.0.0.1:443'; runTerminal();">openssl s_client</span>
           </div>
         </div>
       </section>
@@ -2615,17 +2626,19 @@ def _active_target(rows: list[dict], scope_manager: ScopeManager | None) -> str:
             target = str(row["target"])
             if _scope_entry(scope_manager, target) is not None:
                 return target
-        if not rows:
-            for entry in scope_manager.scope.targets:
-                if entry.cidr:
-                    try:
-                        return str(ip_network(entry.cidr, strict=False).network_address)
-                    except ValueError:
-                        continue
-                if entry.domain:
-                    return entry.domain
-    return str(rows[0]["target"]) if rows else "No recent target"
-
+        for entry in scope_manager.scope.targets:
+            if entry.cidr:
+                try:
+                    return str(ip_network(entry.cidr, strict=False).network_address)
+                except ValueError:
+                    continue
+            if entry.domain:
+                return entry.domain
+    for row in rows:
+        candidate = str(row.get("target", "")).strip()
+        if candidate and candidate != "email_footprint" and not candidate.startswith("internal_"):
+            return candidate
+    return "127.0.0.1" 
 
 def _is_module(row: dict, category: str) -> bool:
     module = str(row["module"]).casefold()

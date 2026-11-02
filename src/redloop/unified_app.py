@@ -2827,30 +2827,68 @@ UNIFIED_SCRIPT = """
   };
 
   // --- TERMINAL EXECUTION ---
+  window.updateTerminalEnv = function() {
+    const sel = #terminal-env;
+    const badge = #terminal-env-badge;
+    const sym = #terminal-prompt-sym;
+    const env = sel ? sel.value : 'host';
+    if (sym) sym.textContent = '[' + env + '] $';
+    if (badge) {
+      if (env === 'kali') {
+        badge.className = 'badge badge-warning';
+        badge.textContent = 'NOT INSTALLED';
+      } else {
+        badge.className = 'badge badge-success';
+        badge.textContent = 'READY';
+      }
+    }
+  };
+
   window.runTerminal = async function(cmdOverride) {
-    const input = $('#terminal-input');
+    const input = #terminal-input;
     const cmd = (cmdOverride || input?.value || '').trim();
     if (!cmd) return;
     if (input) input.value = '';
 
-    const out = $('#terminal-output');
-    if (out) out.textContent += `\\n$ ${cmd}\\nExecuting on ${state.target}...\\n`;
+    const envSel = #terminal-env;
+    const env = envSel ? envSel.value : 'host';
+    const out = #terminal-output;
+
+    const isNetwork = /^(?:nmap|ping|traceroute|curl|wget|dig|nslookup|whois|openssl|nikto|gobuster|feroxbuster|ffuf|sqlmap)\b/i.test(cmd);
+    if (out) {
+      let msg = '\n[' + env + '] $ ' + cmd + '\n';
+      if (isNetwork && state.target) {
+        msg += '[Network Target Scoped: ' + state.target + ']\n';
+      }
+      out.textContent += msg;
+      out.scrollTop = out.scrollHeight;
+    }
 
     try {
-      const res = await fetch('/api/kali/execute', {
+      const res = await fetch('/api/terminal/execute', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ command: cmd, target: state.target })
+        body: JSON.stringify({
+          command: cmd,
+          execution_environment: env,
+          target: state.target || null,
+          working_directory: null,
+          timeout_seconds: 30
+        })
       });
       const data = await res.json();
       if (out) {
-        const resultText = data.stdout || data.stderr || data.reason || (data.state ? `State: ${data.state}` : JSON.stringify(data));
-        out.textContent += resultText + '\\n';
+        const dur = data.duration_ms ? (data.duration_ms + 'ms') : '';
+        const exitInfo = (data.exit_code !== undefined && data.exit_code !== null) ? ('Exit Code: ' + data.exit_code) : '';
+        const header = '--- [' + (data.execution_environment || env) + '] ' + exitInfo + ' ' + (dur ? '(' + dur + ')' : '') + ' ---';
+        const body = (data.stdout ? data.stdout : '') + (data.stderr ? ((data.stdout ? '\n[STDERR]:\n' : '') + data.stderr) : '');
+        const resultText = body.trim() ? body : (data.error || data.reason || (data.success ? '[Command completed with no output]' : '[Execution failed]'));
+        out.textContent += header + '\n' + resultText + '\n\n';
         out.scrollTop = out.scrollHeight;
       }
     } catch (err) {
       if (out) {
-        out.textContent += `[Execution Error]: ${err.message}\\n`;
+        out.textContent += '[Transport/Execution Error]: ' + err.message + '\n\n';
         out.scrollTop = out.scrollHeight;
       }
     }

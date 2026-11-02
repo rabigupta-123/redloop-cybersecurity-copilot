@@ -582,11 +582,43 @@ class TaskOrchestrator:
                 depth = AssessmentDepth.COMPREHENSIVE
             return {"action": "run_assessment", "intent": "VULNERABILITY_ASSESSMENT", "target": target, "depth": depth}
 
+        # 13C. CYBERSECURITY CONCEPTS & DEFINITIONS
+        if any(w in prompt_lower for w in (
+            "definition of vulnerability", "definitions of vulnerability", "define vulnerability",
+            "vulnerability, exploit", "vulnerability and exploit", "exploit and threat",
+            "vulnerability, exploit, and threat", "difference between vulnerability", "threat vs vulnerability",
+            "what is a vulnerability", "what is an exploit", "what is a threat"
+        )):
+            return {"action": "general_chat", "intent": "GENERAL_CHAT", "target": target, "concept": "definitions"}
+
+        # 13D. MULTI-MODULE INTELLIGENCE SUMMARY
+        if any(phrase in prompt_lower for phrase in (
+            "summarize current ip, domain and email",
+            "summarize ip, domain and email",
+            "summarize intelligence",
+            "summarize all intelligence",
+            "summarize current intelligence",
+            "summarize investigation",
+            "summarize osint",
+            "summarize findings",
+        )):
+            return {"action": "general_chat", "intent": "GENERAL_CHAT", "target": target, "concept": "summarize_intelligence"}
+
+        # 13E. EVIDENCE-BASED SAFETY EVALUATION
+        if any(phrase in prompt_lower for phrase in (
+            "is this email safe", "is it safe", "is email safe", "safe when hibp", "safe without hibp",
+            "can we conclude it is safe", "is the target safe"
+        )):
+            return {"action": "general_chat", "intent": "GENERAL_CHAT", "target": target, "concept": "evaluate_safety"}
+
         # 14. PASSIVE OSINT INTENTS (Only reached when NOT an active scan/assessment)
         # A. OSINT_EMAIL
-        if email_match or any(w in prompt_lower for w in ("investigate email", "email intelligence", "verify email", "email breach")):
-            em = email_match.group(0) if email_match else target
+        if email_match:
+            em = email_match.group(0)
             return {"action": "osint_email", "intent": "OSINT_EMAIL", "email": em, "target": em}
+        if any(w in prompt_lower for w in ("investigate email", "email intelligence", "verify email", "email breach")):
+            if "@" in target:
+                return {"action": "osint_email", "intent": "OSINT_EMAIL", "email": target, "target": target}
 
         # B. OSINT_PHONE
         if phone_match or any(w in prompt_lower for w in ("investigate phone", "phone intelligence", "lookup phone", "phone number")):
@@ -621,7 +653,7 @@ class TaskOrchestrator:
             return {"action": "explain_attack_surface", "intent": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION", "target": target, "node_id": context.get("id")}
 
         # 17. Exploit Simulation
-        if any(w in prompt_lower for w in ("simulate exploit", "exploit simulation", "synthetic exploit", "exploit simulator", "simulate attack", "attack simulation", "simulate poc", "exploit")):
+        if any(w in prompt_lower for w in ("simulate exploit", "exploit simulation", "synthetic exploit", "exploit simulator", "simulate attack", "attack simulation", "simulate poc")):
             service = "http"
             if "ssh" in prompt_lower:
                 service = "ssh"
@@ -2658,7 +2690,91 @@ class TaskOrchestrator:
                 "  - Algorithms: RSA-4096, ECDSA (NIST P-256/P-384), Ed25519 (Edwards-curve).",
                 "- **Hybrid Cryptography:** Modern TLS uses asymmetric algorithms (ECDHE) for ephemeral key agreement and symmetric ciphers (AES-GCM) for data payload encryption.",
             ])
-        elif any(w in p_lower for w in ("port scan", "port scanner", "script", "fuzz", "exploit", "code")):
+        elif any(w in p_lower for w in (
+            "vulnerability, exploit", "vulnerability and exploit", "exploit and threat",
+            "vulnerability, exploit, and threat", "definition of vulnerability", "definitions of vulnerability",
+            "define vulnerability", "threat vs vulnerability", "difference between vulnerability",
+            "what is a vulnerability", "what is an exploit", "what is a threat"
+        )):
+            lines.extend([
+                "#### 🛡️ Cybersecurity Fundamental Concepts: Vulnerability, Exploit, Threat & Risk",
+                "- **1. Vulnerability (The Flaw / Weakness):**",
+                "  - *Formal Definition (NIST SP 800-30 / ISO 27000):* A flaw, defect, or weakness in system design, architecture, implementation, configuration, or operational procedure that can be accidentally triggered or intentionally breached to violate system security policy.",
+                "  - *Attributes:* Inherent to the target asset; identified by Common Vulnerabilities and Exposures (CVEs) and Common Weakness Enumeration (CWE).",
+                "",
+                "- **2. Exploit (The Weapon / Mechanism):**",
+                "  - *Formal Definition:* A piece of software, tailored payload, chunk of data, or automated sequence of commands that takes advantage of an identified vulnerability to produce unintended, unauthorized, or malicious behavior in computer software or hardware.",
+                "  - *Attributes:* The practical mechanism of compromise; categorized by delivery vector (remote, local, client-side, physical) and reliability.",
+                "",
+                "- **3. Threat (The Adversary / Hazard):**",
+                "  - *Formal Definition:* Any circumstance, entity, capability, or event with the potential to adversely impact organizational operations, assets, or individuals via unauthorized access, exfiltration, destruction, disclosure, or denial of service.",
+                "  - *Threat Actors:* Nation-state APTs, organized cybercrime syndicates, malicious insiders, automated credential stuffers, and opportunistic script kiddies.",
+                "",
+                "- **4. Risk Relationship & The Fundamental Security Equation:**",
+                "  $$\\text{Risk} = \\text{Threat} \\times \\text{Vulnerability} \\times \\text{Impact}$$",
+                "  - *Vulnerability without Threat:* Theoretical weakness that cannot be leveraged; poses negligible practical risk.",
+                "  - *Threat without Vulnerability:* Capable adversary encountering hardened systems with no exploitable entry point.",
+                "  - *Threat + Vulnerability:* Direct operational exposure requiring immediate risk mitigation and compensating controls.",
+                "",
+                "- **5. Practical Web Application Attack Walkthrough (SQL Injection / CWE-89):**",
+                "  - *Vulnerability:* Web application endpoint concatenates unvalidated user input into a dynamic SQL query string without parameterized input binding.",
+                "  - *Exploit:* An attacker injects the SQL payload `' OR 1=1 UNION SELECT username, password_hash FROM auth_users--`, manipulating query control flow to bypass authentication and dump the database.",
+                "  - *Threat:* An external unauthenticated cybercrime actor seeking credential databases for monetization or subsequent ransomware extortion.",
+                "  - *Risk:* Severe compromise of customer data confidentiality, violation of GDPR/HIPAA compliance, substantial financial liability, and reputational destruction.",
+                "",
+                "- **6. Security Operations Center (SOC) Investigation & Defense Workflow:**",
+                "  - *Detection Phase:* SIEM/EDR alert on anomalous SQL keyword density in URI parameters, WAF signature trigger (ModSecurity/Cloudflare), or high database egress anomaly.",
+                "  - *Investigation Phase:* Triage web server access logs (`/var/log/nginx/access.log`), correlate source IP against authentication logs, reconstruct the attacker session timeline, and inspect database audit logs for unauthorized schema reads.",
+                "  - *Remediation Phase:* Refactor backend code to use prepared statements (`cursor.execute(query, params)`), deploy virtual patching at the WAF layer, rotate compromised credentials, and verify resolution with automated regression testing."
+            ])
+        elif any(w in p_lower for w in (
+            "summarize current ip, domain and email", "summarize intelligence", "summarize investigation",
+            "ip, domain, and email intelligence", "summarize osint", "summarize all intelligence"
+        )):
+            lines.extend([
+                "#### 📊 Multi-Module Intelligence Synthesis (IP, Domain & Email)",
+                "- **Intelligence Architecture:** REDLOOP maintains strict separation between distinct identity and network intelligence layers. Indicators are never cross-pollinated or misclassified.",
+                "",
+                "- **1. IP Intelligence (Network Layer):**",
+                "  - *Target IP:* Evaluates ASN allocation, BGP routing, reverse PTR DNS, and open ports.",
+                "  - *Status:* Classified as public vs. private loopback (`127.0.0.1` / RFC 1918). Loopback IPs do not possess public WHOIS, ASN records, or external threat reputational history.",
+                "",
+                "- **2. Domain Intelligence (DNS & Identity Layer):**",
+                "  - *Domain Posture:* Evaluates apex registrar details, NS authority, MX email routability, and SSL/TLS cryptographic hygiene.",
+                "  - *Status:* Unchecked domains are classified as `PENDING_RESOLUTION`. DNS resolution is required before subdomains or certificates can be mapped.",
+                "",
+                "- **3. Email Footprint Intelligence (Credential & Identity Layer):**",
+                "  - *Email Verification:* Validates RFC 5322 syntax compliance, domain deliverability (MX host presence), and disposable mailbox flags.",
+                "  - *Important Boundary:* An IP address (e.g. `127.0.0.1`) is a network host address and will NEVER be evaluated or misclassified as an email address.",
+                "",
+                "- **4. Evidence Provenance & Confidence Ledger:**",
+                "  - **Confirmed Observations:** Deterministic network probes with cryptographic SHA-256 evidence hashes.",
+                "  - **Unverified Information:** Heuristic or third-party reputation feeds requiring second-party corroboration.",
+                "  - **Checks Not Performed:** Modules not yet executed in the current session (marked `NOT_CHECKED`).",
+                "  - **Providers Not Configured:** Third-party enrichment services lacking API keys (marked `PROVIDER_NOT_CONFIGURED`)."
+            ])
+        elif any(w in p_lower for w in (
+            "is this email safe", "is it safe", "safe when hibp", "safe without hibp", "email safe", "evidence-based safety"
+        )):
+            lines.extend([
+                "#### ⚖️ Evidence-Based Security Evaluation & Risk Determination",
+                "- **Core Principle: Absence of Evidence is NOT Evidence of Absence.**",
+                "  - Failing to check a threat vector or lacking telemetry does not indicate that an asset is benign or secure.",
+                "",
+                "- **1. HaveIBeenPwned (HIBP) / Breach Telemetry Status:**",
+                "  - When breach lookup has not been performed or the HIBP provider API is unconfigured, the status is strictly **`NOT_CHECKED`** / **`PROVIDER_NOT_CONFIGURED`**.",
+                "  - **Critical Warning:** Under no circumstances should an unperformed breach check be interpreted or reported as 'zero breaches', 'uncompromised', or 'safe'.",
+                "",
+                "- **2. Technical Deliverability vs. Identity Security:**",
+                "  - Passing RFC 5322 syntax validation, active DNS MX records, and valid SMTP handshakes merely confirm that a domain accepts incoming email.",
+                "  - Deliverability checks **do not** prove that the user account has not suffered credential compromise, session hijacking, or inclusion in illicit credential-stuffing databases.",
+                "",
+                "- **3. Actionable Defense & Verification Protocol:**",
+                "  - Configure valid breach intelligence API credentials in Provider Settings to enable live breach auditing.",
+                "  - Conduct internal identity auditing: inspect Active Directory / Okta sign-in logs for anomalous travel or impossible speed logins.",
+                "  - Enforce Phishing-Resistant Multi-Factor Authentication (FIDO2 / WebAuthn) and conditional access policies regardless of public breach status."
+            ])
+        elif any(w in p_lower for w in ("port scan", "port scanner", "testing script", "scanner script", "fuzz code")):
             lines.extend([
                 "#### 💻 Security Development & Lab Research Guidance",
                 "- **Lab Exploit / Testing Script:** Use safe, non-destructive test harnesses in isolated lab networks.",
