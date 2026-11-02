@@ -1138,7 +1138,6 @@ def create_app(
       </div>
       <div class="nav-section">
         <div class="nav-label">GOVERN</div>
-        <a class="nav-item" data-section="scope" onclick="switchSection('scope')" href="#scope">{_svg_icon("scope")}<span>Scope</span></a>
         <a class="nav-item" data-section="audit" onclick="switchSection('audit')" href="#audit">{_svg_icon("audit")}<span>Audit</span></a>
         <a class="nav-item" data-section="providers" onclick="switchSection('providers')" href="#providers">{_svg_icon("providers")}<span>Providers</span></a>
       </div>
@@ -1162,7 +1161,7 @@ def create_app(
         </button>
         <span id="current-page-title" class="page-title">COPILOT</span>
         <span id="topbar-inv-pill" class="scope-pill scope-pill-neutral">📋 Authorized Local Assessment</span>
-        <span id="header-scope-pill" class="scope-pill verified">AUTHORIZED</span>
+        <span id="header-scope-pill" class="scope-pill verified">LOCAL LAB ACTIVE</span>
       </div>
       <div class="topbar-right">
         <div class="target-select-wrap">
@@ -1599,36 +1598,6 @@ Type an authorized command below (e.g. nmap -sV 127.0.0.1 or ss -tulpn)...</pre>
         </div>
       </section>
 
-      <!-- 11. SECTION: SCOPE -->
-      <section id="section-scope" class="spa-section">
-        <div class="card-panel">
-          <div class="panel-header"><span class="panel-title">Scope &amp; Cryptographic Authorization</span></div>
-          <div class="scope-banner" id="scope-manifest" aria-label="Active target scope" style="margin-bottom:16px;">
-            <div class="scope-item">
-              <span class="key">Active target</span>
-              <span class="value" style="color:var(--accent);font-weight:600;">{escape(active_target)}</span>
-            </div>
-            <div class="scope-item">
-              <span class="key">Authorized window</span>
-              <span class="value">{escape(authorized_window)}</span>
-            </div>
-            <div class="scope-item">
-              <span class="key">Allowed actions</span>
-              <span class="value" style="color:#22d3ee;">{escape(allowed_actions)}</span>
-            </div>
-            <div class="scope-item">
-              <span class="key">Window remaining</span>
-              <span class="value">{escape(window_remaining)}</span>
-            </div>
-            <span class="scope-pill {status_class}">{escape(scope_status)}</span>
-          </div>
-          <div class="kpi-grid">
-            <div class="kpi-card success"><div class="kpi-label">Scope State</div><div class="kpi-value" style="font-size:20px;">{escape(scope_status)}</div><div class="kpi-sub">{escape(scope_manager_status)}</div></div>
-            <div class="kpi-card info"><div class="kpi-label">Authorized Window</div><div class="kpi-value" style="font-size:16px;">{escape(authorized_window)}</div><div class="kpi-sub">{escape(window_remaining)}</div></div>
-          </div>
-          <p style="color:var(--fg-muted); font-size:12px; margin-top:14px;">Fail-closed security: Any target outside the HMAC-signed manifest is blocked before execution.</p>
-        </div>
-      </section>
 
       <!-- 12. SECTION: AUDIT -->
       <section id="section-audit" class="spa-section">
@@ -1760,6 +1729,25 @@ Type an authorized command below (e.g. nmap -sV 127.0.0.1 or ss -tulpn)...</pre>
 
       <!-- 0. SECTION: OVERVIEW -->
       <section id="section-overview" class="spa-section active" aria-labelledby="overview-title">
+        <div class="scope-banner" id="scope-manifest" aria-label="Active target scope" style="margin-bottom:16px;">
+          <div class="scope-item">
+            <span class="key">Active target</span>
+            <span class="value" style="color:var(--accent);font-weight:600;">{escape(active_target)}</span>
+          </div>
+          <div class="scope-item">
+            <span class="key">Authorized window</span>
+            <span class="value">{escape(authorized_window)}</span>
+          </div>
+          <div class="scope-item">
+            <span class="key">Allowed actions</span>
+            <span class="value" style="color:#22d3ee;">{escape(allowed_actions)}</span>
+          </div>
+          <div class="scope-item">
+            <span class="key">Window remaining</span>
+            <span class="value">{escape(window_remaining)}</span>
+          </div>
+          <span class="scope-pill {status_class}">{escape(scope_status)}</span>
+        </div>
         <div class="overview-head">
           <div>
             <div class="overview-eyebrow">RedLoop command center</div>

@@ -125,6 +125,7 @@ button { font-family: inherit; font-size: inherit; }
   white-space: nowrap;
 }
 
+.sidebar-nav { flex: 1 1 auto; min-height: 0; overflow-y: auto; overflow-x: hidden; }
 .nav-section { margin-bottom: 20px; }
 .navlabel {
   padding: 10px 14px 4px;
@@ -1063,6 +1064,7 @@ tr:hover td { background: rgba(79, 140, 255, 0.03); }
   gap: 8px;
   align-items: center;
 }
+#chat-input-field { min-height: 46px; resize: none; }
 .chat-input {
   flex: 1;
   background: var(--surface-2);
@@ -1979,7 +1981,7 @@ UNIFIED_SCRIPT = """
 
     $$('.nav-item').forEach(item => {
       const itemSec = item.getAttribute('data-section');
-      const isMatch = itemSec === sectionId || (aliases[itemSec] === sectionId) || (sectionId === 'chat' && itemSec === 'chat');
+      const isMatch = itemSec === sectionId || (itemSec !== 'copilot' && aliases[itemSec] === sectionId);
       item.classList.toggle('active', isMatch);
     });
 
@@ -2344,7 +2346,8 @@ UNIFIED_SCRIPT = """
       const data = await res.json();
       state.conversations = data.conversations || [];
       renderConversationRail();
-      if (!state.conversationId && state.conversations.length > 0) {
+      const hasActive = state.conversations.some(c => c.id === state.conversationId);
+      if ((!state.conversationId || !hasActive) && state.conversations.length > 0) {
         selectConversation(state.conversations[0].id);
       } else if (state.conversationId) {
         const activeCard = document.querySelector(`.conv-card[data-id="${state.conversationId}"]`);
@@ -2943,8 +2946,18 @@ UNIFIED_SCRIPT = """
               <tbody>
                 ${d.findings.map(f => {
                   const k = f.property || f.platform || 'observation';
-                  const v = f.value || f.hostname || f.details || f.scope || JSON.stringify(f);
-                  return `<tr><td style="font-family:var(--font-mono);">${escapeHtml(String(k))}</td><td>${escapeHtml(String(v))}</td></tr>`;
+                  const rawVal = (f.value !== undefined && f.value !== null) ? f.value : ((f.hostname !== undefined && f.hostname !== null) ? f.hostname : ((f.details !== undefined && f.details !== null) ? f.details : (f.scope !== undefined ? f.scope : f)));
+                  let renderedVal = '';
+                  if (typeof rawVal === 'object' && rawVal !== null) {
+                    if (Array.isArray(rawVal)) {
+                      renderedVal = rawVal.map(item => `<span class="badge" style="margin:2px;">${escapeHtml(typeof item === 'object' ? JSON.stringify(item) : String(item))}</span>`).join(' ');
+                    } else {
+                      renderedVal = Object.entries(rawVal).map(([subK, subV]) => `<span class="badge" style="margin:2px; font-family:var(--font-mono);"><strong style="color:var(--accent-strong);">${escapeHtml(subK)}:</strong> ${escapeHtml(typeof subV === 'object' ? JSON.stringify(subV) : String(subV))}</span>`).join(' ');
+                    }
+                  } else {
+                    renderedVal = escapeHtml(String(rawVal ?? ''));
+                  }
+                  return `<tr><td style="font-family:var(--font-mono);">${escapeHtml(String(k))}</td><td>${renderedVal}</td></tr>`;
                 }).join('')}
               </tbody>
             </table>

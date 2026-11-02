@@ -432,13 +432,17 @@ class OSINTResult(BaseModel):
     @staticmethod
     def _provenance_state(raw_status: str | None) -> str:
         status = str(raw_status or "").upper()
-        if status in {"PRESENT", "VERIFIED", "OBSERVED", "OBSERVED_LOCALLY"}:
+        if status in {
+            "PRESENT", "VERIFIED", "OBSERVED", "OBSERVED_LOCALLY",
+            "VALID", "AVAILABLE", "CONFIRMED", "RESOLVED", "CONFIGURED",
+            "CANDIDATE_MATCH", "LIVE_VERIFIED"
+        }:
             return "PRESENT"
-        if status == "NOT_FOUND_IN_CHECKED_SOURCES":
+        if status in {"NOT_FOUND_IN_CHECKED_SOURCES", "CLEAN", "NO_MATCH", "CHECKED_NOT_FOUND"}:
             return "CHECKED_NOT_FOUND"
         if status == "NOT_APPLICABLE":
             return "NOT_APPLICABLE"
-        if not status or status in {"MISSING", "UNKNOWN"}:
+        if not status or status in {"MISSING", "UNKNOWN", "UNVERIFIED", "NOT_CHECKED", "PROVIDER_NOT_CONFIGURED"}:
             return "MISSING"
         return "MISSING"
 
@@ -871,11 +875,22 @@ class OSINTEngine:
         # 1. IP Classification (local, deterministic, single canonical enum)
         classification = classify_ip_address(ip_obj)
         is_public = classification == "GLOBAL_PUBLIC"
+        special_subtype = None
+        if str(ip_obj) == "255.255.255.255":
+            special_subtype = "LIMITED_BROADCAST"
+        elif isinstance(ip_obj, ipaddress.IPv6Address) and ip_obj in ipaddress.ip_network("fc00::/7"):
+            special_subtype = "IPV6_UNIQUE_LOCAL"
+        elif ip_obj in ipaddress.ip_network("100.64.0.0/10"):
+            special_subtype = "SHARED_CARRIER_NAT"
+
         findings.append(
             {
                 "property": "classification",
                 "value": classification,
                 "classification": classification,
+                "special_scope": special_subtype,
+                "is_limited_broadcast": str(ip_obj) == "255.255.255.255",
+                "is_ipv6_unique_local": isinstance(ip_obj, ipaddress.IPv6Address) and ip_obj in ipaddress.ip_network("fc00::/7"),
                 # Legacy alias retained for API compatibility; `classification`
                 # is the canonical field and always one of IP_CLASSIFICATIONS.
                 "scope": classification,
@@ -1338,37 +1353,148 @@ class OSINTEngine:
         limitations: list[str] = []
         prov_status: dict[str, str] = {}
 
-        # 1. DNS A / AAAA resolution
+        # 1. Independent DNS Record Queries (A, AAAA, MX, NS, TXT, CNAME, SOA)
         resolved_ips: list[str] = []
+        dns_records: dict[str, list[str]] = {}
+        spf_policy: Optional[str] = None
+        dmarc_policy: Optional[str] = None
+
         try:
-            addr_info = socket.getaddrinfo(clean_domain, None)
-            for item in addr_info:
-                ip = item[4][0]
-                if ip not in resolved_ips:
-                    resolved_ips.append(ip)
-                    related.append({
-                        "type": "ip",
-                        "value": ip,
-                        "relation": "RESOLVES_TO",
-                        "source": "SYSTEM_DNS",
-                        "method": "GETADDRINFO",
-                        "confidence": 0.9,
-                        "verification_state": OSINTVerificationState.OBSERVED.value,
-                        "verified": True,
-                    })
+            import dns.resolver
+            resolver = dns.resolver.Resolver()
+            resolver.timeout = 2.5
+            resolver.lifetime = 2.5
+
+            for rtype in ("A", "AAAA", "MX", "NS", "TXT", "CNAME", "SOA"):
+                try:
+                    answers = resolver.resolve(clean_domain, rtype)
+                    vals = [str(r).strip() for r in answers]
+                    if vals:
+                        dns_records[rtype] = vals
+                        findings.append({
+                            "property": f"dns_{rtype.lower()}",
+                            "record_type": rtype,
+                            "values": vals,
+                            "source": "DNS_RESOLVER",
+                            "method": f"DNS_QUERY_{rtype}",
+                            "confidence": 0.95,
+                            "verification_state": OSINTVerificationState.OBSERVED.value,
+                            "status": "PRESENT",
+                        })
+                        if rtype in ("A", "AAAA"):
+                            for ip in vals:
+                                clean_ip = ip.split()[0]
+                                if clean_ip not in resolved_ips:
+                                    resolved_ips.append(clean_ip)
+                                    related.append({
+                                        "type": "ip",
+                                        "value": clean_ip,
+                                        "relation": "RESOLVES_TO",
+                                        "source": "DNS_RESOLVER",
+                                        "method": f"DNS_QUERY_{rtype}",
+                                        "confidence": 0.95,
+                                        "verification_state": OSINTVerificationState.OBSERVED.value,
+                                        "verified": True,
+                                    })
+                        elif rtype == "TXT":
+                            for txt in vals:
+                                clean_txt = txt.strip('"')
+                                if clean_txt.lower().startswith("v=spf1"):
+                                    spf_policy = clean_txt
+                except Exception:
+                    pass
+
+            # DMARC query on _dmarc.<domain>
+            try:
+                dmarc_answers = resolver.resolve(f"_dmarc.{clean_domain}", "TXT")
+                for r in dmarc_answers:
+                    clean_r = str(r).strip().strip('"')
+                    if clean_r.lower().startswith("v=dmarc1"):
+                        dmarc_policy = clean_r
+                        break
+            except Exception:
+                pass
+        except Exception:
+            pass
+
+        # Fallback to socket getaddrinfo if A/AAAA were not resolved via dnspython
+        if not resolved_ips:
+            try:
+                addr_info = socket.getaddrinfo(clean_domain, None)
+                for item in addr_info:
+                    ip = item[4][0]
+                    if ip not in resolved_ips:
+                        resolved_ips.append(ip)
+                        related.append({
+                            "type": "ip",
+                            "value": ip,
+                            "relation": "RESOLVES_TO",
+                            "source": "SYSTEM_DNS",
+                            "method": "GETADDRINFO",
+                            "confidence": 0.9,
+                            "verification_state": OSINTVerificationState.OBSERVED.value,
+                            "verified": True,
+                        })
+            except Exception as e:
+                limitations.append(f"DNS A/AAAA resolution failed: {e}")
+                prov_status["SYSTEM_DNS"] = f"ERROR: {str(e)[:40]}"
+
+        # Always include canonical dns_records finding
+        findings.append({
+            "property": "dns_records",
+            "type": "A/AAAA",
+            "values": resolved_ips,
+            "all_types": list(dns_records.keys()),
+            "source": "DNS_RESOLVER" if dns_records else "SYSTEM_DNS",
+            "method": "INDEPENDENT_DNS_QUERIES" if dns_records else "GETADDRINFO",
+            "confidence": 0.95 if dns_records else 0.85,
+            "verification_state": OSINTVerificationState.OBSERVED.value if resolved_ips else OSINTVerificationState.FAILED.value,
+            "status": "PRESENT" if resolved_ips else "MISSING",
+        })
+        prov_status["SYSTEM_DNS"] = "RESOLVED" if resolved_ips else "UNRESOLVED"
+
+        # SPF & DMARC findings
+        if spf_policy:
             findings.append({
-                "property": "dns_records",
-                "type": "A/AAAA",
-                "values": resolved_ips,
-                "source": "SYSTEM_DNS",
-                "method": "GETADDRINFO",
-                "confidence": 0.9,
+                "property": "spf_record",
+                "policy": spf_policy,
+                "status": "CONFIGURED",
                 "verification_state": OSINTVerificationState.OBSERVED.value,
+                "source": "DNS_RESOLVER",
+                "method": "DNS_QUERY_TXT",
+                "confidence": 0.95,
             })
-            prov_status["SYSTEM_DNS"] = "RESOLVED"
-        except Exception as e:
-            limitations.append(f"DNS A/AAAA resolution failed: {e}")
-            prov_status["SYSTEM_DNS"] = f"ERROR: {str(e)[:40]}"
+        else:
+            findings.append({
+                "property": "spf_record",
+                "policy": "NOT_CONFIGURED",
+                "status": "MISSING",
+                "verification_state": OSINTVerificationState.NOT_FOUND_IN_CHECKED_SOURCES.value,
+                "source": "DNS_RESOLVER",
+                "method": "DNS_QUERY_TXT",
+                "confidence": 0.85,
+            })
+
+        if dmarc_policy:
+            findings.append({
+                "property": "dmarc_record",
+                "policy": dmarc_policy,
+                "status": "CONFIGURED",
+                "verification_state": OSINTVerificationState.OBSERVED.value,
+                "source": "DNS_RESOLVER",
+                "method": "DNS_QUERY_TXT",
+                "confidence": 0.95,
+            })
+        else:
+            findings.append({
+                "property": "dmarc_record",
+                "policy": "NOT_CONFIGURED",
+                "status": "MISSING",
+                "verification_state": OSINTVerificationState.NOT_FOUND_IN_CHECKED_SOURCES.value,
+                "source": "DNS_RESOLVER",
+                "method": "DNS_QUERY_TXT",
+                "confidence": 0.85,
+            })
 
         # 2. TLS Certificate inspection
         cert_info: dict[str, Any] = {}
@@ -1486,6 +1612,11 @@ class OSINTEngine:
                 "rfc5322_valid": True,
                 "username": user_part,
                 "domain": domain_part,
+                "status": "PRESENT",
+                "verification_state": OSINTVerificationState.OBSERVED.value,
+                "source": "RFC5322_SYNTAX_PARSER",
+                "method": "EMAIL_SYNTAX_PARSE",
+                "confidence": 0.99,
             }
         ]
         related: list[dict[str, Any]] = []
@@ -1563,16 +1694,48 @@ class OSINTEngine:
                 )
                 if r.status_code == 200:
                     breaches = r.json()
-                    findings.append({"property": "breach_exposure", "count": len(breaches), "breaches": [b.get("Name") for b in breaches[:5]]})
+                    findings.append({
+                        "property": "breach_exposure",
+                        "count": len(breaches),
+                        "breaches": [b.get("Name") for b in breaches[:5]],
+                        "status": "PRESENT",
+                        "verification_state": OSINTVerificationState.VERIFIED.value,
+                        "source": "HIBP",
+                        "method": "REST_API_BREACH_CHECK",
+                    })
                     prov_status["HIBP"] = f"EXPOSED_IN_{len(breaches)}_BREACHES"
                 elif r.status_code == 404:
-                    findings.append({"property": "breach_exposure", "count": 0, "status": "CLEAN"})
+                    findings.append({
+                        "property": "breach_exposure",
+                        "count": 0,
+                        "status": "CLEAN",
+                        "verification_state": OSINTVerificationState.NOT_FOUND_IN_CHECKED_SOURCES.value,
+                        "source": "HIBP",
+                        "method": "REST_API_BREACH_CHECK",
+                    })
                     prov_status["HIBP"] = "NOT_FOUND_IN_CHECKED_SOURCES"
             except Exception as e:
                 prov_status["HIBP"] = f"ERROR: {str(e)[:30]}"
+                findings.append({
+                    "property": "breach_exposure",
+                    "count": "UNKNOWN",
+                    "status": "ERROR",
+                    "verification_state": "ERROR",
+                    "source": "HIBP",
+                    "error": str(e),
+                })
         else:
             prov_status["HIBP"] = "PROVIDER_NOT_CONFIGURED"
-            limitations.append("HIBP_API_KEY not configured in environment. Public breach search skipped to adhere to third-party API terms.")
+            findings.append({
+                "property": "breach_exposure",
+                "count": "NOT_CHECKED",
+                "status": "NOT_CHECKED",
+                "verification_state": "NOT_CHECKED",
+                "source": "HIBP",
+                "method": "REST_API_BREACH_CHECK",
+                "details": "HIBP_API_KEY not configured in environment; breach lookup not performed.",
+            })
+            limitations.append("HIBP_API_KEY not configured in environment. Public breach search skipped (count is UNKNOWN/NOT_CHECKED, not 0).")
 
         # 4. Explicit Mailbox Existence & Deliverability Status
         findings.append({
@@ -1634,62 +1797,113 @@ class OSINTEngine:
             try:
                 res = self._client.get(check_url, timeout=2.5)
                 if res.status_code == 200:
+                    matched = True
                     if platform == "Keybase":
                         data = res.json()
                         them = data.get("them", [])
                         if not them or not isinstance(them, list) or them[0] is None:
-                            prov_status[platform] = "NOT_FOUND"
-                            continue
+                            matched = False
                     elif platform == "HackerNews":
                         data = res.json()
                         if not data or not isinstance(data, dict) or str(data.get("id", "")).lower() != raw_user.lower():
-                            prov_status[platform] = "NOT_FOUND"
-                            continue
+                            matched = False
                     elif platform == "GitHub":
                         data = res.json()
                         if not isinstance(data, dict) or str(data.get("login", "")).lower() != raw_user.lower():
-                            prov_status[platform] = "NOT_FOUND"
-                            continue
+                            matched = False
                     elif platform == "Reddit":
                         data = res.json()
                         if not isinstance(data, dict) or "data" not in data or str(data.get("data", {}).get("name", "")).lower() != raw_user.lower():
-                            prov_status[platform] = "NOT_FOUND"
-                            continue
+                            matched = False
                     elif platform == "GitLab":
                         data = res.json()
                         if not isinstance(data, list) or not any(isinstance(u, dict) and str(u.get("username", "")).lower() == raw_user.lower() for u in data):
-                            prov_status[platform] = "NOT_FOUND"
-                            continue
+                            matched = False
 
-                    observed_profiles += 1
-                    prov_status[platform] = "PROFILE_OBSERVED"
+                    if matched:
+                        observed_profiles += 1
+                        prov_status[platform] = "PROFILE_OBSERVED"
+                        findings.append({
+                            "platform": platform,
+                            "profile_url": profile_url,
+                            "status": "OBSERVED",
+                            "http_status": 200,
+                            "source": platform,
+                            "method": "PUBLIC_REST_API",
+                            "confidence": 0.65,
+                            "verification_state": "CANDIDATE_MATCH",
+                        })
+                        related.append({
+                            "type": "profile",
+                            "value": profile_url,
+                            "relation": f"ACCOUNT_ON_{platform.upper()}",
+                            "source": platform,
+                            "method": "PUBLIC_REST_API",
+                            "confidence": 0.65,
+                            "verification_state": "CANDIDATE_MATCH",
+                            "verified": True,
+                        })
+                    else:
+                        prov_status[platform] = "NOT_FOUND"
+                        findings.append({
+                            "platform": platform,
+                            "profile_url": profile_url,
+                            "status": "NOT_FOUND",
+                            "http_status": 200,
+                            "source": platform,
+                            "method": "PUBLIC_REST_API",
+                            "confidence": 0.85,
+                            "verification_state": "NO_MATCH",
+                        })
+                elif res.status_code == 404:
+                    prov_status[platform] = "NOT_FOUND"
                     findings.append({
                         "platform": platform,
                         "profile_url": profile_url,
-                        "status": "OBSERVED",
+                        "status": "NOT_FOUND",
+                        "http_status": 404,
                         "source": platform,
                         "method": "PUBLIC_REST_API",
-                        "confidence": 0.65,
-                        "verification_state": "CANDIDATE_MATCH",
+                        "confidence": 0.90,
+                        "verification_state": "NO_MATCH",
                     })
-                    related.append({
-                        "type": "profile",
-                        "value": profile_url,
-                        "relation": f"ACCOUNT_ON_{platform.upper()}",
-                        "source": platform,
-                        "method": "PUBLIC_REST_API",
-                        "confidence": 0.65,
-                        "verification_state": "CANDIDATE_MATCH",
-                        "verified": True,
-                    })
-                elif res.status_code == 404:
-                    prov_status[platform] = "NOT_FOUND"
                 elif res.status_code == 429:
                     prov_status[platform] = "RATE_LIMITED"
+                    findings.append({
+                        "platform": platform,
+                        "profile_url": profile_url,
+                        "status": "RATE_LIMITED",
+                        "http_status": 429,
+                        "source": platform,
+                        "method": "PUBLIC_REST_API",
+                        "confidence": 0.0,
+                        "verification_state": "UNCHECKED",
+                    })
                 else:
                     prov_status[platform] = f"HTTP_{res.status_code}"
+                    findings.append({
+                        "platform": platform,
+                        "profile_url": profile_url,
+                        "status": f"HTTP_{res.status_code}",
+                        "http_status": res.status_code,
+                        "source": platform,
+                        "method": "PUBLIC_REST_API",
+                        "confidence": 0.0,
+                        "verification_state": "UNCHECKED",
+                    })
             except Exception as e:
                 prov_status[platform] = f"ERROR: {str(e)[:25]}"
+                findings.append({
+                    "platform": platform,
+                    "profile_url": profile_url,
+                    "status": "ERROR",
+                    "http_status": None,
+                    "source": platform,
+                    "method": "PUBLIC_REST_API",
+                    "confidence": 0.0,
+                    "verification_state": "ERROR",
+                    "error": str(e),
+                })
 
         summary = f"Username '{raw_user}' checked across {len(candidate_sources)} public platforms. Observed {observed_profiles} candidate profile(s)."
 
@@ -1774,6 +1988,11 @@ class OSINTEngine:
                 "subscriber_assignment": "UNVERIFIED_LOCALLY",
                 "carrier_identity": "UNVERIFIED_LOCALLY",
                 "line_activity": "UNVERIFIED_LOCALLY",
+                "status": "PRESENT",
+                "verification_state": OSINTVerificationState.OBSERVED.value,
+                "source": "ITU_E164_LOCAL_PARSER",
+                "method": "E164_NUMBERING_PLAN_PARSE",
+                "confidence": 0.92,
             }
         ]
 
@@ -1818,6 +2037,11 @@ class OSINTEngine:
                         "property": "carrier_lookup",
                         "carrier_name": carrier_data.get("name"),
                         "line_type": carrier_data.get("type"),
+                        "status": "PRESENT",
+                        "verification_state": OSINTVerificationState.VERIFIED.value,
+                        "source": "TWILIO_LOOKUP",
+                        "method": "REST_API",
+                        "confidence": 0.95,
                     })
                     prov_status["TWILIO_LOOKUP"] = "LIVE_VERIFIED"
                     has_verified_carrier = True
@@ -1827,6 +2051,7 @@ class OSINTEngine:
                 prov_status["TWILIO_LOOKUP"] = f"ERROR: {str(e)[:30]}"
 
         summary = f"Phone {formatted_e164} parsed as E.164 standard. Region: {region_name} ({country_match or 'Unknown'})."
+        phone_confidence = 0.92 if has_verified_carrier else (0.85 if country_match else 0.70)
 
         return OSINTResult(
             indicator=phone_str,
@@ -1836,7 +2061,7 @@ class OSINTEngine:
             status=OSINTVerificationState.VERIFIED if has_verified_carrier else OSINTVerificationState.OBSERVED,
             findings=findings,
             collection_method="ITU_E164_LOCAL_ENGINE",
-            confidence=0.92,
+            confidence=phone_confidence,
             limitations=limitations,
             provider_status=prov_status,
             related_entities=related,
@@ -1883,14 +2108,35 @@ class OSINTEngine:
         # File size safety checks (0-byte and 25MB limit)
         size_bytes = len(data)
         if size_bytes == 0:
+            empty_sha256 = hashlib.sha256(b"").hexdigest()
+            empty_sha512 = hashlib.sha512(b"").hexdigest()
+            empty_md5 = hashlib.md5(b"").hexdigest()
+            empty_sha1 = hashlib.sha1(b"").hexdigest()
             return OSINTResult(
                 indicator=filepath_str,
                 query_type="metadata",
-                normalized_value=filepath_str,
-                actual_finding=f"Empty file payload (0 bytes): {filepath_str}",
+                normalized_value=empty_sha256,
+                actual_finding=f"Empty file payload (0 bytes): {filepath_str}. Standard empty digest SHA-256: {empty_sha256}",
                 status=OSINTVerificationState.FAILED,
                 confidence=0.0,
                 limitations=["Target file contains zero bytes of data."],
+                findings=[
+                    {
+                        "property": "cryptographic_identity",
+                        "size_bytes": 0,
+                        "sha256": empty_sha256,
+                        "sha512": empty_sha512,
+                        "md5": empty_md5,
+                        "sha1": empty_sha1,
+                        "file_type": "EMPTY_FILE",
+                        "mime_type": "application/x-empty",
+                        "status": "PRESENT",
+                        "verification_state": OSINTVerificationState.OBSERVED.value,
+                        "source": "BYTE_STREAM_DIGEST",
+                        "method": "CRYPTOGRAPHIC_HASH",
+                        "confidence": 1.0,
+                    }
+                ],
             )
 
         if size_bytes > 25 * 1024 * 1024:
@@ -1904,8 +2150,9 @@ class OSINTEngine:
                 limitations=["File size exceeds 25MB safety boundary."],
             )
 
-        # 1. Cryptographic Hashes
+        # 1. Cryptographic Hashes (Original uploaded bytes)
         sha256 = hashlib.sha256(data).hexdigest()
+        sha512 = hashlib.sha512(data).hexdigest()
         md5 = hashlib.md5(data).hexdigest()
         sha1 = hashlib.sha1(data).hexdigest()
 
@@ -1933,11 +2180,17 @@ class OSINTEngine:
             {
                 "property": "cryptographic_identity",
                 "sha256": sha256,
+                "sha512": sha512,
                 "md5": md5,
                 "sha1": sha1,
                 "size_bytes": size_bytes,
                 "mime_type": mime_type,
                 "file_type": file_type,
+                "status": "PRESENT",
+                "verification_state": OSINTVerificationState.VERIFIED.value,
+                "source": "BYTE_STREAM_DIGEST",
+                "method": "CRYPTOGRAPHIC_HASH",
+                "confidence": 1.0,
             }
         ]
 
@@ -2017,12 +2270,24 @@ class OSINTEngine:
                 "verification_state": OSINTVerificationState.VERIFIED.value,
                 "verified": True,
             },
+            {
+                "type": "hash_sha512",
+                "value": sha512,
+                "relation": "CRYPTOGRAPHIC_PROOF",
+                "source": "LOCAL_STATIC_ANALYZER",
+                "method": "SHA512",
+                "confidence": 1.0,
+                "verification_state": OSINTVerificationState.VERIFIED.value,
+                "verified": True,
+            },
         ]
 
         limitations.extend([
             "Embedded metadata (e.g. Author, Title, EXIF timestamps) can be trivially spoofed by creators and is not cryptographically verified.",
-            "SHA-256 hash is the definitive immutable property.",
+            "SHA-256 and SHA-512 hashes are the definitive immutable properties.",
         ])
+
+        file_confidence = 0.45 if deceptive_extension else 0.98
 
         return OSINTResult(
             indicator=filepath_str,
@@ -2032,7 +2297,7 @@ class OSINTEngine:
             status=OSINTVerificationState.VERIFIED,
             findings=findings,
             collection_method="CRYPTOGRAPHIC_STATIC_ANALYSIS",
-            confidence=0.98,
+            confidence=file_confidence,
             limitations=limitations,
             provider_status={"LOCAL_STATIC_ANALYZER": "VERIFIED"},
             related_entities=related,

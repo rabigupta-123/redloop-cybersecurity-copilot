@@ -43,3 +43,5 @@ add_fix3.py
 patch.py
 light_tokens.css
 test_scope*.yaml
+data/
+test_tmp_audit*
