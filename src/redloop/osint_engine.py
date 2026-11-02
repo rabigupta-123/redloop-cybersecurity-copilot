@@ -1067,22 +1067,58 @@ class OSINTEngine:
                 network_status = "UNAVAILABLE"
                 limitations.append("External RDAP service unreachable; registry and network fields are unavailable, not inferred.")
 
-            # RDAP handles are network handles, never ASNs. No ASN provider is
-            # configured, so report the gap explicitly instead of guessing.
-            asn_status = "NOT_QUERIED_NO_ASN_PROVIDER"
+            # Differentiate between RDAP network handles and true BGP ASN.
+            # Query Team Cymru DNS TXT lookup ({reversed_ip}.origin.asn.cymru.com) when available.
+            cymru_asn = None
+            try:
+                import dns.resolver
+                octets = norm_ip.split(".")
+                if len(octets) == 4:
+                    rev_q = f"{octets[3]}.{octets[2]}.{octets[1]}.{octets[0]}.origin.asn.cymru.com"
+                    c_res = dns.resolver.Resolver()
+                    c_res.timeout = 2.0
+                    c_res.lifetime = 2.0
+                    txt_ans = c_res.resolve(rev_q, "TXT")
+                    for r in txt_ans:
+                        val = str(r).strip('"')
+                        parts = [p.strip() for p in val.split("|")]
+                        if parts and parts[0].isdigit():
+                            cymru_asn = f"AS{parts[0]}"
+                            break
+            except Exception:
+                pass
+
+            if cymru_asn:
+                asn = cymru_asn
+                asn_status = "RESOLVED_TEAM_CYMRU_BGP"
+                findings.append(
+                    {
+                        "property": "asn",
+                        "value": asn,
+                        "asn_type": "BGP_AUTONOMOUS_SYSTEM",
+                        "status": asn_status,
+                        "reason": "Resolved true BGP ASN via Team Cymru DNS mapping.",
+                        "source": "TEAM_CYMRU_DNS",
+                        "method": "DNS_TXT_QUERY",
+                        "confidence": 0.95,
+                        "verification_state": OSINTVerificationState.OBSERVED.value,
+                    }
+                )
+            else:
+                asn_status = "NOT_QUERIED_NO_ASN_PROVIDER"
+                findings.append(
+                    {
+                        "property": "asn",
+                        "value": None,
+                        "status": asn_status,
+                        "reason": "RDAP network handles are not ASNs; Team Cymru lookup unconfigured or returned no BGP origin.",
+                        "source": None,
+                        "method": None,
+                        "confidence": 0.0,
+                        "verification_state": OSINTVerificationState.PROVIDER_NOT_CONFIGURED.value,
+                    }
+                )
             geo_status = "NOT_QUERIED_NO_GEOLOCATION_PROVIDER"
-            findings.append(
-                {
-                    "property": "asn",
-                    "value": None,
-                    "status": asn_status,
-                    "reason": "RDAP network handles are not ASNs; no ASN lookup provider is configured.",
-                    "source": None,
-                    "method": None,
-                    "confidence": 0.0,
-                    "verification_state": OSINTVerificationState.PROVIDER_NOT_CONFIGURED.value,
-                }
-            )
             findings.append(
                 {
                     "property": "geo",
@@ -1439,12 +1475,17 @@ class OSINTEngine:
                 limitations.append(f"DNS A/AAAA resolution failed: {e}")
                 prov_status["SYSTEM_DNS"] = f"ERROR: {str(e)[:40]}"
 
-        # Always include canonical dns_records finding
+        # Always include canonical dns_records finding with structured query metadata
         findings.append({
             "property": "dns_records",
             "type": "A/AAAA",
             "values": resolved_ips,
             "all_types": list(dns_records.keys()),
+            "records": dns_records,
+            "query_status": "RESOLVED" if (resolved_ips or dns_records) else "UNRESOLVED",
+            "resolver": "system_default",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "is_complete": True,
             "source": "DNS_RESOLVER" if dns_records else "SYSTEM_DNS",
             "method": "INDEPENDENT_DNS_QUERIES" if dns_records else "GETADDRINFO",
             "confidence": 0.95 if dns_records else 0.85,

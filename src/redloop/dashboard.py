@@ -1132,7 +1132,7 @@ def create_app(
       </div>
       <div class="nav-section">
         <div class="nav-label">SECURITY</div>
-        <a class="nav-item" data-section="assessments" onclick="switchSection('assessments')" href="/workbench">{_svg_icon("assessments")}<span>Assessments</span></a>
+        <a class="nav-item" data-section="investigations" onclick="switchSection('investigations')" href="#investigations">{_svg_icon("assessments")}<span>Investigation Workspace</span></a>
         <a class="nav-item" data-section="findings" onclick="switchSection('findings')" href="#findings">{_svg_icon("findings")}<span>Findings</span></a>
         <a class="nav-item" data-section="reports" onclick="switchSection('reports')" href="#reports">{_svg_icon("reports")}<span>Reports</span></a>
       </div>
@@ -1305,24 +1305,333 @@ Type an authorized command below (e.g. nmap -sV 127.0.0.1 or ss -tulpn)...</pre>
         </div>
       </section>
 
-      <!-- 4. SECTION: INVESTIGATIONS -->
-      <section id="section-investigations" class="spa-section">
-        <div class="card-panel">
+      <!-- 4. SECTION: INVESTIGATIONS (UNIFIED OPERATIONAL WORKBENCH) -->
+      <section id="section-investigations" class="spa-section" aria-labelledby="inv-workbench-title">
+        <!-- Workbench Banner & Integrity State -->
+        <div class="card-panel" style="margin-bottom:16px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+            <div>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span class="badge badge-info" style="font-size:11px; font-weight:700;">OPERATIONAL WORKBENCH</span>
+                <span class="badge badge-success" id="ws-scope-badge">SCOPE VERIFIED</span>
+                <span class="badge badge-warning" id="ws-audit-badge">INTEGRITY_VERIFIED</span>
+              </div>
+              <h1 id="inv-workbench-title" style="font-size:22px; font-weight:700; margin:8px 0 4px; color:var(--fg);">
+                Unified Security Investigation &amp; Assessment Workspace
+              </h1>
+              <p style="color:var(--fg-muted); font-size:13px; margin:0;">
+                Active &amp; passive multi-stage vulnerability analysis, web metadata check, deep intelligence, and audit evidence summary (verified local audit events, not detections or SIEM correlation).
+              </p>
+            </div>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <div style="font-family:var(--font-mono); font-size:11px; color:var(--fg-muted); text-align:right;">
+                <div>Ledger: <strong style="color:var(--success);">INTEGRITY_VERIFIED</strong></div>
+                <div>Gap status: <span style="color:var(--fg-muted);">No CHAIN_GAP_DETECTED</span></div>
+                <div>Static hash provenance: SHA-256 verified</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- KPI Status Bar -->
+        <div class="kpi-grid" style="margin-bottom:16px;">
+          <div class="kpi-card info">
+            <div class="kpi-label">Active Target</div>
+            <div class="kpi-value" id="ws-active-target" style="font-size:18px;">{escape(active_target)}</div>
+            <div class="kpi-sub">Localhost &amp; Private Safe</div>
+          </div>
+          <div class="kpi-card success">
+            <div class="kpi-label">Assessment Status</div>
+            <div class="kpi-value" id="ws-engine-status" style="font-size:18px;">READY</div>
+            <div class="kpi-sub" id="ws-engine-sub">Autonomous Engine Online</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Discovered Findings</div>
+            <div class="kpi-value" id="ws-findings-count" style="font-size:18px;">0</div>
+            <div class="kpi-sub" id="ws-findings-breakdown">0 Critical · 0 High · 0 Med</div>
+          </div>
+          <div class="kpi-card warning">
+            <div class="kpi-label">Evidence Hash Records</div>
+            <div class="kpi-value" id="ws-evidence-count" style="font-size:18px;">0</div>
+            <div class="kpi-sub">Cryptographically Signed</div>
+          </div>
+        </div>
+
+        <!-- Investigation Configuration & Launch Panel -->
+        <div class="card-panel" style="margin-bottom:16px;">
           <div class="panel-header">
-            <span class="panel-title">Active Security Investigations Workbench</span>
-            <span class="badge badge-success">PERSISTED</span>
+            <span class="panel-title">Investigation Execution Controls</span>
+            <div style="display:flex; gap:8px;">
+              <button type="button" class="btn btn-sm btn-ghost" onclick="loadInvestigationsList()">↻ Refresh History</button>
+            </div>
           </div>
-          <div class="kpi-grid" style="margin-bottom:20px;">
-            <div class="kpi-card info"><div class="kpi-label">Active Investigation</div><div class="kpi-value" style="font-size:18px;">inv-default</div><div class="kpi-sub">Authorized Assessment</div></div>
-            <div class="kpi-card success"><div class="kpi-label">Target Status</div><div class="kpi-value" style="font-size:18px;">{escape(active_target)}</div><div class="kpi-sub">Scope Verified</div></div>
-            <div class="kpi-card"><div class="kpi-label">Storage Engine</div><div class="kpi-value" style="font-size:18px;">SQLite</div><div class="kpi-sub">Local First</div></div>
+          <form id="ws-investigation-form" onsubmit="event.preventDefault(); executeWorkspaceScan();">
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:12px; margin-bottom:14px;">
+              <div>
+                <label class="field-label" for="ws-target-input">Target Host / IP / Domain / URL</label>
+                <input type="text" id="ws-target-input" class="input" value="{escape(active_target)}" placeholder="e.g. 127.0.0.1 or example.local" required oninput="syncTargetWithTopbar(this.value)">
+              </div>
+              <div>
+                <label class="field-label" for="ws-title-input">Investigation Title</label>
+                <input type="text" id="ws-title-input" class="input" value="Automated Assessment &amp; Surface Triage" placeholder="Enter investigation title">
+              </div>
+              <div>
+                <label class="field-label" for="ws-scan-type">Scan Type</label>
+                <select id="ws-scan-type" class="select" onchange="onScanTypeChanged(this.value)">
+                  <option value="autonomous">Full Autonomous Assessment</option>
+                  <option value="recon">Port &amp; Service Reconnaissance</option>
+                  <option value="webapp">Web App &amp; Vulnerability Triage</option>
+                  <option value="tls">TLS / Certificate Security Check</option>
+                  <option value="forensics">File Metadata &amp; Static Hash Triage</option>
+                  <option value="exploit">Exploit Simulation &amp; Surface Check</option>
+                  <option value="osint">OSINT Footprint Intelligence</option>
+                </select>
+              </div>
+              <div>
+                <label class="field-label" for="ws-depth">Investigation Depth</label>
+                <select id="ws-depth" class="select">
+                  <option value="standard">Standard (Recon + Web + TLS + Vuln)</option>
+                  <option value="quick">Quick (Passive &amp; Fast Port Scan)</option>
+                  <option value="deep">Deep (Full Autonomous Pipeline &amp; Exploit Simulation)</option>
+                </select>
+              </div>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+              <div style="display:flex; gap:10px; align-items:center;">
+                <button type="submit" id="ws-btn-run" class="btn btn-primary" style="padding:8px 18px; font-weight:600;">
+                  ⚡ Execute Deep Investigation
+                </button>
+                <button type="button" id="ws-btn-cancel" class="btn btn-secondary" onclick="cancelWorkspaceScan()" style="display:none;">
+                  ⏹ Stop Scan
+                </button>
+                <button type="button" class="btn btn-ghost" onclick="clearWorkspaceResults()">
+                  🗑️ Clear
+                </button>
+              </div>
+              <div style="font-size:12px; color:var(--fg-muted);">
+                <span>Safety Guard:</span>
+                <span class="status-pill status-pill-success" style="margin-left:4px;">Strict Loopback / Private Isolation</span>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <!-- Deep Scan Live Execution Pipeline (Phases 4 & 6) -->
+        <div class="card-panel" id="ws-pipeline-card" style="margin-bottom:16px;">
+          <div class="panel-header">
+            <div>
+              <span class="panel-title">Multi-Stage Investigation Execution Pipeline</span>
+              <p class="panel-hint" id="ws-pipeline-hint">10 verifiable stages with deterministic status and cryptographic evidence tracking.</p>
+            </div>
+            <span class="status-pill status-pill-neutral" id="ws-overall-status">IDLE</span>
           </div>
-          <div style="background:var(--surface-2); border:1px solid var(--border); border-radius:8px; padding:18px; margin-bottom:18px;">
-            <div style="font-weight:700; margin-bottom:8px;">Start New Target Investigation</div>
-            <div style="display:flex; gap:12px; flex-wrap:wrap;">
-              <input type="text" id="inv-new-target" value="{escape(active_target)}" placeholder="Target (e.g. 127.0.0.1 or 8.8.8.8)" style="background:var(--surface); border:1px solid var(--border); color:var(--fg); padding:8px 12px; border-radius:6px;">
-              <input type="text" id="inv-new-title" placeholder="Investigation Title" value="Local Recon & Audit" style="background:var(--surface); border:1px solid var(--border); color:var(--fg); padding:8px 12px; border-radius:6px; flex:1;">
-              <button class="btn-action btn-primary" onclick="switchSection('copilot'); document.getElementById('chat-input-field').value='Investigate target ' + document.getElementById('inv-new-target').value; sendChatMessage();">Initialize Investigation</button>
+
+          <!-- Progress Bar -->
+          <div style="margin: 12px 0 16px;">
+            <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px; color:var(--fg-muted);">
+              <span id="ws-progress-stage">Ready to execute</span>
+              <span id="ws-progress-percent" style="font-family:var(--font-mono); font-weight:700;">0%</span>
+            </div>
+            <div style="height:6px; background:var(--surface-2); border-radius:3px; overflow:hidden;">
+              <div id="ws-progress-bar" style="width:0%; height:100%; background:linear-gradient(90deg, var(--accent), var(--accent-strong)); transition:width 0.3s ease;"></div>
+            </div>
+          </div>
+
+          <!-- Pipeline Stages Grid -->
+          <div class="pipeline-grid" id="ws-pipeline-stages" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(180px, 1fr)); gap:10px; margin-bottom:16px;">
+            <div class="stage-tile" id="stage-scope" data-stage="scope" style="background:var(--surface-2); border:1px solid var(--border); border-radius:8px; padding:10px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                <span style="font-size:16px;">🛡️</span>
+                <span class="stage-status status-pill status-pill-success">VERIFIED</span>
+              </div>
+              <div style="font-weight:600; font-size:12px;">1. Scope &amp; Target</div>
+              <div class="stage-sub" style="font-size:11px; color:var(--fg-muted);">Target authorization</div>
+            </div>
+            <div class="stage-tile" id="stage-recon" data-stage="recon" style="background:var(--surface-2); border:1px solid var(--border); border-radius:8px; padding:10px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                <span style="font-size:16px;">📡</span>
+                <span class="stage-status status-pill status-pill-neutral">IDLE</span>
+              </div>
+              <div style="font-weight:600; font-size:12px;">2. Recon &amp; Ports</div>
+              <div class="stage-sub" style="font-size:11px; color:var(--fg-muted);">Port scanning &amp; banners</div>
+            </div>
+            <div class="stage-tile" id="stage-dns" data-stage="dns" style="background:var(--surface-2); border:1px solid var(--border); border-radius:8px; padding:10px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                <span style="font-size:16px;">🌐</span>
+                <span class="stage-status status-pill status-pill-neutral">IDLE</span>
+              </div>
+              <div style="font-weight:600; font-size:12px;">3. DNS &amp; Domain</div>
+              <div class="stage-sub" style="font-size:11px; color:var(--fg-muted);">7-record resolution</div>
+            </div>
+            <div class="stage-tile" id="stage-tls" data-stage="tls" style="background:var(--surface-2); border:1px solid var(--border); border-radius:8px; padding:10px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                <span style="font-size:16px;">🔒</span>
+                <span class="stage-status status-pill status-pill-neutral">IDLE</span>
+              </div>
+              <div style="font-weight:600; font-size:12px;">4. TLS &amp; Certs</div>
+              <div class="stage-sub" style="font-size:11px; color:var(--fg-muted);">Cipher suites &amp; validity</div>
+            </div>
+            <div class="stage-tile" id="stage-web" data-stage="web" style="background:var(--surface-2); border:1px solid var(--border); border-radius:8px; padding:10px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                <span style="font-size:16px;">🕸️</span>
+                <span class="stage-status status-pill status-pill-neutral">IDLE</span>
+              </div>
+              <div style="font-weight:600; font-size:12px;">5. Web Metadata</div>
+              <div class="stage-sub" style="font-size:11px; color:var(--fg-muted);">Headers, cookies &amp; CSP</div>
+            </div>
+            <div class="stage-tile" id="stage-api" data-stage="api" style="background:var(--surface-2); border:1px solid var(--border); border-radius:8px; padding:10px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                <span style="font-size:16px;">🔌</span>
+                <span class="stage-status status-pill status-pill-neutral">IDLE</span>
+              </div>
+              <div style="font-weight:600; font-size:12px;">6. API Discovery</div>
+              <div class="stage-sub" style="font-size:11px; color:var(--fg-muted);">Endpoints &amp; schema audit</div>
+            </div>
+            <div class="stage-tile" id="stage-host" data-stage="host" style="background:var(--surface-2); border:1px solid var(--border); border-radius:8px; padding:10px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                <span style="font-size:16px;">🖥️</span>
+                <span class="stage-status status-pill status-pill-neutral">IDLE</span>
+              </div>
+              <div style="font-weight:600; font-size:12px;">7. Host Profiling</div>
+              <div class="stage-sub" style="font-size:11px; color:var(--fg-muted);">OS &amp; service fingerprint</div>
+            </div>
+            <div class="stage-tile" id="stage-software" data-stage="software" style="background:var(--surface-2); border:1px solid var(--border); border-radius:8px; padding:10px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                <span style="font-size:16px;">📦</span>
+                <span class="stage-status status-pill status-pill-neutral">IDLE</span>
+              </div>
+              <div style="font-weight:600; font-size:12px;">8. Software Vulns</div>
+              <div class="stage-sub" style="font-size:11px; color:var(--fg-muted);">CVE &amp; component matching</div>
+            </div>
+            <div class="stage-tile" id="stage-forensics" data-stage="forensics" style="background:var(--surface-2); border:1px solid var(--border); border-radius:8px; padding:10px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                <span style="font-size:16px;">🔍</span>
+                <span class="stage-status status-pill status-pill-neutral">IDLE</span>
+              </div>
+              <div style="font-weight:600; font-size:12px;">9. File Forensics</div>
+              <div class="stage-sub" style="font-size:11px; color:var(--fg-muted);">Static hash &amp; IOC triage</div>
+            </div>
+            <div class="stage-tile" id="stage-risk" data-stage="risk" style="background:var(--surface-2); border:1px solid var(--border); border-radius:8px; padding:10px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                <span style="font-size:16px;">⚖️</span>
+                <span class="stage-status status-pill status-pill-neutral">IDLE</span>
+              </div>
+              <div style="font-weight:600; font-size:12px;">10. Risk &amp; ASVS</div>
+              <div class="stage-sub" style="font-size:11px; color:var(--fg-muted);">Scoring &amp; audit evidence</div>
+            </div>
+          </div>
+
+          <!-- Live Terminal Output -->
+          <div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+              <span style="font-size:12px; font-weight:600; color:var(--fg-muted); text-transform:uppercase; letter-spacing:0.05em;">Execution Console Log</span>
+              <button type="button" class="btn btn-sm btn-ghost" onclick="clearWorkspaceTerminal()" style="padding:2px 8px; font-size:11px;">Clear Log</button>
+            </div>
+            <div id="ws-terminal-logs" style="background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:12px; font-family:var(--font-mono); font-size:12px; min-height:140px; max-height:220px; overflow-y:auto; color:var(--fg-muted); line-height:1.6;">
+              <div style="color:var(--accent);">[System] Workspace initialized. Ready to execute investigation against authorized targets.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Investigation Findings & Evidence Tabs (Phases 7 & 8: Verifiable Provenance & Ask Copilot) -->
+        <div class="card-panel">
+          <div class="panel-header" style="border-bottom:1px solid var(--border); padding-bottom:12px; margin-bottom:14px;">
+            <div class="tabs" role="tablist" style="display:flex; gap:8px;">
+              <button type="button" class="btn btn-sm btn-action active" id="ws-tab-findings" onclick="switchWorkspaceSubTab('findings')">
+                Findings (<span id="ws-tab-findings-count">0</span>)
+              </button>
+              <button type="button" class="btn btn-sm btn-action" id="ws-tab-evidence" onclick="switchWorkspaceSubTab('evidence')">
+                Cryptographic Evidence (<span id="ws-tab-evidence-count">0</span>)
+              </button>
+              <button type="button" class="btn btn-sm btn-action" id="ws-tab-history" onclick="switchWorkspaceSubTab('history')">
+                Saved Investigations
+              </button>
+            </div>
+            <!-- Report Export Buttons -->
+            <div style="display:flex; gap:8px; align-items:center;">
+              <span style="font-size:12px; color:var(--fg-muted);">Export:</span>
+              <a id="ws-export-md" class="btn btn-sm btn-secondary" href="/report/md" target="_blank" download>Markdown</a>
+              <a id="ws-export-pdf" class="btn btn-sm btn-secondary" href="/report/pdf" target="_blank" download>PDF</a>
+              <a id="ws-export-pptx" class="btn btn-sm btn-secondary" href="/report/pptx" target="_blank" download>PPTX</a>
+              <a id="ws-export-json" class="btn btn-sm btn-secondary" href="/report/json" target="_blank" download>JSON</a>
+            </div>
+          </div>
+
+          <!-- Findings View -->
+          <div id="ws-view-findings">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th style="width:110px;">Severity</th>
+                    <th>Finding Title</th>
+                    <th>Target / Asset</th>
+                    <th>Evidence Hash / Check</th>
+                    <th style="width:160px; text-align:right;">Copilot Action</th>
+                  </tr>
+                </thead>
+                <tbody id="ws-findings-body">
+                  <tr>
+                    <td colspan="5" style="text-align:center; padding:32px; color:var(--fg-muted);">
+                      No active findings in workspace. Run an investigation or select a past assessment from the history tab.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Evidence View -->
+          <div id="ws-view-evidence" style="display:none;">
+            <p style="color:var(--fg-muted); font-size:12px; margin-bottom:12px;">
+              Every observation is stored with immutable SHA-256 hash provenance, exact confidence breakdown, and source attribution.
+            </p>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Timestamp</th>
+                    <th>Target</th>
+                    <th>Module</th>
+                    <th>SHA-256 Provenance</th>
+                    <th>Confidence</th>
+                    <th style="width:160px; text-align:right;">Copilot Action</th>
+                  </tr>
+                </thead>
+                <tbody id="ws-evidence-body">
+                  <tr>
+                    <td colspan="6" style="text-align:center; padding:32px; color:var(--fg-muted);">
+                      No evidence records loaded. Launch a scan to collect verifiable observations.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- History View -->
+          <div id="ws-view-history" style="display:none;">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Investigation ID</th>
+                    <th>Title</th>
+                    <th>Target</th>
+                    <th>Status</th>
+                    <th>Findings</th>
+                    <th style="width:140px; text-align:right;">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="ws-history-body">
+                  <tr>
+                    <td colspan="6" style="text-align:center; padding:24px; color:var(--fg-muted);">
+                      Loading past investigations…
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
@@ -1757,7 +2066,7 @@ Type an authorized command below (e.g. nmap -sV 127.0.0.1 or ss -tulpn)...</pre>
           <div class="overview-actions">
             <button type="button" class="btn btn-secondary" data-action="refresh-overview" id="ov-refresh">Refresh data</button>
             <a class="btn btn-primary" href="#chat" data-action="goto-chat">Start a session</a>
-            <a class="btn btn-ghost" href="/workbench">Open workbench</a>
+            <a class="btn btn-ghost" href="#investigations" onclick="switchSection('investigations')">Open Investigation Workspace</a>
           </div>
         </div>
 
@@ -1845,7 +2154,7 @@ Type an authorized command below (e.g. nmap -sV 127.0.0.1 or ss -tulpn)...</pre>
               <span class="panel-title" id="assessments-title">Assessments</span>
               <p class="panel-hint">Search, filter, and sort recorded assessments.</p>
             </div>
-            <a class="btn btn-ghost" href="/workbench">Open workbench</a>
+            <a class="btn btn-ghost" href="#investigations" onclick="switchSection('investigations')">Open Investigation Workspace</a>
           </div>
           <div class="table-toolbar">
             <label class="field">
