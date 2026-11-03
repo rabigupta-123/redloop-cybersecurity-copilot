@@ -249,3 +249,4 @@ class TargetResolver:
             return True, None
 
         return True, None
+

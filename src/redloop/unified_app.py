@@ -3883,36 +3883,119 @@ UNIFIED_SCRIPT = """
     // Evidence table is populated and rendered from cryptographic ledger
   };
 
-  // --- TOOL CAPABILITY MATRIX ---
-  window.loadToolsMatrix = async function() {
+  // --- TOOL CAPABILITY MATRIX (PHASE 2) ---
+  window._toolsCatalog = [];
+  window._toolsEnvironments = {};
+
+  window.loadToolsMatrix = async function(forceRefresh = false) {
+    const tbody = $('#tools-matrix-body');
+    const refreshBtn = $('#btn-refresh-tools');
+    if (!tbody) return;
+
+    if (refreshBtn) refreshBtn.innerHTML = '⟳ Refreshing...';
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:20px; color:var(--fg-muted);">Inspecting system runtimes and probing security tools...</td></tr>`;
+
+    try {
+      const url = '/api/tools/capabilities' + (forceRefresh ? '?refresh=true' : '');
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      
+      // Parse tools list (supports both new structured array data.tools and legacy dictionary)
+      if (Array.isArray(data.tools)) {
+        window._toolsCatalog = data.tools;
+      } else if (data && typeof data === 'object') {
+        window._toolsCatalog = Object.keys(data).map(k => ({
+          tool_id: k,
+          name: k.toUpperCase(),
+          category: 'network_recon',
+          category_label: 'Security Tool',
+          available: data[k].available,
+          health_status: data[k].available ? 'AVAILABLE' : 'UNAVAILABLE',
+          reason: data[k].reason || '',
+          environment: data[k].supported_environment || 'host',
+          installation_guidance: data[k].installation_guidance || '—'
+        }));
+      }
+
+      window._toolsEnvironments = data.environments || {};
+
+      // Update KPI Badges
+      const summary = data.summary || {};
+      const elTotal = $('#tools-kpi-total');
+      const elAvail = $('#tools-kpi-avail');
+      const elDeg = $('#tools-kpi-deg');
+      const elUnavail = $('#tools-kpi-unavail');
+      if (elTotal) elTotal.textContent = 'Total: ' + (summary.total ?? window._toolsCatalog.length);
+      if (elAvail) elAvail.textContent = 'Available: ' + (summary.available ?? 0);
+      if (elDeg) elDeg.textContent = 'Degraded: ' + (summary.degraded ?? 0);
+      if (elUnavail) elUnavail.textContent = 'Unavailable: ' + (summary.unavailable ?? 0);
+
+      window.filterToolsMatrix();
+    } catch (err) {
+      tbody.innerHTML = `<tr><td colspan="7" style="color:var(--critical); text-align:center; padding:16px;">Error loading capability matrix: ${escapeHtml(err.message)}</td></tr>`;
+    } finally {
+      if (refreshBtn) refreshBtn.innerHTML = '↻ Refresh Matrix';
+    }
+  };
+
+  window.filterToolsMatrix = function() {
     const tbody = $('#tools-matrix-body');
     if (!tbody) return;
 
-    try {
-      const res = await fetch('/api/tools/matrix');
-      const data = await res.json();
-      tbody.innerHTML = Object.keys(data).map(toolName => {
-        const t = data[toolName];
-        const isAvail = t.available;
-        const statusBadge = isAvail
-          ? '<span class="badge badge-success">AVAILABLE</span>'
-          : '<span class="badge badge-failed">UNAVAILABLE</span>';
-        return `
-          <tr>
-            <td style="font-weight:700; font-family:var(--font-mono); color:var(--fg);">${escapeHtml(toolName.toUpperCase())}</td>
-            <td>${statusBadge}</td>
-            <td style="font-size:11.5px; color:var(--fg-muted);">${escapeHtml(t.reason || (isAvail ? 'Ready' : 'Not installed'))}</td>
-            <td style="font-size:11px; font-family:var(--font-mono); color:var(--accent-cyber);">${escapeHtml(t.supported_environment || 'Native / WSL')}</td>
-            <td style="font-size:11px; color:var(--fg-muted); max-width:280px;">${escapeHtml(t.installation_guidance || '—')}</td>
-            <td>
-              ${isAvail ? `<button class="btn-action" style="padding:3px 8px; font-size:11px;" onclick="document.getElementById('chat-input-field').value='Scan authorized localhost with Nmap.'; switchSection('copilot'); sendChatMessage();">Probe Target</button>` : '<span style="color:var(--fg-muted); font-size:11px;">N/A</span>'}
-            </td>
-          </tr>
-        `;
-      }).join('');
-    } catch (err) {
-      tbody.innerHTML = `<tr><td colspan="6" style="color:var(--critical); text-align:center; padding:16px;">Error loading capability matrix: ${escapeHtml(err.message)}</td></tr>`;
+    const envFilter = ($('#tools-env-filter') ? $('#tools-env-filter').value : 'all').toLowerCase();
+    const catFilter = ($('#tools-cat-filter') ? $('#tools-cat-filter').value : 'all').toLowerCase();
+    const statusFilter = ($('#tools-status-filter') ? $('#tools-status-filter').value : 'all').toUpperCase();
+
+    const filtered = (window._toolsCatalog || []).filter(t => {
+      if (envFilter !== 'all' && (t.environment || '').toLowerCase() !== envFilter) return false;
+      if (catFilter !== 'all' && (t.category || '').toLowerCase() !== catFilter) return false;
+      if (statusFilter !== 'all') {
+        const hs = (t.health_status || (t.available ? 'AVAILABLE' : 'UNAVAILABLE')).toUpperCase();
+        if (hs !== statusFilter) return false;
+      }
+      return true;
+    });
+
+    if (filtered.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:20px; color:var(--fg-muted);">No tools match the selected filters.</td></tr>`;
+      return;
     }
+
+    tbody.innerHTML = filtered.map(t => {
+      const isAvail = t.available;
+      const status = (t.health_status || (isAvail ? 'AVAILABLE' : 'UNAVAILABLE')).toUpperCase();
+      let statusBadge = '<span class="badge badge-success">AVAILABLE</span>';
+      if (status === 'DEGRADED') {
+        statusBadge = '<span class="badge badge-warning">DEGRADED</span>';
+      } else if (status === 'NOT_CONFIGURED') {
+        statusBadge = '<span class="badge badge-warning">NOT CONFIGURED</span>';
+      } else if (status === 'NOT_INSTALLED' || status === 'UNAVAILABLE') {
+        statusBadge = '<span class="badge badge-failed">NOT INSTALLED</span>';
+      } else if (status === 'BLOCKED') {
+        statusBadge = '<span class="badge badge-critical">BLOCKED</span>';
+      }
+
+      const categoryLabel = escapeHtml(t.category_label || t.category || 'General');
+      const envBadge = `<span style="font-size:11px; font-family:var(--font-mono); color:var(--accent-cyber);">${escapeHtml(t.environment || 'host')}</span>`;
+
+      return `
+        <tr>
+          <td>
+            <div style="font-weight:700; font-family:var(--font-mono); color:var(--fg);">${escapeHtml(t.name || t.tool_id)}</div>
+            ${t.version ? `<div style="font-size:10.5px; color:var(--fg-muted); font-family:var(--font-mono);">${escapeHtml(t.version)}</div>` : ''}
+          </td>
+          <td style="font-size:11.5px; color:var(--fg-muted);">${categoryLabel}</td>
+          <td>${statusBadge}</td>
+          <td style="font-size:11.5px; color:var(--fg-muted); max-width:260px;">${escapeHtml(t.reason || (isAvail ? 'Ready' : 'Not installed'))}</td>
+          <td>${envBadge}</td>
+          <td style="font-size:11px; color:var(--fg-muted); max-width:280px;">${escapeHtml(t.installation_guidance || '—')}</td>
+          <td>
+            ${isAvail ? `<button class="btn-action" style="padding:3px 8px; font-size:11px;" onclick="document.getElementById('chat-input-field').value='Analyze authorized localhost using ${escapeHtml(t.tool_id)}.'; switchSection('copilot'); sendChatMessage();">Probe Target</button>` : '<span style="color:var(--fg-muted); font-size:11px;">N/A</span>'}
+          </td>
+        </tr>
+      `;
+    }).join('');
   };
 
   // --- AUDIT CHAIN VERIFICATION ---

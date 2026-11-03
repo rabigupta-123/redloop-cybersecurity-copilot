@@ -4135,10 +4135,41 @@ def register_workbench_routes(
         res = MultiModelEvaluator.evaluate_provider(provider_id, model)
         return JSONResponse(res)
 
+    @app.get("/api/tools/capabilities")
+    def get_tool_capabilities_endpoint(refresh: bool = False):
+        from redloop.assessment.tools_v2 import ToolRegistryV2
+        return JSONResponse(ToolRegistryV2.get_capabilities_summary(force_refresh=refresh))
+
+    @app.get("/api/tools/environments")
+    def get_tool_environments_endpoint(refresh: bool = False):
+        from redloop.assessment.tools_v2 import EnvironmentDetector
+        return JSONResponse(EnvironmentDetector.detect_all(force_refresh=refresh))
+
+    @app.get("/api/tools/health")
+    def get_tool_health_endpoint():
+        from redloop.assessment.tools_v2 import ToolRegistryV2
+        summary = ToolRegistryV2.get_capabilities_summary()
+        return JSONResponse({
+            "status": "HEALTHY" if summary["summary"]["available"] > 0 else "DEGRADED",
+            "tools_summary": summary["summary"],
+            "environments": summary["environments"],
+            "checked_at": summary["generated_at"],
+        })
+
+    @app.post("/api/tools/plan")
+    def plan_tools_endpoint(payload: dict[str, Any], request: Request):
+        _require_same_origin(request)
+        from redloop.assessment.tool_planner import ToolPlanRequest, ToolPlanner
+        req = ToolPlanRequest(**payload)
+        guard = AssessmentScopeGuard(scope_manager, audit) if scope_manager else None
+        planner = ToolPlanner(scope_manager=scope_manager, scope_guard=guard, audit=audit)
+        plan = planner.create_plan(req)
+        return JSONResponse(plan.to_dict())
+
     @app.get("/api/tools/matrix")
-    def get_tool_capability_matrix():
-        from redloop.assessment.capability import get_capabilities
-        return JSONResponse(get_capabilities().summary())
+    def get_tool_capability_matrix(refresh: bool = False):
+        from redloop.assessment.tools_v2 import ToolRegistryV2
+        return JSONResponse(ToolRegistryV2.get_capabilities_summary(force_refresh=refresh))
 
     @app.post("/api/investigations/{inv_id}/graph/clear")
     def clear_investigation_graph_endpoint(inv_id: str, request: Request):

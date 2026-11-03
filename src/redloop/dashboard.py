@@ -1292,15 +1292,65 @@ Enter a host/system command (e.g. whoami, hostname, uname -a, pwd) or network pr
       <section id="section-tools" class="spa-section">
         <div class="card-panel">
           <div class="panel-header">
-            <span class="panel-title">Tool Capability Matrix &amp; Environment Detection</span>
-            <button class="btn-action" onclick="loadToolsMatrix()">↻ Refresh Tools Matrix</button>
+            <div>
+              <span class="panel-title">Tool Capability Matrix &amp; Environment Detection</span>
+              <div id="tools-summary-badges" style="display:inline-flex; gap:6px; margin-left:12px; vertical-align:middle;">
+                <span class="badge" id="tools-kpi-total">Total: --</span>
+                <span class="badge badge-success" id="tools-kpi-avail">Available: --</span>
+                <span class="badge badge-warning" id="tools-kpi-deg">Degraded: --</span>
+                <span class="badge badge-critical" id="tools-kpi-unavail">Unavailable: --</span>
+              </div>
+            </div>
+            <button class="btn-action" id="btn-refresh-tools" onclick="loadToolsMatrix(true)">↻ Refresh Matrix</button>
           </div>
-          <p style="color:var(--fg-muted); margin-bottom:16px;">Verified operational matrix across Native Windows, WSL/Kali, and Container runtimes. Never fabricates tool existence.</p>
+          <p style="color:var(--fg-muted); margin-bottom:14px; font-size:13px;">Truthful operational matrix across Windows Host, WSL, Kali Linux, and Docker. Verified runtime detection without fabricated statuses.</p>
+          
+          <!-- Environment & Capability Filters -->
+          <div style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:16px; align-items:center; background:var(--surface-2); padding:10px 14px; border-radius:var(--radius-sm); border:1px solid var(--border);">
+            <div style="display:flex; align-items:center; gap:6px;">
+              <label for="tools-env-filter" style="font-size:11.5px; font-weight:700; color:var(--fg-muted);">ENVIRONMENT:</label>
+              <select id="tools-env-filter" onchange="filterToolsMatrix()" style="padding:4px 8px; font-size:12px; border-radius:6px; border:1px solid var(--border); background:var(--surface); color:var(--fg);">
+                <option value="all">All Environments</option>
+                <option value="host">Host</option>
+                <option value="wsl">WSL</option>
+                <option value="kali">Kali Linux</option>
+                <option value="docker">Docker</option>
+                <option value="api">API / Cloud</option>
+              </select>
+            </div>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <label for="tools-cat-filter" style="font-size:11.5px; font-weight:700; color:var(--fg-muted);">CATEGORY:</label>
+              <select id="tools-cat-filter" onchange="filterToolsMatrix()" style="padding:4px 8px; font-size:12px; border-radius:6px; border:1px solid var(--border); background:var(--surface); color:var(--fg);">
+                <option value="all">All Categories</option>
+                <option value="network_recon">Network Recon</option>
+                <option value="web_security">Web Security</option>
+                <option value="tls_certs">TLS &amp; Certs</option>
+                <option value="vuln_intel">Vulnerability Intel</option>
+                <option value="osint">OSINT &amp; Domain</option>
+                <option value="forensics">Files &amp; Forensics</option>
+                <option value="defensive_soc">Defensive &amp; SOC</option>
+                <option value="local_terminal">Local Diagnostics</option>
+              </select>
+            </div>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <label for="tools-status-filter" style="font-size:11.5px; font-weight:700; color:var(--fg-muted);">STATUS:</label>
+              <select id="tools-status-filter" onchange="filterToolsMatrix()" style="padding:4px 8px; font-size:12px; border-radius:6px; border:1px solid var(--border); background:var(--surface); color:var(--fg);">
+                <option value="all">All Statuses</option>
+                <option value="AVAILABLE">Available</option>
+                <option value="DEGRADED">Degraded</option>
+                <option value="NOT_CONFIGURED">Not Configured</option>
+                <option value="NOT_INSTALLED">Not Installed</option>
+                <option value="UNAVAILABLE">Unavailable</option>
+              </select>
+            </div>
+          </div>
+
           <div class="table-wrap">
             <table>
               <thead>
                 <tr>
                   <th>Tool</th>
+                  <th>Category</th>
                   <th>Status</th>
                   <th>Reason</th>
                   <th>Environment</th>
@@ -1309,7 +1359,7 @@ Enter a host/system command (e.g. whoami, hostname, uname -a, pwd) or network pr
                 </tr>
               </thead>
               <tbody id="tools-matrix-body">
-                <tr><td colspan="6" style="text-align:center; padding:24px; color:var(--fg-muted);">Click "Refresh Tools Matrix" or wait for automatic initialization...</td></tr>
+                <tr><td colspan="7" style="text-align:center; padding:24px; color:var(--fg-muted);">Click "Refresh Matrix" or wait for automatic initialization...</td></tr>
               </tbody>
             </table>
           </div>
