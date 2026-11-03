@@ -4267,4 +4267,179 @@ def register_workbench_routes(
         graph.clear()
         return JSONResponse({"success": True, "elements": [], "investigation_id": inv_id})
 
+    # =========================================================================
+    # Phase 4 — Deep Security Intelligence & Analysis Engine Endpoints
+    # =========================================================================
+
+    @app.get("/api/findings")
+    def list_findings_endpoint(
+        task_id: str | None = None,
+        target: str | None = None,
+        severity: str | None = None,
+        priority: str | None = None,
+        verification: str | None = None,
+    ):
+        from redloop.assessment.finding_models import FindingStore, FindingSeverity, OperationalPriority, VerificationStatus
+        store = FindingStore.get_instance()
+        findings = store.list_findings(
+            task_id=task_id,
+            target=target,
+            severity=severity,
+            priority=priority,
+            verification=verification,
+        )
+
+        sev_counts = {s.value: 0 for s in FindingSeverity}
+        prio_counts = {p.value: 0 for p in OperationalPriority}
+        ver_counts = {v.value: 0 for v in VerificationStatus}
+
+        for f in findings:
+            sev_counts[f.severity.value] = sev_counts.get(f.severity.value, 0) + 1
+            if f.operational_priority:
+                prio_counts[f.operational_priority.value] = prio_counts.get(f.operational_priority.value, 0) + 1
+            ver_counts[f.verification_status.value] = ver_counts.get(f.verification_status.value, 0) + 1
+
+        return JSONResponse({
+            "success": True,
+            "total": len(findings),
+            "findings": [f.to_dict() for f in findings],
+            "summary": {
+                "by_severity": sev_counts,
+                "by_priority": prio_counts,
+                "by_verification": ver_counts,
+            },
+        })
+
+    @app.get("/api/findings/{finding_id}")
+    def get_finding_detail_endpoint(finding_id: str):
+        from redloop.assessment.finding_models import FindingStore
+        store = FindingStore.get_instance()
+        finding = store.get_finding(finding_id)
+        if not finding:
+            raise HTTPException(status_code=404, detail=f"Finding '{finding_id}' not found")
+        return JSONResponse({"success": True, "finding": finding.to_dict()})
+
+    @app.post("/api/findings/{finding_id}/validate")
+    def validate_finding_endpoint(finding_id: str, request: Request):
+        _require_same_origin(request)
+        from redloop.assessment.finding_models import FindingStore
+        from redloop.assessment.validation_engine import FindingValidationEngine
+        store = FindingStore.get_instance()
+        finding = store.get_finding(finding_id)
+        if not finding:
+            raise HTTPException(status_code=404, detail=f"Finding '{finding_id}' not found")
+        
+        updated = FindingValidationEngine.validate_finding(finding)
+        store.add_finding(updated)
+        return JSONResponse({"success": True, "finding": updated.to_dict()})
+
+    @app.get("/api/intelligence/cve/{cve_id}")
+    def get_cve_intelligence_endpoint(cve_id: str):
+        from redloop.assessment.intel_engine import VulnerabilityIntelligenceEngine
+        intel_engine = VulnerabilityIntelligenceEngine.get_instance()
+        rec = intel_engine.get_cve_intel(cve_id)
+        return JSONResponse({"success": True, "intelligence": rec.to_dict()})
+
+    @app.get("/api/intelligence/epss/{cve_id}")
+    def get_epss_intelligence_endpoint(cve_id: str):
+        from redloop.assessment.intel_engine import VulnerabilityIntelligenceEngine
+        intel_engine = VulnerabilityIntelligenceEngine.get_instance()
+        rec = intel_engine.get_cve_intel(cve_id)
+        return JSONResponse({
+            "success": True,
+            "cve_id": rec.cve_id,
+            "epss_score": rec.epss_score,
+            "epss_percentile": rec.epss_percentile,
+            "cisa_kev": rec.cisa_kev,
+            "provider_status": rec.provider_status.value if hasattr(rec.provider_status, "value") else str(rec.provider_status),
+        })
+
+    @app.get("/api/assets/graph")
+    def get_asset_attack_graph_endpoint(target: str = "127.0.0.1", task_id: str | None = None):
+        from redloop.assessment.asset_attack_graph import AssetAttackGraph
+        from redloop.assessment.finding_models import FindingStore
+        store = FindingStore.get_instance()
+        findings = store.list_findings(task_id=task_id, target=target)
+        graph = AssetAttackGraph(target=target)
+        if findings:
+            graph.populate_from_findings(findings)
+        else:
+            from redloop.assessment.asset_attack_graph import GraphNode, NodeType
+            graph.add_node(GraphNode(
+                node_id=f"host:{target}",
+                node_type=NodeType.HOST if not any(c.isalpha() for c in target) else NodeType.DOMAIN,
+                label=target,
+                properties={"target": target},
+            ))
+        return JSONResponse(graph.export_cytoscape())
+
+    @app.get("/api/attack-paths")
+    def get_attack_paths_endpoint(target: str = "127.0.0.1", task_id: str | None = None):
+        from redloop.assessment.asset_attack_graph import AssetAttackGraph
+        from redloop.assessment.finding_models import FindingStore
+        store = FindingStore.get_instance()
+        findings = store.list_findings(task_id=task_id, target=target)
+        graph = AssetAttackGraph(target=target)
+        if findings:
+            graph.populate_from_findings(findings)
+        paths = graph.derive_attack_paths()
+        return JSONResponse({
+            "success": True,
+            "target": target,
+            "total_paths": len(paths),
+            "attack_paths": [p.model_dump() for p in paths],
+        })
+
+    @app.get("/api/analytics/risk")
+    def get_risk_analytics_endpoint(target: str | None = None, task_id: str | None = None):
+        from redloop.assessment.finding_models import FindingStore, OperationalPriority
+        store = FindingStore.get_instance()
+        findings = store.list_findings(task_id=task_id, target=target)
+
+        total = len(findings)
+        avg_score = round(sum(f.risk_score or 0.0 for f in findings) / total, 1) if total else 0.0
+        max_score = round(max((f.risk_score or 0.0 for f in findings), default=0.0), 1)
+        kev_count = sum(1 for f in findings if f.cisa_kev)
+
+        prio_breakdown = {p.value: 0 for p in OperationalPriority}
+        for f in findings:
+            if f.operational_priority:
+                prio_breakdown[f.operational_priority.value] = prio_breakdown.get(f.operational_priority.value, 0) + 1
+
+        return JSONResponse({
+            "success": True,
+            "target": target or "all",
+            "task_id": task_id,
+            "total_findings": total,
+            "average_risk_score": avg_score,
+            "max_risk_score": max_score,
+            "cisa_kev_exposures": kev_count,
+            "priority_breakdown": prio_breakdown,
+        })
+
+    @app.get("/api/reports/{task_id}")
+    def get_phase4_report_endpoint(task_id: str, format: str = "json", target: str = "127.0.0.1"):
+        from redloop.assessment.finding_models import FindingStore
+        from redloop.assessment.asset_attack_graph import AssetAttackGraph
+        from redloop.assessment.phase4_reports import Phase4ReportGenerator
+        store = FindingStore.get_instance()
+        findings = store.list_findings(task_id=task_id)
+        graph = AssetAttackGraph(target=target)
+        if findings:
+            graph.populate_from_findings(findings)
+
+        generator = Phase4ReportGenerator(
+            target=target,
+            task_id=task_id,
+            findings=findings,
+            graph=graph,
+        )
+
+        fmt = format.lower()
+        if fmt == "markdown" or fmt == "md":
+            return HTMLResponse(content=generator.generate_markdown(), media_type="text/markdown")
+        elif fmt == "html":
+            return HTMLResponse(content=generator.generate_html(), media_type="text/html")
+        else:
+            return JSONResponse(generator.generate_json())
 
