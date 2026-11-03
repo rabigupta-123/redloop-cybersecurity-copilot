@@ -67,3 +67,7 @@ pythonpath = [".", "src", "self-learning-agent"]
 markers = [
     "integration: uses real localhost services or installed local dependencies",
 ]
+filterwarnings = [
+    "ignore:.*Using `httpx` with `starlette.testclient`.*:DeprecationWarning",
+    "ignore::DeprecationWarning",
+]

@@ -23,6 +23,8 @@ import platform
 import re
 import shlex
 import shutil
+import signal
+import sys
 import subprocess
 import threading
 import time
@@ -94,21 +96,21 @@ class ExecutionResult:
         return {
             "success": is_success,
             "state": state_label,
-            "command": self.command,
-            "args": self.args,
+            "command": _mask_secrets(self.command),
+            "args": [_mask_secrets(a) for a in self.args],
             "execution_environment": self.execution_environment,
             "executable_path": self.executable_path,
             "working_directory": self.working_directory,
             "start_timestamp": self.start_timestamp,
             "completion_timestamp": self.completion_timestamp,
             "duration_ms": round(self.duration_ms, 2),
-            "stdout": self.stdout,
-            "stderr": self.stderr,
+            "stdout": _mask_secrets(self.stdout),
+            "stderr": _mask_secrets(self.stderr),
             "exit_code": self.exit_code,
             "timed_out": self.timed_out,
             "cancelled": self.cancelled,
             "status": st_val,
-            "error": self.error,
+            "error": _mask_secrets(self.error) if self.error else None,
             "task_id": self.task_id,
             "evidence_id": self.evidence_id,
             "truncated": self.truncated,
@@ -132,6 +134,96 @@ def _safe_decode(raw: bytes) -> tuple[str, bool]:
 
 
 # --- BASE EXECUTION ADAPTER ---
+
+
+# --- PROCESS MANAGEMENT & SECURITY RESTRICTIONS ---
+
+ALLOWED_EXECUTABLES = {
+    # Recon & Port Scanning
+    "nmap", "masscan", "rustscan", "ping", "traceroute", "tracert", "fping", "netstat", "ss",
+    # DNS & OSINT
+    "nslookup", "dig", "host", "whois", "subfinder", "amass",
+    # Web & HTTP
+    "curl", "httpx", "nikto", "gobuster", "dirb", "ffuf", "nuclei", "wapiti", "wpscan",
+    # TLS & Cryptography
+    "openssl", "testssl.sh", "sslscan",
+    # Runtime & Diagnostics
+    "python", "python3", "python.exe", "python3.exe", "echo", "uname", "wsl", "wsl.exe", "docker", "docker.exe", "git", "git.exe",
+}
+
+METACHAIN_PATTERN = re.compile(r"[;&|`$<>]")
+SENSITIVE_PATHS_PATTERN = re.compile(r"(/etc/(shadow|passwd|sudoers)|C:\\Windows\\System32\\config)", re.IGNORECASE)
+SECRET_PATTERNS = [
+    re.compile(r"(Bearer\s+)[A-Za-z0-9_\-\.]{15,}", re.IGNORECASE),
+    re.compile(r"(api[_-]?key\s*[:=]\s*)[A-Za-z0-9_\-]{15,}", re.IGNORECASE),
+    re.compile(r"(password\s*[:=]\s*)[^\s]{4,}", re.IGNORECASE),
+    re.compile(r"(secret\s*[:=]\s*)[^\s]{6,}", re.IGNORECASE),
+]
+
+_SUBPROCESS_SEMAPHORE = threading.Semaphore(8)  # Max 8 concurrent subprocesses
+
+
+def _mask_secrets(text: str | None) -> str:
+    if not text:
+        return ""
+    res = str(text)
+    for pat in SECRET_PATTERNS:
+        res = pat.sub(r"\1[REDACTED_SECRET]", res)
+    return res
+
+
+def _get_safe_env() -> dict[str, str]:
+    """Controlled environment dictionary for subprocess execution."""
+    safe_keys = {
+        "PATH", "SYSTEMROOT", "WINDIR", "COMSPEC", "PATHEXT",
+        "TEMP", "TMP", "USERPROFILE", "HOMEPATH", "HOMEDRIVE",
+        "LANG", "LC_ALL", "TERM"
+    }
+    return {k: v for k, v in os.environ.items() if k.upper() in safe_keys}
+
+
+def validate_command_security(binary: str, args: list[str]) -> tuple[bool, str | None]:
+    """Enforces application-level execution restrictions before process creation."""
+    bin_name = os.path.basename(binary).lower()
+    if (
+        bin_name not in ALLOWED_EXECUTABLES
+        and binary != sys.executable
+        and not any(bin_name.startswith(x) for x in ("python", "python3"))
+    ):
+        return False, f"Executable '{binary}' is not permitted by REDLOOP trusted allowlist."
+
+    for a in args:
+        if METACHAIN_PATTERN.search(a):
+            return False, f"Argument '{a}' contains forbidden shell metacharacters (;, &, |, `, $, <, >)."
+        if SENSITIVE_PATHS_PATTERN.search(a):
+            return False, f"Argument '{a}' references restricted system path which is blocked."
+
+    return True, None
+
+
+def _terminate_process_tree(proc: subprocess.Popen) -> None:
+    """Platform-appropriate process tree termination without orphaned children."""
+    if proc.poll() is not None:
+        return
+    try:
+        if os.name == "nt":
+            subprocess.run(
+                ["taskkill", "/F", "/T", "/PID", str(proc.pid)],
+                capture_output=True,
+                timeout=3.0,
+            )
+        else:
+            try:
+                pgid = os.getpgid(proc.pid)
+                os.killpg(pgid, signal.SIGKILL)
+            except Exception:
+                proc.kill()
+    except Exception:
+        try:
+            proc.kill()
+        except Exception:
+            pass
+
 
 class BaseExecutionAdapter:
     """Abstract adapter contract for environment-specific command execution."""
@@ -171,6 +263,25 @@ class HostExecutionAdapter(BaseExecutionAdapter):
         start_ts = datetime.now(timezone.utc).isoformat()
         t0 = time.time()
         full_cmd_str = " ".join([binary] + args)
+
+        if cancel_token and cancel_token.is_set():
+            return ExecutionResult(
+                command=full_cmd_str,
+                args=args,
+                execution_environment="host",
+                executable_path=None,
+                working_directory=working_directory,
+                start_timestamp=start_ts,
+                completion_timestamp=datetime.now(timezone.utc).isoformat(),
+                duration_ms=0.0,
+                stdout="",
+                stderr="Process execution cancelled by user before process creation.",
+                exit_code=-1,
+                cancelled=True,
+                status=ExecutionStatus.CANCELLED,
+                error="Execution cancelled before process creation.",
+                task_id=task_id,
+            )
 
         # Locate executable
         if binary in ("python", "python3"):
@@ -365,6 +476,25 @@ class WSLExecutionAdapter(BaseExecutionAdapter):
         start_ts = datetime.now(timezone.utc).isoformat()
         full_cmd_str = " ".join([binary] + args)
 
+        if cancel_token and cancel_token.is_set():
+            return ExecutionResult(
+                command=full_cmd_str,
+                args=args,
+                execution_environment="wsl",
+                executable_path=None,
+                working_directory=working_directory,
+                start_timestamp=start_ts,
+                completion_timestamp=datetime.now(timezone.utc).isoformat(),
+                duration_ms=0.0,
+                stdout="",
+                stderr="Process execution cancelled by user before process creation.",
+                exit_code=-1,
+                cancelled=True,
+                status=ExecutionStatus.CANCELLED,
+                error="Execution cancelled before process creation.",
+                task_id=task_id,
+            )
+
         if not avail:
             return ExecutionResult(
                 command=full_cmd_str,
@@ -527,6 +657,25 @@ class KaliExecutionAdapter(BaseExecutionAdapter):
         start_ts = datetime.now(timezone.utc).isoformat()
         full_cmd_str = " ".join([binary] + args)
 
+        if cancel_token and cancel_token.is_set():
+            return ExecutionResult(
+                command=full_cmd_str,
+                args=args,
+                execution_environment="wsl",
+                executable_path=None,
+                working_directory=working_directory,
+                start_timestamp=start_ts,
+                completion_timestamp=datetime.now(timezone.utc).isoformat(),
+                duration_ms=0.0,
+                stdout="",
+                stderr="Process execution cancelled by user before process creation.",
+                exit_code=-1,
+                cancelled=True,
+                status=ExecutionStatus.CANCELLED,
+                error="Execution cancelled before process creation.",
+                task_id=task_id,
+            )
+
         if not avail:
             return ExecutionResult(
                 command=full_cmd_str,
@@ -588,6 +737,25 @@ class DockerExecutionAdapter(BaseExecutionAdapter):
         avail, reason = self.is_available()
         start_ts = datetime.now(timezone.utc).isoformat()
         full_cmd_str = " ".join([binary] + args)
+
+        if cancel_token and cancel_token.is_set():
+            return ExecutionResult(
+                command=full_cmd_str,
+                args=args,
+                execution_environment="wsl",
+                executable_path=None,
+                working_directory=working_directory,
+                start_timestamp=start_ts,
+                completion_timestamp=datetime.now(timezone.utc).isoformat(),
+                duration_ms=0.0,
+                stdout="",
+                stderr="Process execution cancelled by user before process creation.",
+                exit_code=-1,
+                cancelled=True,
+                status=ExecutionStatus.CANCELLED,
+                error="Execution cancelled before process creation.",
+                task_id=task_id,
+            )
 
         if not avail:
             return ExecutionResult(
@@ -763,6 +931,7 @@ class UnifiedTerminalEngine:
         working_directory: str | None = None,
         timeout_seconds: int = 30,
         task_id: str | None = None,
+        cancel_token: threading.Event | None = None,
     ) -> ExecutionResult:
         t0 = time.time()
         start_ts = datetime.now(timezone.utc).isoformat()
@@ -845,7 +1014,7 @@ class UnifiedTerminalEngine:
         adapter = self._adapters.get(environment.lower()) or self._adapters["host"]
 
         # 4. Register cancellation token
-        cancel_evt = threading.Event()
+        cancel_evt = cancel_token or threading.Event()
         with self._lock:
             self._active_cancels[t_id] = cancel_evt
 

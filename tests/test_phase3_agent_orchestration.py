@@ -1,3 +1,4 @@
+import hashlib
 """Phase 3 Automated Test Suite: Terminal Reliability, Autonomous Agent Orchestration & Workflow Engine.
 
 Comprehensive testing of:
@@ -512,3 +513,130 @@ def test_25_end_to_end_acceptance():
     assert "Tool Selection & Execution Transparency" in task.technical_report
     assert "Assessment Intelligence & Quality Metrics" in task.technical_report
 
+
+
+# --- TEST 26: Refuses non-equivalent fallback (e.g. nmap -> curl) ---
+def test_26_refuses_non_equivalent_fallback():
+    orchestrator = AutonomousAgentOrchestrator()
+    task = AgentTask(
+        task_id="task-equiv-test",
+        request_id="req-equiv-26",
+        user_prompt="Scan ports on 127.0.0.1",
+        task_type="network_recon",
+        explicit_target="127.0.0.1",
+        target_type="ip",
+        steps=[
+            AgentWorkflowStep(
+                step_id="step-nmap",
+                name="Port Scanner",
+                tool_id="non_existent_nmap_fail",
+                command_args=["-p", "80", "127.0.0.1"],
+                required_capability="port_service_scan",
+                fallback_tool_id="curl",  # Non-equivalent tool
+                fallback_rationale="Attempting to fall back to HTTP client.",
+                is_critical=True,
+            )
+        ],
+    )
+    orchestrator._execute_workflow(task)
+    # The non-equivalent fallback must be refused!
+    assert task.steps[0].status == AgentStepState.FAILED
+    assert "Refusing non-equivalent fallback" in task.steps[0].error
+    assert task.task_status in (AgentTaskStatus.FAILED, AgentTaskStatus.PARTIAL)
+    assert task.task_status != AgentTaskStatus.COMPLETED
+
+
+# --- TEST 27: Cancellation before process execution ---
+def test_27_cancellation_before_execution():
+    engine = UnifiedTerminalEngine()
+    token = threading.Event()
+    token.set()  # Pre-cancelled
+    res = engine.execute_command(
+        command_string_or_args=[sys.executable, "-c", "print('should not run')"],
+        cancel_token=token,
+    )
+    assert res.cancelled is True
+    assert res.status == ExecutionStatus.CANCELLED
+    assert res.duration_ms < 100.0
+
+
+# --- TEST 28: Strict state machine transition validation ---
+def test_28_strict_state_machine_transition_validation():
+    from redloop.assessment.agent_orchestrator import InvalidStateTransitionError
+    task = AgentTask(
+        task_id="task-sm-test",
+        request_id="req-sm-28",
+        user_prompt="Audit host",
+        task_type="recon",
+        explicit_target="127.0.0.1",
+        target_type="ip",
+        task_status=AgentTaskStatus.COMPLETED,
+    )
+    # Terminal state COMPLETED cannot transition back to RUNNING or PLANNING
+    with pytest.raises(InvalidStateTransitionError):
+        task.transition_to(AgentTaskStatus.RUNNING, reason="Illegal resume attempt")
+
+    with pytest.raises(InvalidStateTransitionError):
+        task.transition_to(AgentTaskStatus.PLANNING, reason="Illegal restart attempt")
+
+
+# --- TEST 29: Target-specific approval voucher integrity ---
+def test_29_target_specific_approval_voucher():
+    from redloop.assessment.agent_orchestrator import ApprovalVoucher
+    voucher = ApprovalVoucher(
+        voucher_id="vouch-12345",
+        task_id="task-auth-29",
+        target="127.0.0.1",
+        target_type="ip",
+        allowed_operation="scan",
+        authorized_by="security_admin",
+        created_at="2026-01-01T00:00:00Z",
+        expires_at="2099-12-31T23:59:59Z",
+        approved_tools=["nmap", "ping"],
+    )
+    # Valid for exact task and target
+    assert voucher.authorizes("task-auth-29", "127.0.0.1", "scan") is True
+    # Ineffective for a different target!
+    assert voucher.authorizes("task-auth-29", "192.168.1.100", "scan") is False
+    # Ineffective for a different task!
+    assert voucher.authorizes("other-task-99", "127.0.0.1", "scan") is False
+
+
+# --- TEST 30: Evidence artifact retention and tamper detection ---
+def test_30_evidence_artifact_retention_and_tamper_detection(tmp_path):
+    from redloop.assessment.agent_orchestrator import verify_evidence_artifact
+    ev_file = tmp_path / "ev-test.raw"
+    payload = b"GENUINE_EVIDENCE_LOG_PAYLOAD"
+    ev_file.write_bytes(payload)
+    sha256 = hashlib.sha256(payload).hexdigest()
+
+    # 1. Verification of genuine artifact
+    res_valid = verify_evidence_artifact("ev-test", ev_file, sha256)
+    assert res_valid["valid"] is True
+    assert res_valid["status"] == "VERIFIED"
+
+    # 2. Tampering detection
+    ev_file.write_bytes(b"TAMPERED_MODIFIED_LOG_PAYLOAD")
+    res_tampered = verify_evidence_artifact("ev-test", ev_file, sha256)
+    assert res_tampered["valid"] is False
+    assert res_tampered["status"] == "TAMPERED"
+
+    # 3. Missing artifact detection
+    ev_file.unlink()
+    res_missing = verify_evidence_artifact("ev-test", ev_file, sha256)
+    assert res_missing["valid"] is False
+    assert res_missing["status"] == "MISSING_ARTIFACT"
+
+
+# --- TEST 31: Command injection and sensitive path blocked ---
+def test_31_command_injection_and_sensitive_path_blocked():
+    from redloop.assessment.terminal_engine import validate_command_security
+    # Forbidden shell metacharacter
+    is_safe, reason = validate_command_security("ping", ["127.0.0.1; rm -rf /"])
+    assert is_safe is False
+    assert "forbidden shell metacharacters" in reason
+
+    # Forbidden sensitive path
+    is_safe_path, reason_path = validate_command_security("curl", ["file:///etc/shadow"])
+    assert is_safe_path is False
+    assert "restricted system path" in reason_path
