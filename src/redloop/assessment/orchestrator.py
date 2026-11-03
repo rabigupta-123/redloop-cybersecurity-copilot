@@ -307,7 +307,30 @@ class TaskOrchestrator:
 
     def parse_intent(self, prompt: str, context: dict[str, Any] | None = None) -> dict[str, Any]:
         """Analyze natural language prompt and extract operational intent, target, capability, and confidence."""
+        from redloop.assessment.context_resolver import TargetResolver
+
         res = self._parse_intent_raw(prompt, context)
+
+        # Enforce Entity and Tool Target Validation
+        act = res.get("action", "general_chat")
+        tgt = res.get("target") or ""
+        tgt_type = res.get("target_type") or TargetResolver.classify_target(tgt)[0]
+        res["target_type"] = tgt_type
+        if "resolution_source" not in res:
+            res["resolution_source"] = "prompt" if (tgt and tgt in prompt) else ("context" if tgt else "none")
+
+        valid, err_msg = TargetResolver.validate_tool_target(act, tgt, tgt_type)
+        if not valid:
+            res = {
+                "action": "target_clarification_required",
+                "intent": "TARGET_CLARIFICATION_REQUIRED",
+                "target": tgt,
+                "target_type": tgt_type,
+                "clarification_message": err_msg,
+                "resolution_source": res.get("resolution_source", "none"),
+                "confidence": 0.99,
+            }
+
         if "confidence" not in res:
             intent_name = res.get("intent", "GENERAL_CHAT")
             prompt_lower = prompt.lower().strip()
@@ -371,25 +394,15 @@ class TaskOrchestrator:
         email_match = re.search(r"\b[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+\b", prompt)
         phone_match = re.search(r"(?:\+|00)[1-9]\d{6,14}\b", prompt) or re.search(r"\b\+?1[-. ]?\(?\d{3}\)?[-. ]?\d{3}[-. ]?\d{4}\b", prompt)
 
-        # 1. Target identification
-        target = context.get("target") or ""
-        if not target:
-            if ip_match:
-                target = ip_match.group(0)
-            elif url_match:
-                target = url_match.group(1).split(":")[0]
-            elif host_match:
-                target = host_match.group(1)
-            elif self.scope_manager and self.scope_manager.scope.targets:
-                first_target = self.scope_manager.scope.targets[0]
-                if first_target.cidr:
-                    target = first_target.cidr.split("/")[0]
-                elif first_target.domain:
-                    target = first_target.domain
-                else:
-                    target = "127.0.0.1"
-            else:
-                target = "127.0.0.1"
+        # 1. Target identification via strict 4-tier precedence:
+        # Tier 1: Explicit target supplied in current user request (prompt).
+        # Tier 2: Explicit target supplied in current task's structured input.
+        # Tier 3: Target explicitly selected for current active investigation.
+        # Tier 4: None (no silent fallbacks to 127.0.0.1 or previous targets).
+        from redloop.assessment.context_resolver import TargetResolver
+
+        resolved_target, target_type, resolution_source = TargetResolver.resolve_target(prompt, context)
+        target = resolved_target or ""
 
         # 1. FOLLOW_UP_ON_ACTIVE_INVESTIGATION
         if any(w in prompt_lower for w in (
@@ -397,12 +410,14 @@ class TaskOrchestrator:
             "summarize the findings from our previous", "summarize previous investigation",
             "active investigation summary", "our previous investigation", "summary of findings"
         )) or (context.get("investigation_id") and any(w in prompt_lower for w in ("what did we find", "previous findings", "recap", "summarize"))):
-            inv_id = self._extract_id(prompt, "inv-") or context.get("investigation_id")
+            inv_id = self._extract_id(prompt, "inv-") or context.get("investigation_id") or context.get("active_investigation_id")
             return {
                 "action": "follow_up_investigation",
                 "intent": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
                 "target": target,
                 "investigation_id": inv_id,
+                "target_type": target_type,
+                "resolution_source": resolution_source,
             }
 
         # 2. REPORT_GENERATION
@@ -616,9 +631,8 @@ class TaskOrchestrator:
         if email_match:
             em = email_match.group(0)
             return {"action": "osint_email", "intent": "OSINT_EMAIL", "email": em, "target": em}
-        if any(w in prompt_lower for w in ("investigate email", "email intelligence", "verify email", "email breach")):
-            if "@" in target:
-                return {"action": "osint_email", "intent": "OSINT_EMAIL", "email": target, "target": target}
+        if any(w in prompt_lower for w in ("investigate email", "email intelligence", "verify email", "email breach", "breach search", "hibp")):
+            return {"action": "osint_email", "intent": "OSINT_EMAIL", "email": target, "target": target}
 
         # B. OSINT_PHONE
         if phone_match or any(w in prompt_lower for w in ("investigate phone", "phone intelligence", "lookup phone", "phone number")):
@@ -643,12 +657,12 @@ class TaskOrchestrator:
                 return {"action": "osint_domain", "intent": "OSINT_DOMAIN", "target": host_val}
 
         # 16. Context Queries (Finding / Evidence / Node explanation)
-        if context.get("type") == "finding" or re.search(r"\bfindings?\b", prompt_lower) or self._extract_id(prompt, "find-"):
+        if context.get("type") == "finding" or bool(self._extract_id(prompt, "find-")):
             finding_id = context.get("id") or self._extract_id(prompt, "find-")
-            return {"action": "explain_finding", "intent": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION", "target": target, "finding_id": finding_id}
-        if context.get("type") == "evidence" or re.search(r"\bevidences?\b", prompt_lower) or self._extract_id(prompt, "evi-"):
+            return {"action": "explain_finding", "intent": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION", "target": target, "finding_id": finding_id, "target_type": target_type, "resolution_source": resolution_source}
+        if context.get("type") == "evidence" or bool(self._extract_id(prompt, "evi-")):
             evidence_id = context.get("id") or self._extract_id(prompt, "evi-")
-            return {"action": "explain_evidence", "intent": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION", "target": target, "evidence_id": evidence_id}
+            return {"action": "explain_evidence", "intent": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION", "target": target, "evidence_id": evidence_id, "target_type": target_type, "resolution_source": resolution_source}
         if context.get("type") == "asset" or "attack path" in prompt_lower or "attack surface" in prompt_lower:
             return {"action": "explain_attack_surface", "intent": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION", "target": target, "node_id": context.get("id")}
 
@@ -665,7 +679,7 @@ class TaskOrchestrator:
         return {"action": "general_chat", "intent": "GENERAL_CHAT", "target": target}
 
     def _extract_id(self, text: str, prefix: str) -> str | None:
-        pattern = rf"\b({prefix}[a-f0-9-]+)\b"
+        pattern = rf"\b({prefix}[a-zA-Z0-9_-]+)\b"
         match = re.search(pattern, text, re.IGNORECASE)
         return match.group(1) if match else None
 
@@ -730,6 +744,23 @@ class TaskOrchestrator:
                 "EXPLAIN_ATTACK_SURFACE": "FOLLOW_UP",
             }
             res["capability"] = cap_map.get(raw_cap, raw_cap)
+            if "request_context" not in res:
+                from redloop.assessment.context_resolver import RequestContext
+                act_name = intent.get("action", "general_chat")
+                task_dict = res.get("task") if isinstance(res.get("task"), dict) else {}
+                target_val = intent.get("target") or task_dict.get("target")
+                if not target_val or target_val == "none":
+                    target_val = None
+                res["request_context"] = RequestContext(
+                    task_id=task_dict.get("id") or f"task-{uuid.uuid4().hex[:12]}",
+                    user_message=prompt,
+                    task_type=act_name,
+                    explicit_target=target_val,
+                    target_type=intent.get("target_type", "none"),
+                    active_investigation_id=(context or {}).get("investigation_id") or (context or {}).get("active_investigation_id"),
+                    selected_tools=[act_name] if act_name not in ("general_chat", "coding_and_research") else [],
+                    execution_status=task_dict.get("status", "COMPLETED"),
+                ).to_dict()
         return res
 
     async def _execute_task_internal(
@@ -748,7 +779,7 @@ class TaskOrchestrator:
         start_time = time.monotonic()
         intent = parsed_intent or self.parse_intent(prompt, context)
         action = intent.get("action", "general_chat")
-        target = intent.get("target", "127.0.0.1")
+        target = intent.get("target") or ""
 
         depth_val = intent.get("depth", AssessmentDepth.STANDARD if action == "run_assessment" else "")
         scope_sig = getattr(getattr(self, "scope_manager", None), "scope", None)
@@ -775,6 +806,37 @@ class TaskOrchestrator:
             started_at=utc_now().isoformat(),
             fingerprint=fingerprint,
         )
+
+        # Handle Target Clarification Required
+        if action == "target_clarification_required":
+            task.status = "CLARIFICATION_REQUIRED"
+            task.capability = "clarification"
+            task.target = target or ""
+            task.completed_at = utc_now().isoformat()
+            clarification_msg = intent.get("clarification_message") or (
+                "Target clarification required: A valid target is needed to execute this security action. "
+                "Please specify a valid target (e.g., IP address, CIDR range, or domain)."
+            )
+            task.response_text = f"⚠️ **Target Clarification Required**\n\n{clarification_msg}"
+            self.task_store.save(task)
+            from redloop.assessment.context_resolver import RequestContext
+            req_ctx = RequestContext(
+                task_id=task.id,
+                user_message=prompt,
+                task_type=action,
+                explicit_target=target or None,
+                target_type=intent.get("target_type", "none"),
+                active_investigation_id=(context or {}).get("investigation_id") or (context or {}).get("active_investigation_id"),
+                execution_status="CLARIFICATION_REQUIRED",
+            )
+            return {
+                "response": task.response_text,
+                "task": task.to_dict(),
+                "assessment_id": None,
+                "conversation_id": conversation_id,
+                "request_context": req_ctx.to_dict(),
+                "telemetry": {"latency_ms": round((time.monotonic() - start_time) * 1000, 2)},
+            }
 
         # Handle General Chat / Pure Explanations
         if action == "general_chat":
@@ -841,6 +903,7 @@ class TaskOrchestrator:
             return self._handle_follow_up_investigation(
                 task=task,
                 start_time=start_time,
+                investigation_id=intent.get("investigation_id"),
             )
 
         # Handle Investigation Relationship Graph
@@ -2531,18 +2594,36 @@ class TaskOrchestrator:
         self,
         task: Task,
         start_time: float,
+        investigation_id: str | None = None,
     ) -> dict[str, Any]:
-        """Retrieve and summarize findings and evidence from the active or prior investigation."""
+        """Retrieve and summarize findings and evidence from the active or requested investigation."""
         from redloop.investigation import get_investigation_store
         inv_store = get_investigation_store()
-        inv = inv_store.get_active()
+        inv = None
+        if investigation_id:
+            inv = inv_store.get(investigation_id)
+        if not inv:
+            inv = inv_store.get_active()
 
         task.status = "COMPLETED"
         task.capability = "investigation.summary"
         task.completed_at = utc_now().isoformat()
 
+        if not inv:
+            task.response_text = "### 🗂️ No Active Investigation Found\nNo active or specified investigation was found in the workspace store. You can start a new investigation from the Investigations tab or provide a valid investigation ID."
+            self.task_store.save(task)
+            return {
+                "response": task.response_text,
+                "task": task.to_dict(),
+                "investigation": None,
+                "assessment_id": None,
+                "conversation_id": task.conversation_id,
+                "telemetry": {"latency_ms": round((time.monotonic() - start_time) * 1000, 2)},
+            }
+
+        title_label = f"Investigation Summary: `{inv.title}`"
         lines = [
-            f"### 🗂️ Active Investigation Summary: `{inv.title}`",
+            f"### 🗂️ {title_label}",
             f"**ID:** `{inv.id}` · **Target:** `{inv.target}` · **Scope Status:** `🟢 {inv.scope_status}` · **Status:** `{inv.status}`\n",
             f"**Objective:** {inv.objective}\n",
             f"**Evidence Records:** `{len(inv.evidence_ids)}` · **Identified Findings:** `{len(inv.finding_ids)}` · **Timeline Events:** `{len(inv.timeline)}`\n",

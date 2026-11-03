@@ -2142,6 +2142,7 @@ UNIFIED_SCRIPT = """
           <div>
             <span style="font-weight: 700; color: ${msg.role === 'user' ? 'var(--accent-blue)' : 'var(--accent-cyber)'}">${msg.role === 'user' ? 'OPERATOR' : 'AI COPILOT'}</span>
             ${msg.capability ? `<span class="badge badge-info" style="margin-left:6px; font-size:9px;">[${escapeHtml(msg.capability)}]</span>` : ''}
+            ${msg.target ? `<span class="badge badge-warning" style="margin-left:6px; font-size:9px; background:rgba(249,115,22,0.15); color:var(--accent);">🎯 ${escapeHtml(msg.target)}</span>` : ''}
           </div>
           <span>${msg.time || ''}</span>
         </div>
@@ -2160,7 +2161,7 @@ UNIFIED_SCRIPT = """
 
     const time = new Date().toLocaleTimeString();
     state.copilotMessages.push({ role: 'user', text, time });
-    state.copilotMessages.push({ role: 'assistant', text: 'Executing operational objective for target ' + state.target + '...', capability: 'ROUTING', time: 'Running' });
+    state.copilotMessages.push({ role: 'assistant', text: 'Analyzing request and orchestrating execution...', capability: 'ROUTING', time: 'Running' });
     renderCopilotMessages();
 
     try {
@@ -2170,16 +2171,22 @@ UNIFIED_SCRIPT = """
         body: JSON.stringify({
           message: text,
           conversation_id: 'copilot-drawer',
-          context: { target: state.target, channel: 'workbench' }
+          context: {
+            current_ui_target: state.target,
+            channel: 'workbench',
+            active_investigation_id: state.activeInvestigationId || null
+          }
         })
       });
       const data = await res.json();
       state.copilotMessages.pop(); // remove running
       const cap = data.capability || (data.intent && data.intent.intent) || 'GENERAL_CHAT';
+      const actualTarget = (data.request_context && data.request_context.explicit_target) || (data.task && data.task.target) || null;
       state.copilotMessages.push({
         role: 'assistant',
         text: data.response || 'Operation completed with output acknowledged.',
         capability: cap,
+        target: actualTarget && actualTarget !== 'none' ? actualTarget : null,
         time: new Date().toLocaleTimeString()
       });
     } catch (err) {
@@ -2675,7 +2682,10 @@ UNIFIED_SCRIPT = """
         conversation_id: convId,
         model: $('#chat-model-select')?.value || 'auto',
         effort: 'auto',
-        context: { target: state.target },
+        context: {
+          current_ui_target: state.target,
+          active_investigation_id: state.activeInvestigationId || null
+        },
         attachments: state.attachedFiles.map(f => f.name)
       };
 
