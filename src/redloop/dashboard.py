@@ -1251,39 +1251,47 @@ def create_app(
       <!-- SECTION: COPILOT ALIAS (Backward compatible) -->
       <section id="section-copilot" class="spa-section" style="display:none;"></section>
 
-      <!-- 2. SECTION: TERMINAL -->
+      <!-- 2. SECTION: TERMINAL (PHASE 3 UNIFIED ENGINE) -->
       <section id="section-terminal" class="spa-section">
         <div class="card-panel">
           <div class="panel-header">
             <div>
               <span class="panel-title">Terminal Intelligence &amp; Execution Console</span>
-              <p style="color:var(--fg-muted); font-size:12px; margin:4px 0 0 0;">Multi-environment command dispatch (Windows Host, WSL Linux, Kali Linux).</p>
+              <p style="color:var(--fg-muted); font-size:12px; margin:4px 0 0 0;">Unified multi-environment operational console (Windows Host, WSL, Kali Linux, Docker).</p>
             </div>
             <div style="display:flex; align-items:center; gap:8px;">
               <label for="terminal-env" style="font-size:12px; color:var(--fg-muted); font-weight:600;">ENV:</label>
               <select id="terminal-env" style="background:var(--surface-2); border:1px solid var(--border); color:var(--fg); padding:4px 10px; border-radius:6px; font-size:12px; font-family:var(--font-mono);" onchange="updateTerminalEnv()">
                 <option value="host">Host (Windows)</option>
-                <option value="wsl">WSL (Ubuntu)</option>
-                <option value="kali">Kali Linux (WSL)</option>
+                <option value="wsl">WSL</option>
+                <option value="kali">Kali Linux</option>
+                <option value="docker">Docker</option>
               </select>
               <span id="terminal-env-badge" class="badge badge-success">READY</span>
+              <button type="button" class="btn btn-sm btn-ghost" onclick="clearTerminalOutput()" title="Clear terminal output" style="font-size:11px; padding:3px 8px;">Clear</button>
+              <button type="button" class="btn btn-sm btn-ghost" onclick="copyTerminalOutput()" title="Copy output to clipboard" style="font-size:11px; padding:3px 8px;">Copy</button>
             </div>
           </div>
-          <div style="background:#050811; border:1px solid var(--border); border-radius:8px; padding:16px; margin-bottom:14px;">
-            <pre id="terminal-output" style="font-family:var(--font-mono); font-size:12px; color:#4fd17a; min-height:240px; max-height:400px; overflow-y:auto; margin:0; white-space:pre-wrap;">REDLOOP Terminal Intelligence Console v2.0
-Environments: Host (Windows) [READY] | WSL (Ubuntu) [READY] | Kali Linux [NOT INSTALLED]
-Enter a host/system command (e.g. whoami, hostname, uname -a, pwd) or network probe (e.g. nmap -sV 127.0.0.1)...</pre>
+          <div style="background:#050811; border:1px solid var(--border); border-radius:8px; padding:16px; margin-bottom:14px; position:relative;">
+            <div id="terminal-status-bar" style="display:flex; justify-content:space-between; align-items:center; font-family:var(--font-mono); font-size:11px; color:#8a99a8; border-bottom:1px solid #1a2233; padding-bottom:8px; margin-bottom:10px;">
+              <span id="term-status-indicator">STATUS: READY</span>
+              <span id="term-meta-indicator">EXIT: -- | DURATION: --</span>
+            </div>
+            <pre id="terminal-output" style="font-family:var(--font-mono); font-size:12px; color:#4fd17a; min-height:240px; max-height:400px; overflow-y:auto; margin:0; white-space:pre-wrap;">REDLOOP Unified Terminal Intelligence Console v3.0
+Ready. Enter diagnostic, inspection, or authorized scoped commands.</pre>
           </div>
           <div style="display:flex; gap:10px; align-items:center;">
             <span id="terminal-prompt-sym" style="font-family:var(--font-mono); font-weight:700; color:var(--accent);">[host] $</span>
-            <input type="text" id="terminal-input" class="chat-input" placeholder="Enter command (e.g. whoami, hostname, or nmap -sV 127.0.0.1)..." onkeydown="if(event.key==='Enter') runTerminal();">
-            <button class="btn-action btn-primary" onclick="runTerminal()">Execute</button>
+            <input type="text" id="terminal-input" class="chat-input" placeholder="Enter command (e.g. whoami, hostname, or nmap -sT 127.0.0.1)..." onkeydown="handleTerminalKey(event)">
+            <button id="btn-terminal-exec" class="btn-action btn-primary" onclick="runTerminal()">Execute</button>
+            <button id="btn-terminal-cancel" class="btn-action" style="background:#dc2626; color:#fff; display:none;" onclick="cancelTerminal()">Stop</button>
           </div>
           <div class="quick-chips" style="margin-top:12px;">
             <span class="quick-chip" onclick="document.getElementById('terminal-input').value='whoami'; runTerminal();">whoami</span>
             <span class="quick-chip" onclick="document.getElementById('terminal-input').value='hostname'; runTerminal();">hostname</span>
-            <span class="quick-chip" onclick="document.getElementById('terminal-input').value='nmap -sV 127.0.0.1'; runTerminal();">nmap -sV 127.0.0.1</span>
-            <span class="quick-chip" onclick="document.getElementById('terminal-input').value='ss -tulpn'; runTerminal();">ss -tulpn</span>
+            <span class="quick-chip" onclick="document.getElementById('terminal-input').value='nmap -sT 127.0.0.1'; runTerminal();">nmap -sT 127.0.0.1</span>
+            <span class="quick-chip" onclick="document.getElementById('terminal-input').value='curl -sI http://127.0.0.1'; runTerminal();">curl -sI http://127.0.0.1</span>
+            <span class="quick-chip" onclick="document.getElementById('terminal-input').value='netstat -an'; runTerminal();">netstat -an</span>
           </div>
         </div>
       </section>

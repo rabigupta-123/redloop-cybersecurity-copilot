@@ -1054,3 +1054,4 @@ class ToolRegistryV2:
             "tools": [t.to_dict() for t in tools],
             "summary": summary,
         }
+

@@ -654,3 +654,4 @@ class EvidenceCorrelator:
 
     def get_links(self) -> list[EvidenceCorrelationLink]:
         return list(self._links)
+

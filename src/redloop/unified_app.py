@@ -2836,39 +2836,123 @@ UNIFIED_SCRIPT = """
     }
   };
 
-  // --- TERMINAL EXECUTION ---
-  window.updateTerminalEnv = function() {
-    const sel = #terminal-env;
-    const badge = #terminal-env-badge;
-    const sym = #terminal-prompt-sym;
+  // --- PHASE 3 UNIFIED TERMINAL ENGINE ---
+  window._termHistory = [];
+  window._termHistoryIndex = -1;
+  window._termActiveTaskId = null;
+
+  window.handleTerminalKey = function(event) {
+    if (event.key === 'Enter') {
+      window.runTerminal();
+    } else if (event.key === 'ArrowUp') {
+      if (window._termHistory.length === 0) return;
+      if (window._termHistoryIndex === -1) window._termHistoryIndex = window._termHistory.length - 1;
+      else if (window._termHistoryIndex > 0) window._termHistoryIndex--;
+      const inp = document.getElementById('terminal-input');
+      if (inp) inp.value = window._termHistory[window._termHistoryIndex] || '';
+    } else if (event.key === 'ArrowDown') {
+      if (window._termHistoryIndex !== -1) {
+        if (window._termHistoryIndex < window._termHistory.length - 1) {
+          window._termHistoryIndex++;
+          const inp = document.getElementById('terminal-input');
+          if (inp) inp.value = window._termHistory[window._termHistoryIndex] || '';
+        } else {
+          window._termHistoryIndex = -1;
+          const inp = document.getElementById('terminal-input');
+          if (inp) inp.value = '';
+        }
+      }
+    }
+  };
+
+  window.clearTerminalOutput = function() {
+    const out = document.getElementById('terminal-output');
+    if (out) out.textContent = 'REDLOOP Terminal Cleared. Ready for input.\n';
+    const meta = document.getElementById('term-meta-indicator');
+    if (meta) meta.textContent = 'EXIT: -- | DURATION: --';
+  };
+
+  window.copyTerminalOutput = function() {
+    const out = document.getElementById('terminal-output');
+    if (out && navigator.clipboard) {
+      navigator.clipboard.writeText(out.textContent || '');
+    }
+  };
+
+  window.cancelTerminal = async function() {
+    if (!window._termActiveTaskId) return;
+    try {
+      await fetch('/api/terminal/cancel', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ task_id: window._termActiveTaskId })
+      });
+      const out = document.getElementById('terminal-output');
+      if (out) {
+        out.textContent += '\n[TERMINAL] Cancellation signal sent.\n';
+        out.scrollTop = out.scrollHeight;
+      }
+    } catch (e) {
+      console.warn('Failed to cancel terminal task:', e);
+    }
+  };
+
+  window.updateTerminalEnv = async function() {
+    const sel = document.getElementById('terminal-env');
+    const badge = document.getElementById('terminal-env-badge');
+    const sym = document.getElementById('terminal-prompt-sym');
     const env = sel ? sel.value : 'host';
     if (sym) sym.textContent = '[' + env + '] $';
-    if (badge) {
-      if (env === 'kali') {
+
+    try {
+      const res = await fetch('/api/terminal/environments');
+      const data = await res.json();
+      const envData = data[env] || {};
+      const isAvail = envData.available === true;
+      if (badge) {
+        badge.className = isAvail ? 'badge badge-success' : 'badge badge-warning';
+        badge.textContent = isAvail ? 'READY' : (envData.status || 'UNAVAILABLE');
+      }
+    } catch (e) {
+      if (badge) {
         badge.className = 'badge badge-warning';
-        badge.textContent = 'NOT INSTALLED';
-      } else {
-        badge.className = 'badge badge-success';
-        badge.textContent = 'READY';
+        badge.textContent = env === 'kali' ? 'NOT INSTALLED' : 'READY';
       }
     }
   };
 
   window.runTerminal = async function(cmdOverride) {
-    const input = #terminal-input;
+    const input = document.getElementById('terminal-input');
     const cmd = (cmdOverride || input?.value || '').trim();
     if (!cmd) return;
     if (input) input.value = '';
 
-    const envSel = #terminal-env;
+    // Record into history (sanitize keys)
+    if (!cmd.includes('API_KEY=') && !cmd.includes('SECRET=')) {
+      window._termHistory.push(cmd);
+      window._termHistoryIndex = -1;
+    }
+
+    const envSel = document.getElementById('terminal-env');
     const env = envSel ? envSel.value : 'host';
-    const out = #terminal-output;
+    const out = document.getElementById('terminal-output');
+    const btnExec = document.getElementById('btn-terminal-exec');
+    const btnCancel = document.getElementById('btn-terminal-cancel');
+    const statusInd = document.getElementById('term-status-indicator');
+    const metaInd = document.getElementById('term-meta-indicator');
+
+    const taskId = 'term-' + Math.random().toString(16).substring(2, 10);
+    window._termActiveTaskId = taskId;
+
+    if (btnExec) btnExec.style.display = 'none';
+    if (btnCancel) btnCancel.style.display = 'inline-block';
+    if (statusInd) statusInd.textContent = 'STATUS: RUNNING [' + env.toUpperCase() + ']';
 
     const isNetwork = /^(?:nmap|ping|traceroute|curl|wget|dig|nslookup|whois|openssl|nikto|gobuster|feroxbuster|ffuf|sqlmap)\b/i.test(cmd);
     if (out) {
       let msg = '\n[' + env + '] $ ' + cmd + '\n';
-      if (isNetwork && state.target) {
-        msg += '[Network Target Scoped: ' + state.target + ']\n';
+      if (isNetwork && (window.state && window.state.target)) {
+        msg += '[Network Target Scoped: ' + window.state.target + ']\n';
       }
       out.textContent += msg;
       out.scrollTop = out.scrollHeight;
@@ -2881,7 +2965,7 @@ UNIFIED_SCRIPT = """
         body: JSON.stringify({
           command: cmd,
           execution_environment: env,
-          target: state.target || null,
+          target: (window.state && window.state.target) || null,
           working_directory: null,
           timeout_seconds: 30
         })
@@ -2896,11 +2980,19 @@ UNIFIED_SCRIPT = """
         out.textContent += header + '\n' + resultText + '\n\n';
         out.scrollTop = out.scrollHeight;
       }
+      if (metaInd) {
+        metaInd.textContent = 'EXIT: ' + (data.exit_code ?? '0') + ' | DURATION: ' + (data.duration_ms ? (data.duration_ms + 'ms') : '--');
+      }
     } catch (err) {
       if (out) {
         out.textContent += '[Transport/Execution Error]: ' + err.message + '\n\n';
         out.scrollTop = out.scrollHeight;
       }
+    } finally {
+      window._termActiveTaskId = null;
+      if (btnExec) btnExec.style.display = 'inline-block';
+      if (btnCancel) btnCancel.style.display = 'none';
+      if (statusInd) statusInd.textContent = 'STATUS: IDLE';
     }
   };
 
