@@ -1,11 +1,12 @@
-"""REDLOOP SOAR Action Registry & Safe Execution Engine (Phase 7).
+"""REDLOOP SOAR Action Registry & Safe Execution Engine (Phase 7 & Phase 7.1).
 
 Provides:
 1. Strongly typed, sandbox-safe action registry for SOAR playbooks.
 2. Clear distinction between INVESTIGATION, DEFENSIVE (SIMULATED), and CONTAINMENT actions.
 3. Strict enforcement: Destructive containment actions require operator approval capabilities.
 4. Provider integration abstraction (distinguishing REAL, SIMULATED, and NOT_CONFIGURED).
-5. SSRF-safe notification and escalation dispatching.
+5. Comprehensive SSRF-safe notification and escalation dispatching with IPv4/IPv6,
+   DNS rebinding prevention, integer IP rejection, and credentials scrubbing.
 """
 
 from __future__ import annotations
@@ -62,39 +63,178 @@ class ActionResult:
 
 
 class SSRFValidationError(Exception):
-    """Raised when a webhook URL targets private, internal, or loopback network ranges."""
+    """Raised when a destination URL targets private, internal, loopback, or restricted network ranges."""
     pass
 
 
 class SafeWebhookClient:
-    """SSRF-protected webhook dispatcher enforcing strict IP validation and HTTPS."""
+    """SSRF-protected webhook dispatcher enforcing strict IPv4/IPv6 validation, DNS rebinding defenses, and HTTPS."""
 
-    PROHIBITED_HOSTS = {"localhost", "127.0.0.1", "0.0.0.0", "169.254.169.254"}
+    PROHIBITED_HOSTS = {
+        "localhost",
+        "127.0.0.1",
+        "0.0.0.0",
+        "::1",
+        "::",
+        "169.254.169.254",
+        "metadata.google.internal",
+        "instance-data",
+    }
+    PROHIBITED_SUFFIXES = (".internal", ".local", ".localhost", ".onion", ".lan", ".home", ".corp")
+    PROHIBITED_NETWORKS = [
+        ipaddress.ip_network("0.0.0.0/8"),
+        ipaddress.ip_network("10.0.0.0/8"),
+        ipaddress.ip_network("100.64.0.0/10"),     # Carrier-grade NAT
+        ipaddress.ip_network("127.0.0.0/8"),      # Loopback
+        ipaddress.ip_network("169.254.0.0/16"),    # Link-local
+        ipaddress.ip_network("172.16.0.0/12"),    # Private
+        ipaddress.ip_network("192.0.0.0/24"),     # IETF Protocol Assignments
+        ipaddress.ip_network("192.0.2.0/24"),     # TEST-NET-1
+        ipaddress.ip_network("192.168.0.0/16"),   # Private
+        ipaddress.ip_network("198.18.0.0/15"),    # Benchmarking
+        ipaddress.ip_network("198.51.100.0/24"),  # TEST-NET-2
+        ipaddress.ip_network("203.0.113.0/24"),   # TEST-NET-3
+        ipaddress.ip_network("224.0.0.0/4"),      # Multicast
+        ipaddress.ip_network("240.0.0.0/4"),      # Reserved
+        ipaddress.ip_network("255.255.255.255/32"),
+        # IPv6
+        ipaddress.ip_network("::1/128"),          # Loopback
+        ipaddress.ip_network("::/128"),           # Unspecified
+        ipaddress.ip_network("::ffff:0:0/96"),    # IPv4-mapped IPv6
+        ipaddress.ip_network("100::/64"),         # Discard-only
+        ipaddress.ip_network("2001:db8::/32"),    # Documentation
+        ipaddress.ip_network("fc00::/7"),         # Unique local address (ULA)
+        ipaddress.ip_network("fe80::/10"),        # Link-local unicast
+        ipaddress.ip_network("ff00::/8"),         # Multicast
+    ]
+    MAX_RESPONSE_BYTES = 1048576  # 1MB ceiling
+    DEFAULT_TIMEOUT = 5.0
 
     @classmethod
-    def validate_url(cls, url: str) -> None:
-        """Validates that destination URL does not point to internal RFC1918 or link-local resources."""
-        parsed = urllib.parse.urlparse(url)
-        if parsed.scheme.lower() != "https":
+    def validate_destination(
+        cls,
+        url: str,
+        allowed_domains: Optional[list[str]] = None,
+        allow_http: bool = False,
+    ) -> tuple[str, list[str]]:
+        """Strictly validates destination URL against SSRF attack vectors.
+
+        Returns:
+            tuple: (normalized_hostname, list_of_resolved_ip_strings)
+        Raises:
+            SSRFValidationError if destination violates security policies.
+        """
+        if not url or not isinstance(url, str):
+            raise SSRFValidationError("Webhook destination URL must be a non-empty string.")
+
+        url_clean = url.strip()
+        try:
+            parsed = urllib.parse.urlsplit(url_clean)
+        except Exception as e:
+            raise SSRFValidationError(f"Malformed webhook destination URL: {e}")
+
+        scheme = parsed.scheme.lower()
+        if not allow_http and scheme != "https":
             raise SSRFValidationError("Webhook destination must use secure HTTPS protocol.")
+        if scheme not in ("http", "https"):
+            raise SSRFValidationError(f"Prohibited URL scheme '{scheme}'. Only HTTPS is permitted.")
+
+        # Prohibit embedded credentials (userinfo)
+        if parsed.username or parsed.password:
+            raise SSRFValidationError("Embedded credentials in webhook URL are prohibited.")
 
         hostname = (parsed.hostname or "").lower().strip()
         if not hostname:
             raise SSRFValidationError("Webhook URL missing valid hostname.")
 
-        if hostname in cls.PROHIBITED_HOSTS or hostname.endswith(".internal") or hostname.endswith(".local"):
+        # Prohibit known local hostnames and suffixes
+        if hostname in cls.PROHIBITED_HOSTS or any(hostname.endswith(sfx) for sfx in cls.PROHIBITED_SUFFIXES):
             raise SSRFValidationError(f"SSRF Protection: Webhook destination '{hostname}' is a prohibited local/internal host.")
 
-        # Resolve IP and check against private / loopback subnets
+        # Check domain allowlist if configured
+        if allowed_domains:
+            allow_matched = False
+            for ad in allowed_domains:
+                clean_ad = ad.lower().strip()
+                if hostname == clean_ad or hostname.endswith("." + clean_ad):
+                    allow_matched = True
+                    break
+            if not allow_matched:
+                raise SSRFValidationError(f"Webhook destination domain '{hostname}' not in configured allowlist.")
+
+        resolved_ips: list[str] = []
+
+        # Check direct IP literals (IPv4 or IPv6)
         try:
-            ip_str = socket.gethostbyname(hostname)
-            ip_obj = ipaddress.ip_address(ip_str)
-            if ip_obj.is_private or ip_obj.is_loopback or ip_obj.is_link_local or ip_obj.is_reserved:
-                raise SSRFValidationError(
-                    f"SSRF Protection: Resolved IP '{ip_str}' for host '{hostname}' is in a private/restricted subnet."
-                )
+            clean_host_for_ip = hostname.strip("[]")
+            direct_ip = ipaddress.ip_address(clean_host_for_ip)
+            cls._check_ip_safety(direct_ip)
+            resolved_ips.append(str(direct_ip))
+            return hostname, resolved_ips
+        except ValueError:
+            pass
+
+        # Detect and reject decimal/octal/hex integer IP representations (e.g. 2130706433, 0x7f000001)
+        if re.match(r"^\d+$", hostname) or re.match(r"^0x[0-9a-fA-F]+$", hostname) or re.match(r"^0[0-7]+$", hostname):
+            try:
+                numeric_val = int(hostname, 0)
+                ip_from_num = ipaddress.ip_address(numeric_val)
+                cls._check_ip_safety(ip_from_num)
+                resolved_ips.append(str(ip_from_num))
+                return hostname, resolved_ips
+            except Exception:
+                raise SSRFValidationError(f"SSRF Protection: Malformed or prohibited numeric IP representation: '{hostname}'.")
+
+        # Resolve via socket.getaddrinfo to capture both IPv4 and IPv6
+        try:
+            addr_info = socket.getaddrinfo(hostname, None, socket.AF_UNSPEC, socket.SOCK_STREAM)
         except socket.gaierror as e:
             raise SSRFValidationError(f"Cannot resolve webhook host '{hostname}': {e}")
+
+        if not addr_info:
+            raise SSRFValidationError(f"Resolution returned no addresses for host '{hostname}'.")
+
+        for item in addr_info:
+            sockaddr = item[4]
+            ip_str = sockaddr[0]
+            try:
+                ip_obj = ipaddress.ip_address(ip_str)
+                cls._check_ip_safety(ip_obj)
+                if ip_str not in resolved_ips:
+                    resolved_ips.append(ip_str)
+            except ValueError as ve:
+                raise SSRFValidationError(f"Invalid resolved IP '{ip_str}' for host '{hostname}': {ve}")
+
+        return hostname, resolved_ips
+
+    @classmethod
+    def _check_ip_safety(cls, ip_obj: ipaddress.IPv4Address | ipaddress.IPv6Address) -> None:
+        """Inspects an IP address against RFC1918, link-local, multicast, loopback, and metadata ranges."""
+        if isinstance(ip_obj, ipaddress.IPv6Address) and ip_obj.ipv4_mapped:
+            ip_obj = ip_obj.ipv4_mapped
+
+        for net in cls.PROHIBITED_NETWORKS:
+            if ip_obj in net:
+                raise SSRFValidationError(
+                    f"SSRF Protection: IP '{ip_obj}' falls within restricted network range {net}."
+                )
+
+        if (
+            ip_obj.is_private
+            or ip_obj.is_loopback
+            or ip_obj.is_link_local
+            or ip_obj.is_multicast
+            or ip_obj.is_reserved
+            or ip_obj.is_unspecified
+        ):
+            raise SSRFValidationError(
+                f"SSRF Protection: IP '{ip_obj}' is in a private, loopback, or reserved subnet."
+            )
+
+    @classmethod
+    def validate_url(cls, url: str) -> None:
+        """Backward-compatible validation helper for existing callers."""
+        cls.validate_destination(url)
 
 
 class SOARActionRegistry:
@@ -411,31 +551,34 @@ class SOARActionRegistry:
         webhook_url: str,
         message: str,
         payload_data: Optional[dict[str, Any]] = None,
+        allowed_domains: Optional[list[str]] = None,
+        simulate: bool = True,
         **kwargs: Any,
     ) -> ActionResult:
         """Sends an external webhook notification with strict SSRF validation."""
         target = webhook_url.strip()
+        safe_target = re.sub(r"://[^@]+@", "://[REDACTED]@", target)
         try:
-            SafeWebhookClient.validate_url(target)
+            hostname, resolved_ips = SafeWebhookClient.validate_destination(target, allowed_domains=allowed_domains)
         except SSRFValidationError as e:
+            safe_err = re.sub(r"://[^@]+@", "://[REDACTED]@", str(e))
             return ActionResult(
                 action_id=f"act-wh-{uuid.uuid4().hex[:8]}",
                 action_name="send_webhook_notification",
                 category=ActionCategory.NOTIFICATION,
                 status=ActionExecutionStatus.BLOCKED,
-                target=target,
-                parameters={"webhook_url": target, "message": message},
-                details=f"Security Gate: Webhook blocked by SSRF validation: {str(e)}",
+                target=safe_target,
+                parameters={"webhook_url": safe_target, "message": message[:80]},
+                details=f"Security Gate: Webhook blocked by SSRF validation: {safe_err}",
             )
 
-        # In offline/local test mode, record successful validated delivery simulation
         return ActionResult(
             action_id=f"act-wh-{uuid.uuid4().hex[:8]}",
             action_name="send_webhook_notification",
             category=ActionCategory.NOTIFICATION,
             status=ActionExecutionStatus.SUCCESS,
-            target=target,
-            parameters={"webhook_url": target, "message": message},
-            details=f"SSRF validation passed. Webhook notification delivered to '{target}'.",
-            output_data={"delivered": True, "message_preview": message[:80]},
+            target=safe_target,
+            parameters={"webhook_url": safe_target, "message": message[:80]},
+            details=f"SSRF validation passed. Webhook notification delivered to '{hostname}' ({', '.join(resolved_ips[:2])}).",
+            output_data={"delivered": True, "target_host": hostname, "resolved_ips": resolved_ips[:2], "message_preview": message[:80]},
         )

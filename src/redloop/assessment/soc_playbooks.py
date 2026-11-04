@@ -397,11 +397,32 @@ class PlaybookApprovalStore:
                             )
                             return False, f"Execution rejected: Action command or parameters have been altered since approval was granted.", None
 
-                    # Atomically consume
-                    conn.execute(
-                        "UPDATE playbook_approval_capabilities SET consumed = 1, consumed_at = ? WHERE capability_id = ?",
+                    # Atomically consume via CAS
+                    cur_upd = conn.execute(
+                        "UPDATE playbook_approval_capabilities SET consumed = 1, consumed_at = ? WHERE capability_id = ? AND consumed = 0",
                         (now_iso, cap_id),
                     )
+                    if cur_upd.rowcount != 1:
+                        conn.execute(
+                            """
+                            INSERT INTO playbook_audit_trail
+                            (event_id, timestamp, event_type, capability_id, playbook_id, step_id, actor, action_command, status, details)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                            """,
+                            (
+                                f"aud-{uuid.uuid4().hex[:10]}",
+                                now_iso,
+                                "REPLAY_ATTEMPT_BLOCKED",
+                                cap_id,
+                                playbook_id,
+                                step_id,
+                                operator,
+                                bound_cmd,
+                                "REJECTED_CONCURRENT_CONSUMPTION",
+                                "Capability token was concurrently consumed by another execution.",
+                            ),
+                        )
+                        return False, "Execution rejected: Capability token concurrently consumed. Replay attempt blocked.", None
                     conn.execute(
                         """
                         INSERT INTO playbook_audit_trail

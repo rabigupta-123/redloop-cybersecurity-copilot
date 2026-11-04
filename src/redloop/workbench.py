@@ -42,7 +42,7 @@ from pathlib import Path
 
 
 
-from typing import Annotated, Any
+from typing import Annotated, Any, Optional
 
 
 
@@ -18853,6 +18853,150 @@ def register_workbench_routes(
         if not case:
             raise HTTPException(status_code=404, detail=f"Case '{case_id}' not found.")
         return JSONResponse({"success": True, "timeline": [t.to_dict() for t in case.timeline]})
+
+    @app.get("/api/cases/{case_id}/integrity")
+    async def get_case_integrity_endpoint(request: Request, case_id: str):
+        _require_same_origin(request)
+        from redloop.assessment.case_management import CaseManager
+        cm = CaseManager.get_instance(db_path=Path(db_path).parent / "cases.db" if db_path else None)
+        report = cm.verify_case_integrity(case_id)
+        if report.get("status") == "NOT_FOUND":
+            raise HTTPException(status_code=404, detail=report.get("details", "Case not found"))
+        return JSONResponse({"success": True, "integrity": report})
+
+    @app.get("/api/cases/{case_id}/audit-report")
+    async def get_case_audit_report_endpoint(request: Request, case_id: str):
+        _require_same_origin(request)
+        from redloop.assessment.case_management import CaseManager
+        cm = CaseManager.get_instance(db_path=Path(db_path).parent / "cases.db" if db_path else None)
+        report = cm.export_case_audit_report(case_id)
+        if "error" in report:
+            raise HTTPException(status_code=404, detail=report["error"])
+        return JSONResponse({"success": True, "audit_report": report})
+
+    # ==========================================================================
+    # PHASE 8: ENTERPRISE SECURITY INTEGRATIONS GATEWAY ROUTES
+    # ==========================================================================
+
+    @app.get("/api/integrations")
+    async def list_integrations_endpoint(request: Request, category: Optional[str] = None):
+        _require_same_origin(request)
+        from redloop.integrations.base import ProviderCategory
+        from redloop.integrations.registry import IntegrationRegistry
+        registry = IntegrationRegistry.get_instance()
+        cat_enum = None
+        if category:
+            try:
+                cat_enum = ProviderCategory(category.upper())
+            except Exception:
+                pass
+        providers = registry.list_providers(category=cat_enum)
+        return JSONResponse({"success": True, "providers": providers, "total": len(providers)})
+
+    @app.get("/api/integrations/audit")
+    async def get_integrations_audit_endpoint(request: Request, limit: int = 50):
+        _require_same_origin(request)
+        from redloop.integrations.registry import IntegrationRegistry
+        registry = IntegrationRegistry.get_instance()
+        return JSONResponse({"success": True, "audit_log": registry.get_audit_log(limit=limit)})
+
+    @app.get("/api/integrations/{provider_id}")
+    async def get_integration_endpoint(request: Request, provider_id: str):
+        _require_same_origin(request)
+        from redloop.integrations.registry import IntegrationRegistry
+        registry = IntegrationRegistry.get_instance()
+        p = registry.get_provider(provider_id)
+        if not p:
+            raise HTTPException(status_code=404, detail=f"Provider '{provider_id}' not found.")
+        return JSONResponse({"success": True, "provider": p.to_dict()})
+
+    @app.post("/api/integrations/{provider_id}/test")
+    async def test_integration_endpoint(request: Request, provider_id: str):
+        _require_same_origin(request)
+        from redloop.integrations.registry import IntegrationRegistry
+        registry = IntegrationRegistry.get_instance()
+        p = registry.get_provider(provider_id)
+        if not p:
+            raise HTTPException(status_code=404, detail=f"Provider '{provider_id}' not found.")
+        health = registry.test_provider(provider_id)
+        return JSONResponse({"success": True, "health": health.to_dict()})
+
+    @app.get("/api/integrations/{provider_id}/health")
+    async def get_integration_health_endpoint(request: Request, provider_id: str):
+        _require_same_origin(request)
+        from redloop.integrations.registry import IntegrationRegistry
+        registry = IntegrationRegistry.get_instance()
+        p = registry.get_provider(provider_id)
+        if not p:
+            raise HTTPException(status_code=404, detail=f"Provider '{provider_id}' not found.")
+        return JSONResponse({"success": True, "health": p.get_health().to_dict()})
+
+    @app.get("/api/integrations/{provider_id}/capabilities")
+    async def get_integration_capabilities_endpoint(request: Request, provider_id: str):
+        _require_same_origin(request)
+        from redloop.integrations.registry import IntegrationRegistry
+        registry = IntegrationRegistry.get_instance()
+        p = registry.get_provider(provider_id)
+        if not p:
+            raise HTTPException(status_code=404, detail=f"Provider '{provider_id}' not found.")
+        return JSONResponse({"success": True, "provider_id": provider_id, "capabilities": p.get_capabilities()})
+
+    @app.post("/api/integrations/{provider_id}/enable")
+    async def enable_integration_endpoint(request: Request, provider_id: str):
+        _require_same_origin(request)
+        from redloop.integrations.registry import IntegrationRegistry
+        registry = IntegrationRegistry.get_instance()
+        ok = registry.enable_provider(provider_id, enabled=True)
+        if not ok:
+            raise HTTPException(status_code=404, detail=f"Provider '{provider_id}' not found.")
+        return JSONResponse({"success": True, "provider_id": provider_id, "enabled": True})
+
+    @app.post("/api/integrations/{provider_id}/disable")
+    async def disable_integration_endpoint(request: Request, provider_id: str):
+        _require_same_origin(request)
+        from redloop.integrations.registry import IntegrationRegistry
+        registry = IntegrationRegistry.get_instance()
+        ok = registry.enable_provider(provider_id, enabled=False)
+        if not ok:
+            raise HTTPException(status_code=404, detail=f"Provider '{provider_id}' not found.")
+        return JSONResponse({"success": True, "provider_id": provider_id, "enabled": False})
+
+    @app.get("/api/integrations/{provider_id}/events")
+    async def get_integration_events_endpoint(request: Request, provider_id: str, limit: int = 50):
+        _require_same_origin(request)
+        from redloop.integrations.registry import IntegrationRegistry
+        registry = IntegrationRegistry.get_instance()
+        p = registry.get_provider(provider_id)
+        if not p:
+            raise HTTPException(status_code=404, detail=f"Provider '{provider_id}' not found.")
+        events = registry.sync_provider(provider_id, limit=limit)
+        return JSONResponse({"success": True, "provider_id": provider_id, "events": [e.to_dict() for e in events], "count": len(events)})
+
+    @app.post("/api/integrations/sync")
+    async def sync_integrations_endpoint(request: Request):
+        _require_same_origin(request)
+        try:
+            body = await request.json()
+        except Exception:
+            body = {}
+        provider_id = body.get("provider_id")
+        limit = int(body.get("limit", 50))
+        from redloop.integrations.registry import IntegrationRegistry
+        registry = IntegrationRegistry.get_instance()
+        job_id = registry.start_sync_job(provider_id=provider_id, limit_per_provider=limit)
+        job = registry.get_sync_job(job_id)
+        return JSONResponse({"success": True, "sync_job": job})
+
+    @app.get("/api/integrations/sync/{job_id}")
+    async def get_sync_job_endpoint(request: Request, job_id: str):
+        _require_same_origin(request)
+        from redloop.integrations.registry import IntegrationRegistry
+        registry = IntegrationRegistry.get_instance()
+        job = registry.get_sync_job(job_id)
+        if not job:
+            raise HTTPException(status_code=404, detail=f"Sync job '{job_id}' not found.")
+        return JSONResponse({"success": True, "sync_job": job})
+
 
 
 

@@ -1,16 +1,19 @@
-"""REDLOOP Incident Case Management & Investigation Tracking Engine (Phase 7).
+"""REDLOOP Incident Case Management & Investigation Tracking Engine (Phase 7 & Phase 7.1).
 
 Provides:
 1. End-to-end Case Management lifecycle tracking:
    OPEN -> INVESTIGATING -> PENDING_APPROVAL -> CONTAINMENT_IN_PROGRESS ->
    MONITORING -> RESOLVED -> CLOSED -> REOPENED.
 2. Linking to SOC Alerts, Incident records, Threat Hunt findings, and Evidence Ledger items.
-3. Persistent SQLite storage with migrations, audit trails, and timeline event history.
-4. Preserves evidence references without mutating underlying security event records.
+3. Cryptographically hash-chained timeline event audit history with automated tamper detection.
+4. Exportable audit reports and evidence verification reports.
+5. Persistent SQLite storage with migrations, audit trails, and timeline event history.
+6. Preserves evidence references without mutating underlying security event records.
 """
 
 from __future__ import annotations
 
+import hashlib
 import json
 import sqlite3
 import threading
@@ -62,16 +65,27 @@ class CaseNote:
 
 @dataclass
 class CaseTimelineEvent:
-    """Chronological event logged during the lifecycle of a case."""
+    """Chronological event logged during the lifecycle of a case with cryptographic forward hashing."""
     event_id: str
     event_type: str
     actor: str
     description: str
     data: dict[str, Any] = field(default_factory=dict)
     timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    prev_hash: str = "0" * 64
+    entry_hash: str = ""
+
+    def compute_hash(self) -> str:
+        """Computes deterministic SHA-256 digest of timeline event."""
+        canonical_data = json.dumps(self.data, sort_keys=True, separators=(",", ":"))
+        payload = f"{self.prev_hash}|{self.event_id}|{self.event_type}|{self.actor}|{self.description}|{self.timestamp}|{canonical_data}"
+        return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
     def to_dict(self) -> dict[str, Any]:
-        return asdict(self)
+        d = asdict(self)
+        if not self.entry_hash:
+            d["entry_hash"] = self.compute_hash()
+        return d
 
 
 @dataclass
@@ -202,6 +216,35 @@ class CaseManager:
             finally:
                 conn.close()
 
+    def _append_timeline_event(
+        self,
+        case: IncidentCase,
+        event_type: str,
+        actor: str,
+        description: str,
+        data: Optional[dict[str, Any]] = None,
+        timestamp: Optional[str] = None,
+    ) -> CaseTimelineEvent:
+        """Helper to append a cryptographically forward-hashed timeline event to a case."""
+        now_ts = timestamp or datetime.now(timezone.utc).isoformat()
+        prev_hash = "0" * 64
+        if case.timeline:
+            prev_entry = case.timeline[-1]
+            prev_hash = prev_entry.entry_hash or prev_entry.compute_hash()
+
+        evt = CaseTimelineEvent(
+            event_id=f"evt-{uuid.uuid4().hex[:8]}",
+            event_type=event_type,
+            actor=actor,
+            description=description,
+            data=data or {},
+            timestamp=now_ts,
+            prev_hash=prev_hash,
+        )
+        evt.entry_hash = evt.compute_hash()
+        case.timeline.append(evt)
+        return evt
+
     def create_case(
         self,
         title: str,
@@ -215,18 +258,9 @@ class CaseManager:
         related_indicators: Optional[dict[str, list[str]]] = None,
         creator: str = "system",
     ) -> IncidentCase:
-        """Creates and stores a new incident case."""
+        """Creates and stores a new incident case with cryptographic genesis timeline event."""
         case_id = f"case-{uuid.uuid4().hex[:8]}"
         now = datetime.now(timezone.utc).isoformat()
-
-        init_timeline = CaseTimelineEvent(
-            event_id=f"evt-{uuid.uuid4().hex[:8]}",
-            event_type="CASE_CREATED",
-            actor=creator,
-            description=f"Case opened by {creator}: '{title}'.",
-            data={"severity": severity.value, "priority": priority.value},
-            timestamp=now,
-        )
 
         case = IncidentCase(
             case_id=case_id,
@@ -243,7 +277,16 @@ class CaseManager:
             evidence_ids=evidence_ids or [],
             related_indicators=related_indicators or {},
             notes=[],
-            timeline=[init_timeline],
+            timeline=[],
+        )
+
+        self._append_timeline_event(
+            case,
+            event_type="CASE_CREATED",
+            actor=creator,
+            description=f"Case opened by {creator}: '{title}'.",
+            data={"severity": severity.value, "priority": priority.value},
+            timestamp=now,
         )
 
         self._save_case(case)
@@ -278,7 +321,6 @@ class CaseManager:
             raise ValueError(f"Case '{case_id}' not found.")
 
         now = datetime.now(timezone.utc).isoformat()
-        events: list[CaseTimelineEvent] = []
 
         # State transition validation
         if status is not None and status != case.status:
@@ -288,15 +330,13 @@ class CaseManager:
 
             from_state = case.status
             case.status = status
-            events.append(
-                CaseTimelineEvent(
-                    event_id=f"evt-{uuid.uuid4().hex[:8]}",
-                    event_type="STATUS_CHANGED",
-                    actor=actor,
-                    description=f"Status transitioned from {from_state.value} to {status.value}.",
-                    data={"from": from_state.value, "to": status.value},
-                    timestamp=now,
-                )
+            self._append_timeline_event(
+                case,
+                event_type="STATUS_CHANGED",
+                actor=actor,
+                description=f"Status transitioned from {from_state.value} to {status.value}.",
+                data={"from": from_state.value, "to": status.value},
+                timestamp=now,
             )
 
             # Reopen handling
@@ -314,52 +354,45 @@ class CaseManager:
         if severity is not None and severity != case.severity:
             old_sev = case.severity
             case.severity = severity
-            events.append(
-                CaseTimelineEvent(
-                    event_id=f"evt-{uuid.uuid4().hex[:8]}",
-                    event_type="SEVERITY_CHANGED",
-                    actor=actor,
-                    description=f"Severity updated from {old_sev.value} to {severity.value}.",
-                    data={"from": old_sev.value, "to": severity.value},
-                    timestamp=now,
-                )
+            self._append_timeline_event(
+                case,
+                event_type="SEVERITY_CHANGED",
+                actor=actor,
+                description=f"Severity updated from {old_sev.value} to {severity.value}.",
+                data={"from": old_sev.value, "to": severity.value},
+                timestamp=now,
             )
 
         if priority is not None and priority != case.priority:
             old_pri = case.priority
             case.priority = priority
-            events.append(
-                CaseTimelineEvent(
-                    event_id=f"evt-{uuid.uuid4().hex[:8]}",
-                    event_type="PRIORITY_CHANGED",
-                    actor=actor,
-                    description=f"Priority updated from {old_pri.value} to {priority.value}.",
-                    data={"from": old_pri.value, "to": priority.value},
-                    timestamp=now,
-                )
+            self._append_timeline_event(
+                case,
+                event_type="PRIORITY_CHANGED",
+                actor=actor,
+                description=f"Priority updated from {old_pri.value} to {priority.value}.",
+                data={"from": old_pri.value, "to": priority.value},
+                timestamp=now,
             )
 
         if assigned_to is not None and assigned_to != case.assigned_to:
             old_assignee = case.assigned_to
             case.assigned_to = assigned_to
-            events.append(
-                CaseTimelineEvent(
-                    event_id=f"evt-{uuid.uuid4().hex[:8]}",
-                    event_type="ASSIGNEE_CHANGED",
-                    actor=actor,
-                    description=f"Assignment changed from '{old_assignee}' to '{assigned_to}'.",
-                    data={"from": old_assignee, "to": assigned_to},
-                    timestamp=now,
-                )
+            self._append_timeline_event(
+                case,
+                event_type="ASSIGNEE_CHANGED",
+                actor=actor,
+                description=f"Assignment changed from '{old_assignee}' to '{assigned_to}'.",
+                data={"from": old_assignee, "to": assigned_to},
+                timestamp=now,
             )
 
         case.updated_at = now
-        case.timeline.extend(events)
         self._save_case(case)
         return case
 
     def add_note(self, case_id: str, author: str, content: str) -> CaseNote:
-        """Adds an analyst investigation note to the case."""
+        """Adds an analyst investigation note to the case and logs timeline event."""
         case = self.get_case(case_id)
         if not case:
             raise ValueError(f"Case '{case_id}' not found.")
@@ -371,15 +404,13 @@ class CaseManager:
         )
         case.notes.append(note)
         case.updated_at = note.timestamp
-        case.timeline.append(
-            CaseTimelineEvent(
-                event_id=f"evt-{uuid.uuid4().hex[:8]}",
-                event_type="NOTE_ADDED",
-                actor=author,
-                description=f"Analyst note added by {author}.",
-                data={"note_id": note.note_id, "content_snippet": content[:60]},
-                timestamp=note.timestamp,
-            )
+        self._append_timeline_event(
+            case,
+            event_type="NOTE_ADDED",
+            actor=author,
+            description=f"Analyst note added by {author}.",
+            data={"note_id": note.note_id, "content_snippet": content[:60]},
+            timestamp=note.timestamp,
         )
         self._save_case(case)
         return note
@@ -399,19 +430,90 @@ class CaseManager:
         if added:
             now = datetime.now(timezone.utc).isoformat()
             case.updated_at = now
-            case.timeline.append(
-                CaseTimelineEvent(
-                    event_id=f"evt-{uuid.uuid4().hex[:8]}",
-                    event_type="EVIDENCE_ATTACHED",
-                    actor=actor,
-                    description=f"Attached {len(added)} evidence records: {', '.join(added)}",
-                    data={"evidence_ids": added},
-                    timestamp=now,
-                )
+            self._append_timeline_event(
+                case,
+                event_type="EVIDENCE_ATTACHED",
+                actor=actor,
+                description=f"Attached {len(added)} evidence records: {', '.join(added)}",
+                data={"evidence_ids": added},
+                timestamp=now,
             )
             self._save_case(case)
 
         return case.evidence_ids
+
+    def verify_case_integrity(self, case_id: str) -> dict[str, Any]:
+        """Performs cryptographic hash-chain verification and evidence reference validation."""
+        case = self.get_case(case_id)
+        if not case:
+            return {"case_id": case_id, "is_valid": False, "status": "NOT_FOUND", "details": f"Case '{case_id}' not found."}
+
+        timeline = case.timeline
+        broken_index: Optional[int] = None
+        details = "Timeline hash-chain is intact and verified."
+
+        for i, ev in enumerate(timeline):
+            expected_prev = "0" * 64 if i == 0 else (timeline[i - 1].entry_hash or timeline[i - 1].compute_hash())
+            if ev.prev_hash != expected_prev:
+                broken_index = i
+                details = f"Hash-chain linkage broken at event {i} ({ev.event_id}): expected prev_hash '{expected_prev[:12]}...', got '{ev.prev_hash[:12]}...'."
+                break
+
+            computed_hash = ev.compute_hash()
+            if ev.entry_hash and ev.entry_hash != computed_hash:
+                broken_index = i
+                details = f"Tamper detected at event {i} ({ev.event_id}): stored hash '{ev.entry_hash[:12]}...' does not match computed hash '{computed_hash[:12]}...'."
+                break
+
+        is_valid = broken_index is None
+
+        # Evidence ID reference checks
+        malformed_evidence = [e for e in case.evidence_ids if not isinstance(e, str) or not e.strip()]
+        if malformed_evidence:
+            is_valid = False
+            details += f" Invalid evidence reference identifiers found: {malformed_evidence}"
+
+        return {
+            "case_id": case.case_id,
+            "is_valid": is_valid,
+            "status": "INTACT" if is_valid else "TAMPERED",
+            "timeline_events_verified": len(timeline),
+            "evidence_references_verified": len(case.evidence_ids),
+            "broken_index": broken_index,
+            "details": details,
+            "verified_at": datetime.now(timezone.utc).isoformat(),
+            "limitations_notice": (
+                "NOTICE: Local cryptographic hash chaining provides tamper detection against accidental corruption "
+                "or unauthorized SQLite modifications. However, a local administrator with full database write access "
+                "can alter records and recompute hashes unless entries are anchored to an external immutable ledger or remote notary."
+            ),
+        }
+
+    def export_case_audit_report(self, case_id: str) -> dict[str, Any]:
+        """Generates an exportable comprehensive audit verification report for an incident case."""
+        case = self.get_case(case_id)
+        if not case:
+            return {"error": f"Case '{case_id}' not found"}
+
+        integrity = self.verify_case_integrity(case_id)
+        return {
+            "case_id": case.case_id,
+            "title": case.title,
+            "status": case.status.value,
+            "severity": case.severity.value,
+            "priority": case.priority.value,
+            "assigned_to": case.assigned_to,
+            "created_at": case.created_at,
+            "updated_at": case.updated_at,
+            "closure_reason": case.closure_reason,
+            "reopen_count": case.reopen_count,
+            "integrity_verification": integrity,
+            "evidence_ids": case.evidence_ids,
+            "linked_alert_ids": case.linked_alert_ids,
+            "notes_count": len(case.notes),
+            "timeline": [t.to_dict() for t in case.timeline],
+            "exported_at": datetime.now(timezone.utc).isoformat(),
+        }
 
     def list_cases(
         self,
@@ -489,7 +591,14 @@ class CaseManager:
         notes = [CaseNote(**n) for n in notes_raw]
 
         tl_raw = json.loads(row["timeline_json"])
-        timeline = [CaseTimelineEvent(**t) for t in tl_raw]
+        timeline = []
+        for t in tl_raw:
+            # Handle backward compatibility if prev_hash / entry_hash was absent
+            if "prev_hash" not in t:
+                t["prev_hash"] = "0" * 64
+            if "entry_hash" not in t:
+                t["entry_hash"] = ""
+            timeline.append(CaseTimelineEvent(**t))
 
         return IncidentCase(
             case_id=row["case_id"],

@@ -44,6 +44,7 @@ class WorkflowState(str, Enum):
     FAILED = "FAILED"
     CANCELLED = "CANCELLED"
     BLOCKED = "BLOCKED"
+    TIMED_OUT = "TIMED_OUT"
 
 
 class TriggerType(str, Enum):
@@ -165,6 +166,7 @@ class SOAREngine:
             WorkflowState.CANCELLED,
             WorkflowState.BLOCKED,
             WorkflowState.FAILED,
+            WorkflowState.TIMED_OUT,
         },
         WorkflowState.PAUSED: {WorkflowState.RUNNING, WorkflowState.CANCELLED},
         WorkflowState.COMPLETED: set(),
@@ -175,7 +177,7 @@ class SOAREngine:
     }
 
     def __init__(self, db_path: Optional[Path | str] = None) -> None:
-        self._op_lock = threading.Lock()
+        self._op_lock = threading.RLock()
         self.db_path = Path(db_path) if db_path else Path("data/soar.db")
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
         self._init_db()
@@ -230,6 +232,14 @@ class SOAREngine:
                         )
                     """)
                     conn.execute("""
+                        CREATE TABLE IF NOT EXISTS soar_idempotency (
+                            idempotency_key TEXT PRIMARY KEY,
+                            execution_id TEXT NOT NULL,
+                            workflow_id TEXT NOT NULL,
+                            created_at TEXT NOT NULL
+                        )
+                    """)
+                    conn.execute("""
                         CREATE TABLE IF NOT EXISTS soar_audit_log (
                             audit_id TEXT PRIMARY KEY,
                             execution_id TEXT,
@@ -243,6 +253,7 @@ class SOAREngine:
                     """)
             finally:
                 conn.close()
+        self.recover_interrupted_executions()
 
     def reset_state(self) -> None:
         """Clears execution and trigger deduplication records (for test isolation)."""
@@ -349,11 +360,17 @@ class SOAREngine:
         capability_token: Optional[str] = None,
         operator: str = "operator",
         stored_events: Optional[list[Any]] = None,
+        idempotency_key: Optional[str] = None,
     ) -> WorkflowExecutionRecord:
         """Executes a SOAR workflow sequentially through its defined steps."""
         wf = self._WORKFLOWS.get(workflow_id)
         if not wf:
             raise ValueError(f"Workflow '{workflow_id}' not found in registry.")
+
+        if idempotency_key:
+            existing = self.get_execution_by_idempotency_key(idempotency_key)
+            if existing:
+                return existing
 
         # Deduplication check
         if not allow_rerun and self.is_duplicate_trigger(workflow_id, trigger):
@@ -367,6 +384,18 @@ class SOAREngine:
 
         # Audit transition to READY then RUNNING
         self._log_state_transition(exec_id, workflow_id, WorkflowState.READY, WorkflowState.RUNNING, actor=operator)
+
+        if idempotency_key:
+            with self._op_lock:
+                conn = self._get_connection()
+                try:
+                    with conn:
+                        conn.execute(
+                            "INSERT OR REPLACE INTO soar_idempotency (idempotency_key, execution_id, workflow_id, created_at) VALUES (?, ?, ?, ?)",
+                            (idempotency_key, exec_id, workflow_id, now_iso),
+                        )
+                finally:
+                    conn.close()
 
         # Register dedup record
         with self._op_lock:
@@ -453,6 +482,78 @@ class SOAREngine:
         record.completed_at = datetime.now(timezone.utc).isoformat()
         self._save_execution_record(record)
         return record
+
+    def recover_interrupted_executions(self) -> int:
+        """Scans for executions left in RUNNING or EXECUTING state across restarts and marks them FAILED."""
+        with self._op_lock:
+            conn = self._get_connection()
+            try:
+                now_iso = datetime.now(timezone.utc).isoformat()
+                with conn:
+                    cur = conn.execute(
+                        """
+                        UPDATE soar_executions
+                        SET state = 'FAILED',
+                            completed_at = ?,
+                            error_message = 'Execution interrupted by host restart or worker termination; recovered during startup.'
+                        WHERE state IN ('RUNNING', 'EXECUTING')
+                        """,
+                        (now_iso,),
+                    )
+                    return cur.rowcount
+            finally:
+                conn.close()
+
+    def check_approval_timeouts(self, max_wait_seconds: float = 3600.0) -> list[str]:
+        """Transitions executions waiting for approval beyond max_wait_seconds to TIMED_OUT."""
+        timed_out_ids: list[str] = []
+        with self._op_lock:
+            conn = self._get_connection()
+            try:
+                cur = conn.execute("SELECT * FROM soar_executions WHERE state = 'WAITING_FOR_APPROVAL'")
+                rows = cur.fetchall()
+                now = datetime.now(timezone.utc)
+                for row in rows:
+                    st_str = row["started_at"]
+                    try:
+                        st_dt = datetime.fromisoformat(st_str)
+                        if (now - st_dt).total_seconds() > max_wait_seconds:
+                            exec_id = row["execution_id"]
+                            wf_id = row["workflow_id"]
+                            now_iso = now.isoformat()
+                            with conn:
+                                conn.execute(
+                                    """
+                                    UPDATE soar_executions
+                                    SET state = 'TIMED_OUT', completed_at = ?,
+                                        error_message = ?
+                                    WHERE execution_id = ?
+                                    """,
+                                    (now_iso, f"Approval window expired after {max_wait_seconds}s.", exec_id),
+                                )
+                            self._log_state_transition(
+                                exec_id, wf_id, WorkflowState.WAITING_FOR_APPROVAL, WorkflowState.TIMED_OUT,
+                                actor="system_timeout_daemon", details="Approval window exceeded",
+                            )
+                            timed_out_ids.append(exec_id)
+                    except Exception:
+                        pass
+            finally:
+                conn.close()
+        return timed_out_ids
+
+    def get_execution_by_idempotency_key(self, idempotency_key: str) -> Optional[WorkflowExecutionRecord]:
+        """Looks up an execution record by idempotency key."""
+        with self._op_lock:
+            conn = self._get_connection()
+            try:
+                cur = conn.execute("SELECT execution_id FROM soar_idempotency WHERE idempotency_key = ?", (idempotency_key,))
+                row = cur.fetchone()
+                if row:
+                    return self.get_execution(row["execution_id"])
+                return None
+            finally:
+                conn.close()
 
     def cancel_execution(self, execution_id: str, operator: str = "operator", reason: str = "") -> WorkflowExecutionRecord:
         """Gracefully cancels a running or approval-waiting workflow execution."""
