@@ -5723,3 +5723,9 @@ def create_unified_app(db_path: str, scope_manager: ScopeManager | None = None) 
     """Build unified single-page application with all surfaces bound to real APIs."""
     from redloop.dashboard import create_app
     return create_app(db_path, scope_manager=scope_manager)
+
+
+def get_app() -> FastAPI:
+    """Zero-argument factory for ASGI servers like Uvicorn."""
+    from redloop.config import settings
+    return create_unified_app(str(settings.audit_db))

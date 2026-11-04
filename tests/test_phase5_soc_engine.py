@@ -557,6 +557,7 @@ def test_21_response_playbooks_catalog_and_content():
 
 def test_22_response_playbooks_approval_enforcement():
     """Enforces explicit human approval for containment commands."""
+    SOCPlaybookEngine._reset_playbooks()
     res_reject = SOCPlaybookEngine.approve_step("PB-BRUTE", "step-brute-2", approver="analyst_alice", approved=False)
     assert res_reject["success"] is True
     assert res_reject["status"] == PlaybookStepStatus.REJECTED.value
@@ -564,6 +565,7 @@ def test_22_response_playbooks_approval_enforcement():
     res_approve = SOCPlaybookEngine.approve_step("PB-BRUTE", "step-brute-2", approver="lead_bob", approved=True)
     assert res_approve["success"] is True
     assert res_approve["status"] == PlaybookStepStatus.APPROVED.value
+    SOCPlaybookEngine._reset_playbooks()
 
 
 # =========================================================================

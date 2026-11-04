@@ -217,8 +217,10 @@ class SOCDetectionEngine:
                 url_str = ev.raw_data
 
             if url_str:
-                has_sqli = any(p.search(url_str) for p in self.SQLI_PATTERNS)
-                has_traversal = any(p.search(url_str) for p in self.TRAVERSAL_PATTERNS)
+                import urllib.parse
+                url_decoded = urllib.parse.unquote(url_str)
+                has_sqli = any(p.search(url_str) or p.search(url_decoded) for p in self.SQLI_PATTERNS)
+                has_traversal = any(p.search(url_str) or p.search(url_decoded) for p in self.TRAVERSAL_PATTERNS)
 
                 if has_sqli:
                     new_alerts.append(

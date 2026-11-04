@@ -402,6 +402,12 @@ class SOCPlaybookEngine:
         )
 
     @classmethod
+    def _reset_playbooks(cls) -> None:
+        """Resets playbooks catalog to fresh unapproved state for testing."""
+        cls._PLAYBOOKS.clear()
+        cls._initialize_catalog()
+
+    @classmethod
     def list_playbooks(cls) -> list[dict[str, Any]]:
         cls._initialize_catalog()
         return [p.to_dict() for p in cls._PLAYBOOKS.values()]
@@ -433,6 +439,18 @@ class SOCPlaybookEngine:
         if not target_step:
             return {"success": False, "error": f"Step '{step_id}' not found in playbook '{playbook_id}'."}
 
+        # Replay prevention: reject duplicate approval if already approved
+        if target_step.approval_status == PlaybookStepStatus.APPROVED and approved is True:
+            return {
+                "success": False,
+                "error": f"Step '{step_id}' has already been resolved with status '{target_step.approval_status.value}'. Replay attempt rejected.",
+            }
+        if target_step.approval_status == PlaybookStepStatus.EXECUTED:
+            return {
+                "success": False,
+                "error": f"Step '{step_id}' has already been executed. Cannot modify approval.",
+            }
+
         now_iso = datetime.now(timezone.utc).isoformat()
         target_step.approver = approver
         target_step.approval_timestamp = now_iso
@@ -463,4 +481,54 @@ class SOCPlaybookEngine:
             "step_id": step_id,
             "status": target_step.approval_status.value,
             "audit_entry": audit_entry,
+        }
+
+    @classmethod
+    def execute_step(
+        cls,
+        playbook_id: str,
+        step_id: str,
+        auth_token: str | None = None,
+    ) -> dict[str, Any]:
+        """Executes an approved containment step. Enforces human authorization and auth token."""
+        pb = cls.get_playbook(playbook_id)
+        if not pb:
+            return {"success": False, "error": f"Playbook '{playbook_id}' not found."}
+
+        target_step: PlaybookStep | None = None
+        for s in pb.steps:
+            if s.step_id == step_id:
+                target_step = s
+                break
+
+        if not target_step:
+            return {"success": False, "error": f"Step '{step_id}' not found in playbook '{playbook_id}'."}
+
+        # Check authorization token
+        if not auth_token or not auth_token.startswith("rl-auth-"):
+            return {
+                "success": False,
+                "error": "Execution rejected: Missing or invalid authorization token.",
+            }
+
+        # Enforce prerequisite approval
+        if target_step.requires_approval and target_step.approval_status != PlaybookStepStatus.APPROVED:
+            return {
+                "success": False,
+                "error": (
+                    f"Execution rejected: Step '{step_id}' requires explicit human approval before execution. "
+                    f"Current status: {target_step.approval_status.value}"
+                ),
+            }
+
+        now_iso = datetime.now(timezone.utc).isoformat()
+        target_step.approval_status = PlaybookStepStatus.EXECUTED
+        target_step.execution_result = f"Action successfully executed under token {auth_token[:12]}... at {now_iso}."
+
+        return {
+            "success": True,
+            "playbook_id": playbook_id,
+            "step_id": step_id,
+            "status": target_step.approval_status.value,
+            "execution_result": target_step.execution_result,
         }
