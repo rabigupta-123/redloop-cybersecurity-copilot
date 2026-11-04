@@ -166,8 +166,7 @@ class DefenderForEndpointAdapter(BaseProvider):
                 message=sanitize_error_message(f"Connection failed: {str(e)}"),
             )
 
-        self._last_health = res
-        return res
+        return self.record_health(res)
 
     def get_alerts(self, limit: int = 50) -> list[UniversalSecurityEvent]:
         """Retrieves and normalizes alerts from Defender for Endpoint."""

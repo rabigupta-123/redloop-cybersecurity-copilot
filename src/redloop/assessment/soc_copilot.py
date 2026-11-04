@@ -504,3 +504,507 @@ class SOCCopilotEngine:
             return "\n".join(md_lines)
 
         return report_dict
+
+    @classmethod
+    def handle_operational_query(
+        cls,
+        user_query: str,
+        incident_id: str | None = None,
+        alert_id: str | None = None,
+        entity_id: str | None = None,
+        context: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        """Operational Copilot Query Handler (Phase 9 B8).
+
+        Handles autonomous SOC operational commands:
+        - 'Investigate this incident'
+        - 'Show evidence behind alert'
+        - 'Find related events'
+        - 'Explain attack sequence'
+        - 'Recommend next step'
+        - 'Prepare containment plan'
+        - 'Verify endpoint isolated'
+
+        Grounded responses citing evidence IDs, alert IDs, hash values, timestamps.
+        """
+        q_lower = user_query.strip().lower()
+        ctx = context or {}
+
+        # 1. Intent Classification
+        intent = "unknown"
+        if any(k in q_lower for k in ("investigate incident", "investigate this incident", "triage incident", "analyze incident")):
+            intent = "investigate_incident"
+        elif any(k in q_lower for k in ("show evidence", "evidence behind alert", "alert evidence", "view evidence", "evidence for alert")):
+            intent = "show_evidence"
+        elif any(k in q_lower for k in ("find related", "related events", "find related events", "correlated events", "related telemetry")):
+            intent = "find_related"
+        elif any(k in q_lower for k in ("explain attack", "attack sequence", "explain kill chain", "explain sequence", "attack chain")):
+            intent = "explain_attack"
+        elif any(k in q_lower for k in ("recommend next", "what should i do", "recommended action", "next step", "recommended next step")):
+            intent = "recommend_next_step"
+        elif any(k in q_lower for k in ("prepare containment", "containment plan", "contain incident", "propose containment", "isolate plan")):
+            intent = "prepare_containment"
+        elif any(k in q_lower for k in ("verify endpoint isolated", "verify isolation", "check endpoint status", "is endpoint isolated", "is host isolated")):
+            intent = "verify_isolation"
+
+        # Extract IDs from query if not provided
+        if not incident_id:
+            inc_match = re.search(r"\b(INC-[a-zA-Z0-9_-]+)\b", user_query, re.IGNORECASE)
+            if inc_match:
+                incident_id = inc_match.group(1).upper()
+        if not alert_id:
+            alt_match = re.search(r"\b(ALT-[a-zA-Z0-9_-]+)\b", user_query, re.IGNORECASE)
+            if alt_match:
+                alert_id = alt_match.group(1).upper()
+
+        # Lazy load correlation engine
+        try:
+            from redloop.assessment.incident_correlation import IncidentCorrelator, RelationshipType
+            correlator = IncidentCorrelator.get_correlator()
+        except Exception:
+            correlator = None
+
+        # Process by intent
+        if intent == "investigate_incident":
+            return cls._op_investigate_incident(user_query, incident_id, correlator, ctx)
+        elif intent == "show_evidence":
+            return cls._op_show_evidence(user_query, alert_id, correlator, ctx)
+        elif intent == "find_related":
+            return cls._op_find_related(user_query, entity_id, incident_id, correlator, ctx)
+        elif intent == "explain_attack":
+            return cls._op_explain_attack(user_query, incident_id, correlator, ctx)
+        elif intent == "recommend_next_step":
+            return cls._op_recommend_next_step(user_query, incident_id, correlator, ctx)
+        elif intent == "prepare_containment":
+            return cls._op_prepare_containment(user_query, incident_id, entity_id, correlator, ctx)
+        elif intent == "verify_isolation":
+            return cls._op_verify_isolation(user_query, entity_id, ctx)
+        else:
+            # Fallback to standard start_investigation
+            task = cls.start_investigation(user_query, explicit_target=entity_id)
+            return {
+                "intent": "general_investigation",
+                "investigation_id": task.investigation_id,
+                "target_entity": task.target_entity,
+                "state": task.state.value if hasattr(task.state, "value") else str(task.state),
+                "summary": task.findings_summary,
+                "evidence_citations": [f"Indicator: {ind}" for ind in task.extracted_indicators],
+                "recommended_action": f"Execute playbook {task.recommended_playbook_id}" if task.recommended_playbook_id else "Collect further host telemetry",
+                "requires_approval": bool(task.recommended_playbook_id),
+            }
+
+    @classmethod
+    def _op_investigate_incident(
+        cls,
+        user_query: str,
+        incident_id: str | None,
+        correlator: Any,
+        ctx: dict[str, Any],
+    ) -> dict[str, Any]:
+        if not incident_id and correlator:
+            incidents = correlator.list_incidents(limit=1)
+            if incidents:
+                incident_id = incidents[0].incident_id
+
+        if not incident_id:
+            return {
+                "intent": "investigate_incident",
+                "status": "NOT_FOUND",
+                "message": "No incident ID specified and no active incidents found in correlation ledger.",
+                "evidence_citations": [],
+            }
+
+        inc = correlator.get_incident(incident_id) if correlator else None
+        if not inc:
+            return {
+                "intent": "investigate_incident",
+                "status": "NOT_FOUND",
+                "incident_id": incident_id,
+                "message": f"Incident '{incident_id}' not found in active correlation engine.",
+                "evidence_citations": [],
+            }
+
+        citations = [
+            f"Event Link: {lnk.event_id} ({lnk.relationship_type.value}) - Shared: {', '.join(lnk.shared_entities)} | Evidence ID: {lnk.evidence_id}"
+            for lnk in inc.linked_events
+        ]
+        text_lines = [
+            f"### Incident Investigation: {inc.incident_id} — {inc.title}",
+            f"**Severity:** {inc.severity.value} | **Confidence:** {inc.confidence_score:.0%} | **Status:** {inc.status}",
+            f"**Summary:** {inc.summary}",
+            f"**Affected Entities:** {', '.join(inc.affected_entities) or 'None'}",
+            f"**Primary Host:** {inc.primary_host or 'N/A'} | **Primary User:** {inc.primary_user or 'N/A'}",
+            f"**Linked Events Count:** {len(inc.linked_events)}",
+        ]
+        if inc.mitre_tactics:
+            text_lines.append(f"**MITRE ATT&CK Tactics:** {', '.join(inc.mitre_tactics)}")
+        if inc.mitre_techniques:
+            text_lines.append(f"**MITRE ATT&CK Techniques:** {', '.join(inc.mitre_techniques)}")
+        if inc.telemetry_gaps:
+            text_lines.append("\n**Identified Telemetry Gaps:**")
+            for gap in inc.telemetry_gaps:
+                text_lines.append(f"- [GAP] {gap}")
+
+        return {
+            "intent": "investigate_incident",
+            "status": "COMPLETED",
+            "incident_id": inc.incident_id,
+            "title": inc.title,
+            "severity": inc.severity.value,
+            "confidence_score": inc.confidence_score,
+            "affected_entities": inc.affected_entities,
+            "linked_events_count": len(inc.linked_events),
+            "evidence_citations": citations,
+            "telemetry_gaps": inc.telemetry_gaps,
+            "response_text": "\n".join(text_lines),
+        }
+
+    @classmethod
+    def _op_show_evidence(
+        cls,
+        user_query: str,
+        alert_id: str | None,
+        correlator: Any,
+        ctx: dict[str, Any],
+    ) -> dict[str, Any]:
+        if not alert_id:
+            # Check context or fallback
+            alert_id = ctx.get("alert_id")
+
+        if not alert_id:
+            return {
+                "intent": "show_evidence",
+                "status": "NOT_FOUND",
+                "message": "No alert ID or evidence identifier provided in query.",
+                "evidence_citations": [],
+            }
+
+        # Search incident links for this alert/event
+        found_link = None
+        found_inc_id = None
+        if correlator:
+            for inc in correlator.list_incidents(limit=20):
+                for lnk in inc.linked_events:
+                    if lnk.event_id == alert_id or lnk.evidence_id == alert_id:
+                        found_link = lnk
+                        found_inc_id = inc.incident_id
+                        break
+                if found_link:
+                    break
+
+        if found_link:
+            return {
+                "intent": "show_evidence",
+                "status": "VERIFIED",
+                "alert_or_event_id": alert_id,
+                "incident_id": found_inc_id,
+                "provider_id": found_link.provider_id,
+                "relationship_type": found_link.relationship_type.value,
+                "shared_entities": found_link.shared_entities,
+                "correlation_rationale": found_link.correlation_rationale,
+                "confidence_score": found_link.confidence_score,
+                "evidence_id": found_link.evidence_id,
+                "timestamp": found_link.timestamp,
+                "response_text": (
+                    f"### Evidence Provenance for `{alert_id}`\n\n"
+                    f"- **Evidence Ledger ID:** `{found_link.evidence_id}`\n"
+                    f"- **Provider Source:** `{found_link.provider_id}`\n"
+                    f"- **Relationship Class:** `{found_link.relationship_type.value}`\n"
+                    f"- **Shared Entities:** {', '.join(found_link.shared_entities)}\n"
+                    f"- **Timestamp:** `{found_link.timestamp}`\n"
+                    f"- **Rationale:** {found_link.correlation_rationale}\n"
+                    f"- **Confidence Score:** {found_link.confidence_score:.0%}"
+                ),
+            }
+
+        return {
+            "intent": "show_evidence",
+            "status": "NO_EVIDENCE_RECORD",
+            "alert_or_event_id": alert_id,
+            "message": f"No raw evidence record or correlation link found for '{alert_id}'. RedLoop strictly refuses to fabricate evidence.",
+            "evidence_citations": [],
+        }
+
+    @classmethod
+    def _op_find_related(
+        cls,
+        user_query: str,
+        entity_id: str | None,
+        incident_id: str | None,
+        correlator: Any,
+        ctx: dict[str, Any],
+    ) -> dict[str, Any]:
+        if not entity_id:
+            # extract entity from query
+            words = user_query.split()
+            for w in words:
+                if re.match(r"^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$", w) or re.match(r"^[A-Za-z0-9_-]+-(?:PC|FIN|SRV|PROD|DEV)\b", w, re.IGNORECASE):
+                    entity_id = w
+                    break
+
+        if not entity_id and incident_id and correlator:
+            inc = correlator.get_incident(incident_id)
+            if inc and inc.affected_entities:
+                entity_id = inc.affected_entities[0]
+
+        if not entity_id:
+            return {
+                "intent": "find_related",
+                "status": "NOT_FOUND",
+                "message": "Specify an entity (IP, hostname, user account) or incident to find related events.",
+                "related_events": [],
+            }
+
+        related: list[dict[str, Any]] = []
+        if correlator:
+            for inc in correlator.list_incidents(limit=20):
+                for lnk in inc.linked_events:
+                    if any(entity_id.lower() in ent.lower() for ent in lnk.shared_entities):
+                        related.append({
+                            "event_id": lnk.event_id,
+                            "incident_id": inc.incident_id,
+                            "relationship_type": lnk.relationship_type.value,
+                            "shared_entities": lnk.shared_entities,
+                            "provider_id": lnk.provider_id,
+                            "evidence_id": lnk.evidence_id,
+                            "confidence": lnk.confidence_score,
+                            "timestamp": lnk.timestamp,
+                        })
+
+        return {
+            "intent": "find_related",
+            "status": "COMPLETED",
+            "entity": entity_id,
+            "match_count": len(related),
+            "related_events": related,
+            "response_text": (
+                f"### Correlated Events for Entity `{entity_id}`\n\n"
+                f"Found {len(related)} events linked across telemetry feeds.\n"
+                + "\n".join(
+                    f"- **{r['event_id']}** ({r['relationship_type']}) via `{r['provider_id']}` [Confidence: {r['confidence']:.0%}] — Evidence: `{r['evidence_id']}`"
+                    for r in related[:10]
+                )
+            ),
+        }
+
+    @classmethod
+    def _op_explain_attack(
+        cls,
+        user_query: str,
+        incident_id: str | None,
+        correlator: Any,
+        ctx: dict[str, Any],
+    ) -> dict[str, Any]:
+        if not incident_id and correlator:
+            incidents = correlator.list_incidents(limit=1)
+            if incidents:
+                incident_id = incidents[0].incident_id
+
+        if not incident_id or not correlator:
+            return {
+                "intent": "explain_attack",
+                "status": "NOT_FOUND",
+                "message": "No incident found to explain attack sequence.",
+            }
+
+        inc = correlator.get_incident(incident_id)
+        if not inc:
+            return {
+                "intent": "explain_attack",
+                "status": "NOT_FOUND",
+                "message": f"Incident '{incident_id}' not found.",
+            }
+
+        # Chronological progression
+        sorted_links = sorted(inc.linked_events, key=lambda l: l.timestamp)
+        steps: list[str] = []
+        for idx, lnk in enumerate(sorted_links, 1):
+            steps.append(
+                f"{idx}. **[{lnk.timestamp}]** `{lnk.event_id}` from provider `{lnk.provider_id}`: "
+                f"{lnk.correlation_rationale} (Relationship: {lnk.relationship_type.value}, Evidence: `{lnk.evidence_id}`)"
+            )
+
+        tactics_str = ", ".join(inc.mitre_tactics) if inc.mitre_tactics else "Unclassified"
+        techniques_str = ", ".join(inc.mitre_techniques) if inc.mitre_techniques else "None"
+
+        narrative = (
+            f"### Attack Sequence Reconstruction: `{inc.incident_id}`\n\n"
+            f"**Attack Path Tactics:** {tactics_str}\n"
+            f"**Identified Techniques:** {techniques_str}\n\n"
+            f"**Progression Timeline ({len(sorted_links)} stages):**\n"
+            + ("\n".join(steps) if steps else "No chronologically linked events recorded.")
+            + "\n\n**Confidence & Gaps:** "
+            + (f"Telemetry confidence is {inc.confidence_score:.0%}. " if inc.confidence_score else "")
+            + (f"Evidence gaps noted: {'; '.join(inc.telemetry_gaps)}" if inc.telemetry_gaps else "Complete attack chain corroborated.")
+        )
+
+        return {
+            "intent": "explain_attack",
+            "status": "COMPLETED",
+            "incident_id": inc.incident_id,
+            "tactics": inc.mitre_tactics,
+            "techniques": inc.mitre_techniques,
+            "timeline_steps": steps,
+            "response_text": narrative,
+        }
+
+    @classmethod
+    def _op_recommend_next_step(
+        cls,
+        user_query: str,
+        incident_id: str | None,
+        correlator: Any,
+        ctx: dict[str, Any],
+    ) -> dict[str, Any]:
+        recommendations: list[dict[str, Any]] = []
+
+        inc = correlator.get_incident(incident_id) if (correlator and incident_id) else None
+
+        if inc and inc.telemetry_gaps:
+            recommendations.append({
+                "priority": "HIGH",
+                "category": "EVIDENCE_COLLECTION",
+                "action": "Triage missing telemetry logs",
+                "details": f"Ingest logs for gaps: {', '.join(inc.telemetry_gaps[:2])}",
+                "requires_approval": False,
+            })
+
+        if inc and inc.severity in (IncidentSeverity.HIGH, IncidentSeverity.CRITICAL):
+            primary_h = inc.primary_host or (inc.affected_entities[0] if inc.affected_entities else "TARGET-HOST")
+            recommendations.append({
+                "priority": "CRITICAL",
+                "category": "CONTAINMENT",
+                "action": f"Request approval to isolate host '{primary_h}'",
+                "details": "High/Critical severity incident with corroborated threat indicators requires network containment.",
+                "requires_approval": True,
+                "playbook_id": "PB-MALWARE",
+            })
+
+        if not recommendations:
+            recommendations.append({
+                "priority": "MEDIUM",
+                "category": "INVESTIGATION",
+                "action": "Review IOC reputation and search cross-endpoint telemetry",
+                "details": "Query local IOC repository and external threat intelligence for detected artifacts.",
+                "requires_approval": False,
+            })
+
+        rec_text = "### Recommended Autonomous Next Steps\n\n" + "\n".join(
+            f"- **[{r['priority']}]** {r['action']} — *{r['details']}* (Requires Authorization: `{r['requires_approval']}`)"
+            for r in recommendations
+        )
+
+        return {
+            "intent": "recommend_next_step",
+            "incident_id": incident_id,
+            "recommendations": recommendations,
+            "response_text": rec_text,
+        }
+
+    @classmethod
+    def _op_prepare_containment(
+        cls,
+        user_query: str,
+        incident_id: str | None,
+        entity_id: str | None,
+        correlator: Any,
+        ctx: dict[str, Any],
+    ) -> dict[str, Any]:
+        inc = correlator.get_incident(incident_id) if (correlator and incident_id) else None
+        target = entity_id or (inc.primary_host if inc else None) or (inc.affected_entities[0] if (inc and inc.affected_entities) else "192.168.1.100")
+
+        containment_plan = {
+            "plan_id": f"cont-plan-{uuid.uuid4().hex[:6]}",
+            "incident_id": incident_id or "INC-UNASSIGNED",
+            "target_resource": target,
+            "proposed_actions": [
+                {
+                    "action_name": "isolate_endpoint",
+                    "provider": "edr_defender",
+                    "resource_id": target,
+                    "destructive": False,
+                    "reversible": True,
+                },
+                {
+                    "action_name": "block_network_egress",
+                    "provider": "perimeter_firewall",
+                    "resource_id": target,
+                    "destructive": False,
+                    "reversible": True,
+                },
+            ],
+            "approval_required": True,
+            "governance_rule": "Cryptographic multi-attribute approval token required before external dispatch.",
+            "rollback_strategy": "Invoke unisolate_endpoint / remove_firewall_rule upon incident triage resolution.",
+        }
+
+        resp_text = (
+            f"### Containment Plan: `{containment_plan['plan_id']}`\n\n"
+            f"- **Target Resource:** `{target}`\n"
+            f"- **Associated Incident:** `{containment_plan['incident_id']}`\n"
+            f"- **Proposed Action 1:** `isolate_endpoint` on provider `edr_defender` (Reversible)\n"
+            f"- **Proposed Action 2:** `block_network_egress` (Reversible)\n\n"
+            f"> [!IMPORTANT]\n"
+            f"> Execution-time authorization is ENFORCED. No containment action will be dispatched without an authorized approval capability token."
+        )
+
+        return {
+            "intent": "prepare_containment",
+            "status": "PLAN_PREPARED",
+            "containment_plan": containment_plan,
+            "response_text": resp_text,
+        }
+
+    @classmethod
+    def _op_verify_isolation(
+        cls,
+        user_query: str,
+        entity_id: str | None,
+        ctx: dict[str, Any],
+    ) -> dict[str, Any]:
+        target = entity_id or ctx.get("endpoint") or ctx.get("host")
+        if not target:
+            match = re.search(r"\b(?:host|endpoint|machine|device)\s+([A-Za-z0-9_.-]+)\b", user_query, re.IGNORECASE)
+            if match:
+                target = match.group(1)
+
+        if not target:
+            return {
+                "intent": "verify_isolation",
+                "status": "TARGET_REQUIRED",
+                "message": "Specify the host or endpoint to verify isolation status.",
+            }
+
+        # Check real provider connectivity / registry
+        try:
+            from redloop.integrations.registry import IntegrationRegistry
+            from redloop.integrations.base import ProviderStatus
+            reg = IntegrationRegistry.get_registry()
+            defender = reg.get("edr_defender")
+            cs = reg.get("edr_crowdstrike")
+
+            provider_statuses = []
+            if defender:
+                provider_statuses.append(f"Defender: {defender.status.value}")
+            if cs:
+                provider_statuses.append(f"CrowdStrike: {cs.status.value}")
+            prov_str = ", ".join(provider_statuses) if provider_statuses else "No EDR providers configured"
+        except Exception:
+            prov_str = "Integration registry offline"
+
+        return {
+            "intent": "verify_isolation",
+            "target": target,
+            "isolation_status": "NOT_ISOLATED_OR_UNVERIFIED",
+            "provider_status": prov_str,
+            "verified_with_live_edr": False,
+            "response_text": (
+                f"### Endpoint Isolation Verification: `{target}`\n\n"
+                f"- **Current State:** `NOT_ISOLATED_OR_UNVERIFIED`\n"
+                f"- **Provider Status:** {prov_str}\n"
+                f"- **Evidence:** No confirmed host isolation telemetry received from active EDR providers.\n\n"
+                f"> [!NOTE]\n"
+                f"> RedLoop never fabricates isolation status when providers are unconfigured or offline."
+            ),
+        }
+

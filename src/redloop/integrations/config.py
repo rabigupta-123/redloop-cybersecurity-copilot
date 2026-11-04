@@ -72,12 +72,15 @@ class IntegrationConfig:
     @staticmethod
     def _load_file_store() -> dict[str, Any]:
         """Reads local integrations.json if present."""
-        path = Path.home() / ".redloop" / "integrations.json"
-        if path.exists():
-            try:
-                return json.loads(path.read_text(encoding="utf-8"))
-            except Exception:
-                return {}
+        try:
+            path = Path.home() / ".redloop" / "integrations.json"
+            if path.exists():
+                try:
+                    return json.loads(path.read_text(encoding="utf-8"))
+                except Exception:
+                    return {}
+        except Exception:
+            return {}
         return {}
 
 

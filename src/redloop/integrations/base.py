@@ -29,6 +29,7 @@ class ProviderStatus(str, Enum):
     AUTH_FAILED = "AUTH_FAILED"
     RATE_LIMITED = "RATE_LIMITED"
     ERROR = "ERROR"
+    DISABLED = "DISABLED"
 
 
 class ProviderCapability(str, Enum):
@@ -109,14 +110,32 @@ class BaseProvider(abc.ABC):
         self.enabled = enabled
         self._last_health: Optional[HealthCheckResult] = None
         self._capabilities: set[ProviderCapability] = set()
+        self.last_successful_check: Optional[str] = None
+        self.last_error: Optional[str] = None
 
     @property
-    def status(self) -> ProviderStatus:
+    def connectivity_status(self) -> ProviderStatus:
+        if not self.enabled:
+            return ProviderStatus.DISABLED
         if not self.is_configured():
             return ProviderStatus.NOT_CONFIGURED
         if self._last_health:
             return self._last_health.status
         return ProviderStatus.UNAVAILABLE
+
+    @property
+    def status(self) -> ProviderStatus:
+        # Backward-compatible property
+        return self.connectivity_status
+
+    def is_authenticated(self) -> bool:
+        """Returns True if provider has verified valid credentials against remote API."""
+        return bool(
+            self.enabled
+            and self.is_configured()
+            and self._last_health
+            and self._last_health.status in (ProviderStatus.CONNECTED, ProviderStatus.DEGRADED)
+        )
 
     @abc.abstractmethod
     def is_configured(self) -> bool:
@@ -127,6 +146,16 @@ class BaseProvider(abc.ABC):
     def test_connection(self) -> HealthCheckResult:
         """Executes a live health check against the provider endpoint."""
         pass
+
+    def record_health(self, res: HealthCheckResult) -> HealthCheckResult:
+        """Stores health check result and updates check timestamps."""
+        self._last_health = res
+        if res.status in (ProviderStatus.CONNECTED, ProviderStatus.DEGRADED):
+            self.last_successful_check = res.checked_at
+            self.last_error = None
+        else:
+            self.last_error = res.message
+        return res
 
     def get_health(self) -> HealthCheckResult:
         """Returns the most recent health check result or executes test_connection."""
@@ -146,14 +175,25 @@ class BaseProvider(abc.ABC):
     def to_dict(self) -> dict[str, Any]:
         """Serializes provider status and public configuration safely without secrets."""
         health = self.get_health()
+        conn_status = self.connectivity_status
+        is_auth = self.is_authenticated()
+        avail_caps = self.get_capabilities() if (self.enabled and is_auth) else []
+
         return {
             "provider_id": self.provider_id,
             "display_name": self.display_name,
             "category": self.category.value,
             "version": self.version,
             "enabled": self.enabled,
+            "configured": self.is_configured(),
+            "authenticated": is_auth,
+            "connectivity_status": conn_status.value,
+            "last_successful_check": self.last_successful_check,
+            "last_error": self.last_error,
+            "capabilities_available": avail_caps,
+            # Backward-compatible fields
             "is_configured": self.is_configured(),
-            "status": health.status.value,
+            "status": conn_status.value,
             "last_checked_at": health.checked_at,
             "latency_ms": health.latency_ms,
             "capabilities": self.get_capabilities(),

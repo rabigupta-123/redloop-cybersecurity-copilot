@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import base64
 import json
+import re
 import time
 import urllib.error
 import urllib.parse
@@ -26,15 +27,96 @@ from redloop.integrations.config import IntegrationConfig
 from redloop.integrations.credentials import mask_secret, sanitize_error_message
 from redloop.integrations.normalizers import normalize_splunk_event
 
-PROHIBITED_SPL_COMMANDS = {
-    "delete",
-    "outputlookup",
-    "outputcsv",
-    "collect",
-    "sendemail",
-    "run",
-    "script",
+PERMITTED_READ_ONLY_SPL_COMMANDS = {
+    "search", "where", "eval", "stats", "table", "fields", "dedup", "sort",
+    "head", "tail", "rex", "lookup", "inputlookup", "rename", "timechart",
+    "top", "rare", "chart", "strcat", "coalesce", "fillnull", "eventstats",
+    "streamstats", "spath", "xmlkv", "kvform", "extract", "bin", "bucket",
+    "iplocation", "geoip", "regex", "convert", "replace", "addinfo",
+    "transaction", "concurrency", "cluster", "geom", "reverse", "makemv", "mvexpand",
 }
+
+PROHIBITED_SPL_COMMANDS = {
+    "delete", "outputlookup", "outputcsv", "collect", "sendemail", "run", "script",
+    "runshellscript", "makeresults", "dump", "rest", "snmp", "loadjob", "tscollect",
+    "map", "inputcsv", "outputtext", "outputtelemetry", "crawl",
+}
+
+
+def validate_spl_query(spl_query: str) -> str:
+    """Conservatively validates an SPL query for read-only compliance."""
+    if not spl_query or not isinstance(spl_query, str):
+        raise ValueError("SPL query must be a non-empty string.")
+
+    clean = spl_query.strip()
+    if len(clean) > 2048:
+        raise ValueError("SPL query exceeds maximum permitted length of 2048 characters.")
+
+    # Reject statement termination / chaining
+    if ";" in clean:
+        raise ValueError("Command chaining or semicolon statement termination is prohibited in SPL.")
+
+    # Reject backticks / macro invocations
+    if "`" in clean:
+        raise ValueError("Macro expansions and backtick syntax are prohibited in SPL search.")
+
+    # Reject block comments or inline comments
+    if "/*" in clean or "*/" in clean or clean.startswith("#") or "//" in clean:
+        raise ValueError("Comments are prohibited in read-only SPL queries.")
+
+    # Check for subsearches [...] and validate them recursively
+    subsearch_matches = re.findall(r"\[(.*?)\]", clean, re.DOTALL)
+    for sub in subsearch_matches:
+        validate_spl_query(sub.strip())
+
+    # Remove subsearches for top-level pipeline parsing
+    pipeline_text = re.sub(r"\[.*?\]", " SUBSEARCH ", clean, flags=re.DOTALL)
+
+    # Tokenize pipeline by pipe (|) outside of quotes
+    stages = []
+    current_token = []
+    in_quote = False
+    quote_char = None
+    for char in pipeline_text:
+        if char in ('"', "'"):
+            if not in_quote:
+                in_quote = True
+                quote_char = char
+            elif quote_char == char:
+                in_quote = False
+                quote_char = None
+            current_token.append(char)
+        elif char == "|" and not in_quote:
+            stages.append("".join(current_token).strip())
+            current_token = []
+        else:
+            current_token.append(char)
+    if in_quote:
+        raise ValueError("Malformed SPL query: unbalanced quotes.")
+    if current_token:
+        stages.append("".join(current_token).strip())
+
+    for idx, stage in enumerate(stages):
+        if not stage:
+            continue
+        words = stage.split()
+        first_word = words[0].lower().strip()
+
+        # Handle implicit search in the first stage (e.g. "index=main error")
+        if idx == 0 and ("=" in first_word or first_word.startswith("(") or first_word not in PERMITTED_READ_ONLY_SPL_COMMANDS):
+            for w in words:
+                clean_w = w.lower().strip("()")
+                if clean_w in PROHIBITED_SPL_COMMANDS:
+                    raise ValueError(f"Prohibited non-read-only SPL command '{clean_w}' blocked.")
+            continue
+
+        if first_word in PROHIBITED_SPL_COMMANDS:
+            raise ValueError(f"Prohibited non-read-only SPL command '{first_word}' blocked.")
+
+        if first_word not in PERMITTED_READ_ONLY_SPL_COMMANDS:
+            raise ValueError(f"Unrecognized or unapproved SPL command '{first_word}' blocked by read-only policy.")
+
+    return clean
 
 
 class SplunkAdapter(BaseProvider):
@@ -178,8 +260,7 @@ class SplunkAdapter(BaseProvider):
                 message=sanitize_error_message(f"Connection failed: {str(e)}"),
             )
 
-        self._last_health = res
-        return res
+        return self.record_health(res)
 
     def search_events(
         self,
@@ -192,17 +273,21 @@ class SplunkAdapter(BaseProvider):
         if not self.is_configured():
             return []
 
-        # Validate SPL query against prohibited commands
-        clean_spl = spl_query.lower()
-        for cmd in PROHIBITED_SPL_COMMANDS:
-            if f"| {cmd}" in clean_spl or f"|{cmd}" in clean_spl:
-                raise ValueError(f"Prohibited non-read-only SPL command '{cmd}' blocked.")
+        # Validate SPL query with conservative read-only policy
+        safe_spl = validate_spl_query(spl_query)
 
-        safe_spl = spl_query.strip()
-        if not safe_spl.startswith("search"):
+        # Validate time boundaries
+        time_pattern = r"^(-[0-9]+[smhdwMy]|now|0|\d{4}-\d{2}-\d{2}.*|\d+)$"
+        if not re.match(time_pattern, earliest_time.strip()):
+            raise ValueError(f"Invalid Splunk search earliest_time boundary '{earliest_time}'.")
+        if not re.match(time_pattern, latest_time.strip()):
+            raise ValueError(f"Invalid Splunk search latest_time boundary '{latest_time}'.")
+
+        bounded_limit = min(max(1, limit), 1000)
+        if not safe_spl.startswith("search") and not safe_spl.startswith("|"):
             safe_spl = f"search {safe_spl}"
         if "| head" not in safe_spl:
-            safe_spl = f"{safe_spl} | head {min(limit, 100)}"
+            safe_spl = f"{safe_spl} | head {bounded_limit}"
 
         # 1. Create Search Job
         job_url = f"{self.base_url}/services/search/jobs?output_mode=json"

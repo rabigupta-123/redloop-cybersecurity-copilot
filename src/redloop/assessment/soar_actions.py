@@ -12,16 +12,47 @@ Provides:
 from __future__ import annotations
 
 import hashlib
+import http.client
 import ipaddress
 import json
 import re
 import socket
+import ssl
 import urllib.parse
 import uuid
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Callable, Optional
+
+
+def redact_sensitive_url(url: str) -> str:
+    """Removes embedded credentials and sensitive query parameters from URLs."""
+    if not url or not isinstance(url, str):
+        return ""
+    try:
+        parsed = urllib.parse.urlsplit(url)
+        netloc = parsed.netloc
+        if "@" in netloc:
+            _, host_part = netloc.split("@", 1)
+            netloc = f"[REDACTED]@{host_part}"
+
+        if parsed.query:
+            query_params = urllib.parse.parse_qsl(parsed.query, keep_blank_values=True)
+            safe_params = []
+            sensitive_keys = {"token", "key", "secret", "password", "auth", "api_key", "bearer", "access_token"}
+            for k, v in query_params:
+                if k.lower() in sensitive_keys or any(s in k.lower() for s in ("secret", "token", "password", "key")):
+                    safe_params.append((k, "******"))
+                else:
+                    safe_params.append((k, v))
+            query = urllib.parse.urlencode(safe_params, safe="*")
+        else:
+            query = ""
+
+        return urllib.parse.urlunsplit((parsed.scheme, netloc, parsed.path, query, parsed.fragment))
+    except Exception:
+        return re.sub(r"://[^@]+@", "://[REDACTED]@", url)
 
 
 class ActionCategory(str, Enum):
@@ -236,6 +267,150 @@ class SafeWebhookClient:
         """Backward-compatible validation helper for existing callers."""
         cls.validate_destination(url)
 
+    @classmethod
+    def post(
+        cls,
+        url: str,
+        payload: Optional[dict[str, Any] | str] = None,
+        headers: Optional[dict[str, str]] = None,
+        timeout: float = DEFAULT_TIMEOUT,
+        allowed_domains: Optional[list[str]] = None,
+        allow_http: bool = False,
+        follow_redirects: bool = False,
+        max_redirects: int = 3,
+    ) -> dict[str, Any]:
+        """Dispatches an outbound HTTP POST request via strictly connection-pinned sockets."""
+        current_url = url
+        redirect_count = 0
+
+        while True:
+            safe_log_url = redact_sensitive_url(current_url)
+            hostname, resolved_ips = cls.validate_destination(
+                current_url,
+                allowed_domains=allowed_domains,
+                allow_http=allow_http,
+            )
+
+            parsed = urllib.parse.urlsplit(current_url)
+            scheme = parsed.scheme.lower()
+            port = parsed.port or (443 if scheme == "https" else 80)
+            target_ip = resolved_ips[0]
+
+            path_and_query = parsed.path or "/"
+            if parsed.query:
+                path_and_query += f"?{parsed.query}"
+
+            req_headers = dict(headers or {})
+            req_headers["Host"] = hostname
+            req_headers.setdefault("User-Agent", "REDLOOP-SOAR/1.0 (SSRF-Protected)")
+
+            body_bytes = b""
+            if payload is not None:
+                if isinstance(payload, dict):
+                    body_bytes = json.dumps(payload).encode("utf-8")
+                    req_headers.setdefault("Content-Type", "application/json")
+                elif isinstance(payload, str):
+                    body_bytes = payload.encode("utf-8")
+                elif isinstance(payload, bytes):
+                    body_bytes = payload
+                req_headers["Content-Length"] = str(len(body_bytes))
+
+            conn = None
+            try:
+                if scheme == "https":
+                    conn = PinnedHTTPSConnection(
+                        validated_ip=target_ip,
+                        server_hostname=hostname,
+                        port=port,
+                        timeout=timeout,
+                    )
+                else:
+                    conn = PinnedHTTPConnection(
+                        validated_ip=target_ip,
+                        server_hostname=hostname,
+                        port=port,
+                        timeout=timeout,
+                    )
+
+                conn.request("POST", path_and_query, body=body_bytes, headers=req_headers)
+                resp = conn.getresponse()
+
+                if resp.status in (301, 302, 303, 307, 308):
+                    if not follow_redirects:
+                        raise SSRFValidationError(f"Redirects disabled by default (received HTTP {resp.status} from '{safe_log_url}').")
+                    redirect_count += 1
+                    if redirect_count > max_redirects:
+                        raise SSRFValidationError(f"Maximum redirect chain limit exceeded ({max_redirects}).")
+                    loc = resp.getheader("Location")
+                    if not loc:
+                        raise SSRFValidationError("Redirect response missing Location header.")
+                    current_url = urllib.parse.urljoin(current_url, loc)
+                    conn.close()
+                    continue
+
+                content_len = resp.getheader("Content-Length")
+                if content_len and int(content_len) > cls.MAX_RESPONSE_BYTES:
+                    raise SSRFValidationError(f"Response Content-Length ({content_len}) exceeds maximum limit ({cls.MAX_RESPONSE_BYTES} bytes).")
+
+                chunks = []
+                bytes_read = 0
+                while True:
+                    chunk = resp.read(8192)
+                    if not chunk:
+                        break
+                    bytes_read += len(chunk)
+                    if bytes_read > cls.MAX_RESPONSE_BYTES:
+                        raise SSRFValidationError(f"Response size exceeded {cls.MAX_RESPONSE_BYTES} bytes ceiling.")
+                    chunks.append(chunk)
+
+                raw_body = b"".join(chunks).decode("utf-8", errors="replace")
+                return {
+                    "status_code": resp.status,
+                    "target_host": hostname,
+                    "target_ip": target_ip,
+                    "headers": dict(resp.getheaders()),
+                    "body": raw_body,
+                }
+            except socket.timeout:
+                raise SSRFValidationError(f"Connection to '{safe_log_url}' timed out after {timeout}s.")
+            except Exception as exc:
+                if isinstance(exc, SSRFValidationError):
+                    raise
+                safe_err = redact_sensitive_url(str(exc))
+                raise SSRFValidationError(f"Webhook connection failure: {safe_err}")
+            finally:
+                if conn:
+                    conn.close()
+
+
+class PinnedHTTPSConnection(http.client.HTTPSConnection):
+    """HTTPS connection bound to a pre-validated IP address with TLS SNI hostname preservation."""
+    def __init__(self, validated_ip: str, server_hostname: str, port: int = 443, timeout: float = 5.0, context: Optional[ssl.SSLContext] = None):
+        super().__init__(host=validated_ip, port=port, timeout=timeout, context=context or ssl.create_default_context())
+        self.pinned_server_hostname = server_hostname
+
+    def connect(self) -> None:
+        super().connect()
+        peer_ip = self.sock.getpeername()[0]
+        if peer_ip != self.host:
+            self.sock.close()
+            raise SSRFValidationError(f"SSRF Peer Mismatch: Connected peer IP '{peer_ip}' does not match validated destination IP '{self.host}'.")
+        self.sock = self._context.wrap_socket(self.sock, server_hostname=self.pinned_server_hostname)
+
+
+class PinnedHTTPConnection(http.client.HTTPConnection):
+    """HTTP connection bound to a pre-validated IP address for permitted internal dev targets."""
+    def __init__(self, validated_ip: str, server_hostname: str, port: int = 80, timeout: float = 5.0):
+        super().__init__(host=validated_ip, port=port, timeout=timeout)
+        self.pinned_server_hostname = server_hostname
+
+    def connect(self) -> None:
+        super().connect()
+        peer_ip = self.sock.getpeername()[0]
+        if peer_ip != self.host:
+            self.sock.close()
+            raise SSRFValidationError(f"SSRF Peer Mismatch: Connected peer IP '{peer_ip}' does not match validated destination IP '{self.host}'.")
+
 
 class SOARActionRegistry:
     """Authoritative registry of executable SOAR actions."""
@@ -443,22 +618,12 @@ class SOARActionRegistry:
                 details="Action requires explicit human approval and capability authorization token.",
             )
 
-        # In local environment without enterprise EDR integration configured:
-        if not provider or provider.lower() not in cls.CONFIGURED_PROVIDERS:
-            if simulate_if_unconfigured and (not provider or provider.lower() in ("none", "local_simulation", "unconfigured")):
-                cls._LOCAL_SIMULATED_BLOCKLIST.add(target)
-                return ActionResult(
-                    action_id=f"act-iso-{uuid.uuid4().hex[:8]}",
-                    action_name="isolate_endpoint",
-                    category=ActionCategory.CONTAINMENT,
-                    status=ActionExecutionStatus.SIMULATED,
-                    target=target,
-                    parameters={"host_ip": target, "provider": "local_simulation"},
-                    details=f"Endpoint isolation for '{target}' executed in local lab simulation environment. (SIMULATED)",
-                    output_data={"simulated_isolation": True, "quarantine_ip": target},
-                    is_simulated=True,
-                )
-            else:
+        # If an external provider is specified (e.g. defender, crowdstrike)
+        if provider and provider.lower() not in ("none", "local_simulation", "unconfigured", "local"):
+            from redloop.integrations.registry import IntegrationRegistry
+            registry = IntegrationRegistry.get_instance()
+            prov_obj = registry.get_provider(provider)
+            if not prov_obj or not prov_obj.is_configured():
                 return ActionResult(
                     action_id=f"act-iso-{uuid.uuid4().hex[:8]}",
                     action_name="isolate_endpoint",
@@ -468,18 +633,65 @@ class SOARActionRegistry:
                     parameters={"host_ip": target, "provider": provider},
                     details=f"External EDR provider '{provider}' is not configured on this REDLOOP node.",
                 )
+            try:
+                res = prov_obj.isolate_endpoint(machine_id=target, capability_token=capability_token)
+                if res.get("status") == "SUCCEEDED":
+                    return ActionResult(
+                        action_id=f"act-iso-{uuid.uuid4().hex[:8]}",
+                        action_name="isolate_endpoint",
+                        category=ActionCategory.CONTAINMENT,
+                        status=ActionExecutionStatus.SUCCESS,
+                        target=target,
+                        parameters={"host_ip": target, "provider": provider},
+                        details=f"Endpoint '{target}' isolated via configured provider '{provider}'.",
+                        output_data=res,
+                    )
+                else:
+                    return ActionResult(
+                        action_id=f"act-iso-{uuid.uuid4().hex[:8]}",
+                        action_name="isolate_endpoint",
+                        category=ActionCategory.CONTAINMENT,
+                        status=ActionExecutionStatus.FAILED,
+                        target=target,
+                        parameters={"host_ip": target, "provider": provider},
+                        details=f"Provider '{provider}' containment failed: {res.get('details', 'Unknown failure')}",
+                        output_data=res,
+                    )
+            except Exception as e:
+                return ActionResult(
+                    action_id=f"act-iso-{uuid.uuid4().hex[:8]}",
+                    action_name="isolate_endpoint",
+                    category=ActionCategory.CONTAINMENT,
+                    status=ActionExecutionStatus.FAILED,
+                    target=target,
+                    parameters={"host_ip": target, "provider": provider},
+                    details=f"Provider '{provider}' isolation error: {str(e)}",
+                )
 
-        # Real provider confirmed execution
-        return ActionResult(
-            action_id=f"act-iso-{uuid.uuid4().hex[:8]}",
-            action_name="isolate_endpoint",
-            category=ActionCategory.CONTAINMENT,
-            status=ActionExecutionStatus.SUCCESS,
-            target=target,
-            parameters={"host_ip": target, "provider": provider},
-            details=f"Endpoint '{target}' isolated via configured provider '{provider}'.",
-            output_data={"provider": provider, "status": "ISOLATED"},
-        )
+        # Local simulation fallback
+        if simulate_if_unconfigured:
+            cls._LOCAL_SIMULATED_BLOCKLIST.add(target)
+            return ActionResult(
+                action_id=f"act-iso-{uuid.uuid4().hex[:8]}",
+                action_name="isolate_endpoint",
+                category=ActionCategory.CONTAINMENT,
+                status=ActionExecutionStatus.SIMULATED,
+                target=target,
+                parameters={"host_ip": target, "provider": "local_simulation"},
+                details=f"Endpoint isolation for '{target}' executed in local lab simulation environment. (SIMULATED)",
+                output_data={"simulated_isolation": True, "quarantine_ip": target},
+                is_simulated=True,
+            )
+        else:
+            return ActionResult(
+                action_id=f"act-iso-{uuid.uuid4().hex[:8]}",
+                action_name="isolate_endpoint",
+                category=ActionCategory.CONTAINMENT,
+                status=ActionExecutionStatus.NOT_CONFIGURED,
+                target=target,
+                parameters={"host_ip": target, "provider": provider or "none"},
+                details=f"External EDR provider is not configured on this REDLOOP node.",
+            )
 
     @classmethod
     def disable_account(
@@ -506,20 +718,12 @@ class SOARActionRegistry:
                 details="Action requires explicit human approval and capability authorization token.",
             )
 
-        if not provider or provider.lower() in ("none", "local_simulation", "unconfigured"):
-            if simulate_if_unconfigured:
-                return ActionResult(
-                    action_id=f"act-dis-{uuid.uuid4().hex[:8]}",
-                    action_name="disable_account",
-                    category=ActionCategory.CONTAINMENT,
-                    status=ActionExecutionStatus.SIMULATED,
-                    target=user,
-                    parameters={"username": user, "provider": "local_simulation"},
-                    details=f"Account lockout for user '{user}' executed in local simulation environment. (SIMULATED)",
-                    output_data={"simulated_lockout": True, "user": user},
-                    is_simulated=True,
-                )
-            else:
+        # If external provider specified
+        if provider and provider.lower() not in ("none", "local_simulation", "unconfigured", "local"):
+            from redloop.integrations.registry import IntegrationRegistry
+            registry = IntegrationRegistry.get_instance()
+            prov_obj = registry.get_provider(provider)
+            if not prov_obj or not prov_obj.is_configured():
                 return ActionResult(
                     action_id=f"act-dis-{uuid.uuid4().hex[:8]}",
                     action_name="disable_account",
@@ -529,17 +733,70 @@ class SOARActionRegistry:
                     parameters={"username": user, "provider": provider},
                     details=f"Directory/IdP provider '{provider}' is not configured on this REDLOOP node.",
                 )
+            try:
+                # Check if provider has disable_account or revoke_sessions
+                if hasattr(prov_obj, "disable_account"):
+                    res = prov_obj.disable_account(user_identifier=user, capability_token=capability_token)
+                elif hasattr(prov_obj, "revoke_sessions"):
+                    res = prov_obj.revoke_sessions(user_id=user, capability_token=capability_token)
+                else:
+                    res = {"status": "FAILED", "details": f"Provider '{provider}' does not support account containment."}
 
-        return ActionResult(
-            action_id=f"act-dis-{uuid.uuid4().hex[:8]}",
-            action_name="disable_account",
-            category=ActionCategory.CONTAINMENT,
-            status=ActionExecutionStatus.SUCCESS,
-            target=user,
-            parameters={"username": user, "provider": provider},
-            details=f"Account '{user}' disabled via directory provider '{provider}'.",
-            output_data={"provider": provider, "status": "DISABLED"},
-        )
+                if res.get("status") == "SUCCEEDED":
+                    return ActionResult(
+                        action_id=f"act-dis-{uuid.uuid4().hex[:8]}",
+                        action_name="disable_account",
+                        category=ActionCategory.CONTAINMENT,
+                        status=ActionExecutionStatus.SUCCESS,
+                        target=user,
+                        parameters={"username": user, "provider": provider},
+                        details=f"Account '{user}' disabled via directory provider '{provider}'.",
+                        output_data=res,
+                    )
+                else:
+                    return ActionResult(
+                        action_id=f"act-dis-{uuid.uuid4().hex[:8]}",
+                        action_name="disable_account",
+                        category=ActionCategory.CONTAINMENT,
+                        status=ActionExecutionStatus.FAILED,
+                        target=user,
+                        parameters={"username": user, "provider": provider},
+                        details=f"Provider '{provider}' account lockout failed: {res.get('details', 'Unknown error')}",
+                        output_data=res,
+                    )
+            except Exception as e:
+                return ActionResult(
+                    action_id=f"act-dis-{uuid.uuid4().hex[:8]}",
+                    action_name="disable_account",
+                    category=ActionCategory.CONTAINMENT,
+                    status=ActionExecutionStatus.FAILED,
+                    target=user,
+                    parameters={"username": user, "provider": provider},
+                    details=f"Provider '{provider}' account lockout error: {str(e)}",
+                )
+
+        if simulate_if_unconfigured:
+            return ActionResult(
+                action_id=f"act-dis-{uuid.uuid4().hex[:8]}",
+                action_name="disable_account",
+                category=ActionCategory.CONTAINMENT,
+                status=ActionExecutionStatus.SIMULATED,
+                target=user,
+                parameters={"username": user, "provider": "local_simulation"},
+                details=f"Account lockout for user '{user}' executed in local simulation environment. (SIMULATED)",
+                output_data={"simulated_lockout": True, "user": user},
+                is_simulated=True,
+            )
+        else:
+            return ActionResult(
+                action_id=f"act-dis-{uuid.uuid4().hex[:8]}",
+                action_name="disable_account",
+                category=ActionCategory.CONTAINMENT,
+                status=ActionExecutionStatus.NOT_CONFIGURED,
+                target=user,
+                parameters={"username": user, "provider": provider or "none"},
+                details=f"Directory/IdP provider is not configured on this REDLOOP node.",
+            )
 
     # ==========================================================================
     # 4. Notification & Escalation Actions
@@ -555,13 +812,13 @@ class SOARActionRegistry:
         simulate: bool = True,
         **kwargs: Any,
     ) -> ActionResult:
-        """Sends an external webhook notification with strict SSRF validation."""
+        """Sends an external webhook notification with strict connection-time SSRF validation."""
         target = webhook_url.strip()
-        safe_target = re.sub(r"://[^@]+@", "://[REDACTED]@", target)
+        safe_target = redact_sensitive_url(target)
         try:
             hostname, resolved_ips = SafeWebhookClient.validate_destination(target, allowed_domains=allowed_domains)
         except SSRFValidationError as e:
-            safe_err = re.sub(r"://[^@]+@", "://[REDACTED]@", str(e))
+            safe_err = redact_sensitive_url(str(e))
             return ActionResult(
                 action_id=f"act-wh-{uuid.uuid4().hex[:8]}",
                 action_name="send_webhook_notification",
@@ -571,6 +828,35 @@ class SOARActionRegistry:
                 parameters={"webhook_url": safe_target, "message": message[:80]},
                 details=f"Security Gate: Webhook blocked by SSRF validation: {safe_err}",
             )
+
+        if not simulate:
+            try:
+                res = SafeWebhookClient.post(
+                    url=target,
+                    payload={"message": message, **(payload_data or {})},
+                    allowed_domains=allowed_domains,
+                )
+                return ActionResult(
+                    action_id=f"act-wh-{uuid.uuid4().hex[:8]}",
+                    action_name="send_webhook_notification",
+                    category=ActionCategory.NOTIFICATION,
+                    status=ActionExecutionStatus.SUCCESS,
+                    target=safe_target,
+                    parameters={"webhook_url": safe_target, "message": message[:80]},
+                    details=f"Webhook delivered to '{hostname}' (HTTP {res['status_code']}).",
+                    output_data=res,
+                )
+            except Exception as e:
+                safe_err = redact_sensitive_url(str(e))
+                return ActionResult(
+                    action_id=f"act-wh-{uuid.uuid4().hex[:8]}",
+                    action_name="send_webhook_notification",
+                    category=ActionCategory.NOTIFICATION,
+                    status=ActionExecutionStatus.FAILED,
+                    target=safe_target,
+                    parameters={"webhook_url": safe_target, "message": message[:80]},
+                    details=f"Webhook dispatch failed: {safe_err}",
+                )
 
         return ActionResult(
             action_id=f"act-wh-{uuid.uuid4().hex[:8]}",

@@ -129,8 +129,7 @@ class ServiceNowAdapter(BaseProvider):
                 message=sanitize_error_message(f"Connection failed: {str(e)}"),
             )
 
-        self._last_health = res
-        return res
+        return self.record_health(res)
 
     def create_incident_ticket(
         self,

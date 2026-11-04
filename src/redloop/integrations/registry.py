@@ -77,8 +77,13 @@ class IntegrationRegistry:
     ALIAS_MAP = {
         "elastic": "elastic_security",
         "defender": "defender_endpoint",
+        "edr_defender": "defender_endpoint",
         "crowdstrike": "crowdstrike_falcon",
+        "edr_crowdstrike": "crowdstrike_falcon",
         "ad": "active_directory",
+        "identity_ad": "active_directory",
+        "identity_entra": "entra_id",
+        "entra": "entra_id",
     }
 
     def get_provider(self, provider_id: str) -> Optional[BaseProvider]:

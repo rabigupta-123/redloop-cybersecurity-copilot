@@ -55,6 +55,11 @@ class ApprovalCapability:
     approver: str
     created_at: str
     expires_at: str
+    provider_id: str = ""
+    action_name: str = ""
+    resource_id: str = ""
+    case_id: Optional[str] = None
+    requesting_actor: str = "operator"
     action_params_hash: str = ""
     consumed: bool = False
     consumed_at: Optional[str] = None
@@ -66,6 +71,11 @@ class ApprovalCapability:
             "capability_id": self.capability_id,
             "playbook_id": self.playbook_id,
             "step_id": self.step_id,
+            "provider_id": self.provider_id,
+            "action_name": self.action_name,
+            "resource_id": self.resource_id,
+            "case_id": self.case_id,
+            "requesting_actor": self.requesting_actor,
             "action_command": self.action_command,
             "approver": self.approver,
             "created_at": self.created_at,
@@ -73,6 +83,7 @@ class ApprovalCapability:
             "consumed": self.consumed,
             "consumed_at": self.consumed_at,
             "nonce": self.nonce,
+            # token_secret is strictly redacted for audit and API safety
         }
 
 
@@ -131,9 +142,28 @@ class PlaybookApprovalStore:
                             expires_at TEXT NOT NULL,
                             consumed INTEGER NOT NULL DEFAULT 0,
                             consumed_at TEXT,
-                            nonce TEXT NOT NULL
+                            nonce TEXT NOT NULL,
+                            provider_id TEXT DEFAULT '',
+                            action_name TEXT DEFAULT '',
+                            resource_id TEXT DEFAULT '',
+                            case_id TEXT,
+                            requesting_actor TEXT DEFAULT 'operator',
+                            action_params_hash TEXT DEFAULT ''
                         )
                     """)
+                    # Schema migration for existing database
+                    cur = conn.execute("PRAGMA table_info(playbook_approval_capabilities)")
+                    cols = [r["name"] for r in cur.fetchall()]
+                    for col, defn in [
+                        ("provider_id", "TEXT DEFAULT ''"),
+                        ("action_name", "TEXT DEFAULT ''"),
+                        ("resource_id", "TEXT DEFAULT ''"),
+                        ("case_id", "TEXT"),
+                        ("requesting_actor", "TEXT DEFAULT 'operator'"),
+                        ("action_params_hash", "TEXT DEFAULT ''"),
+                    ]:
+                        if col not in cols:
+                            conn.execute(f"ALTER TABLE playbook_approval_capabilities ADD COLUMN {col} {defn}")
                     conn.execute("""
                         CREATE TABLE IF NOT EXISTS playbook_audit_trail (
                             event_id TEXT PRIMARY KEY,
@@ -163,10 +193,15 @@ class PlaybookApprovalStore:
         self,
         playbook_id: str,
         step_id: str,
-        action_command: Optional[str],
+        action_command: Optional[str] = None,
         approver: str = "security_lead",
         ttl_minutes: int = 15,
         action_params: Optional[dict[str, Any]] = None,
+        provider_id: str = "",
+        action_name: str = "",
+        resource_id: str = "",
+        case_id: Optional[str] = None,
+        requesting_actor: str = "operator",
     ) -> tuple[ApprovalCapability, str]:
         """Issues a one-time cryptographic execution capability token."""
         now = datetime.now(timezone.utc)
@@ -188,6 +223,11 @@ class PlaybookApprovalStore:
             approver=approver,
             created_at=now.isoformat(),
             expires_at=expires.isoformat(),
+            provider_id=provider_id,
+            action_name=action_name,
+            resource_id=resource_id,
+            case_id=case_id,
+            requesting_actor=requesting_actor,
             consumed=False,
             consumed_at=None,
             nonce=nonce,
@@ -201,8 +241,8 @@ class PlaybookApprovalStore:
                     conn.execute(
                         """
                         INSERT INTO playbook_approval_capabilities
-                        (capability_id, token_hash, playbook_id, step_id, action_command, approver, created_at, expires_at, consumed, consumed_at, nonce)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, NULL, ?)
+                        (capability_id, token_hash, playbook_id, step_id, action_command, approver, created_at, expires_at, consumed, consumed_at, nonce, provider_id, action_name, resource_id, case_id, requesting_actor, action_params_hash)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, NULL, ?, ?, ?, ?, ?, ?, ?)
                         """,
                         (
                             cap.capability_id,
@@ -214,6 +254,12 @@ class PlaybookApprovalStore:
                             cap.created_at,
                             cap.expires_at,
                             cap.nonce,
+                            cap.provider_id,
+                            cap.action_name,
+                            cap.resource_id,
+                            cap.case_id,
+                            cap.requesting_actor,
+                            cap.action_params_hash,
                         ),
                     )
                     conn.execute(
@@ -248,8 +294,12 @@ class PlaybookApprovalStore:
         operator: str = "operator",
         expected_action_command: Optional[str] = None,
         expected_action_params: Optional[dict[str, Any]] = None,
+        expected_provider_id: Optional[str] = None,
+        expected_action_name: Optional[str] = None,
+        expected_resource_id: Optional[str] = None,
+        expected_case_id: Optional[str] = None,
     ) -> tuple[bool, str, Optional[dict[str, Any]]]:
-        """Atomically validates and consumes the capability token with replay and expiry checks."""
+        """Atomically validates and consumes the capability token with strict multi-attribute binding."""
         if not token_secret or not isinstance(token_secret, str):
             return False, "Missing or invalid authorization token.", None
 
@@ -295,8 +345,14 @@ class PlaybookApprovalStore:
                     bound_cmd = row["action_command"]
                     consumed = bool(row["consumed"])
                     expires_str = row["expires_at"]
+                    cols = row.keys()
+                    bound_provider = row["provider_id"] if "provider_id" in cols else ""
+                    bound_action = row["action_name"] if "action_name" in cols else ""
+                    bound_resource = row["resource_id"] if "resource_id" in cols else ""
+                    bound_case = row["case_id"] if "case_id" in cols else None
+                    bound_params_hash = row["action_params_hash"] if "action_params_hash" in cols else ""
 
-                    # Check binding
+                    # 1. Check playbook and step binding
                     if bound_pb != playbook_id or bound_step != step_id:
                         conn.execute(
                             """
@@ -323,7 +379,115 @@ class PlaybookApprovalStore:
                             None,
                         )
 
-                    # Check replay / consumed
+                    # 2. Check provider ID binding
+                    if expected_provider_id and bound_provider and bound_provider.lower() != expected_provider_id.lower():
+                        conn.execute(
+                            """
+                            INSERT INTO playbook_audit_trail
+                            (event_id, timestamp, event_type, capability_id, playbook_id, step_id, actor, action_command, status, details)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                            """,
+                            (
+                                f"aud-{uuid.uuid4().hex[:10]}",
+                                now_iso,
+                                "EXECUTION_REJECTED",
+                                cap_id,
+                                playbook_id,
+                                step_id,
+                                operator,
+                                bound_cmd,
+                                "REJECTED_PROVIDER_MISMATCH",
+                                f"Capability token bound to provider '{bound_provider}', cannot authorize provider '{expected_provider_id}'.",
+                            ),
+                        )
+                        return (
+                            False,
+                            f"Execution rejected: Capability token was issued for provider '{bound_provider}', not '{expected_provider_id}'.",
+                            None,
+                        )
+
+                    # 3. Check action name binding (prevent cross-action authorization)
+                    if expected_action_name and bound_action and bound_action.lower() != expected_action_name.lower():
+                        conn.execute(
+                            """
+                            INSERT INTO playbook_audit_trail
+                            (event_id, timestamp, event_type, capability_id, playbook_id, step_id, actor, action_command, status, details)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                            """,
+                            (
+                                f"aud-{uuid.uuid4().hex[:10]}",
+                                now_iso,
+                                "EXECUTION_REJECTED",
+                                cap_id,
+                                playbook_id,
+                                step_id,
+                                operator,
+                                bound_cmd,
+                                "REJECTED_ACTION_MISMATCH",
+                                f"Capability token bound to action '{bound_action}', cannot authorize action '{expected_action_name}'.",
+                            ),
+                        )
+                        return (
+                            False,
+                            f"Execution rejected: Capability token was issued for action '{bound_action}', not '{expected_action_name}'.",
+                            None,
+                        )
+
+                    # 4. Check resource identifier binding
+                    if expected_resource_id and bound_resource and bound_resource.strip() != expected_resource_id.strip():
+                        conn.execute(
+                            """
+                            INSERT INTO playbook_audit_trail
+                            (event_id, timestamp, event_type, capability_id, playbook_id, step_id, actor, action_command, status, details)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                            """,
+                            (
+                                f"aud-{uuid.uuid4().hex[:10]}",
+                                now_iso,
+                                "EXECUTION_REJECTED",
+                                cap_id,
+                                playbook_id,
+                                step_id,
+                                operator,
+                                bound_cmd,
+                                "REJECTED_RESOURCE_MISMATCH",
+                                f"Capability token bound to resource '{bound_resource}', cannot authorize resource '{expected_resource_id}'.",
+                            ),
+                        )
+                        return (
+                            False,
+                            f"Execution rejected: Capability token was issued for resource '{bound_resource}', not '{expected_resource_id}'.",
+                            None,
+                        )
+
+                    # 5. Check associated case ID binding
+                    if expected_case_id and bound_case and bound_case.strip() != expected_case_id.strip():
+                        conn.execute(
+                            """
+                            INSERT INTO playbook_audit_trail
+                            (event_id, timestamp, event_type, capability_id, playbook_id, step_id, actor, action_command, status, details)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                            """,
+                            (
+                                f"aud-{uuid.uuid4().hex[:10]}",
+                                now_iso,
+                                "EXECUTION_REJECTED",
+                                cap_id,
+                                playbook_id,
+                                step_id,
+                                operator,
+                                bound_cmd,
+                                "REJECTED_CASE_MISMATCH",
+                                f"Capability token bound to case '{bound_case}', cannot authorize case '{expected_case_id}'.",
+                            ),
+                        )
+                        return (
+                            False,
+                            f"Execution rejected: Capability token was issued for case '{bound_case}', not '{expected_case_id}'.",
+                            None,
+                        )
+
+                    # 6. Check replay / consumed
                     if consumed:
                         conn.execute(
                             """
@@ -346,7 +510,7 @@ class PlaybookApprovalStore:
                         )
                         return False, "Execution rejected: Capability token already consumed. Replay attempt blocked.", None
 
-                    # Check expiration
+                    # 7. Check expiration
                     try:
                         exp_dt = datetime.fromisoformat(expires_str)
                         if now > exp_dt:
@@ -373,7 +537,7 @@ class PlaybookApprovalStore:
                     except Exception:
                         pass
 
-                    # Check parameter tampering
+                    # 8. Check parameter tampering
                     if expected_action_command is not None and bound_cmd:
                         if expected_action_command.strip() != bound_cmd.strip():
                             conn.execute(
@@ -395,9 +559,33 @@ class PlaybookApprovalStore:
                                     f"Action command altered from approved '{bound_cmd}' to '{expected_action_command}'. Approval invalidated.",
                                 ),
                             )
-                            return False, f"Execution rejected: Action command or parameters have been altered since approval was granted.", None
+                            return False, "Execution rejected: Action command or parameters have been altered since approval was granted.", None
 
-                    # Atomically consume via CAS
+                    if bound_params_hash and expected_action_params is not None:
+                        computed_h = self._compute_params_hash(expected_action_command or bound_cmd, expected_action_params)
+                        if computed_h != bound_params_hash:
+                            conn.execute(
+                                """
+                                INSERT INTO playbook_audit_trail
+                                (event_id, timestamp, event_type, capability_id, playbook_id, step_id, actor, action_command, status, details)
+                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                """,
+                                (
+                                    f"aud-{uuid.uuid4().hex[:10]}",
+                                    now_iso,
+                                    "EXECUTION_REJECTED",
+                                    cap_id,
+                                    playbook_id,
+                                    step_id,
+                                    operator,
+                                    bound_cmd,
+                                    "REJECTED_PARAMS_HASH_MISMATCH",
+                                    "Action parameters payload does not match approved capability hash.",
+                                ),
+                            )
+                            return False, "Execution rejected: Action parameters do not match approved capability hash.", None
+
+                    # 9. Atomically consume via CAS
                     cur_upd = conn.execute(
                         "UPDATE playbook_approval_capabilities SET consumed = 1, consumed_at = ? WHERE capability_id = ? AND consumed = 0",
                         (now_iso, cap_id),
@@ -423,6 +611,7 @@ class PlaybookApprovalStore:
                             ),
                         )
                         return False, "Execution rejected: Capability token concurrently consumed. Replay attempt blocked.", None
+
                     conn.execute(
                         """
                         INSERT INTO playbook_audit_trail
@@ -447,6 +636,10 @@ class PlaybookApprovalStore:
                         "capability_id": cap_id,
                         "playbook_id": bound_pb,
                         "step_id": bound_step,
+                        "provider_id": bound_provider,
+                        "action_name": bound_action,
+                        "resource_id": bound_resource,
+                        "case_id": bound_case,
                         "action_command": bound_cmd,
                         "approver": row["approver"],
                         "consumed_at": now_iso,

@@ -158,8 +158,7 @@ class WazuhAdapter(BaseProvider):
                 message=sanitize_error_message(f"Connection failed: {str(e)}"),
             )
 
-        self._last_health = res
-        return res
+        return self.record_health(res)
 
     def get_agents(self, limit: int = 50) -> list[dict[str, Any]]:
         """Retrieves Wazuh agent inventory."""

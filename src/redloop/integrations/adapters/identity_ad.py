@@ -119,8 +119,7 @@ class ActiveDirectoryAdapter(BaseProvider):
                 message=sanitize_error_message(f"LDAP port connection failed: {str(e)}"),
             )
 
-        self._last_health = res
-        return res
+        return self.record_health(res)
 
     def disable_account(self, sAMAccountName: str, capability_token: Optional[str] = None) -> dict[str, Any]:
         """Disables user account in Active Directory. Requires operator capability token."""

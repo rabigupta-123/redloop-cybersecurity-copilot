@@ -144,8 +144,7 @@ class ElasticSecurityAdapter(BaseProvider):
                 message=sanitize_error_message(f"Connection failed: {str(e)}"),
             )
 
-        self._last_health = res
-        return res
+        return self.record_health(res)
 
     def get_alerts(self, limit: int = 50, days_back: int = 7) -> list[UniversalSecurityEvent]:
         """Queries and normalizes detection alerts using safe parameterized query DSL."""

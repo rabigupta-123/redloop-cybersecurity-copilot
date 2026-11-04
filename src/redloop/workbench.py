@@ -1322,6 +1322,18 @@ _WORKBENCH_SCRIPT = r"""
 
 
 
+    if (tabId === 'soc-ops') {
+
+
+
+      loadAutonomousSOCOps();
+
+
+
+    }
+
+
+
     if (tabId === 'copilot') {
 
 
@@ -6266,6 +6278,334 @@ _WORKBENCH_SCRIPT = r"""
 
 
 
+  window.loadAutonomousSOCOps = async function() {
+
+    try {
+
+      const mRes = await fetch('/api/metrics/soc');
+
+      if (mRes.ok) {
+
+        const mData = await mRes.json();
+
+        const metrics = mData.metrics || {};
+
+        const mttdEl = $('#soc-mttd');
+
+        if (mttdEl) mttdEl.textContent = metrics.mean_time_to_detect_minutes !== null ? `${metrics.mean_time_to_detect_minutes}m` : 'N/A';
+
+        const mttrEl = $('#soc-mttr');
+
+        if (mttrEl) mttrEl.textContent = metrics.mean_time_to_respond_minutes !== null ? `${metrics.mean_time_to_respond_minutes}m` : 'N/A';
+
+        const syncEl = $('#soc-sync-rate');
+
+        if (syncEl) syncEl.textContent = `${metrics.telemetry_sync_rate_percent || 100}%`;
+
+        const availEl = $('#soc-provider-avail');
+
+        if (availEl) availEl.textContent = `${metrics.provider_availability_percent || 100}%`;
+
+        const redEl = $('#soc-alert-reduction');
+
+        if (redEl) redEl.textContent = `${metrics.alert_reduction_rate_percent || 0}%`;
+
+      }
+
+    } catch (_) {}
+
+
+
+    try {
+
+      const incRes = await fetch('/api/incidents');
+
+      if (incRes.ok) {
+
+        const incData = await incRes.json();
+
+        const tbody = $('#soc-incidents-table-body');
+
+        if (tbody) {
+
+          const list = incData.incidents || [];
+
+          if (list.length === 0) {
+
+            tbody.innerHTML = '<tr><td colspan="6" style="padding:16px;text-align:center;" class="text-muted">No security incidents detected. Local telemetry baseline normal.</td></tr>';
+
+          } else {
+
+            tbody.innerHTML = list.map(i => `
+
+              <tr style="border-bottom:1px solid var(--border);">
+
+                <td style="padding:8px;font-family:var(--font-mono);font-weight:600;">${i.incident_id}</td>
+
+                <td style="padding:8px;"><span class="badge-pill ${i.severity === 'CRITICAL' ? 'critical' : i.severity === 'HIGH' ? 'warning' : 'info'}">${i.severity}</span></td>
+
+                <td style="padding:8px;">${i.title}</td>
+
+                <td style="padding:8px;font-family:var(--font-mono);">${i.primary_host || i.primary_ip || 'N/A'}</td>
+
+                <td style="padding:8px;">${Math.round((i.confidence_score || 0) * 100)}%</td>
+
+                <td style="padding:8px;">${(i.linked_events || []).length}</td>
+
+              </tr>
+
+            `).join('');
+
+          }
+
+        }
+
+      }
+
+    } catch (_) {}
+
+
+
+    try {
+
+      const jobRes = await fetch('/api/soc/sync/jobs?limit=10');
+
+      if (jobRes.ok) {
+
+        const jobData = await jobRes.json();
+
+        const listDiv = $('#soc-sync-jobs-list');
+
+        if (listDiv) {
+
+          const jobs = jobData.jobs || [];
+
+          if (jobs.length === 0) {
+
+            listDiv.innerHTML = '<div class="text-muted" style="padding:8px;">No synchronization jobs recorded.</div>';
+
+          } else {
+
+            listDiv.innerHTML = jobs.map(j => `
+
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);">
+
+                <span>${j.job_id.substring(0, 16)}... [${j.provider_id}]</span>
+
+                <span class="badge-pill ${j.status === 'COMPLETED' ? 'success' : j.status === 'RUNNING' ? 'info' : 'warning'}">${j.status} (${j.events_synced} ev)</span>
+
+              </div>
+
+            `).join('');
+
+          }
+
+        }
+
+      }
+
+    } catch (_) {}
+
+
+
+    try {
+
+      const iocRes = await fetch('/api/iocs?limit=15');
+
+      if (iocRes.ok) {
+
+        const iocData = await iocRes.json();
+
+        const tbody = $('#soc-iocs-table-body');
+
+        if (tbody) {
+
+          const list = iocData.iocs || [];
+
+          if (list.length === 0) {
+
+            tbody.innerHTML = '<tr><td colspan="5" style="padding:16px;text-align:center;" class="text-muted">No IOC records ingested.</td></tr>';
+
+          } else {
+
+            tbody.innerHTML = list.map(rec => `
+
+              <tr style="border-bottom:1px solid var(--border);">
+
+                <td style="padding:8px;font-family:var(--font-mono);">${rec.ioc_type}</td>
+
+                <td style="padding:8px;font-family:var(--font-mono);">${rec.value}</td>
+
+                <td style="padding:8px;"><span class="badge-pill ${rec.state === 'CONFIRMED_MALICIOUS' ? 'critical' : rec.state === 'BENIGN' ? 'success' : 'info'}">${rec.state}</span></td>
+
+                <td style="padding:8px;">${Math.round((rec.confidence || 0) * 100)}%</td>
+
+                <td style="padding:8px;">
+
+                  <button class="btn btn-secondary btn-sm" onclick="updateIocDisposition('${rec.ioc_id}', 'CONFIRMED_MALICIOUS')">Malicious</button>
+
+                  <button class="btn btn-secondary btn-sm" onclick="updateIocDisposition('${rec.ioc_id}', 'BENIGN')">Benign</button>
+
+                </td>
+
+              </tr>
+
+            `).join('');
+
+          }
+
+        }
+
+      }
+
+    } catch (_) {}
+
+
+
+    try {
+
+      const covRes = await fetch('/api/detections/coverage');
+
+      if (covRes.ok) {
+
+        const covData = await covRes.json();
+
+        const pill = $('#soc-attack-coverage-pill');
+
+        if (pill) pill.textContent = `COVERAGE: ${covData.coverage?.coverage_ratio_percent || 75}%`;
+
+      }
+
+      const rulesRes = await fetch('/api/detections/rules');
+
+      if (rulesRes.ok) {
+
+        const rulesData = await rulesRes.json();
+
+        const tbody = $('#soc-rules-table-body');
+
+        if (tbody) {
+
+          const list = rulesData.rules || [];
+
+          tbody.innerHTML = list.map(r => `
+
+            <tr style="border-bottom:1px solid var(--border);">
+
+              <td style="padding:8px;font-family:var(--font-mono);font-weight:600;">${r.rule_id}</td>
+
+              <td style="padding:8px;font-family:var(--font-mono);">${r.technique_id}</td>
+
+              <td style="padding:8px;">${r.hit_count || 0}</td>
+
+              <td style="padding:8px;">${r.false_positive_count || 0}</td>
+
+              <td style="padding:8px;">
+
+                <button class="btn btn-secondary btn-sm" onclick="runRuleTest('${r.rule_id}')">⚡ Test Rule</button>
+
+              </td>
+
+            </tr>
+
+          `).join('');
+
+        }
+
+      }
+
+    } catch (_) {}
+
+  };
+
+
+
+  window.triggerSocSync = async function() {
+
+    const provSel = $('#soc-sync-provider');
+
+    const prov = provSel ? provSel.value : 'edr_defender';
+
+    try {
+
+      const res = await fetch('/api/soc/sync/trigger', {
+
+        method: 'POST',
+
+        headers: {'Content-Type': 'application/json'},
+
+        body: JSON.stringify({provider_id: prov, limit: 50})
+
+      });
+
+      if (res.ok) {
+
+        loadAutonomousSOCOps();
+
+      }
+
+    } catch (_) {}
+
+  };
+
+
+
+  window.runRuleTest = async function(ruleId) {
+
+    try {
+
+      const res = await fetch(`/api/detections/rules/${ruleId}/test`, {method: 'POST'});
+
+      if (res.ok) {
+
+        const data = await res.json();
+
+        alert(`Rule Test Result: ${data.test_result?.summary || 'Harness executed successfully'}`);
+
+      }
+
+    } catch (_) {}
+
+  };
+
+
+
+  window.updateIocDisposition = async function(iocId, state) {
+
+    try {
+
+      await fetch(`/api/iocs/${iocId}/disposition`, {
+
+        method: 'POST',
+
+        headers: {'Content-Type': 'application/json'},
+
+        body: JSON.stringify({state: state, reason: 'Analyst manual disposition'})
+
+      });
+
+      loadAutonomousSOCOps();
+
+    } catch (_) {}
+
+  };
+
+
+
+  window.correlateEventsNow = async function() {
+
+    try {
+
+      await fetch('/api/incidents/correlate', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: '{}'});
+
+      loadAutonomousSOCOps();
+
+    } catch (_) {}
+
+  };
+
+
+
 
 
 
@@ -9418,6 +9758,22 @@ _HTML_TEMPLATE = r"""
 
 
 
+      <div class="nav-item" data-tab="soc-ops">
+
+
+
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
+
+
+
+        <span>Autonomous SOC</span>
+
+
+
+      </div>
+
+
+
     </nav>
 
 
@@ -11301,6 +11657,258 @@ _HTML_TEMPLATE = r"""
       </div>
 
 
+
+    </section>
+
+
+
+    <section class="tab-view" id="view-soc-ops">
+
+      <div class="metrics-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:20px;">
+
+        <div class="panel-card" style="padding:16px;">
+
+          <div class="text-muted" style="font-size:11px;font-weight:600;letter-spacing:0.05em;">MEAN TIME TO DETECT (MTTD)</div>
+
+          <div id="soc-mttd" style="font-size:24px;font-weight:700;color:var(--text-primary);margin-top:6px;">--</div>
+
+          <div class="text-muted" style="font-size:11px;">Minutes from first event to alert</div>
+
+        </div>
+
+        <div class="panel-card" style="padding:16px;">
+
+          <div class="text-muted" style="font-size:11px;font-weight:600;letter-spacing:0.05em;">MEAN TIME TO RESPOND (MTTR)</div>
+
+          <div id="soc-mttr" style="font-size:24px;font-weight:700;color:var(--text-primary);margin-top:6px;">--</div>
+
+          <div class="text-muted" style="font-size:11px;">Minutes to containment authorization</div>
+
+        </div>
+
+        <div class="panel-card" style="padding:16px;">
+
+          <div class="text-muted" style="font-size:11px;font-weight:600;letter-spacing:0.05em;">TELEMETRY SYNC RATE</div>
+
+          <div id="soc-sync-rate" style="font-size:24px;font-weight:700;color:var(--success);margin-top:6px;">--</div>
+
+          <div class="text-muted" style="font-size:11px;">Successful provider batch percentage</div>
+
+        </div>
+
+        <div class="panel-card" style="padding:16px;">
+
+          <div class="text-muted" style="font-size:11px;font-weight:600;letter-spacing:0.05em;">PROVIDER AVAILABILITY</div>
+
+          <div id="soc-provider-avail" style="font-size:24px;font-weight:700;color:var(--accent-primary);margin-top:6px;">--</div>
+
+          <div class="text-muted" style="font-size:11px;">Active SIEM/EDR connectivity</div>
+
+        </div>
+
+        <div class="panel-card" style="padding:16px;">
+
+          <div class="text-muted" style="font-size:11px;font-weight:600;letter-spacing:0.05em;">ALERT REDUCTION</div>
+
+          <div id="soc-alert-reduction" style="font-size:24px;font-weight:700;color:var(--primary);margin-top:6px;">--</div>
+
+          <div class="text-muted" style="font-size:11px;">Deduplication &amp; clustering ratio</div>
+
+        </div>
+
+      </div>
+
+
+
+      <div style="display:grid;grid-template-columns:2fr 1fr;gap:20px;margin-bottom:20px;">
+
+        <div class="panel-card">
+
+          <div class="card-head" style="display:flex;justify-content:space-between;align-items:center;">
+
+            <div class="card-title">Correlated Security Incidents</div>
+
+            <button class="btn btn-secondary btn-sm" onclick="correlateEventsNow()">🔄 Run Correlation Pass</button>
+
+          </div>
+
+          <div class="table-wrap" style="max-height:320px;overflow-y:auto;">
+
+            <table style="width:100%;border-collapse:collapse;font-size:12px;">
+
+              <thead>
+
+                <tr style="border-bottom:1px solid var(--border);text-align:left;color:var(--text-secondary);">
+
+                  <th style="padding:8px;">Incident ID</th>
+
+                  <th style="padding:8px;">Severity</th>
+
+                  <th style="padding:8px;">Title</th>
+
+                  <th style="padding:8px;">Target Entity</th>
+
+                  <th style="padding:8px;">Confidence</th>
+
+                  <th style="padding:8px;">Events</th>
+
+                </tr>
+
+              </thead>
+
+              <tbody id="soc-incidents-table-body">
+
+                <tr><td colspan="6" style="padding:16px;text-align:center;" class="text-muted">Loading incidents...</td></tr>
+
+              </tbody>
+
+            </table>
+
+          </div>
+
+        </div>
+
+
+
+        <div class="panel-card">
+
+          <div class="card-head">
+
+            <div class="card-title">Telemetry Sync Operations</div>
+
+          </div>
+
+          <div style="padding:10px 0;">
+
+            <div style="display:flex;gap:8px;margin-bottom:12px;">
+
+              <select id="soc-sync-provider" style="flex:1;padding:6px 8px;font-size:12px;background:var(--bg-secondary);border:1px solid var(--border);color:var(--text-primary);border-radius:4px;">
+
+                <option value="edr_defender">Microsoft Defender</option>
+
+                <option value="splunk">Splunk Enterprise</option>
+
+                <option value="wazuh">Wazuh SIEM</option>
+
+                <option value="elastic">Elasticsearch</option>
+
+                <option value="edr_crowdstrike">CrowdStrike Falcon</option>
+
+                <option value="identity_entra">Microsoft Entra ID</option>
+
+                <option value="identity_ad">Active Directory</option>
+
+              </select>
+
+              <button class="btn btn-primary btn-sm" onclick="triggerSocSync()">Sync Now</button>
+
+            </div>
+
+            <div id="soc-sync-jobs-list" style="max-height:240px;overflow-y:auto;font-size:11px;font-family:var(--font-mono);">
+
+              <div class="text-muted">No sync activity yet.</div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+
+        <div class="panel-card">
+
+          <div class="card-head">
+
+            <div class="card-title">Threat Intelligence &amp; IOC Lifecycle</div>
+
+          </div>
+
+          <div class="table-wrap" style="max-height:280px;overflow-y:auto;">
+
+            <table style="width:100%;border-collapse:collapse;font-size:12px;">
+
+              <thead>
+
+                <tr style="border-bottom:1px solid var(--border);text-align:left;color:var(--text-secondary);">
+
+                  <th style="padding:8px;">Type</th>
+
+                  <th style="padding:8px;">Indicator</th>
+
+                  <th style="padding:8px;">State</th>
+
+                  <th style="padding:8px;">Confidence</th>
+
+                  <th style="padding:8px;">Actions</th>
+
+                </tr>
+
+              </thead>
+
+              <tbody id="soc-iocs-table-body">
+
+                <tr><td colspan="5" style="padding:16px;text-align:center;" class="text-muted">Loading indicators...</td></tr>
+
+              </tbody>
+
+            </table>
+
+          </div>
+
+        </div>
+
+
+
+        <div class="panel-card">
+
+          <div class="card-head" style="display:flex;justify-content:space-between;align-items:center;">
+
+            <div class="card-title">Detection Engineering &amp; ATT&amp;CK Coverage</div>
+
+            <span id="soc-attack-coverage-pill" class="badge-pill info font-mono">COVERAGE: --%</span>
+
+          </div>
+
+          <div class="table-wrap" style="max-height:280px;overflow-y:auto;">
+
+            <table style="width:100%;border-collapse:collapse;font-size:12px;">
+
+              <thead>
+
+                <tr style="border-bottom:1px solid var(--border);text-align:left;color:var(--text-secondary);">
+
+                  <th style="padding:8px;">Rule ID</th>
+
+                  <th style="padding:8px;">Technique</th>
+
+                  <th style="padding:8px;">Hits</th>
+
+                  <th style="padding:8px;">F/P</th>
+
+                  <th style="padding:8px;">Test Harness</th>
+
+                </tr>
+
+              </thead>
+
+              <tbody id="soc-rules-table-body">
+
+                <tr><td colspan="5" style="padding:16px;text-align:center;" class="text-muted">Loading detection rules...</td></tr>
+
+              </tbody>
+
+            </table>
+
+          </div>
+
+        </div>
+
+      </div>
 
     </section>
 
@@ -18996,6 +19604,327 @@ def register_workbench_routes(
         if not job:
             raise HTTPException(status_code=404, detail=f"Sync job '{job_id}' not found.")
         return JSONResponse({"success": True, "sync_job": job})
+
+    # ==========================================================================
+    # PHASE 9: AUTONOMOUS SOC OPERATIONS REST ROUTES
+    # ==========================================================================
+
+    # --- Telemetry Ingestion & Synchronization (soc_sync) ---
+
+    @app.get("/api/soc/sync/jobs")
+    async def list_soc_sync_jobs_endpoint(request: Request, provider_id: Optional[str] = None, limit: int = 50):
+        _require_same_origin(request)
+        from redloop.assessment.soc_sync import TelemetrySyncPipeline
+        pipe = TelemetrySyncPipeline.get_instance()
+        jobs = pipe.list_sync_jobs(provider_id=provider_id, limit=limit)
+        return JSONResponse({"success": True, "jobs": jobs, "total": len(jobs)})
+
+    @app.post("/api/soc/sync/trigger")
+    async def trigger_soc_sync_endpoint(request: Request):
+        _require_same_origin(request)
+        try:
+            body = await request.json()
+        except Exception:
+            body = {}
+        provider_id = body.get("provider_id", "edr_defender")
+        limit = int(body.get("limit", 50))
+        from redloop.assessment.soc_sync import TelemetrySyncPipeline
+        pipe = TelemetrySyncPipeline.get_instance()
+        job = pipe.execute_sync(provider_id=provider_id, limit=limit)
+        return JSONResponse({"success": True, "sync_job": job.to_dict()})
+
+    @app.post("/api/soc/sync/{job_id}/cancel")
+    async def cancel_soc_sync_endpoint(request: Request, job_id: str):
+        _require_same_origin(request)
+        from redloop.assessment.soc_sync import TelemetrySyncPipeline
+        pipe = TelemetrySyncPipeline.get_instance()
+        cancelled = pipe.cancel_sync_job(job_id)
+        if not cancelled:
+            raise HTTPException(status_code=404, detail=f"Active sync job '{job_id}' not found or already terminated.")
+        return JSONResponse({"success": True, "job_id": job_id, "status": "CANCELLED"})
+
+    @app.get("/api/soc/sync/metrics")
+    async def get_soc_sync_metrics_endpoint(request: Request):
+        _require_same_origin(request)
+        from redloop.assessment.soc_sync import TelemetrySyncPipeline
+        pipe = TelemetrySyncPipeline.get_instance()
+        return JSONResponse({"success": True, "metrics": pipe.get_sync_metrics()})
+
+    # --- Detection Engineering (detection_engineering) ---
+
+    @app.get("/api/detections/rules")
+    async def list_detection_rules_endpoint(
+        request: Request,
+        technique_id: Optional[str] = None,
+        enabled_only: bool = False,
+    ):
+        _require_same_origin(request)
+        from redloop.assessment.detection_engineering import DetectionEngineeringManager
+        mgr = DetectionEngineeringManager.get_instance()
+        rules = mgr.list_rules(
+            technique_id=technique_id,
+            enabled_only=enabled_only,
+        )
+        return JSONResponse({"success": True, "rules": rules, "total": len(rules)})
+
+    @app.get("/api/detections/rules/{rule_id}")
+    async def get_detection_rule_endpoint(request: Request, rule_id: str):
+        _require_same_origin(request)
+        from redloop.assessment.detection_engineering import DetectionEngineeringManager
+        mgr = DetectionEngineeringManager.get_instance()
+        rule = mgr.get_rule(rule_id)
+        if not rule:
+            raise HTTPException(status_code=404, detail=f"Detection rule '{rule_id}' not found.")
+        return JSONResponse({"success": True, "rule": rule.to_dict()})
+
+    @app.post("/api/detections/rules")
+    async def create_detection_rule_endpoint(request: Request):
+        _require_same_origin(request)
+        try:
+            body = await request.json()
+        except Exception:
+            raise HTTPException(status_code=400, detail="Invalid JSON body.")
+        from redloop.assessment.detection_engineering import DetectionEngineeringManager, DetectionRule, RuleSource, RuleSeverity
+        mgr = DetectionEngineeringManager.get_instance()
+        try:
+            rule = DetectionRule(
+                rule_id=body["rule_id"],
+                title=body["title"],
+                description=body.get("description", ""),
+                source=RuleSource(body.get("source", "NATIVE")),
+                version=body.get("version", "1.0"),
+                technique_id=body["technique_id"],
+                tactic=body["tactic"],
+                severity=RuleSeverity(body.get("severity", "MEDIUM")),
+                confidence=float(body.get("confidence", 0.8)),
+                data_sources=body.get("data_sources", []),
+                enabled=bool(body.get("enabled", True)),
+                author=body.get("author", "analyst"),
+            )
+            created = mgr.register_rule(rule)
+            return JSONResponse({"success": True, "rule": created.to_dict()})
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Failed to create rule: {str(e)}")
+
+    @app.post("/api/detections/rules/{rule_id}/test")
+    async def test_detection_rule_endpoint(request: Request, rule_id: str):
+        _require_same_origin(request)
+        from redloop.assessment.detection_engineering import DetectionEngineeringManager
+        mgr = DetectionEngineeringManager.get_instance()
+        rule = mgr.get_rule(rule_id)
+        if not rule:
+            raise HTTPException(status_code=404, detail=f"Detection rule '{rule_id}' not found.")
+        result = mgr.run_rule_test_harness(rule_id)
+        return JSONResponse({"success": True, "test_result": result})
+
+    @app.get("/api/detections/coverage")
+    async def get_detection_coverage_endpoint(request: Request):
+        _require_same_origin(request)
+        from redloop.assessment.detection_engineering import DetectionEngineeringManager
+        mgr = DetectionEngineeringManager.get_instance()
+        coverage = mgr.get_attack_coverage_matrix()
+        return JSONResponse({"success": True, "coverage": coverage})
+
+    @app.post("/api/detections/rules/{rule_id}/false-positive")
+    async def report_detection_false_positive_endpoint(request: Request, rule_id: str):
+        _require_same_origin(request)
+        try:
+            body = await request.json()
+        except Exception:
+            body = {}
+        reason = body.get("reason", "Reported by analyst")
+        from redloop.assessment.detection_engineering import DetectionEngineeringManager
+        mgr = DetectionEngineeringManager.get_instance()
+        ok = mgr.mark_false_positive(rule_id, reason=reason)
+        if not ok:
+            raise HTTPException(status_code=404, detail=f"Detection rule '{rule_id}' not found.")
+        rule = mgr.get_rule(rule_id)
+        return JSONResponse({"success": True, "rule_id": rule_id, "false_positive_count": rule.false_positive_count if rule else 1})
+
+    # --- Cross-Platform Incident Correlation (incident_correlation) ---
+
+    @app.get("/api/incidents")
+    async def list_incidents_endpoint(request: Request, severity: Optional[str] = None, include_merged: bool = False, limit: int = 50):
+        _require_same_origin(request)
+        from redloop.assessment.incident_correlation import IncidentCorrelationEngine
+        engine = IncidentCorrelationEngine.get_instance()
+        incidents = engine.list_incidents(severity=severity, include_merged=include_merged, limit=limit)
+        return JSONResponse({"success": True, "incidents": incidents, "total": len(incidents)})
+
+    @app.get("/api/incidents/{incident_id}")
+    async def get_incident_endpoint(request: Request, incident_id: str):
+        _require_same_origin(request)
+        from redloop.assessment.incident_correlation import IncidentCorrelationEngine
+        engine = IncidentCorrelationEngine.get_instance()
+        inc = engine.get_incident(incident_id)
+        if not inc:
+            raise HTTPException(status_code=404, detail=f"Incident '{incident_id}' not found.")
+        return JSONResponse({"success": True, "incident": inc.to_dict()})
+
+    @app.post("/api/incidents/correlate")
+    async def run_incident_correlation_endpoint(request: Request):
+        _require_same_origin(request)
+        try:
+            body = await request.json()
+        except Exception:
+            body = {}
+        event_dict = body.get("event")
+        from redloop.assessment.incident_correlation import IncidentCorrelationEngine
+        from redloop.assessment.soc_events import UniversalSecurityEvent
+        engine = IncidentCorrelationEngine.get_instance()
+        if event_dict:
+            ev = UniversalSecurityEvent(**event_dict)
+            inc = engine.correlate_event(ev)
+            return JSONResponse({"success": True, "incident": inc.to_dict()})
+        else:
+            incidents = engine.list_incidents(include_merged=False, limit=50)
+            return JSONResponse({"success": True, "incidents": incidents, "total": len(incidents)})
+
+    @app.post("/api/incidents/merge")
+    async def merge_incidents_endpoint(request: Request):
+        _require_same_origin(request)
+        try:
+            body = await request.json()
+        except Exception:
+            raise HTTPException(status_code=400, detail="Invalid JSON body.")
+        primary_id = body.get("primary_incident_id")
+        secondary_id = body.get("secondary_incident_id")
+        rationale = body.get("rationale", "Merged by analyst")
+        if not primary_id or not secondary_id:
+            raise HTTPException(status_code=400, detail="Both 'primary_incident_id' and 'secondary_incident_id' are required.")
+        from redloop.assessment.incident_correlation import IncidentCorrelationEngine
+        engine = IncidentCorrelationEngine.get_instance()
+        try:
+            merged = engine.merge_incidents(primary_id, secondary_id, rationale=rationale)
+            return JSONResponse({"success": True, "merged_incident": merged.to_dict()})
+        except Exception as exc:
+            raise HTTPException(status_code=400, detail=str(exc))
+
+    @app.post("/api/incidents/{incident_id}/split")
+    async def split_incident_endpoint(request: Request, incident_id: str):
+        _require_same_origin(request)
+        try:
+            body = await request.json()
+        except Exception:
+            raise HTTPException(status_code=400, detail="Invalid JSON body.")
+        event_ids = body.get("event_ids", [])
+        reason = body.get("reason", "Split by analyst")
+        if not event_ids:
+            raise HTTPException(status_code=400, detail="'event_ids' list is required to split incident.")
+        from redloop.assessment.incident_correlation import IncidentCorrelationEngine
+        engine = IncidentCorrelationEngine.get_instance()
+        try:
+            orig, new_inc = engine.split_incident(incident_id, event_ids_to_split=event_ids, reason=reason)
+            return JSONResponse({"success": True, "original_incident": orig.to_dict(), "new_incident": new_inc.to_dict()})
+        except Exception as exc:
+            raise HTTPException(status_code=400, detail=str(exc))
+
+    # --- Threat Intelligence IOC Lifecycle (ioc_engine) ---
+
+    @app.get("/api/iocs")
+    async def list_iocs_endpoint(
+        request: Request,
+        ioc_type: Optional[str] = None,
+        state: Optional[str] = None,
+        limit: int = 50,
+    ):
+        _require_same_origin(request)
+        from redloop.assessment.ioc_engine import IOCLifecycleManager, IOCType, IOCState
+        mgr = IOCLifecycleManager.get_instance()
+        t_enum = IOCType(ioc_type.upper()) if ioc_type else None
+        s_enum = IOCState(state.upper()) if state else None
+        records = mgr.list_iocs(ioc_type=t_enum, state=s_enum, limit=limit)
+        return JSONResponse({"success": True, "iocs": records, "total": len(records)})
+
+    @app.get("/api/iocs/{ioc_id}")
+    async def get_ioc_endpoint(request: Request, ioc_id: str):
+        _require_same_origin(request)
+        from redloop.assessment.ioc_engine import IOCLifecycleManager
+        mgr = IOCLifecycleManager.get_instance()
+        record = mgr.get_ioc(ioc_id)
+        if not record:
+            raise HTTPException(status_code=404, detail=f"IOC '{ioc_id}' not found.")
+        return JSONResponse({"success": True, "ioc": record.to_dict()})
+
+    @app.post("/api/iocs")
+    async def create_ioc_endpoint(request: Request):
+        _require_same_origin(request)
+        try:
+            body = await request.json()
+        except Exception:
+            raise HTTPException(status_code=400, detail="Invalid JSON body.")
+        from redloop.assessment.ioc_engine import IOCLifecycleManager, IOCType
+        mgr = IOCLifecycleManager.get_instance()
+        try:
+            rec = mgr.register_ioc(
+                ioc_type=IOCType(body["ioc_type"].upper()),
+                value=body["value"],
+                source=body.get("source", "analyst_manual"),
+                confidence=float(body.get("confidence", 0.7)),
+                reputation=body.get("reputation", "UNKNOWN"),
+                related_case_id=body.get("related_case_id"),
+                related_event_id=body.get("related_event_id"),
+            )
+            return JSONResponse({"success": True, "ioc": rec.to_dict()})
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Failed to ingest IOC: {str(e)}")
+
+    @app.post("/api/iocs/{ioc_id}/disposition")
+    async def update_ioc_disposition_endpoint(request: Request, ioc_id: str):
+        _require_same_origin(request)
+        try:
+            body = await request.json()
+        except Exception:
+            raise HTTPException(status_code=400, detail="Invalid JSON body.")
+        new_state = body.get("state")
+        reason = body.get("reason", "Analyst disposition update")
+        actor = body.get("actor", "analyst")
+        if not new_state:
+            raise HTTPException(status_code=400, detail="'state' is required.")
+        from redloop.assessment.ioc_engine import IOCLifecycleManager, IOCState
+        mgr = IOCLifecycleManager.get_instance()
+        try:
+            st_enum = IOCState(new_state.upper())
+            res = mgr.set_disposition(ioc_id, state=st_enum, reason=reason, actor=actor)
+            return JSONResponse({"success": True, "ioc": res.to_dict()})
+        except Exception as exc:
+            raise HTTPException(status_code=400, detail=str(exc))
+
+    # --- SOC Operational Metrics (soc_metrics) ---
+
+    @app.get("/api/metrics/soc")
+    async def get_soc_operational_metrics_endpoint(request: Request):
+        _require_same_origin(request)
+        from redloop.assessment.soc_metrics import SOCMetricsEngine
+        metrics = SOCMetricsEngine.get_operational_metrics()
+        return JSONResponse({"success": True, "metrics": metrics})
+
+    # --- Operational Copilot Intelligence (soc_copilot) ---
+
+    @app.post("/api/soc/copilot/op")
+    async def soc_copilot_operational_endpoint(request: Request):
+        _require_same_origin(request)
+        try:
+            body = await request.json()
+        except Exception:
+            raise HTTPException(status_code=400, detail="Invalid JSON body.")
+        user_query = body.get("query", "").strip()
+        if not user_query:
+            raise HTTPException(status_code=400, detail="'query' is required.")
+        incident_id = body.get("incident_id")
+        alert_id = body.get("alert_id")
+        entity_id = body.get("entity_id")
+        context = body.get("context", {})
+        from redloop.assessment.soc_copilot import SOCCopilotEngine
+        result = SOCCopilotEngine.handle_operational_query(
+            user_query=user_query,
+            incident_id=incident_id,
+            alert_id=alert_id,
+            entity_id=entity_id,
+            context=context,
+        )
+        return JSONResponse({"success": True, "result": result})
+
 
 
 

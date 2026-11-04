@@ -32,6 +32,16 @@ from redloop.assessment.soar_actions import (
 )
 
 
+class ActionExecutionState(str, Enum):
+    NOT_STARTED = "NOT_STARTED"
+    IN_PROGRESS = "IN_PROGRESS"
+    SUCCEEDED = "SUCCEEDED"
+    FAILED = "FAILED"
+    OUTCOME_UNKNOWN = "OUTCOME_UNKNOWN"
+    WAITING_FOR_APPROVAL = "WAITING_FOR_APPROVAL"
+    CANCELLED = "CANCELLED"
+
+
 class WorkflowState(str, Enum):
     DRAFT = "DRAFT"
     VALIDATED = "VALIDATED"
@@ -45,6 +55,7 @@ class WorkflowState(str, Enum):
     CANCELLED = "CANCELLED"
     BLOCKED = "BLOCKED"
     TIMED_OUT = "TIMED_OUT"
+    OUTCOME_UNKNOWN = "OUTCOME_UNKNOWN"
 
 
 class TriggerType(str, Enum):
@@ -160,6 +171,7 @@ class SOAREngine:
             WorkflowState.FAILED,
             WorkflowState.CANCELLED,
             WorkflowState.BLOCKED,
+            WorkflowState.OUTCOME_UNKNOWN,
         },
         WorkflowState.WAITING_FOR_APPROVAL: {
             WorkflowState.RUNNING,
@@ -172,6 +184,7 @@ class SOAREngine:
         WorkflowState.COMPLETED: set(),
         WorkflowState.PARTIAL: set(),
         WorkflowState.FAILED: {WorkflowState.READY},  # Retry allowed
+        WorkflowState.OUTCOME_UNKNOWN: {WorkflowState.PAUSED, WorkflowState.FAILED, WorkflowState.CANCELLED, WorkflowState.COMPLETED, WorkflowState.READY},
         WorkflowState.CANCELLED: set(),
         WorkflowState.BLOCKED: {WorkflowState.READY},
     }
@@ -237,6 +250,26 @@ class SOAREngine:
                             execution_id TEXT NOT NULL,
                             workflow_id TEXT NOT NULL,
                             created_at TEXT NOT NULL
+                        )
+                    """)
+                    conn.execute("""
+                        CREATE TABLE IF NOT EXISTS soar_action_executions (
+                            action_exec_id TEXT PRIMARY KEY,
+                            execution_id TEXT NOT NULL,
+                            workflow_id TEXT NOT NULL,
+                            step_id TEXT NOT NULL,
+                            action_name TEXT NOT NULL,
+                            provider_id TEXT NOT NULL,
+                            resource_id TEXT,
+                            idempotency_key TEXT UNIQUE NOT NULL,
+                            state TEXT NOT NULL,
+                            is_destructive INTEGER NOT NULL DEFAULT 0,
+                            parameters_json TEXT NOT NULL,
+                            provider_request_id TEXT,
+                            result_json TEXT,
+                            error_message TEXT,
+                            created_at TEXT NOT NULL,
+                            updated_at TEXT NOT NULL
                         )
                     """)
                     conn.execute("""
@@ -456,11 +489,83 @@ class SOAREngine:
                 self._save_execution_record(record)
                 return record
 
+            # Idempotency check and action dispatch persistence
+            idempotency_key = hashlib.sha256(
+                f"{workflow_id}:{step.step_id}:{trigger.target_context}:{json.dumps(step_params, sort_keys=True, default=str)}".encode("utf-8")
+            ).hexdigest()
+
+            action_exec_id = f"aexec-{uuid.uuid4().hex[:10]}"
+            now_action_ts = datetime.now(timezone.utc).isoformat()
+
+            with self._op_lock:
+                conn = self._get_connection()
+                try:
+                    with conn:
+                        # Check prior execution for this idempotency key
+                        cur_chk = conn.execute("SELECT * FROM soar_action_executions WHERE idempotency_key = ?", (idempotency_key,))
+                        prior_exec = cur_chk.fetchone()
+                        if prior_exec:
+                            if prior_exec["state"] == "SUCCEEDED" and prior_exec["result_json"]:
+                                act_dict = json.loads(prior_exec["result_json"])
+                                record.executed_steps.append(act_dict)
+                                continue
+                            elif prior_exec["state"] == "OUTCOME_UNKNOWN":
+                                self._log_state_transition(exec_id, workflow_id, WorkflowState.RUNNING, WorkflowState.OUTCOME_UNKNOWN, actor=operator)
+                                record.state = WorkflowState.OUTCOME_UNKNOWN
+                                record.error_message = f"Action '{step.action_name}' in step '{step.step_id}' has state OUTCOME_UNKNOWN from prior interrupted execution. Manual reconciliation required."
+                                self._save_execution_record(record)
+                                return record
+
+                        # Record in-progress before external dispatch
+                        conn.execute(
+                            """
+                            INSERT OR REPLACE INTO soar_action_executions
+                            (action_exec_id, execution_id, workflow_id, step_id, action_name, provider_id, resource_id, idempotency_key, state, is_destructive, parameters_json, created_at, updated_at)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'IN_PROGRESS', ?, ?, ?, ?)
+                            """,
+                            (
+                                action_exec_id,
+                                exec_id,
+                                workflow_id,
+                                step.step_id,
+                                step.action_name,
+                                str(step_params.get("provider") or "local"),
+                                trigger.target_context,
+                                idempotency_key,
+                                1 if step.is_containment else 0,
+                                json.dumps(step_params, sort_keys=True, default=str),
+                                now_action_ts,
+                                now_action_ts,
+                            ),
+                        )
+                finally:
+                    conn.close()
+
             try:
                 act_res: ActionResult = action_handler(**step_params)
                 step_dict = act_res.to_dict()
                 record.executed_steps.append(step_dict)
                 record.evidence_ids.extend(act_res.evidence_ids)
+
+                final_act_state = "SUCCEEDED" if act_res.status in (ActionExecutionStatus.SUCCESS, ActionExecutionStatus.SIMULATED) else "FAILED"
+                provider_req_id = ""
+                if isinstance(act_res.output_data, dict):
+                    provider_req_id = str(act_res.output_data.get("action_id") or act_res.output_data.get("batch_id") or "")
+
+                with self._op_lock:
+                    conn = self._get_connection()
+                    try:
+                        with conn:
+                            conn.execute(
+                                """
+                                UPDATE soar_action_executions
+                                SET state = ?, result_json = ?, provider_request_id = ?, updated_at = ?
+                                WHERE action_exec_id = ?
+                                """,
+                                (final_act_state, json.dumps(step_dict), provider_req_id, datetime.now(timezone.utc).isoformat(), action_exec_id),
+                            )
+                    finally:
+                        conn.close()
 
                 if act_res.status == ActionExecutionStatus.FAILED:
                     self._log_state_transition(exec_id, workflow_id, WorkflowState.RUNNING, WorkflowState.FAILED, actor=operator)
@@ -470,6 +575,21 @@ class SOAREngine:
                     return record
 
             except Exception as ex:
+                with self._op_lock:
+                    conn = self._get_connection()
+                    try:
+                        with conn:
+                            conn.execute(
+                                """
+                                UPDATE soar_action_executions
+                                SET state = 'FAILED', error_message = ?, updated_at = ?
+                                WHERE action_exec_id = ?
+                                """,
+                                (str(ex), datetime.now(timezone.utc).isoformat(), action_exec_id),
+                            )
+                    finally:
+                        conn.close()
+
                 self._log_state_transition(exec_id, workflow_id, WorkflowState.RUNNING, WorkflowState.FAILED, actor=operator)
                 record.state = WorkflowState.FAILED
                 record.error_message = f"Step '{step.step_name}' raised exception: {str(ex)}"
@@ -484,7 +604,58 @@ class SOAREngine:
         return record
 
     def recover_interrupted_executions(self) -> int:
-        """Scans for executions left in RUNNING or EXECUTING state across restarts and marks them FAILED."""
+        """Scans for executions left in RUNNING or EXECUTING state across restarts and marks in-flight actions OUTCOME_UNKNOWN."""
+        with self._op_lock:
+            conn = self._get_connection()
+            try:
+                now_iso = datetime.now(timezone.utc).isoformat()
+                recovered_count = 0
+                with conn:
+                    # 1. Mark in-flight actions OUTCOME_UNKNOWN
+                    cur_act = conn.execute("SELECT action_exec_id, execution_id, action_name, provider_id FROM soar_action_executions WHERE state = 'IN_PROGRESS'")
+                    in_flight = cur_act.fetchall()
+                    for act in in_flight:
+                        conn.execute(
+                            """
+                            UPDATE soar_action_executions
+                            SET state = 'OUTCOME_UNKNOWN', updated_at = ?, error_message = 'Interrupted during external dispatch; outcome unknown until reconciled.'
+                            WHERE action_exec_id = ?
+                            """,
+                            (now_iso, act["action_exec_id"]),
+                        )
+                        conn.execute(
+                            """
+                            UPDATE soar_executions
+                            SET state = 'OUTCOME_UNKNOWN', completed_at = ?, error_message = ?
+                            WHERE execution_id = ? AND state IN ('RUNNING', 'EXECUTING')
+                            """,
+                            (now_iso, f"Action '{act['action_name']}' interrupted; OUTCOME_UNKNOWN until reconciled with provider.", act["execution_id"]),
+                        )
+                        recovered_count += 1
+
+                    # 2. Mark remaining running executions without in-flight actions FAILED
+                    cur = conn.execute(
+                        """
+                        UPDATE soar_executions
+                        SET state = 'FAILED',
+                            completed_at = ?,
+                            error_message = 'Execution interrupted by host restart; recovered during startup.'
+                        WHERE state IN ('RUNNING', 'EXECUTING')
+                        """,
+                        (now_iso,),
+                    )
+                    recovered_count += cur.rowcount
+                    return recovered_count
+            finally:
+                conn.close()
+
+    def reconcile_action_execution(
+        self,
+        action_exec_id: str,
+        verified_outcome: str,
+        provider_evidence: Optional[dict[str, Any]] = None,
+    ) -> bool:
+        """Reconciles an OUTCOME_UNKNOWN action execution record after verifying external provider status."""
         with self._op_lock:
             conn = self._get_connection()
             try:
@@ -492,15 +663,18 @@ class SOAREngine:
                 with conn:
                     cur = conn.execute(
                         """
-                        UPDATE soar_executions
-                        SET state = 'FAILED',
-                            completed_at = ?,
-                            error_message = 'Execution interrupted by host restart or worker termination; recovered during startup.'
-                        WHERE state IN ('RUNNING', 'EXECUTING')
+                        UPDATE soar_action_executions
+                        SET state = ?, updated_at = ?, error_message = ?
+                        WHERE action_exec_id = ?
                         """,
-                        (now_iso,),
+                        (
+                            verified_outcome,
+                            now_iso,
+                            f"Reconciled as {verified_outcome} with evidence: {json.dumps(provider_evidence or {})}",
+                            action_exec_id,
+                        ),
                     )
-                    return cur.rowcount
+                    return cur.rowcount > 0
             finally:
                 conn.close()
 

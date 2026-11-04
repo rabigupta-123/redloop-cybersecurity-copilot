@@ -161,8 +161,7 @@ class EntraIDAdapter(BaseProvider):
                 message=sanitize_error_message(f"Connection failed: {str(e)}"),
             )
 
-        self._last_health = res
-        return res
+        return self.record_health(res)
 
     def lookup_user(self, user_principal_name: str) -> Optional[dict[str, Any]]:
         """Queries user attributes and account status."""
