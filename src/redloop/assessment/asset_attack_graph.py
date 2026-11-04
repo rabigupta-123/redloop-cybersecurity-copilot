@@ -1,7 +1,20 @@
-"""Attack-Surface Asset Graph & Attack-Path Correlation Engine (Phase 4).
+"""Attack-Surface Asset Graph & Attack-Path Correlation Engine (Phase 4.1 Hardened).
 
 Models discovered infrastructure, services, vulnerabilities, and evidence as a
 relational graph, deriving deterministic attack paths without intrusive exploits.
+
+Supported Node Types (11 canonical types):
+- HOST: Physical or virtual machine host
+- DOMAIN: Fully-qualified top-level or registered domain
+- SUBDOMAIN: Child domain record
+- IP_ADDRESS: IPv4 or IPv6 network address
+- PORT: Transport-layer listening port
+- SERVICE: Network daemon / application service
+- APPLICATION: Web application / software framework
+- CERTIFICATE: X.509 TLS/SSL certificate
+- ENDPOINT: HTTP URL / API route
+- VULNERABILITY: Security finding / CVE flaw
+- EVIDENCE: Raw cryptographic telemetry / observation record
 """
 
 from __future__ import annotations
@@ -114,6 +127,8 @@ class AttackPath:
     potential_impact: str
     supporting_evidence_ids: list[str]
     missing_evidence: list[str] = field(default_factory=list)
+    limitations: list[str] = field(default_factory=list)
+    assumptions: list[str] = field(default_factory=list)
 
     @property
     def name(self) -> str:
@@ -161,11 +176,21 @@ class AttackPath:
 
 
 class AssetAttackGraph:
-    """Manages the asset entity graph and traverses evidence-backed attack paths."""
+    """Manages the asset entity graph and traverses evidence-backed attack paths with cycle detection."""
 
-    def __init__(self, target: str = "default", task_id: str = "default") -> None:
+    def __init__(
+        self,
+        target: str = "default",
+        task_id: str = "default",
+        max_nodes: int = 500,
+        max_edges: int = 1000,
+        max_path_depth: int = 8,
+    ) -> None:
         self.target = target
         self.task_id = task_id
+        self.max_nodes = max_nodes
+        self.max_edges = max_edges
+        self.max_path_depth = max_path_depth
         self.nodes: dict[str, GraphNode] = {}
         self.edges: list[GraphEdge] = []
 
@@ -178,19 +203,32 @@ class AssetAttackGraph:
     ) -> GraphNode:
         if isinstance(node_or_id, GraphNode):
             node = node_or_id
-            self.nodes[node.node_id] = node
+            if len(self.nodes) < self.max_nodes or node.node_id in self.nodes:
+                self.nodes[node.node_id] = node
             return node
+
         node_id = str(node_or_id)
-        if node_id not in self.nodes:
-            self.nodes[node_id] = GraphNode(
+        if node_id in self.nodes:
+            self.nodes[node_id].properties.update(properties)
+            return self.nodes[node_id]
+
+        if len(self.nodes) >= self.max_nodes:
+            # Capacity limit reached; return ephemeral node without expanding graph
+            return GraphNode(
                 node_id=node_id,
                 node_type=node_type or GraphNodeType.HOST,
                 label=label or node_id,
                 properties=properties,
             )
-        else:
-            self.nodes[node_id].properties.update(properties)
-        return self.nodes[node_id]
+
+        node = GraphNode(
+            node_id=node_id,
+            node_type=node_type or GraphNodeType.HOST,
+            label=label or node_id,
+            properties=properties,
+        )
+        self.nodes[node_id] = node
+        return node
 
     def add_edge(
         self,
@@ -203,19 +241,41 @@ class AssetAttackGraph:
     ) -> GraphEdge:
         if isinstance(edge_or_source, GraphEdge):
             edge = edge_or_source
-            self.edges.append(edge)
+        else:
+            source_id = str(edge_or_source)
+            assert target_id is not None and relation is not None
+            edge = GraphEdge(
+                source_id=source_id,
+                target_id=target_id,
+                relation=relation,
+                edge_id=f"edge-{uuid.uuid4().hex[:8]}",
+                evidence_id=evidence_id,
+                basis=basis,
+                properties=properties,
+            )
+
+        # Capacity check
+        if len(self.edges) >= self.max_edges:
             return edge
-        source_id = str(edge_or_source)
-        assert target_id is not None and relation is not None
-        edge = GraphEdge(
-            source_id=source_id,
-            target_id=target_id,
-            relation=relation,
-            edge_id=f"edge-{uuid.uuid4().hex[:8]}",
-            evidence_id=evidence_id,
-            basis=basis,
-            properties=properties,
-        )
+
+        # Orphaned edge validation: Ensure source and target nodes exist in graph
+        if edge.source_id not in self.nodes:
+            self.add_node(edge.source_id, node_type=GraphNodeType.HOST, label=edge.source_id)
+        if edge.target_id not in self.nodes:
+            self.add_node(edge.target_id, node_type=GraphNodeType.HOST, label=edge.target_id)
+
+        # Deduplication: check if identical relation already exists
+        for existing in self.edges:
+            if (
+                existing.source_id == edge.source_id
+                and existing.target_id == edge.target_id
+                and existing.relation == edge.relation
+            ):
+                if edge.evidence_id and not existing.evidence_id:
+                    existing.evidence_id = edge.evidence_id
+                existing.properties.update(edge.properties)
+                return existing
+
         self.edges.append(edge)
         return edge
 
@@ -276,6 +336,7 @@ class AssetAttackGraph:
                     severity=f.severity.value,
                     cvss=f.cvss_score,
                     cves=f.cve_ids,
+                    cisa_kev=f.cisa_kev,
                 )
                 source_parent = f"port:{f.target}:{f.port}" if f.port else target_node_id
                 self.add_edge(
@@ -287,7 +348,7 @@ class AssetAttackGraph:
                 )
 
     def derive_attack_paths(self) -> list[AttackPath]:
-        """Synthesizes deterministic, evidence-backed potential attack paths."""
+        """Synthesizes deterministic, evidence-backed potential attack paths with DFS cycle detection."""
         paths: list[AttackPath] = []
 
         # Find exposed services with associated high or critical vulnerabilities
@@ -299,15 +360,52 @@ class AssetAttackGraph:
                 if vuln_node and svc_or_port_node:
                     cvss = float(vuln_node.properties.get("cvss", 5.0))
                     cves = vuln_node.properties.get("cves", [])
+                    is_kev = bool(vuln_node.properties.get("cisa_kev", False))
 
-                    # Find entry root
+                    # Trace back to entry root using DFS with cycle prevention
                     entry_id = svc_or_port_node.node_id
-                    for e in self.edges:
-                        if e.target_id == svc_or_port_node.node_id:
-                            entry_id = e.source_id
-                            break
+                    visited_nodes = {svc_or_port_node.node_id, vuln_node.node_id}
+                    curr = svc_or_port_node.node_id
+                    depth = 0
 
-                    p_type = AttackPathType.OBSERVED_PATH if "CISA_KEV" in str(vuln_node.properties) else AttackPathType.POTENTIAL_PATH
+                    while depth < self.max_path_depth:
+                        found_parent = False
+                        for e in self.edges:
+                            if e.target_id == curr and e.source_id not in visited_nodes:
+                                visited_nodes.add(e.source_id)
+                                entry_id = e.source_id
+                                curr = e.source_id
+                                found_parent = True
+                                break
+                        if not found_parent:
+                            break
+                        depth += 1
+
+                    # Classify path strictly
+                    if is_kev:
+                        p_type = AttackPathType.OBSERVED_PATH
+                    elif cves:
+                        p_type = AttackPathType.POTENTIAL_PATH
+                    else:
+                        p_type = AttackPathType.HYPOTHETICAL_PATH
+
+                    steps = [
+                        {
+                            "stage": 1,
+                            "action": "External Network Reachability",
+                            "asset": entry_id,
+                            "target": svc_or_port_node.node_id,
+                            "status": "VERIFIED_EXPOSED",
+                        },
+                        {
+                            "stage": 2,
+                            "action": f"Exploit Delivery ({', '.join(cves) if cves else vuln_node.label})",
+                            "asset": svc_or_port_node.node_id,
+                            "target": vuln_node.node_id,
+                            "status": "OBSERVED_EXPLOITABLE" if is_kev else "POTENTIAL_EXPLOITABLE",
+                        },
+                    ]
+
                     paths.append(
                         AttackPath(
                             path_id=f"path-{uuid.uuid4().hex[:8]}",
@@ -315,30 +413,24 @@ class AssetAttackGraph:
                             path_type=p_type,
                             starting_asset=entry_id,
                             target_asset=vuln_node.node_id,
-                            steps=[
-                                {
-                                    "stage": 1,
-                                    "action": "External Network Reachability",
-                                    "asset": entry_id,
-                                    "target": svc_or_port_node.node_id,
-                                    "status": "VERIFIED_EXPOSED",
-                                },
-                                {
-                                    "stage": 2,
-                                    "action": f"Exploit Delivery ({', '.join(cves) if cves else vuln_node.label})",
-                                    "asset": svc_or_port_node.node_id,
-                                    "target": vuln_node.node_id,
-                                    "status": "POTENTIAL_EXPLOITABLE",
-                                },
-                            ],
+                            steps=steps,
                             cumulative_risk=round(cvss * (1.2 if p_type == AttackPathType.OBSERVED_PATH else 0.9), 1),
-                            confidence=0.85 if cves else 0.65,
+                            confidence=0.90 if is_kev else (0.80 if cves else 0.60),
                             prerequisites=[
                                 f"Direct TCP connectivity to {svc_or_port_node.label}",
                                 "Absence of network intrusion prevention (WAF/IPS) blocking payload",
                             ],
                             potential_impact="Service compromise or unauthorized data disclosure",
                             supporting_evidence_ids=[edge.evidence_id] if edge.evidence_id else [],
+                            missing_evidence=[] if is_kev else ["Confirmed live exploit payload delivery telemetry"],
+                            limitations=[
+                                "Path derived passively/non-intrusively from network enumeration.",
+                                "Intrusive weaponized exploitation was not performed in compliance with authorized scope.",
+                            ],
+                            assumptions=[
+                                "Network routing and ingress access to perimeter port remains uninterrupted.",
+                                "No host-based kernel sandbox mitigates exploit execution.",
+                            ],
                         )
                     )
 

@@ -1,12 +1,21 @@
-"""Universal Finding Normalization & Data Models (Phase 4).
+"""Universal Finding Normalization & Data Models (Phase 4.1 Hardened).
 
 Provides canonical, deduplicated, and evidence-grounded security finding models
 across all registered tools (Nmap, Nikto, Nuclei, TLS, HTTP, DNS, OSINT).
+
+Verification states:
+- OBSERVED: Directly recorded from at least one tool execution without corroboration.
+- CORROBORATED: Observed independently by two or more distinct tools/methods.
+- VALIDATED: Authenticated package changelog or deterministic exploit proof confirmed.
+- CONTRADICTED: Disproved by contradictory evidence or verified vendor backport patch.
+- UNVERIFIED: Inconclusive or missing evidence required for confirmation.
+- NOT_ASSESSED: Finding scope not evaluated by authorized assessment run.
 """
 
 from __future__ import annotations
 
 import hashlib
+import ipaddress
 import re
 import uuid
 from dataclasses import asdict, dataclass, field
@@ -36,13 +45,18 @@ class FindingType(str, Enum):
 
 
 class VerificationStatus(str, Enum):
-    UNVERIFIED = "UNVERIFIED"
-    SUPPORTED = "SUPPORTED"
+    OBSERVED = "OBSERVED"
     CORROBORATED = "CORROBORATED"
-    CONFIRMED = "CONFIRMED"
+    VALIDATED = "VALIDATED"
     CONTRADICTED = "CONTRADICTED"
-    FALSE_POSITIVE = "FALSE_POSITIVE"
-    UNABLE_TO_VERIFY = "UNABLE_TO_VERIFY"
+    UNVERIFIED = "UNVERIFIED"
+    NOT_ASSESSED = "NOT_ASSESSED"
+
+    # Backward compatibility aliases
+    SUPPORTED = "OBSERVED"
+    CONFIRMED = "VALIDATED"
+    FALSE_POSITIVE = "CONTRADICTED"
+    UNABLE_TO_VERIFY = "UNVERIFIED"
 
 
 class OperationalPriority(str, Enum):
@@ -52,6 +66,94 @@ class OperationalPriority(str, Enum):
     P4_LOW_BACKLOG = "P4_LOW_BACKLOG"
     P5_INFORMATIONAL = "P5_INFORMATIONAL"
 
+
+# =========================================================================
+# Canonical Normalization Utilities
+# =========================================================================
+
+def normalize_target(target: str) -> tuple[str, str]:
+    """Normalizes an IP address, domain, or host string into canonical form.
+    
+    Returns:
+        (canonical_target, target_type) where target_type is 'ip', 'cidr', or 'domain'.
+    """
+    if not target:
+        return "unknown", "domain"
+    
+    # Strip URL schemes, whitespace, and path components
+    cleaned = re.sub(r"^[a-zA-Z]+://", "", target.strip())
+    cleaned = cleaned.split("/")[0].split("?")[0].split("#")[0]
+    
+    # Strip port suffix if present (e.g. "127.0.0.1:8080" -> "127.0.0.1")
+    if ":" in cleaned and not cleaned.startswith("["):
+        # Check if IPv6 or host:port
+        parts = cleaned.split(":")
+        if len(parts) == 2 and parts[1].isdigit():
+            cleaned = parts[0]
+            
+    # Check IPv4 / IPv6
+    try:
+        ip = ipaddress.ip_address(cleaned)
+        return str(ip), "ip"
+    except ValueError:
+        pass
+        
+    # Check CIDR
+    try:
+        net = ipaddress.ip_network(cleaned, strict=False)
+        return str(net), "cidr"
+    except ValueError:
+        pass
+        
+    # Canonical domain (lowercase)
+    return cleaned.lower(), "domain"
+
+
+def normalize_protocol(protocol: str | None) -> str:
+    """Normalizes transport protocols to lowercase canonical names."""
+    if not protocol:
+        return "tcp"
+    proto = protocol.strip().lower()
+    if proto in ("tcp", "udp", "icmp", "http", "https"):
+        return proto
+    return proto
+
+
+def normalize_port(port: int | str | None) -> int | None:
+    """Validates and normalizes network port numbers in range 1-65535."""
+    if port is None:
+        return None
+    try:
+        p = int(port)
+        if 1 <= p <= 65535:
+            return p
+    except (ValueError, TypeError):
+        pass
+    return None
+
+
+def normalize_cve_id(cve: str) -> str | None:
+    """Validates and canonicalizes CVE identifiers to standard CVE-YYYY-NNNN format."""
+    if not cve:
+        return None
+    cleaned = cve.strip().upper()
+    if re.match(r"^CVE-\d{4}-\d{4,}$", cleaned):
+        return cleaned
+    return None
+
+
+def normalize_component(component: str | None) -> str:
+    """Standardizes software/component identifiers to lowercase normalized strings."""
+    if not component:
+        return "unknown"
+    cleaned = component.strip().lower()
+    cleaned = re.sub(r"[\s_]+", "-", cleaned)
+    return cleaned or "unknown"
+
+
+# =========================================================================
+# Finding & Remediation Models
+# =========================================================================
 
 @dataclass
 class FindingRemediation:
@@ -78,6 +180,8 @@ class FalsePositiveAnalysis:
     contradicting_evidence: list[str] = field(default_factory=list)
     missing_evidence: list[str] = field(default_factory=list)
     recommended_action: str = ""
+    limitations: list[str] = field(default_factory=list)
+    verification_steps: list[str] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -106,11 +210,12 @@ class Finding:
     protocol: str | None = None
     endpoint: str | None = None
     raw_evidence_id: str | None = None
+    evidence_ids: list[str] = field(default_factory=list)
     source_tool: str = "redloop"
     source_tool_version: str | None = None
     first_seen: str = ""
     last_seen: str = ""
-    verification_status: VerificationStatus = VerificationStatus.SUPPORTED
+    verification_status: VerificationStatus = VerificationStatus.OBSERVED
     confidence: float = 0.8
     operational_priority: OperationalPriority = OperationalPriority.P3_MEDIUM_SCHEDULED
     risk_score: float | None = None
@@ -127,14 +232,48 @@ class Finding:
             self.first_seen = datetime.now(timezone.utc).isoformat()
         if not self.last_seen:
             self.last_seen = self.first_seen
+            
+        # Target canonical normalization
+        norm_tgt, norm_type = normalize_target(self.target)
+        self.target = norm_tgt
+        if not self.target_type or self.target_type == "host":
+            self.target_type = norm_type
         if not self.asset_id:
             self.asset_id = f"asset:{self.target_type}:{self.target}"
+            
+        # Protocol and port normalization
+        self.port = normalize_port(self.port)
+        self.protocol = normalize_protocol(self.protocol)
+        self.affected_component = normalize_component(self.affected_component)
+        
+        # Link raw_evidence_id into evidence_ids list
+        if self.raw_evidence_id and self.raw_evidence_id not in self.evidence_ids:
+            self.evidence_ids.append(self.raw_evidence_id)
+        elif self.evidence_ids and not self.raw_evidence_id:
+            self.raw_evidence_id = self.evidence_ids[0]
 
     @property
     def fingerprint(self) -> str:
-        """Stable cryptographic signature used for truthful deduplication."""
-        cve_str = ",".join(sorted(self.cve_ids)) if self.cve_ids else ""
-        raw = f"{self.target}|{self.port or 0}|{self.protocol or ''}|{self.finding_type.value}|{self.affected_component}|{cve_str}|{self.title}"
+        """Deterministic canonical signature used for truthful deduplication.
+        
+        Avoids relying on mutable natural-language finding titles.
+        Binds normalized target, port, protocol, component, endpoint, finding_type,
+        and sorted canonical CVE/CWE identifiers.
+        """
+        norm_tgt, _ = normalize_target(self.target)
+        norm_port = str(self.port or 0)
+        norm_proto = normalize_protocol(self.protocol)
+        norm_type = self.finding_type.value if hasattr(self.finding_type, "value") else str(self.finding_type).lower()
+        norm_comp = normalize_component(self.affected_component)
+        norm_endpoint = (self.endpoint or "").strip().lower()
+        
+        cves = [normalize_cve_id(c) for c in self.cve_ids if normalize_cve_id(c)]
+        cve_str = ",".join(sorted(set(cves)))
+        cwes = [c.strip().upper() for c in self.cwe_ids if c]
+        cwe_str = ",".join(sorted(set(cwes)))
+        
+        # Identity is anchored on target asset, port, protocol, component, type, and specific vulnerability identifiers
+        raw = f"{norm_tgt}|{norm_port}|{norm_proto}|{norm_type}|{norm_comp}|{norm_endpoint}|{cve_str}|{cwe_str}"
         return hashlib.sha256(raw.encode("utf-8")).hexdigest()[:16]
 
     def model_dump(self) -> dict[str, Any]:
@@ -168,6 +307,7 @@ class Finding:
             "protocol": self.protocol,
             "endpoint": self.endpoint,
             "raw_evidence_id": self.raw_evidence_id,
+            "evidence_ids": self.evidence_ids,
             "source_tool": self.source_tool,
             "source_tool_version": self.source_tool_version,
             "first_seen": self.first_seen,
@@ -182,6 +322,10 @@ class Finding:
         }
 
 
+# =========================================================================
+# Finding Normalizer & Deduplicator
+# =========================================================================
+
 class FindingNormalizer:
     """Universal parser and normalizer transforming raw tool telemetry into canonical Findings."""
 
@@ -189,27 +333,29 @@ class FindingNormalizer:
     def normalize_nmap(cls, raw_stdout: str, target: str, task_id: str, evidence_id: str | None = None) -> list[Finding]:
         findings: list[Finding] = []
         now_ts = datetime.now(timezone.utc).isoformat()
+        canonical_target, target_type = normalize_target(target)
 
         # Regex for standard nmap port line: e.g. "80/tcp open http Apache httpd 2.4.52"
         port_pattern = re.compile(r"^(\d+)/(tcp|udp)\s+(\w+)\s+([\w\-]+)(?:\s+(.*))?$", re.MULTILINE)
         for m in port_pattern.finditer(raw_stdout):
             port = int(m.group(1))
-            proto = m.group(2)
+            proto = m.group(2).lower()
             state = m.group(3)
             service = m.group(4)
             version_info = (m.group(5) or "").strip()
 
             if state.lower() == "open":
                 title = f"Open Port {port}/{proto} ({service})"
-                desc = f"Service '{service}' detected listening on {target}:{port}/{proto}."
+                desc = f"Service '{service}' detected listening on {canonical_target}:{port}/{proto}."
                 if version_info:
                     desc += f" Version banner: {version_info}."
 
+                ev_list = [evidence_id] if evidence_id else []
                 f = Finding(
                     finding_id=f"fnd-nmap-{uuid.uuid4().hex[:8]}",
                     task_id=task_id,
-                    target=target,
-                    target_type="ip" if re.match(r"^\d+\.\d+\.\d+\.\d+$", target) else "domain",
+                    target=canonical_target,
+                    target_type=target_type,
                     finding_type=FindingType.OPEN_PORT,
                     title=title,
                     description=desc,
@@ -221,13 +367,16 @@ class FindingNormalizer:
                     affected_version=version_info or None,
                     source_tool="nmap",
                     raw_evidence_id=evidence_id,
-                    verification_status=VerificationStatus.SUPPORTED,
+                    evidence_ids=ev_list,
+                    verification_status=VerificationStatus.OBSERVED,
                     first_seen=now_ts,
                     last_seen=now_ts,
                     remediation=FindingRemediation(
                         summary=f"Evaluate exposure of {service} on port {port}.",
                         immediate_containment=f"Restrict port {port} via firewall or bind to loopback if internal only.",
                         permanent_fix="Disable unused service or enforce mutual TLS/VPN access controls.",
+                        validation_steps=f"nmap -p {port} -sV {canonical_target}",
+                        rollback_plan="Re-enable service listener or restore previous firewall rule.",
                     ),
                 )
                 findings.append(f)
@@ -238,7 +387,9 @@ class FindingNormalizer:
     def normalize_http_headers(cls, raw_headers: str, target: str, task_id: str, evidence_id: str | None = None) -> list[Finding]:
         findings: list[Finding] = []
         now_ts = datetime.now(timezone.utc).isoformat()
+        canonical_target, target_type = normalize_target(target)
         lower_headers = raw_headers.lower()
+        ev_list = [evidence_id] if evidence_id else []
 
         required_sec_headers = [
             ("strict-transport-security", "Missing HTTP Strict Transport Security (HSTS)", FindingSeverity.MEDIUM, 4.3, "CWE-319",
@@ -257,27 +408,30 @@ class FindingNormalizer:
                     Finding(
                         finding_id=f"fnd-hdr-{uuid.uuid4().hex[:8]}",
                         task_id=task_id,
-                        target=target,
-                        target_type="domain" if not re.match(r"^\d+\.\d+\.\d+\.\d+$", target) else "ip",
+                        target=canonical_target,
+                        target_type=target_type,
                         finding_type=FindingType.HEADER_MISSING,
                         title=title,
-                        description=f"Web server on {target} does not return the security header '{hdr}'. {why}",
+                        description=f"Web server on {canonical_target} does not return the security header '{hdr}'. {why}",
                         severity=sev,
                         cvss_score=score,
                         cwe_ids=[cwe],
-                        affected_component="HTTP Server",
+                        affected_component="http-server",
                         port=443 if "https" in target else 80,
                         protocol="tcp",
                         source_tool="curl",
                         raw_evidence_id=evidence_id,
-                        verification_status=VerificationStatus.SUPPORTED,
+                        evidence_ids=ev_list.copy(),
+                        verification_status=VerificationStatus.OBSERVED,
                         first_seen=now_ts,
                         last_seen=now_ts,
                         remediation=FindingRemediation(
                             summary=f"Configure '{hdr}' in web server response headers.",
                             immediate_containment=f"Add `{hdr}` header directive in reverse proxy or edge load balancer.",
                             permanent_fix=f"Enforce `{hdr}` across all production virtual hosts and API gateways.",
-                            config_example=f"Header always set {hdr} 'default-src https:'" if hdr == "content-security-policy" else f"Header always set {hdr} 'max-age=31536000; includeSubDomains'",
+                            configuration_snippet=f"Header always set {hdr} 'default-src https:'" if hdr == "content-security-policy" else f"Header always set {hdr} 'max-age=31536000; includeSubDomains'",
+                            validation_steps=f"curl -sI https://{canonical_target}/ | grep -i '{hdr}'",
+                            rollback_plan=f"Remove `{hdr}` header directive from proxy configuration.",
                         ),
                     )
                 )
@@ -287,29 +441,37 @@ class FindingNormalizer:
         if server_match:
             srv = server_match.group(1).strip()
             if any(ch in srv for ch in ("/", ".", " ")):
+                comp = srv.split("/")[0].strip().lower()
+                ver = srv.split("/")[1].strip() if "/" in srv else None
                 findings.append(
                     Finding(
                         finding_id=f"fnd-banner-{uuid.uuid4().hex[:8]}",
                         task_id=task_id,
-                        target=target,
-                        target_type="domain" if not re.match(r"^\d+\.\d+\.\d+\.\d+$", target) else "ip",
+                        target=canonical_target,
+                        target_type=target_type,
                         finding_type=FindingType.INFO_DISCLOSURE,
                         title=f"Detailed Web Server Banner Disclosed ({srv})",
                         description=f"Server returned version identification '{srv}'. Disclosing software versions simplifies targeted reconnaissance.",
                         severity=FindingSeverity.LOW,
                         cvss_score=2.6,
                         cwe_ids=["CWE-200"],
-                        affected_component=srv.split("/")[0],
-                        affected_version=srv.split("/")[1] if "/" in srv else None,
+                        affected_component=comp,
+                        affected_version=ver,
+                        port=443 if "https" in target else 80,
+                        protocol="tcp",
                         source_tool="curl",
                         raw_evidence_id=evidence_id,
-                        verification_status=VerificationStatus.SUPPORTED,
+                        evidence_ids=ev_list.copy(),
+                        verification_status=VerificationStatus.OBSERVED,
                         first_seen=now_ts,
                         last_seen=now_ts,
                         remediation=FindingRemediation(
                             summary="Suppress detailed server version disclosure tokens.",
                             immediate_containment="Configure ServerTokens Prod and ServerSignature Off in Apache, or server_tokens off in Nginx.",
                             permanent_fix="Sanitize edge response headers to omit operating system and patch level banners.",
+                            configuration_snippet="ServerTokens Prod\nServerSignature Off",
+                            validation_steps=f"curl -sI http://{canonical_target}/ | grep -i 'Server:'",
+                            rollback_plan="Revert ServerTokens setting to Full.",
                         ),
                     )
                 )
@@ -318,27 +480,52 @@ class FindingNormalizer:
 
     @classmethod
     def deduplicate(cls, findings: list[Finding]) -> list[Finding]:
-        """Truthful deduplication based on stable finding fingerprints."""
+        """Truthful deduplication based on stable deterministic finding fingerprints.
+        
+        - Preserves all independent evidence references.
+        - Preserves earliest first_seen timestamp and advances last_seen.
+        - Distinguishes duplicate observations by same tool from independent corroboration.
+        - Promotes to CORROBORATED when 2+ distinct tools independently report the finding.
+        - NEVER elevates to VALIDATED merely from multi-tool observations.
+        """
         seen: dict[str, Finding] = {}
+        tool_sources: dict[str, set[str]] = {}
+
         for f in findings:
             fp = f.fingerprint
             if fp not in seen:
                 seen[fp] = f
+                tool_sources[fp] = {f.source_tool}
             else:
                 existing = seen[fp]
                 existing.last_seen = f.last_seen
-                # Merge evidence references without duplicating
-                if f.raw_evidence_id and f.raw_evidence_id != existing.raw_evidence_id:
-                    if not existing.metadata.get("corroborating_evidences"):
-                        existing.metadata["corroborating_evidences"] = []
-                    if f.raw_evidence_id not in existing.metadata["corroborating_evidences"]:
-                        existing.metadata["corroborating_evidences"].append(f.raw_evidence_id)
-                # Boost verification if observed across multiple sources
-                if f.source_tool != existing.source_tool:
+                tool_sources[fp].add(f.source_tool)
+
+                # Merge independent evidence references
+                for ev in f.evidence_ids:
+                    if ev and ev not in existing.evidence_ids:
+                        existing.evidence_ids.append(ev)
+                if f.raw_evidence_id and f.raw_evidence_id not in existing.evidence_ids:
+                    existing.evidence_ids.append(f.raw_evidence_id)
+
+                # Track legacy metadata corroborating_evidences
+                if not existing.metadata.get("corroborating_evidences"):
+                    existing.metadata["corroborating_evidences"] = []
+                for ev in existing.evidence_ids:
+                    if ev not in existing.metadata["corroborating_evidences"]:
+                        existing.metadata["corroborating_evidences"].append(ev)
+
+                # Distinct independent corroboration (2+ distinct tools)
+                if len(tool_sources[fp]) >= 2:
                     existing.verification_status = VerificationStatus.CORROBORATED
-                    existing.confidence = min(0.95, existing.confidence + 0.15)
+                    existing.confidence = min(0.95, max(existing.confidence, 0.85) + 0.1)
+
         return list(seen.values())
 
+
+# =========================================================================
+# Finding Store (In-Memory Thread-Safe Repository)
+# =========================================================================
 
 class FindingStore:
     """Thread-safe in-memory and searchable store for normalized findings."""
@@ -371,18 +558,31 @@ class FindingStore:
         severity: str | None = None,
         priority: str | None = None,
         verification: str | None = None,
+        limit: int = 100,
+        offset: int = 0,
     ) -> list[Finding]:
         results = list(self._findings.values())
         if task_id:
             results = [f for f in results if f.task_id == task_id]
         if target:
-            results = [f for f in results if f.target == target]
+            norm_tgt, _ = normalize_target(target)
+            results = [f for f in results if f.target == norm_tgt or f.target == target]
         if severity:
             results = [f for f in results if f.severity.value.upper() == severity.upper()]
         if priority:
             results = [f for f in results if f.operational_priority.value.upper() == priority.upper()]
         if verification:
             results = [f for f in results if f.verification_status.value.upper() == verification.upper()]
+            
+        # Stable sort: highest risk score first, then earliest first_seen
+        results.sort(key=lambda x: (-(x.risk_score or 0.0), x.first_seen or ""))
+        
+        # Apply pagination
+        if offset > 0:
+            results = results[offset:]
+        if limit > 0:
+            results = results[:limit]
+            
         return results
 
     def clear(self) -> None:
