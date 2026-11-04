@@ -48,3 +48,29 @@ The matrix endpoint computes tactic-level coverage:
 $$\text{Coverage Percentage} = \frac{\text{Covered Tactics}}{14} \times 100\%$$
 
 Each covered tactic lists the number of unique techniques mapped, maximum confidence observed, and associated evidence provenance references. Reports can be exported as raw JSON or as formatted executive Markdown tables via `GET /api/hunting/attack/matrix?format=markdown`.
+
+
+---
+
+## 4. Catalog Coverage, Versioning & Deprecated ID Registry
+
+### 4.1 Provenance and Scope Metadata
+- **Dataset Version:** MITRE Enterprise ATT&CK `v15.1`
+- **Retrieval Date:** `2024-10-31`
+- **Scope:** Curated Core Subset (26 high-fidelity priority techniques across all 14 tactics)
+- **Complete Enterprise Catalog Reference:** Full MITRE Enterprise ATT&CK contains >600 techniques and sub-techniques. REDLOOP's local catalog focuses on high-signal endpoint and network techniques, clearly labeled as a curated subset.
+
+### 4.2 Deprecated and Revoked Technique Handling
+REDLOOP maintains a registry of deprecated and revoked ATT&CK technique IDs to ensure backward compatibility and prevent false mappings:
+
+| Technique ID | Name | Status | Replaced / Superseded By | Reason |
+|:---|:---|:---:|:---|:---|
+| `T1086` | PowerShell | `REVOKED` | `T1059.001` | Revoked in v7.0; migrated to Command and Scripting Interpreter: PowerShell |
+| `T1064` | Scripting | `REVOKED` | `T1059` | Revoked in v7.0; migrated to Command and Scripting Interpreter |
+| `T1193` | Spearphishing Attachment | `REVOKED` | `T1566.001` | Revoked in v7.0; migrated to Phishing: Spearphishing Attachment |
+| `T1043` | Commonly Used Port | `DEPRECATED` | None | Deprecated in v9.0; port usage is now captured in protocol-specific C2 techniques |
+| `T1188` | Match Legitimate Name or Location | `REVOKED` | `T1036.005` | Revoked in v7.0; migrated to Masquerading: Match Legitimate Name or Location |
+
+### 4.3 Authoritative vs Heuristic Inferred Mappings
+- **`AUTHORITATIVE_RULE` (`is_inferred: false`)**: Mappings derived from deterministic SOC detection rules (e.g. `SEC-AUTH-001` -> `T1110.001`).
+- **`HEURISTIC_INFERRED` (`is_inferred: true`)**: Mappings inferred from uncurated event pattern matching (e.g. command-line flags or process names). These mappings are never represented as authoritative MITRE ATT&CK ground truth.

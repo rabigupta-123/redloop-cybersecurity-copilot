@@ -66,3 +66,21 @@ curl -X POST http://127.0.0.1:8765/api/hunting/sigma/test \
   -H "Origin: http://127.0.0.1:8765" \
   -d '{"rule_yaml": "title: Web Shell\nid: ws-1\nstatus: stable\ndescription: Web shell\nlogsource:\n  category: process_creation\ndetection:\n  selection:\n    ParentImage|contains: w3wp\n    Image|endswith: cmd.exe\n  condition: selection\nlevel: critical"}'
 ```
+
+
+---
+
+## 5. Formal Compatibility & Error Classification
+
+REDLOOP categorizes Sigma rules into explicit execution tiers:
+
+1. **Parsed Successfully:** YAML structure conforms to mapping specification.
+2. **Validated Successfully:** All required top-level fields (`id`, `title`, `status`, `description`, `logsource`, `detection`) present, supported modifiers validated, conditions syntax verified, and rule IDs checked for batch uniqueness.
+3. **Supported for Evaluation:** Rules that pass validation and utilize supported field modifiers (`contains`, `startswith`, `endswith`, `re`, `all`, `base64offset`) and supported condition syntax.
+4. **Unsupported:** Rules containing unhandled modifiers (`windash`, `cidr`, `expand`) or unmapped log sources. **These are explicitly reported with an error and never silently treated as non-matches.**
+5. **Rejected as Unsafe or Malformed:**
+   - Syntax/YAML errors
+   - Missing condition block
+   - Regex exceeding `MAX_REGEX_PATTERN_LENGTH = 200` characters
+   - Regex with catastrophic backtracking patterns (nested quantifiers `(a+)+`, `(a*)*`, adjacent unbounded quantifiers)
+   - Regex execution exceeding strict worker thread timeout (`100ms`)

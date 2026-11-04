@@ -61,6 +61,8 @@ class AttackChain:
     telemetry_gaps: list[str]
     observed_stages: list[str]
     inferred_stages: list[str]
+    contradictory_evidence: list[str] = field(default_factory=list)
+    framework_model: str = "REDLOOP Integrated ATT&CK Progression"
     created_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
     def to_dict(self) -> dict[str, Any]:
@@ -128,6 +130,7 @@ class AttackChainReconstructor:
                 telemetry_gaps=["No observed events or alerts could be mapped to ATT&CK techniques."],
                 observed_stages=[],
                 inferred_stages=[],
+                contradictory_evidence=[],
             )
 
         # 2. Convert mappings into candidate chain steps
@@ -206,24 +209,68 @@ class AttackChainReconstructor:
         # Combine observed and inferred steps
         all_steps = sorted(candidate_steps + inferred_steps, key=lambda s: (s.timestamp, s.stage_index))
 
-        # 5. Calculate Dwell Time
+        # 5. Contradictory Evidence & Dwell Time Calculation
+        contradictory_evidence: list[str] = []
         dwell_seconds = 0.0
-        try:
-            t_first = datetime.fromisoformat(all_steps[0].timestamp.replace("Z", "+00:00"))
-            t_last = datetime.fromisoformat(all_steps[-1].timestamp.replace("Z", "+00:00"))
-            dwell_seconds = max(0.0, (t_last - t_first).total_seconds())
-        except Exception:
-            pass
 
-        # 6. Entry point and crown jewel candidates
-        entry_point = all_steps[0].entity_ip or all_steps[0].entity_host or "Unknown Entry Point"
+        # Check chronological consistency across candidate steps
+        for i in range(len(candidate_steps) - 1):
+            s_curr = candidate_steps[i]
+            s_next = candidate_steps[i + 1]
+            try:
+                t_c = datetime.fromisoformat(s_curr.timestamp.replace("Z", "+00:00"))
+                t_n = datetime.fromisoformat(s_next.timestamp.replace("Z", "+00:00"))
+                if s_curr.stage_index > s_next.stage_index and t_c <= t_n:
+                    contradictory_evidence.append(
+                        f"Temporal Anomaly / Contradiction: Later kill-chain stage '{s_curr.stage_name}' (stage {s_curr.stage_index}) "
+                        f"occurred at {s_curr.timestamp}, prior to earlier stage '{s_next.stage_name}' (stage {s_next.stage_index}) at {s_next.timestamp}."
+                    )
+                elif s_curr.stage_index < s_next.stage_index and t_c > t_n:
+                    contradictory_evidence.append(
+                        f"Temporal Anomaly: Earlier kill-chain stage '{s_curr.stage_name}' has timestamp ({s_curr.timestamp}) "
+                        f"later than subsequent stage '{s_next.stage_name}' ({s_next.timestamp})."
+                    )
+            except Exception:
+                pass
+
+        if candidate_steps:
+            try:
+                t_first = datetime.fromisoformat(candidate_steps[0].timestamp.replace("Z", "+00:00"))
+                t_last = datetime.fromisoformat(candidate_steps[-1].timestamp.replace("Z", "+00:00"))
+                if t_last >= t_first:
+                    dwell_seconds = (t_last - t_first).total_seconds()
+                else:
+                    contradictory_evidence.append("Reversed timestamps detected: Latest event timestamp is earlier than initial event.")
+            except Exception:
+                dwell_seconds = 0.0
+
+        # 6. Entry point and crown jewel candidates (strictly grounded in evidence)
+        observed_tactics = {s.tactic_id for s in candidate_steps}
+        entry_point = None
+        if "TA0001" in observed_tactics or "TA0043" in observed_tactics:
+            for st in candidate_steps:
+                if st.tactic_id in ("TA0001", "TA0043"):
+                    entry_point = st.entity_ip or st.entity_host
+                    if entry_point:
+                        break
+        else:
+            entry_point = None
+
         crown_jewel = None
-        for st in reversed(all_steps):
-            if st.entity_host and "dc" in st.entity_host.lower() or "prod" in (st.entity_host or "").lower():
-                crown_jewel = st.entity_host
-                break
-        if not crown_jewel and all_steps:
-            crown_jewel = all_steps[-1].entity_host or all_steps[-1].entity_ip or "Target Perimeter"
+        has_impact_evidence = any(t in observed_tactics for t in ("TA0040", "TA0010", "TA0009"))
+        has_dc_target = any(
+            st.entity_host and ("dc" in st.entity_host.lower() or "prod" in st.entity_host.lower())
+            for st in candidate_steps
+        )
+        if has_impact_evidence or has_dc_target:
+            for st in reversed(candidate_steps):
+                if st.entity_host and ("dc" in st.entity_host.lower() or "prod" in st.entity_host.lower()):
+                    crown_jewel = st.entity_host
+                    break
+            if not crown_jewel and has_impact_evidence:
+                crown_jewel = candidate_steps[-1].entity_host or candidate_steps[-1].entity_ip
+        else:
+            crown_jewel = None
 
         # Overall confidence: mean of observed steps
         observed_steps = [s for s in all_steps if s.observation_type == StepObservationType.OBSERVED]
@@ -243,4 +290,5 @@ class AttackChainReconstructor:
             telemetry_gaps=telemetry_gaps,
             observed_stages=observed_stage_names,
             inferred_stages=inferred_stage_names,
+            contradictory_evidence=contradictory_evidence,
         )

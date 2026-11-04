@@ -19,6 +19,11 @@ from enum import Enum
 from typing import Any, Optional
 
 
+class QuerySecurityError(Exception):
+    """Raised when a threat hunting query violates security, complexity, or authorization boundaries."""
+    pass
+
+
 class HypothesisStatus(str, Enum):
     UNTESTED = "UNTESTED"
     CONFIRMED = "CONFIRMED"
@@ -76,6 +81,8 @@ class HuntingQueryResult:
     matched_entities: dict[str, list[str]]
     evidence_provenance: list[str]
     suggested_followups: list[str]
+    offset: int = 0
+    target_scope: Optional[str] = None
     timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
     def to_dict(self) -> dict[str, Any]:
@@ -107,11 +114,43 @@ class ThreatHuntingEngine:
 
     MAX_RESULT_LIMIT: int = 1000
     DEFAULT_RESULT_LIMIT: int = 100
+    MAX_QUERY_LENGTH: int = 500
+    MAX_FILTER_CLAUSES: int = 10
+    MAX_EXECUTION_TIMEOUT_SECONDS: float = 5.0
+
+    ALLOWED_FIELDS: set[str] = {
+        "source_ip",
+        "destination_ip",
+        "hostname",
+        "username",
+        "process_name",
+        "parent_process",
+        "command_line",
+        "url",
+        "cve_id",
+        "file_hash",
+        "timestamp",
+        "event_id",
+        "source_type",
+        "event_category",
+        "event_action",
+        "severity",
+    }
+
+    ALLOWED_OPERATORS: set[str] = {"eq", "contains", "startswith", "endswith", "gte", "lte"}
 
     @classmethod
     def parse_natural_language(cls, nl_query: str) -> dict[str, Any]:
         """Translates a natural language hunting query into a structured query dictionary."""
+        if not nl_query or not isinstance(nl_query, str):
+            raise QuerySecurityError("Query string must be a non-empty string.")
+        
         query_text = nl_query.strip()
+        if len(query_text) > cls.MAX_QUERY_LENGTH:
+            raise QuerySecurityError(
+                f"Query length ({len(query_text)}) exceeds maximum allowable limit of {cls.MAX_QUERY_LENGTH} characters."
+            )
+
         now = datetime.now(timezone.utc)
 
         filters: list[HuntingFilterClause] = []
@@ -230,18 +269,35 @@ class ThreatHuntingEngine:
         nl_query: str,
         events: list[Any],
         limit: int = DEFAULT_RESULT_LIMIT,
+        offset: int = 0,
+        target_scope: Optional[str] = None,
         hypothesis: str | None = None,
     ) -> HuntingQueryResult:
-        """Executes a structured hunt against universal security events with safety bounds."""
+        """Executes a structured hunt against universal security events with safety bounds, pagination, and scope isolation."""
         start_time = time.perf_counter()
         parsed = cls.parse_natural_language(nl_query)
         effective_limit = min(cls.MAX_RESULT_LIMIT, max(1, limit))
+        effective_offset = max(0, offset)
         target_hyp = hypothesis or f"Adversary activity matching patterns: '{nl_query}'"
+
+        if len(parsed["filters"]) > cls.MAX_FILTER_CLAUSES:
+            raise QuerySecurityError(
+                f"Query generated {len(parsed['filters'])} filter clauses, exceeding limit of {cls.MAX_FILTER_CLAUSES}."
+            )
+
+        # Field and operator allowlist enforcement
+        for f in parsed["filters"]:
+            f_field = f.get("field_name")
+            f_op = f.get("operator")
+            if f_field not in cls.ALLOWED_FIELDS:
+                raise QuerySecurityError(f"Field '{f_field}' is not in the allowed query field allowlist.")
+            if f_op not in cls.ALLOWED_OPERATORS:
+                raise QuerySecurityError(f"Operator '{f_op}' is not in the allowed operator allowlist.")
 
         filters = [HuntingFilterClause(**f) for f in parsed["filters"]]
         target_sources = set(parsed["target_sources"])
 
-        matched_events: list[dict[str, Any]] = []
+        all_matched_events: list[dict[str, Any]] = []
         matched_entities: dict[str, set[str]] = {
             "ips": set(),
             "hosts": set(),
@@ -251,6 +307,16 @@ class ThreatHuntingEngine:
         evidence_provenance: set[str] = set()
 
         for ev in events:
+            # Check timeout protection
+            if time.perf_counter() - start_time > cls.MAX_EXECUTION_TIMEOUT_SECONDS:
+                raise QuerySecurityError(f"Query execution timed out (> {cls.MAX_EXECUTION_TIMEOUT_SECONDS}s).")
+
+            # Enforce target scope isolation if specified (prevent silent context leakage)
+            if target_scope:
+                ev_ip = getattr(ev, "source_ip", "") or getattr(ev, "destination_ip", "")
+                ev_host = getattr(ev, "hostname", "")
+                if target_scope not in (ev_ip, ev_host):
+                    continue
             # Check source type filtering
             src_type = getattr(ev, "source_type", None)
             if target_sources and src_type and src_type not in target_sources:
@@ -295,7 +361,7 @@ class ThreatHuntingEngine:
 
             if matches:
                 ev_dict = ev.to_dict() if hasattr(ev, "to_dict") else dict(ev)
-                matched_events.append(ev_dict)
+                all_matched_events.append(ev_dict)
 
                 # Record entities
                 if getattr(ev, "source_ip", None):
@@ -313,13 +379,14 @@ class ThreatHuntingEngine:
                 if raw_evi:
                     evidence_provenance.add(raw_evi)
 
-                if len(matched_events) >= effective_limit:
-                    break
+        total_matched = len(all_matched_events)
+        # Apply pagination offset and limit
+        paginated_events = all_matched_events[effective_offset : effective_offset + effective_limit]
 
         elapsed_ms = round((time.perf_counter() - start_time) * 1000.0, 2)
 
         # Determine hypothesis status
-        if len(matched_events) > 0:
+        if total_matched > 0:
             status = HypothesisStatus.CONFIRMED
         else:
             status = HypothesisStatus.REFUTED if len(events) >= 5 else HypothesisStatus.INCONCLUSIVE
@@ -340,11 +407,13 @@ class ThreatHuntingEngine:
             query_title=nl_query[:60],
             hypothesis=target_hyp,
             hypothesis_status=status,
-            total_matched=len(matched_events),
-            returned_count=len(matched_events),
+            total_matched=total_matched,
+            returned_count=len(paginated_events),
             execution_time_ms=elapsed_ms,
-            events=matched_events,
+            events=paginated_events,
             matched_entities={k: sorted(list(v)) for k, v in matched_entities.items()},
             evidence_provenance=sorted(list(evidence_provenance)),
             suggested_followups=followups,
+            offset=effective_offset,
+            target_scope=target_scope,
         )

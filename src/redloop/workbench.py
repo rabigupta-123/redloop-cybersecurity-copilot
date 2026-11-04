@@ -18578,6 +18578,282 @@ def register_workbench_routes(
         )
         return JSONResponse({"success": True, "chain": chain.to_dict()})
 
+    # ==========================================================================
+    # PHASE 7: SOAR AUTOMATION & INCIDENT RESPONSE ORCHESTRATION ROUTES
+    # ==========================================================================
+
+    @app.get("/api/soar/workflows")
+    async def list_soar_workflows_endpoint(request: Request):
+        _require_same_origin(request)
+        from redloop.assessment.soar_engine import SOAREngine
+        engine = SOAREngine.get_instance(db_path=Path(db_path).parent / "soar.db" if db_path else None)
+        return JSONResponse({"success": True, "workflows": engine.list_workflows()})
+
+    @app.get("/api/soar/workflows/{workflow_id}")
+    async def get_soar_workflow_endpoint(request: Request, workflow_id: str):
+        _require_same_origin(request)
+        from redloop.assessment.soar_engine import SOAREngine
+        engine = SOAREngine.get_instance(db_path=Path(db_path).parent / "soar.db" if db_path else None)
+        wf = engine.get_workflow(workflow_id)
+        if not wf:
+            raise HTTPException(status_code=404, detail=f"Workflow '{workflow_id}' not found.")
+        return JSONResponse({"success": True, "workflow": wf.to_dict()})
+
+    @app.post("/api/soar/workflows/{workflow_id}/execute")
+    async def execute_soar_workflow_endpoint(request: Request, workflow_id: str):
+        _require_same_origin(request)
+        import uuid
+        try:
+            body = await request.json()
+        except Exception:
+            body = {}
+
+        target_context = body.get("target_context", "127.0.0.1")
+        trigger_type_str = body.get("trigger_type", "MANUAL")
+        source_record_id = body.get("source_record_id", f"src-{uuid.uuid4().hex[:6]}")
+        allow_rerun = bool(body.get("allow_rerun", False))
+        capability_token = body.get("capability_token")
+        operator = body.get("operator", "operator")
+
+        from redloop.assessment.soar_engine import SOAREngine, TriggerType
+        engine = SOAREngine.get_instance(db_path=Path(db_path).parent / "soar.db" if db_path else None)
+        try:
+            t_type = TriggerType(trigger_type_str.upper())
+        except Exception:
+            t_type = TriggerType.MANUAL
+
+        trigger = engine.create_trigger(
+            trigger_type=t_type,
+            source_record_id=source_record_id,
+            target_context=target_context,
+            provenance="WORKBENCH_SOAR_DISPATCH",
+        )
+
+        try:
+            record = engine.execute_workflow(
+                workflow_id=workflow_id,
+                trigger=trigger,
+                allow_rerun=allow_rerun,
+                capability_token=capability_token,
+                operator=operator,
+                stored_events=_soc_ingestion_engine.events,
+            )
+            return JSONResponse({"success": True, "execution": record.to_dict()})
+        except ValueError as ve:
+            raise HTTPException(status_code=400, detail=str(ve))
+
+    @app.post("/api/soar/executions/{execution_id}/cancel")
+    async def cancel_soar_execution_endpoint(request: Request, execution_id: str):
+        _require_same_origin(request)
+        try:
+            body = await request.json()
+        except Exception:
+            body = {}
+        reason = body.get("reason", "Cancelled via workbench")
+        operator = body.get("operator", "operator")
+
+        from redloop.assessment.soar_engine import SOAREngine
+        engine = SOAREngine.get_instance(db_path=Path(db_path).parent / "soar.db" if db_path else None)
+        try:
+            rec = engine.cancel_execution(execution_id=execution_id, operator=operator, reason=reason)
+            return JSONResponse({"success": True, "execution": rec.to_dict()})
+        except ValueError as ve:
+            raise HTTPException(status_code=400, detail=str(ve))
+
+    @app.get("/api/soar/executions")
+    async def list_soar_executions_endpoint(request: Request):
+        _require_same_origin(request)
+        from redloop.assessment.soar_engine import SOAREngine
+        engine = SOAREngine.get_instance(db_path=Path(db_path).parent / "soar.db" if db_path else None)
+        return JSONResponse({"success": True, "executions": engine.list_executions()})
+
+    @app.get("/api/soar/executions/{execution_id}")
+    async def get_soar_execution_endpoint(request: Request, execution_id: str):
+        _require_same_origin(request)
+        from redloop.assessment.soar_engine import SOAREngine
+        engine = SOAREngine.get_instance(db_path=Path(db_path).parent / "soar.db" if db_path else None)
+        rec = engine.get_execution(execution_id)
+        if not rec:
+            raise HTTPException(status_code=404, detail=f"Execution '{execution_id}' not found.")
+        return JSONResponse({"success": True, "execution": rec.to_dict()})
+
+    # ==========================================================================
+    # PHASE 7: CASE MANAGEMENT ROUTES
+    # ==========================================================================
+
+    @app.get("/api/cases")
+    async def list_cases_endpoint(request: Request):
+        _require_same_origin(request)
+        status_q = request.query_params.get("status")
+        sev_q = request.query_params.get("severity")
+
+        from redloop.assessment.case_management import CaseManager, CaseSeverity, CaseStatus
+        cm = CaseManager.get_instance(db_path=Path(db_path).parent / "cases.db" if db_path else None)
+
+        st_filter = CaseStatus(status_q.upper()) if status_q else None
+        sev_filter = CaseSeverity(sev_q.upper()) if sev_q else None
+        cases = cm.list_cases(status=st_filter, severity=sev_filter)
+        return JSONResponse({"success": True, "cases": cases})
+
+    @app.post("/api/cases")
+    async def create_case_endpoint(request: Request):
+        _require_same_origin(request)
+        try:
+            body = await request.json()
+        except Exception:
+            raise HTTPException(status_code=400, detail="Invalid JSON body")
+
+        title = body.get("title")
+        description = body.get("description", "")
+        if not title:
+            raise HTTPException(status_code=400, detail="Missing required field 'title'.")
+
+        from redloop.assessment.case_management import (
+            CaseManager,
+            CasePriority,
+            CaseSeverity,
+        )
+        cm = CaseManager.get_instance(db_path=Path(db_path).parent / "cases.db" if db_path else None)
+
+        sev = CaseSeverity.MEDIUM
+        pri = CasePriority.P3
+        if body.get("severity"):
+            try:
+                sev = CaseSeverity(body["severity"].upper())
+            except Exception:
+                pass
+        if body.get("priority"):
+            try:
+                pri = CasePriority(body["priority"].upper())
+            except Exception:
+                pass
+
+        case = cm.create_case(
+            title=title,
+            description=description,
+            severity=sev,
+            priority=pri,
+            assigned_to=body.get("assigned_to", "unassigned"),
+            linked_alert_ids=body.get("linked_alert_ids", []),
+            linked_incident_ids=body.get("linked_incident_ids", []),
+            evidence_ids=body.get("evidence_ids", []),
+            related_indicators=body.get("related_indicators", {}),
+            creator=body.get("creator", "operator"),
+        )
+        return JSONResponse({"success": True, "case": case.to_dict()})
+
+    @app.get("/api/cases/{case_id}")
+    async def get_case_endpoint(request: Request, case_id: str):
+        _require_same_origin(request)
+        from redloop.assessment.case_management import CaseManager
+        cm = CaseManager.get_instance(db_path=Path(db_path).parent / "cases.db" if db_path else None)
+        case = cm.get_case(case_id)
+        if not case:
+            raise HTTPException(status_code=404, detail=f"Case '{case_id}' not found.")
+        return JSONResponse({"success": True, "case": case.to_dict()})
+
+    @app.patch("/api/cases/{case_id}")
+    async def update_case_endpoint(request: Request, case_id: str):
+        _require_same_origin(request)
+        try:
+            body = await request.json()
+        except Exception:
+            raise HTTPException(status_code=400, detail="Invalid JSON body")
+
+        from redloop.assessment.case_management import (
+            CaseManager,
+            CasePriority,
+            CaseSeverity,
+            CaseStatus,
+        )
+        cm = CaseManager.get_instance(db_path=Path(db_path).parent / "cases.db" if db_path else None)
+
+        status_obj = None
+        if body.get("status"):
+            try:
+                status_obj = CaseStatus(body["status"].upper())
+            except Exception:
+                raise HTTPException(status_code=400, detail=f"Invalid case status '{body.get('status')}'.")
+
+        sev_obj = None
+        if body.get("severity"):
+            try:
+                sev_obj = CaseSeverity(body["severity"].upper())
+            except Exception:
+                pass
+
+        pri_obj = None
+        if body.get("priority"):
+            try:
+                pri_obj = CasePriority(body["priority"].upper())
+            except Exception:
+                pass
+
+        try:
+            updated = cm.update_case(
+                case_id=case_id,
+                status=status_obj,
+                severity=sev_obj,
+                priority=pri_obj,
+                assigned_to=body.get("assigned_to"),
+                closure_reason=body.get("closure_reason"),
+                actor=body.get("actor", "operator"),
+            )
+            return JSONResponse({"success": True, "case": updated.to_dict()})
+        except ValueError as ve:
+            raise HTTPException(status_code=400, detail=str(ve))
+
+    @app.post("/api/cases/{case_id}/notes")
+    async def add_case_note_endpoint(request: Request, case_id: str):
+        _require_same_origin(request)
+        try:
+            body = await request.json()
+        except Exception:
+            raise HTTPException(status_code=400, detail="Invalid JSON body")
+
+        author = body.get("author", "analyst")
+        content_txt = body.get("content")
+        if not content_txt:
+            raise HTTPException(status_code=400, detail="Missing required field 'content'.")
+
+        from redloop.assessment.case_management import CaseManager
+        cm = CaseManager.get_instance(db_path=Path(db_path).parent / "cases.db" if db_path else None)
+        try:
+            note = cm.add_note(case_id=case_id, author=author, content=content_txt)
+            return JSONResponse({"success": True, "note": note.to_dict()})
+        except ValueError as ve:
+            raise HTTPException(status_code=404, detail=str(ve))
+
+    @app.post("/api/cases/{case_id}/evidence")
+    async def attach_case_evidence_endpoint(request: Request, case_id: str):
+        _require_same_origin(request)
+        try:
+            body = await request.json()
+        except Exception:
+            raise HTTPException(status_code=400, detail="Invalid JSON body")
+
+        evidence_ids = body.get("evidence_ids", [])
+        if not isinstance(evidence_ids, list):
+            raise HTTPException(status_code=400, detail="'evidence_ids' must be a list of string IDs.")
+
+        from redloop.assessment.case_management import CaseManager
+        cm = CaseManager.get_instance(db_path=Path(db_path).parent / "cases.db" if db_path else None)
+        try:
+            attached = cm.attach_evidence(case_id=case_id, evidence_ids=evidence_ids, actor=body.get("actor", "operator"))
+            return JSONResponse({"success": True, "evidence_ids": attached})
+        except ValueError as ve:
+            raise HTTPException(status_code=404, detail=str(ve))
+
+    @app.get("/api/cases/{case_id}/timeline")
+    async def get_case_timeline_endpoint(request: Request, case_id: str):
+        _require_same_origin(request)
+        from redloop.assessment.case_management import CaseManager
+        cm = CaseManager.get_instance(db_path=Path(db_path).parent / "cases.db" if db_path else None)
+        case = cm.get_case(case_id)
+        if not case:
+            raise HTTPException(status_code=404, detail=f"Case '{case_id}' not found.")
+        return JSONResponse({"success": True, "timeline": [t.to_dict() for t in case.timeline]})
+
 
 
 

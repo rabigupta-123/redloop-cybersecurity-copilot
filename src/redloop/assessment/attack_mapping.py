@@ -17,6 +17,14 @@ from enum import Enum
 from typing import Any, Optional
 
 
+class TechniqueStatus(str, Enum):
+    """MITRE ATT&CK Technique Lifecycle Status."""
+    VALID = "VALID"
+    REVOKED = "REVOKED"
+    DEPRECATED = "DEPRECATED"
+    UNKNOWN = "UNKNOWN"
+
+
 @dataclass(frozen=True)
 class AttackTactic:
     """MITRE ATT&CK Enterprise Tactic."""
@@ -36,6 +44,8 @@ class AttackTechnique:
     is_subtechnique: bool = False
     parent_id: Optional[str] = None
     data_sources: list[str] = field(default_factory=list)
+    platforms: list[str] = field(default_factory=lambda: ["Windows", "Linux", "macOS"])
+    detection_strategy: str = ""
     reference_url: str = ""
 
 
@@ -52,6 +62,8 @@ class TechniqueMapping:
     match_reason: str
     source_entity: str
     evidence_ids: list[str] = field(default_factory=list)
+    is_inferred: bool = False
+    mapping_type: str = "AUTHORITATIVE_RULE"  # AUTHORITATIVE_RULE | HEURISTIC_INFERRED | EXPLICIT_INDICATOR
     timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
     def to_dict(self) -> dict[str, Any]:
@@ -74,7 +86,84 @@ class AttackMatrixCoverage:
 
 
 class AttackCatalog:
-    """Authoritative MITRE Enterprise ATT&CK v15 Dataset."""
+    """Authoritative MITRE Enterprise ATT&CK v15 Dataset (Curated Core Subset)."""
+
+    DATASET_VERSION: str = "v15.1"
+    DATASET_RETRIEVAL_DATE: str = "2024-10-31"
+    CATALOG_SCOPE: str = "Enterprise ATT&CK Curated Priority Subset (26 techniques across all 14 tactics)"
+    TOTAL_ENTERPRISE_TECHNIQUES_ESTIMATE: int = 600
+
+    DEPRECATED_OR_REVOKED_TECHNIQUES: dict[str, dict[str, Any]] = {
+        "T1086": {
+            "name": "PowerShell",
+            "status": "REVOKED",
+            "revoked_by": "T1059.001",
+            "comment": "Revoked in v7.0; superseded by T1059.001 (Command and Scripting Interpreter: PowerShell)",
+        },
+        "T1064": {
+            "name": "Scripting",
+            "status": "REVOKED",
+            "revoked_by": "T1059",
+            "comment": "Revoked in v7.0; superseded by T1059 (Command and Scripting Interpreter)",
+        },
+        "T1193": {
+            "name": "Spearphishing Attachment",
+            "status": "REVOKED",
+            "revoked_by": "T1566.001",
+            "comment": "Revoked in v7.0; superseded by T1566.001 (Phishing: Spearphishing Attachment)",
+        },
+        "T1043": {
+            "name": "Commonly Used Port",
+            "status": "DEPRECATED",
+            "revoked_by": None,
+            "comment": "Deprecated in v9.0; port usage is now reflected in protocol-specific C2 techniques",
+        },
+        "T1188": {
+            "name": "Match Legitimate Name or Location",
+            "status": "REVOKED",
+            "revoked_by": "T1036.005",
+            "comment": "Revoked in v7.0; superseded by T1036.005 (Masquerading: Match Legitimate Name or Location)",
+        },
+    }
+
+    @classmethod
+    def lookup_technique(cls, technique_id: str) -> dict[str, Any]:
+        """Looks up technique status, handling valid, deprecated, revoked, and unknown IDs."""
+        tid = technique_id.strip().upper()
+        if tid in cls.TECHNIQUES:
+            tech = cls.TECHNIQUES[tid]
+            return {
+                "technique_id": tech.technique_id,
+                "name": tech.name,
+                "status": TechniqueStatus.VALID.value,
+                "is_subtechnique": tech.is_subtechnique,
+                "parent_id": tech.parent_id,
+                "tactic_ids": tech.tactic_ids,
+                "platforms": tech.platforms,
+                "data_sources": tech.data_sources,
+                "reference_url": tech.reference_url,
+                "catalog_version": cls.DATASET_VERSION,
+                "catalog_scope": cls.CATALOG_SCOPE,
+            }
+        if tid in cls.DEPRECATED_OR_REVOKED_TECHNIQUES:
+            info = cls.DEPRECATED_OR_REVOKED_TECHNIQUES[tid]
+            return {
+                "technique_id": tid,
+                "name": info["name"],
+                "status": info["status"],
+                "revoked_by": info.get("revoked_by"),
+                "comment": info["comment"],
+                "catalog_version": cls.DATASET_VERSION,
+                "catalog_scope": cls.CATALOG_SCOPE,
+            }
+        return {
+            "technique_id": tid,
+            "name": "Unknown Technique",
+            "status": TechniqueStatus.UNKNOWN.value,
+            "comment": f"Technique ID '{tid}' is neither in the REDLOOP priority catalog nor the deprecated/revoked registry.",
+            "catalog_version": cls.DATASET_VERSION,
+            "catalog_scope": cls.CATALOG_SCOPE,
+        }
 
     # 14 Enterprise Tactics (Ordered per MITRE kill-chain progression)
     TACTICS: dict[str, AttackTactic] = {
@@ -477,6 +566,20 @@ class AttackMappingEngine:
     }
 
     @classmethod
+    def get_catalog_metadata(cls) -> dict[str, Any]:
+        """Returns authoritative catalog provenance and scope metadata."""
+        return {
+            "dataset_version": AttackCatalog.DATASET_VERSION,
+            "retrieval_date": AttackCatalog.DATASET_RETRIEVAL_DATE,
+            "catalog_scope": AttackCatalog.CATALOG_SCOPE,
+            "tactics_count": len(AttackCatalog.TACTICS),
+            "techniques_count": len(AttackCatalog.TECHNIQUES),
+            "total_enterprise_estimate": AttackCatalog.TOTAL_ENTERPRISE_TECHNIQUES_ESTIMATE,
+            "is_full_catalog": False,
+            "deprecated_count": len(AttackCatalog.DEPRECATED_OR_REVOKED_TECHNIQUES),
+        }
+
+    @classmethod
     def get_tactics(cls) -> list[dict[str, Any]]:
         """Returns ordered list of all 14 Enterprise Tactics."""
         return [
@@ -537,6 +640,8 @@ class AttackMappingEngine:
                             match_reason=f"Alert '{title}' matched signature rule {rule_id}",
                             source_entity=source_ip,
                             evidence_ids=ev_ids,
+                            is_inferred=False,
+                            mapping_type="AUTHORITATIVE_RULE",
                             timestamp=now_iso,
                         )
                     )
@@ -572,6 +677,8 @@ class AttackMappingEngine:
                         source_entity=src,
                         evidence_ids=[ev_id],
                         timestamp=now_iso,
+                        is_inferred=True,
+                        mapping_type="HEURISTIC_INFERRED",
                     )
                 )
 
@@ -594,6 +701,8 @@ class AttackMappingEngine:
                     source_entity=src,
                     evidence_ids=[ev_id],
                     timestamp=now_iso,
+                        is_inferred=True,
+                        mapping_type="HEURISTIC_INFERRED",
                 )
             )
 
@@ -615,6 +724,8 @@ class AttackMappingEngine:
                     source_entity=src,
                     evidence_ids=[ev_id],
                     timestamp=now_iso,
+                        is_inferred=True,
+                        mapping_type="HEURISTIC_INFERRED",
                 )
             )
 
@@ -637,6 +748,8 @@ class AttackMappingEngine:
                         source_entity=src,
                         evidence_ids=[ev_id],
                         timestamp=now_iso,
+                        is_inferred=True,
+                        mapping_type="HEURISTIC_INFERRED",
                     )
                 )
 

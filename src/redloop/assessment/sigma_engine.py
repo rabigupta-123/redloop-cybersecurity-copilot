@@ -11,6 +11,8 @@ Provides:
 from __future__ import annotations
 
 import base64
+import concurrent.futures
+import fnmatch
 import re
 import uuid
 from dataclasses import asdict, dataclass, field
@@ -19,6 +21,21 @@ from enum import Enum
 from typing import Any, Optional
 
 import yaml
+
+
+class SigmaEvaluationError(Exception):
+    """Base exception for Sigma evaluation failures."""
+    pass
+
+
+class SigmaRuleValidationError(SigmaEvaluationError):
+    """Raised when an invalid, malformed, or unsupported Sigma rule is evaluated."""
+    pass
+
+
+class SigmaReDoSTimeoutError(SigmaEvaluationError):
+    """Raised when a regular expression execution exceeds the safety timeout."""
+    pass
 
 
 class SigmaRuleStatus(str, Enum):
@@ -67,6 +84,9 @@ class SigmaEngine:
 
     REQUIRED_TOP_FIELDS = {"title", "id", "status", "description", "logsource", "detection"}
     SUPPORTED_MODIFIERS = {"contains", "startswith", "endswith", "re", "all", "base64offset"}
+    MAX_REGEX_INPUT_LENGTH = 10000
+    MAX_REGEX_PATTERN_LENGTH = 200
+    REGEX_TIMEOUT_SECONDS = 0.100  # 100 milliseconds
 
     # Field mapping from Sigma standard to UniversalSecurityEvent attributes
     FIELD_MAPPINGS: dict[str, str] = {
@@ -187,10 +207,18 @@ class SigmaEngine:
                         if "re" in modifiers:
                             patterns = field_val if isinstance(field_val, list) else [field_val]
                             for pat in patterns:
+                                pat_str = str(pat)
+                                if len(pat_str) > cls.MAX_REGEX_PATTERN_LENGTH:
+                                    errors.append(f"Regex pattern exceeds maximum length limit of {cls.MAX_REGEX_PATTERN_LENGTH} chars: '{pat_str[:40]}...'")
+                                    continue
                                 try:
                                     # Check for catastrophic backtracking indicators
-                                    pat_str = str(pat)
-                                    if re.search(r"(\+|\*)\s*(\+|\*)", pat_str) or re.search(r"\([^)]*[\+\*][^)]*\)[\+\*]", pat_str):
+                                    if (
+                                        re.search(r"(\+|\*)\s*(\+|\*)", pat_str)
+                                        or re.search(r"\([^)]*[\+\*][^)]*\)[\+\*]", pat_str)
+                                        or re.search(r"\([^)]*\|[^)]*\)[\+\*]", pat_str)
+                                        or re.search(r"[\*\+]{2,}", pat_str)
+                                    ):
                                         errors.append(f"Potentially unsafe ReDoS regex pattern: '{pat}'")
                                     else:
                                         re.compile(pat_str)
@@ -214,10 +242,15 @@ class SigmaEngine:
         rule_yaml: str | dict[str, Any],
         event: Any,
     ) -> tuple[bool, Optional[SigmaMatchResult]]:
-        """Evaluates a validated Sigma rule against a UniversalSecurityEvent safely."""
+        """Evaluates a validated Sigma rule against a UniversalSecurityEvent safely.
+        
+        Raises SigmaRuleValidationError if the rule is invalid, unsupported, or unsafe.
+        Never silently treats an invalid or unsupported rule as a non-match.
+        """
         val_res = cls.validate_rule(rule_yaml)
         if not val_res.is_valid:
-            return False, None
+            err_msg = "; ".join(val_res.errors)
+            raise SigmaRuleValidationError(f"Cannot evaluate invalid/unsupported Sigma rule: {err_msg}")
 
         rule_dict = yaml.safe_load(rule_yaml) if isinstance(rule_yaml, str) else rule_yaml
         detection = rule_dict["detection"]
@@ -315,15 +348,35 @@ class SigmaEngine:
                     return True
             return False
 
-        # Regular expression modifier
+        # Regular expression modifier with ReDoS and timeout protection
         if "re" in modifiers:
             expected_list = expected if isinstance(expected, list) else [expected]
             for pat in expected_list:
-                try:
-                    if re.search(str(pat), actual_str, re.IGNORECASE):
-                        return True
-                except Exception:
-                    pass
+                pat_str = str(pat)
+                if len(pat_str) > cls.MAX_REGEX_PATTERN_LENGTH:
+                    raise SigmaRuleValidationError(f"Regex pattern exceeds maximum length limit of {cls.MAX_REGEX_PATTERN_LENGTH} chars: '{pat_str[:40]}...'")
+                # Bounded input length
+                bounded_actual = actual_str[:cls.MAX_REGEX_INPUT_LENGTH]
+                # ReDoS guard check
+                if (
+                    re.search(r"(\+|\*)\s*(\+|\*)", pat_str)
+                    or re.search(r"\([^)]*[\+\*][^)]*\)[\+\*]", pat_str)
+                    or re.search(r"\([^)]*\|[^)]*\)[\+\*]", pat_str)
+                    or re.search(r"[\*\+]{2,}", pat_str)
+                ):
+                    raise SigmaRuleValidationError(f"Potentially unsafe ReDoS regex pattern rejected: '{pat_str}'")
+                
+                # Execute regex in worker thread with timeout
+                with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+                    future = executor.submit(re.search, pat_str, bounded_actual, re.IGNORECASE)
+                    try:
+                        res = future.result(timeout=cls.REGEX_TIMEOUT_SECONDS)
+                        if res:
+                            return True
+                    except concurrent.futures.TimeoutError:
+                        raise SigmaReDoSTimeoutError(f"Regex execution timed out (>100ms) for pattern: '{pat_str}'")
+                    except Exception as rx_err:
+                        raise SigmaRuleValidationError(f"Regex execution error: {rx_err}")
             return False
 
         # Contains modifier
@@ -343,10 +396,17 @@ class SigmaEngine:
             expected_list = expected if isinstance(expected, list) else [expected]
             return any(actual_str.lower().endswith(str(exp).lower()) for exp in expected_list)
 
-        # Exact match (case-insensitive)
-        if isinstance(expected, list):
-            return any(actual_str.lower() == str(exp).lower() for exp in expected)
-        return actual_str.lower() == str(expected).lower()
+        # Wildcards / Exact match (case-insensitive)
+        expected_list = expected if isinstance(expected, list) else [expected]
+        for exp in expected_list:
+            exp_str = str(exp).lower()
+            if "*" in exp_str or "?" in exp_str:
+                if fnmatch.fnmatch(actual_str.lower(), exp_str):
+                    return True
+            else:
+                if actual_str.lower() == exp_str:
+                    return True
+        return False
 
     @staticmethod
     def _generate_base64_variants(text: str) -> list[str]:
@@ -460,3 +520,80 @@ class SigmaEngine:
                     eval_stack.append(a or b)
 
         return eval_stack[0] if eval_stack else False
+
+    @classmethod
+    def validate_rules_batch(cls, rules: list[str | dict[str, Any]]) -> dict[str, Any]:
+        """Validates a batch of rules, detecting duplicate UUIDs/IDs and checking compatibility."""
+        seen_ids: dict[str, str] = {}
+        duplicates: list[str] = []
+        validated: list[SigmaRuleValidationResult] = []
+
+        for r in rules:
+            res = cls.validate_rule(r)
+            validated.append(res)
+            if res.rule_id:
+                if res.rule_id in seen_ids:
+                    duplicates.append(f"Duplicate rule ID '{res.rule_id}' detected between '{seen_ids[res.rule_id]}' and '{res.title or 'Untitled'}'")
+                else:
+                    seen_ids[res.rule_id] = res.title or "Untitled"
+
+        return {
+            "total_rules": len(rules),
+            "valid_rules": sum(1 for v in validated if v.is_valid),
+            "duplicate_ids": duplicates,
+            "has_duplicates": len(duplicates) > 0,
+            "rules": [
+                {
+                    "rule_id": v.rule_id,
+                    "title": v.title,
+                    "is_valid": v.is_valid,
+                    "errors": v.errors,
+                    "warnings": v.warnings,
+                }
+                for v in validated
+            ],
+        }
+
+    @classmethod
+    def evaluate_rule_safe(cls, rule_yaml: str | dict[str, Any], event: Any) -> dict[str, Any]:
+        """Evaluates a Sigma rule safely and returns an explicit status dictionary."""
+        val_res = cls.validate_rule(rule_yaml)
+        if not val_res.is_valid:
+            status = "REJECTED_UNSAFE" if any("redos" in e.lower() or "unsafe" in e.lower() for e in val_res.errors) else "VALIDATION_ERROR"
+            return {
+                "status": status,
+                "is_match": False,
+                "rule_id": val_res.rule_id,
+                "title": val_res.title,
+                "match_result": None,
+                "errors": val_res.errors,
+            }
+
+        try:
+            matched, res = cls.evaluate_rule(rule_yaml, event)
+            return {
+                "status": "MATCHED" if matched else "NO_MATCH",
+                "is_match": matched,
+                "rule_id": val_res.rule_id,
+                "title": val_res.title,
+                "match_result": res.to_dict() if res else None,
+                "errors": [],
+            }
+        except SigmaReDoSTimeoutError as te:
+            return {
+                "status": "REJECTED_UNSAFE_TIMEOUT",
+                "is_match": False,
+                "rule_id": val_res.rule_id,
+                "title": val_res.title,
+                "match_result": None,
+                "errors": [str(te)],
+            }
+        except SigmaRuleValidationError as ve:
+            return {
+                "status": "UNSUPPORTED_RULE",
+                "is_match": False,
+                "rule_id": val_res.rule_id,
+                "title": val_res.title,
+                "match_result": None,
+                "errors": [str(ve)],
+            }

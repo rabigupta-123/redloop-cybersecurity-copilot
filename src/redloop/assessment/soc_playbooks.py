@@ -42,6 +42,11 @@ class PlaybookStepStatus(str, Enum):
 
 @dataclass
 class ApprovalCapability:
+    """Cryptographic, single-use, expiring execution capability for high-risk containment actions.
+    
+    NOTE: Represents a local operator approval capability within the REDLOOP host environment;
+    does not constitute cryptographically verified identity proof of an authenticated remote user.
+    """
     capability_id: str
     token_hash: str
     playbook_id: str
@@ -50,6 +55,7 @@ class ApprovalCapability:
     approver: str
     created_at: str
     expires_at: str
+    action_params_hash: str = ""
     consumed: bool = False
     consumed_at: Optional[str] = None
     nonce: str = ""
@@ -145,6 +151,14 @@ class PlaybookApprovalStore:
             finally:
                 conn.close()
 
+    @staticmethod
+    def _compute_params_hash(cmd: Optional[str], params: Optional[dict[str, Any]] = None) -> str:
+        """Computes canonical SHA-256 hash over action command and action parameters."""
+        import json
+        payload = {"cmd": (cmd or "").strip(), "params": params or {}}
+        canon = json.dumps(payload, sort_keys=True)
+        return hashlib.sha256(canon.encode("utf-8")).hexdigest()
+
     def issue_capability(
         self,
         playbook_id: str,
@@ -152,6 +166,7 @@ class PlaybookApprovalStore:
         action_command: Optional[str],
         approver: str = "security_lead",
         ttl_minutes: int = 15,
+        action_params: Optional[dict[str, Any]] = None,
     ) -> tuple[ApprovalCapability, str]:
         """Issues a one-time cryptographic execution capability token."""
         now = datetime.now(timezone.utc)
@@ -162,12 +177,14 @@ class PlaybookApprovalStore:
         token_secret = f"rl-cap-{secrets.token_urlsafe(32)}"
         token_hash = hashlib.sha256(token_secret.encode("utf-8")).hexdigest()
 
+        params_hash = self._compute_params_hash(action_command, action_params)
         cap = ApprovalCapability(
             capability_id=capability_id,
             token_hash=token_hash,
             playbook_id=playbook_id,
             step_id=step_id,
             action_command=action_command or "",
+            action_params_hash=params_hash,
             approver=approver,
             created_at=now.isoformat(),
             expires_at=expires.isoformat(),
@@ -229,6 +246,8 @@ class PlaybookApprovalStore:
         step_id: str,
         token_secret: str,
         operator: str = "operator",
+        expected_action_command: Optional[str] = None,
+        expected_action_params: Optional[dict[str, Any]] = None,
     ) -> tuple[bool, str, Optional[dict[str, Any]]]:
         """Atomically validates and consumes the capability token with replay and expiry checks."""
         if not token_secret or not isinstance(token_secret, str):
@@ -353,6 +372,30 @@ class PlaybookApprovalStore:
                             return False, f"Execution rejected: Capability token expired at {expires_str}.", None
                     except Exception:
                         pass
+
+                    # Check parameter tampering
+                    if expected_action_command is not None and bound_cmd:
+                        if expected_action_command.strip() != bound_cmd.strip():
+                            conn.execute(
+                                """
+                                INSERT INTO playbook_audit_trail
+                                (event_id, timestamp, event_type, capability_id, playbook_id, step_id, actor, action_command, status, details)
+                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                """,
+                                (
+                                    f"aud-{uuid.uuid4().hex[:10]}",
+                                    now_iso,
+                                    "EXECUTION_REJECTED",
+                                    cap_id,
+                                    playbook_id,
+                                    step_id,
+                                    operator,
+                                    expected_action_command,
+                                    "REJECTED_PARAMS_ALTERED",
+                                    f"Action command altered from approved '{bound_cmd}' to '{expected_action_command}'. Approval invalidated.",
+                                ),
+                            )
+                            return False, f"Execution rejected: Action command or parameters have been altered since approval was granted.", None
 
                     # Atomically consume
                     conn.execute(
@@ -889,6 +932,8 @@ class SOCPlaybookEngine:
         step_id: str,
         auth_token: str | None = None,
         operator: str = "operator",
+        action_command: Optional[str] = None,
+        action_params: Optional[dict[str, Any]] = None,
     ) -> dict[str, Any]:
         """Executes an approved containment step. Enforces human authorization and capability token verification."""
         pb = cls.get_playbook(playbook_id)
@@ -929,12 +974,17 @@ class SOCPlaybookEngine:
                 "error": "Execution rejected: Missing authorization token.",
             }
 
+        # If action_command was explicitly provided, verify it against target step
+        effective_cmd = action_command if action_command is not None else target_step.action_command
+
         store = PlaybookApprovalStore.get_instance()
         valid, msg, cap_info = store.validate_and_consume(
             playbook_id=playbook_id,
             step_id=step_id,
             token_secret=auth_token,
             operator=operator,
+            expected_action_command=effective_cmd,
+            expected_action_params=action_params,
         )
 
         if not valid:
