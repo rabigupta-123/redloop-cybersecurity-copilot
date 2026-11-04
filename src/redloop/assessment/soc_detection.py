@@ -77,7 +77,7 @@ class SOCDetectionEngine:
 
     # Web attack signatures
     SQLI_PATTERNS = [
-        re.compile(r"\b(union\s+select|select\s+.*\s+from|insert\s+into|update\s+.*\s+set)\b", re.IGNORECASE),
+        re.compile(r"\b(union(\s+all)?\s+select|select\s+[\w\*\s,`\"'()]+\s+from\s+[\w`\"']+|insert\s+into\s+[\w`\"']+|update\s+[\w`\"']+\s+set)\b", re.IGNORECASE),
         re.compile(r"('|\%27)\s*(or|and)\s*('|\%27)?\d+=\d+", re.IGNORECASE),
         re.compile(r"\b(benchmark|sleep)\s*\(\s*\d+\s*\)", re.IGNORECASE),
     ]
@@ -86,6 +86,23 @@ class SOCDetectionEngine:
         re.compile(r"(\.\./|\.\.\\|\%2e\%2e\%2f|\%2e\%2e\/)", re.IGNORECASE),
         re.compile(r"(\/etc\/passwd|\/etc\/shadow|win\.ini|boot\.ini)", re.IGNORECASE),
     ]
+
+    @staticmethod
+    def _safe_unquote(url_str: str, max_passes: int = 2) -> list[str]:
+        """Bounded multi-pass URL decoding (at most max_passes) to catch double-encoded attacks."""
+        results = [url_str]
+        cur = url_str
+        for _ in range(max_passes):
+            try:
+                import urllib.parse
+                decoded = urllib.parse.unquote(cur)
+                if decoded == cur:
+                    break
+                results.append(decoded)
+                cur = decoded
+            except Exception:
+                break
+        return results
 
     def __init__(self) -> None:
         self.alerts: list[SOCAlert] = []
@@ -217,10 +234,17 @@ class SOCDetectionEngine:
                 url_str = ev.raw_data
 
             if url_str:
-                import urllib.parse
-                url_decoded = urllib.parse.unquote(url_str)
-                has_sqli = any(p.search(url_str) or p.search(url_decoded) for p in self.SQLI_PATTERNS)
-                has_traversal = any(p.search(url_str) or p.search(url_decoded) for p in self.TRAVERSAL_PATTERNS)
+                # Bounded double URL decoding
+                candidates = self._safe_unquote(url_str, max_passes=2)
+                # Check for benign static asset files without query parameters
+                path_only = url_str.split("?")[0].lower()
+                is_benign_asset = any(path_only.endswith(ext) for ext in [".css", ".js", ".woff", ".woff2", ".png", ".jpg", ".svg", ".ico"]) and "?" not in url_str
+
+                has_sqli = False
+                has_traversal = False
+                if not is_benign_asset:
+                    has_sqli = any(p.search(cand) for cand in candidates for p in self.SQLI_PATTERNS)
+                    has_traversal = any(p.search(cand) for cand in candidates for p in self.TRAVERSAL_PATTERNS)
 
                 if has_sqli:
                     new_alerts.append(

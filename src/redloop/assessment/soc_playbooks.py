@@ -18,11 +18,17 @@ destructive changes automatically without authorized approval audit.
 
 from __future__ import annotations
 
+import hashlib
+import json
+import secrets
+import sqlite3
+import threading
 import uuid
 from dataclasses import asdict, dataclass, field
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from enum import Enum
-from typing import Any
+from pathlib import Path
+from typing import Any, Optional
 
 
 class PlaybookStepStatus(str, Enum):
@@ -32,6 +38,369 @@ class PlaybookStepStatus(str, Enum):
     REJECTED = "REJECTED"
     EXECUTED = "EXECUTED"
     SKIPPED = "SKIPPED"
+
+
+@dataclass
+class ApprovalCapability:
+    capability_id: str
+    token_hash: str
+    playbook_id: str
+    step_id: str
+    action_command: str
+    approver: str
+    created_at: str
+    expires_at: str
+    consumed: bool = False
+    consumed_at: Optional[str] = None
+    nonce: str = ""
+    token_secret: Optional[str] = None
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "capability_id": self.capability_id,
+            "playbook_id": self.playbook_id,
+            "step_id": self.step_id,
+            "action_command": self.action_command,
+            "approver": self.approver,
+            "created_at": self.created_at,
+            "expires_at": self.expires_at,
+            "consumed": self.consumed,
+            "consumed_at": self.consumed_at,
+            "nonce": self.nonce,
+        }
+
+
+class PlaybookApprovalStore:
+    """Thread-safe, SQLite-backed store for cryptographic playbook execution capabilities."""
+
+    _instance: Optional["PlaybookApprovalStore"] = None
+    _lock = threading.Lock()
+
+    def __init__(self, db_path: Optional[Path | str] = None) -> None:
+        self._op_lock = threading.Lock()
+        if db_path is not None:
+            self.db_path = Path(db_path)
+        else:
+            self.db_path = self._default_db_path()
+        self.db_path.parent.mkdir(parents=True, exist_ok=True)
+        self._init_db()
+
+    @classmethod
+    def get_instance(cls, db_path: Optional[Path | str] = None) -> "PlaybookApprovalStore":
+        with cls._lock:
+            if cls._instance is None:
+                cls._instance = cls(db_path=db_path)
+            return cls._instance
+
+    @staticmethod
+    def _default_db_path() -> Path:
+        try:
+            from redloop.config import get_config
+            cfg = get_config()
+            if hasattr(cfg, "audit_db") and cfg.audit_db:
+                return Path(cfg.audit_db)
+        except Exception:
+            pass
+        return Path("data/audit.db")
+
+    def _get_connection(self) -> sqlite3.Connection:
+        conn = sqlite3.connect(str(self.db_path), check_same_thread=False, timeout=10.0)
+        conn.row_factory = sqlite3.Row
+        return conn
+
+    def _init_db(self) -> None:
+        with self._op_lock:
+            conn = self._get_connection()
+            try:
+                with conn:
+                    conn.execute("""
+                        CREATE TABLE IF NOT EXISTS playbook_approval_capabilities (
+                            capability_id TEXT PRIMARY KEY,
+                            token_hash TEXT UNIQUE NOT NULL,
+                            playbook_id TEXT NOT NULL,
+                            step_id TEXT NOT NULL,
+                            action_command TEXT,
+                            approver TEXT NOT NULL,
+                            created_at TEXT NOT NULL,
+                            expires_at TEXT NOT NULL,
+                            consumed INTEGER NOT NULL DEFAULT 0,
+                            consumed_at TEXT,
+                            nonce TEXT NOT NULL
+                        )
+                    """)
+                    conn.execute("""
+                        CREATE TABLE IF NOT EXISTS playbook_audit_trail (
+                            event_id TEXT PRIMARY KEY,
+                            timestamp TEXT NOT NULL,
+                            event_type TEXT NOT NULL,
+                            capability_id TEXT,
+                            playbook_id TEXT NOT NULL,
+                            step_id TEXT NOT NULL,
+                            actor TEXT NOT NULL,
+                            action_command TEXT,
+                            status TEXT NOT NULL,
+                            details TEXT
+                        )
+                    """)
+            finally:
+                conn.close()
+
+    def issue_capability(
+        self,
+        playbook_id: str,
+        step_id: str,
+        action_command: Optional[str],
+        approver: str = "security_lead",
+        ttl_minutes: int = 15,
+    ) -> tuple[ApprovalCapability, str]:
+        """Issues a one-time cryptographic execution capability token."""
+        now = datetime.now(timezone.utc)
+        expires = now + timedelta(minutes=ttl_minutes)
+        capability_id = f"cap-{uuid.uuid4().hex[:12]}"
+        nonce = uuid.uuid4().hex
+        
+        token_secret = f"rl-cap-{secrets.token_urlsafe(32)}"
+        token_hash = hashlib.sha256(token_secret.encode("utf-8")).hexdigest()
+
+        cap = ApprovalCapability(
+            capability_id=capability_id,
+            token_hash=token_hash,
+            playbook_id=playbook_id,
+            step_id=step_id,
+            action_command=action_command or "",
+            approver=approver,
+            created_at=now.isoformat(),
+            expires_at=expires.isoformat(),
+            consumed=False,
+            consumed_at=None,
+            nonce=nonce,
+            token_secret=token_secret,
+        )
+
+        with self._op_lock:
+            conn = self._get_connection()
+            try:
+                with conn:
+                    conn.execute(
+                        """
+                        INSERT INTO playbook_approval_capabilities
+                        (capability_id, token_hash, playbook_id, step_id, action_command, approver, created_at, expires_at, consumed, consumed_at, nonce)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, NULL, ?)
+                        """,
+                        (
+                            cap.capability_id,
+                            cap.token_hash,
+                            cap.playbook_id,
+                            cap.step_id,
+                            cap.action_command,
+                            cap.approver,
+                            cap.created_at,
+                            cap.expires_at,
+                            cap.nonce,
+                        ),
+                    )
+                    conn.execute(
+                        """
+                        INSERT INTO playbook_audit_trail
+                        (event_id, timestamp, event_type, capability_id, playbook_id, step_id, actor, action_command, status, details)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        """,
+                        (
+                            f"aud-{uuid.uuid4().hex[:10]}",
+                            cap.created_at,
+                            "CAPABILITY_ISSUED",
+                            cap.capability_id,
+                            cap.playbook_id,
+                            cap.step_id,
+                            cap.approver,
+                            cap.action_command,
+                            "ISSUED",
+                            f"Execution capability issued with 15-min TTL until {cap.expires_at}",
+                        ),
+                    )
+            finally:
+                conn.close()
+
+        return cap, token_secret
+
+    def validate_and_consume(
+        self,
+        playbook_id: str,
+        step_id: str,
+        token_secret: str,
+        operator: str = "operator",
+    ) -> tuple[bool, str, Optional[dict[str, Any]]]:
+        """Atomically validates and consumes the capability token with replay and expiry checks."""
+        if not token_secret or not isinstance(token_secret, str):
+            return False, "Missing or invalid authorization token.", None
+
+        token_hash = hashlib.sha256(token_secret.encode("utf-8")).hexdigest()
+        now = datetime.now(timezone.utc)
+        now_iso = now.isoformat()
+
+        with self._op_lock:
+            conn = self._get_connection()
+            try:
+                with conn:
+                    cur = conn.execute(
+                        "SELECT * FROM playbook_approval_capabilities WHERE token_hash = ?",
+                        (token_hash,),
+                    )
+                    row = cur.fetchone()
+
+                    if not row:
+                        conn.execute(
+                            """
+                            INSERT INTO playbook_audit_trail
+                            (event_id, timestamp, event_type, capability_id, playbook_id, step_id, actor, action_command, status, details)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                            """,
+                            (
+                                f"aud-{uuid.uuid4().hex[:10]}",
+                                now_iso,
+                                "EXECUTION_REJECTED",
+                                None,
+                                playbook_id,
+                                step_id,
+                                operator,
+                                None,
+                                "REJECTED_UNKNOWN_TOKEN",
+                                "Provided token does not match any known capability hash.",
+                            ),
+                        )
+                        return False, "Execution rejected: Invalid or unrecognized capability authorization token hash.", None
+
+                    cap_id = row["capability_id"]
+                    bound_pb = row["playbook_id"]
+                    bound_step = row["step_id"]
+                    bound_cmd = row["action_command"]
+                    consumed = bool(row["consumed"])
+                    expires_str = row["expires_at"]
+
+                    # Check binding
+                    if bound_pb != playbook_id or bound_step != step_id:
+                        conn.execute(
+                            """
+                            INSERT INTO playbook_audit_trail
+                            (event_id, timestamp, event_type, capability_id, playbook_id, step_id, actor, action_command, status, details)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                            """,
+                            (
+                                f"aud-{uuid.uuid4().hex[:10]}",
+                                now_iso,
+                                "EXECUTION_REJECTED",
+                                cap_id,
+                                playbook_id,
+                                step_id,
+                                operator,
+                                bound_cmd,
+                                "REJECTED_BINDING_MISMATCH",
+                                f"Capability token bound to {bound_pb}/{bound_step}, cannot execute {playbook_id}/{step_id}.",
+                            ),
+                        )
+                        return (
+                            False,
+                            f"Execution rejected: Capability token is bound to playbook '{bound_pb}' step '{bound_step}', not '{playbook_id}'/'{step_id}'.",
+                            None,
+                        )
+
+                    # Check replay / consumed
+                    if consumed:
+                        conn.execute(
+                            """
+                            INSERT INTO playbook_audit_trail
+                            (event_id, timestamp, event_type, capability_id, playbook_id, step_id, actor, action_command, status, details)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                            """,
+                            (
+                                f"aud-{uuid.uuid4().hex[:10]}",
+                                now_iso,
+                                "REPLAY_ATTEMPT_BLOCKED",
+                                cap_id,
+                                playbook_id,
+                                step_id,
+                                operator,
+                                bound_cmd,
+                                "REJECTED_REPLAY",
+                                f"Capability token was already consumed at {row['consumed_at']}.",
+                            ),
+                        )
+                        return False, "Execution rejected: Capability token already consumed. Replay attempt blocked.", None
+
+                    # Check expiration
+                    try:
+                        exp_dt = datetime.fromisoformat(expires_str)
+                        if now > exp_dt:
+                            conn.execute(
+                                """
+                                INSERT INTO playbook_audit_trail
+                                (event_id, timestamp, event_type, capability_id, playbook_id, step_id, actor, action_command, status, details)
+                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                """,
+                                (
+                                    f"aud-{uuid.uuid4().hex[:10]}",
+                                    now_iso,
+                                    "CAPABILITY_EXPIRED",
+                                    cap_id,
+                                    playbook_id,
+                                    step_id,
+                                    operator,
+                                    bound_cmd,
+                                    "REJECTED_EXPIRED",
+                                    f"Capability token expired at {expires_str}.",
+                                ),
+                            )
+                            return False, f"Execution rejected: Capability token expired at {expires_str}.", None
+                    except Exception:
+                        pass
+
+                    # Atomically consume
+                    conn.execute(
+                        "UPDATE playbook_approval_capabilities SET consumed = 1, consumed_at = ? WHERE capability_id = ?",
+                        (now_iso, cap_id),
+                    )
+                    conn.execute(
+                        """
+                        INSERT INTO playbook_audit_trail
+                        (event_id, timestamp, event_type, capability_id, playbook_id, step_id, actor, action_command, status, details)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        """,
+                        (
+                            f"aud-{uuid.uuid4().hex[:10]}",
+                            now_iso,
+                            "STEP_EXECUTED",
+                            cap_id,
+                            playbook_id,
+                            step_id,
+                            operator,
+                            bound_cmd,
+                            "EXECUTED",
+                            f"Capability token atomically consumed by {operator}.",
+                        ),
+                    )
+
+                    cap_info = {
+                        "capability_id": cap_id,
+                        "playbook_id": bound_pb,
+                        "step_id": bound_step,
+                        "action_command": bound_cmd,
+                        "approver": row["approver"],
+                        "consumed_at": now_iso,
+                    }
+                    return True, "Authorized capability validated and consumed.", cap_info
+            finally:
+                conn.close()
+
+    def reset(self) -> None:
+        """Wipes capabilities table for test isolation."""
+        with self._op_lock:
+            conn = self._get_connection()
+            try:
+                with conn:
+                    conn.execute("DELETE FROM playbook_approval_capabilities")
+                    conn.execute("DELETE FROM playbook_audit_trail")
+            finally:
+                conn.close()
 
 
 @dataclass
@@ -49,6 +418,8 @@ class PlaybookStep:
     approval_timestamp: str | None = None
     execution_result: str | None = None
     containment_flag: bool = False
+    capability_id: str | None = None
+    capability_token: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
         d = asdict(self)
@@ -406,6 +777,10 @@ class SOCPlaybookEngine:
         """Resets playbooks catalog to fresh unapproved state for testing."""
         cls._PLAYBOOKS.clear()
         cls._initialize_catalog()
+        try:
+            PlaybookApprovalStore.get_instance().reset()
+        except Exception:
+            pass
 
     @classmethod
     def list_playbooks(cls) -> list[dict[str, Any]]:
@@ -455,11 +830,27 @@ class SOCPlaybookEngine:
         target_step.approver = approver
         target_step.approval_timestamp = now_iso
 
+        cap_token = None
+        cap_id = None
+        expires_at = None
+
         if approved:
             target_step.approval_status = PlaybookStepStatus.APPROVED
+            # Issue cryptographic one-time execution capability token
+            store = PlaybookApprovalStore.get_instance()
+            cap, cap_token = store.issue_capability(
+                playbook_id=playbook_id,
+                step_id=step_id,
+                action_command=target_step.action_command,
+                approver=approver,
+            )
+            cap_id = cap.capability_id
+            expires_at = cap.expires_at
+            target_step.capability_id = cap_id
+            target_step.capability_token = cap_token
             target_step.execution_result = (
                 f"Action approved by {approver} at {now_iso}. "
-                f"Ready for authorized execution: '{target_step.action_command or target_step.recommended_action}'"
+                f"Cryptographic capability issued ({cap_id}). Ready for authorized execution."
             )
         else:
             target_step.approval_status = PlaybookStepStatus.REJECTED
@@ -472,16 +863,24 @@ class SOCPlaybookEngine:
             "approver": approver,
             "approved": approved,
             "action_command": target_step.action_command,
+            "capability_id": cap_id,
         }
         pb.audit_events.append(audit_entry)
 
-        return {
+        res: dict[str, Any] = {
             "success": True,
             "playbook_id": playbook_id,
             "step_id": step_id,
             "status": target_step.approval_status.value,
             "audit_entry": audit_entry,
         }
+        if approved and cap_token:
+            res["capability_id"] = cap_id
+            res["capability_token"] = cap_token
+            res["auth_token"] = cap_token  # Backward-compatible alias
+            res["expires_at"] = expires_at
+
+        return res
 
     @classmethod
     def execute_step(
@@ -489,8 +888,9 @@ class SOCPlaybookEngine:
         playbook_id: str,
         step_id: str,
         auth_token: str | None = None,
+        operator: str = "operator",
     ) -> dict[str, Any]:
-        """Executes an approved containment step. Enforces human authorization and auth token."""
+        """Executes an approved containment step. Enforces human authorization and capability token verification."""
         pb = cls.get_playbook(playbook_id)
         if not pb:
             return {"success": False, "error": f"Playbook '{playbook_id}' not found."}
@@ -504,11 +904,12 @@ class SOCPlaybookEngine:
         if not target_step:
             return {"success": False, "error": f"Step '{step_id}' not found in playbook '{playbook_id}'."}
 
-        # Check authorization token
-        if not auth_token or not auth_token.startswith("rl-auth-"):
+        if target_step.approval_status == PlaybookStepStatus.EXECUTED:
+            store = PlaybookApprovalStore.get_instance()
+            store.validate_and_consume(playbook_id, step_id, auth_token or "", operator)
             return {
                 "success": False,
-                "error": "Execution rejected: Missing or invalid authorization token.",
+                "error": "Execution rejected: Step has already been executed and capability token already consumed. Replay attempt blocked.",
             }
 
         # Enforce prerequisite approval
@@ -521,14 +922,37 @@ class SOCPlaybookEngine:
                 ),
             }
 
+        # Check authorization capability token
+        if not auth_token:
+            return {
+                "success": False,
+                "error": "Execution rejected: Missing authorization token.",
+            }
+
+        store = PlaybookApprovalStore.get_instance()
+        valid, msg, cap_info = store.validate_and_consume(
+            playbook_id=playbook_id,
+            step_id=step_id,
+            token_secret=auth_token,
+            operator=operator,
+        )
+
+        if not valid:
+            return {
+                "success": False,
+                "error": f"Execution rejected: {msg}",
+            }
+
         now_iso = datetime.now(timezone.utc).isoformat()
         target_step.approval_status = PlaybookStepStatus.EXECUTED
-        target_step.execution_result = f"Action successfully executed under token {auth_token[:12]}... at {now_iso}."
+        used_cap = cap_info["capability_id"] if cap_info else "unknown"
+        target_step.execution_result = f"Action successfully executed under capability {used_cap} by {operator} at {now_iso}."
 
         return {
             "success": True,
             "playbook_id": playbook_id,
             "step_id": step_id,
+            "capability_id": used_cap,
             "status": target_step.approval_status.value,
             "execution_result": target_step.execution_result,
         }

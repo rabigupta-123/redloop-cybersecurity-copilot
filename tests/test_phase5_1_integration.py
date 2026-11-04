@@ -299,7 +299,7 @@ def test_06_playbook_approval_and_rejection_enforcement():
     assert res_app["status"] == PlaybookStepStatus.APPROVED.value
 
     # Now execution succeeds with valid token
-    res_exec_ok = SOCPlaybookEngine.execute_step("PB-CRED", step.step_id, auth_token="rl-auth-lead-session-token")
+    res_exec_ok = SOCPlaybookEngine.execute_step("PB-CRED", step.step_id, auth_token=res_app.get("capability_token", "rl-auth-lead-session-token"))
     assert res_exec_ok["success"] is True
     assert res_exec_ok["status"] == PlaybookStepStatus.EXECUTED.value
 

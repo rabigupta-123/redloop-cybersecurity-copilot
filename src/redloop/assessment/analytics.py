@@ -270,6 +270,11 @@ class EvidenceConfidenceCalculator:
     
     Formula: C = 0.35 * V + 0.25 * S + 0.20 * F + 0.20 * I
     
+    STANDARDS & COMPLIANCE NOTICE:
+    This formula is a REDLOOP Internal Heuristic Confidence Score designed for operational
+    evidence triage. It is NOT a FIRST, NIST, ISO/IEC, or ITU-T standardized compliance metric.
+    Official CVSS and EPSS metrics are preserved independently without modification.
+    
     Where:
     - V (Verification status): [0, 1] (0.0 unverified, 0.5 automated single check, 0.8 dual-check, 1.0 manual or confirmed PoC)
     - S (Source reliability): [0, 1] (0.0 untrusted, 0.5 heuristic/passive, 0.8 established scanner, 1.0 deterministic artifact)
@@ -304,7 +309,12 @@ class EvidenceConfidenceCalculator:
             "I": tool_integrity,
         }
 
-        available = {k: min(1.0, max(0.0, v)) for k, v in inputs.items() if v is not None}
+        import math
+        available = {
+            k: min(1.0, max(0.0, float(v)))
+            for k, v in inputs.items()
+            if v is not None and not math.isnan(float(v)) and not math.isinf(float(v))
+        }
         missing = [k for k, v in inputs.items() if v is None]
 
         if not available:
