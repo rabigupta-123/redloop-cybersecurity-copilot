@@ -107,6 +107,39 @@ Designed for clarity across viewports, with collapsible navigation drawers and f
 - **Hash-Chained SQLite Ledger (`src/redloop/audit.py`)**: Every allowed or blocked action records an immutable chain link (`prev_hash` $\rightarrow$ `entry_hash`) with automatic secret redaction.
 - **External Checkpoint Anchoring (`src/redloop/audit_checkpoint.py`)**: Anchors the ledger sequence and tip hash to an external checkpoint file signed with a dedicated 32-byte key and `.sig` sidecar, detecting database replacement, row modification, or tail rollback.
 
+
+### 3. Canonical 9/9 AI Reasoning & Threat Intelligence Gateway (`src/redloop/integrations/core_hub.py`)
+- **Probed Live Integrations**: Centralized hub managing and auditing the 9 canonical integrations: **Ollama**, **Groq**, **NVIDIA NIM**, **OpenRouter**, **OpenAI**, **Anthropic Claude**, **Google Gemini**, **VirusTotal**, and **Shodan**.
+- **Truthful Status Reporting**: Deterministic health probes with real round-trip latency (ms) and status classifications (`CONNECTED`, `NOT_CONFIGURED`, `AUTH_FAILED`, `RATE_LIMITED`, `TIMEOUT`). Never simulates or fabricates connectivity.
+- **Provider Hub UI**: Real-time integration telemetry table with per-provider "Test Connection" and batch "Test All Integrations" triggers.
+
+### 4. Verifiable 10-Stage Investigation Pipeline (`src/redloop/assessment/investigation_pipeline.py`)
+- **End-to-End Autonomous Pipeline**: Coordinates 10 cryptographically verifiable investigation stages:
+  1. `Scope & Target`: Authorization contract boundary verification.
+  2. `Recon & Ports`: Service socket ladder scan with service banner extraction.
+  3. `DNS & Domain`: Multi-record resolution and DNS security posture check.
+  4. `TLS & Certificates`: Handshake inspection, cipher suite auditing, and expiry tracking.
+  5. `Web Metadata`: Header security analysis (`CSP`, `HSTS`, `XFO`, `XCTO`) and cookie flags.
+  6. `API Discovery`: Surface probing against candidate operational endpoints.
+  7. `Host Profiling`: TCP parameter fingerprinting separating confirmed vs. inferred attributes.
+  8. `Software Vulns`: Component version mapping against CVE vulnerability databases.
+  9. `File Forensics`: Cryptographic SHA-256 hash checks and IOC static signature triage.
+  10. `Risk & ASVS`: CVSS risk aggregation, OWASP ASVS v4.0 mapping, and signed report generation.
+- **Automated Evidence Sealing**: Each stage records genuine observation records into the SHA-256 audit ledger.
+
+### 5. Enterprise Local RBAC & Authentication Hardening (`src/redloop/auth.py`)
+- **Cryptographic Password Security**: PBKDF2-HMAC-SHA256 password hashing with 310,000 iterations and 256-bit cryptographically secure session tokens.
+- **Hierarchical Role-Based Access Control**: Four granular roles (`VIEWER`, `ANALYST`, `SENIOR_ANALYST`, `SECURITY_ADMIN`).
+- **Zero Unauthenticated Approvals**: Removed unauthenticated loopback bypass; SOAR playbook approval strictly requires an active authenticated session with `Permission.APPROVE_SOAR`.
+- **Operator Attribution**: Active operator identity displayed via the header pill (`🛡️ Operator: sec_analyst (local)`).
+
+### 6. ChatGPT/Claude Style Chat Redesign & Master Theme System
+- **Conversation Workspace**: Left collapsible conversation rail, instant search, persistent SQLite conversation history, renaming, and deletion confirmation.
+- **Quick Action Pills**: `🛠️ Tools` (scoped tool execution), `📎 Attach` (file evidence), `🔍 OSINT` (indicator lookup), and `⚡ Deep Reasoning`.
+- **Dynamic Model Selector**: Real-time selector populated dynamically from live connected AI reasoning providers.
+- **Rich Formatting & Provenance**: Markdown tables, syntax-highlighted code blocks with "Copy Code" button, and provenance badges (`[VERIFIED]`, `[OBSERVED]`, `[INFERENCE]`, `[EVIDENCE]`, `[AI_GENERATED]`).
+- **Complete Light & Dark Mode**: Preserves original light brand identity (`#F5F8FC` surface) and introduces a high-contrast dark theme with persistent toggle (`localStorage['redloop-theme']`) and zero theme flash on page load.
+
 ---
 
 ## 🏗️ Architecture
@@ -313,7 +346,12 @@ redloop-cybersecurity-copilot/
 ├── self-learning-agent/       # Optional self-learning prototype package & tests
 ├── services/learning_service/ # Optional FastAPI learning microservice
 ├── src/redloop/               # Primary RedLoop package
-│   ├── assessment/            # Modular assessment engines (Web, API, DNS, TLS, Host, Kali Copilot)
+│   ├── assessment/            # Modular assessment engines & 10-stage investigation pipeline
+│   │   ├── investigation_pipeline.py # 10-stage autonomous investigation engine
+│   │   └── ...
+│   ├── auth.py                # PBKDF2-HMAC-SHA256 session auth & hierarchical RBAC
+│   ├── integrations/          # Canonical 9/9 Integrations Hub & provider probes
+│   │   └── core_hub.py        # Probes & status manager for Ollama, Groq, NVIDIA, etc.
 │   ├── audit.py               # SHA-256 hash-chained SQLite audit logger
 │   ├── audit_checkpoint.py    # External HMAC checkpoint & detached signature verifier
 │   ├── chat.py                # Multi-provider AI Copilot & conversation store
