@@ -9,8 +9,6 @@ from __future__ import annotations
 import base64
 import json
 import time
-import urllib.error
-import urllib.request
 from typing import Any, Optional
 
 from redloop.integrations.base import (
@@ -22,6 +20,7 @@ from redloop.integrations.base import (
 )
 from redloop.integrations.config import IntegrationConfig
 from redloop.integrations.credentials import mask_secret, sanitize_error_message
+from redloop.integrations.transport import SafeHTTPClient, SSRFDestinationError
 
 
 class ServiceNowAdapter(BaseProvider):
@@ -98,28 +97,32 @@ class ServiceNowAdapter(BaseProvider):
         start = time.time()
         try:
             url = f"{self.instance_url.rstrip('/')}/api/now/table/incident?sysparm_limit=1"
-            req = urllib.request.Request(url, headers=self._get_headers())
-            with urllib.request.urlopen(req, timeout=5.0) as resp:
-                elapsed = (time.time() - start) * 1000.0
-                if resp.status == 200:
-                    res = HealthCheckResult(
-                        status=ProviderStatus.CONNECTED,
-                        latency_ms=round(elapsed, 2),
-                        message="Connected to ServiceNow Incident Table API.",
-                    )
-                else:
-                    res = HealthCheckResult(
-                        status=ProviderStatus.DEGRADED,
-                        latency_ms=round(elapsed, 2),
-                        message=f"ServiceNow returned HTTP {resp.status}.",
-                    )
-        except urllib.error.HTTPError as he:
+            resp = SafeHTTPClient.get(url, headers=self._get_headers(), timeout=5.0)
             elapsed = (time.time() - start) * 1000.0
-            st = ProviderStatus.AUTH_FAILED if he.code in (401, 403) else ProviderStatus.ERROR
+            if resp["status_code"] == 200:
+                res = HealthCheckResult(
+                    status=ProviderStatus.CONNECTED,
+                    latency_ms=round(elapsed, 2),
+                    message="Connected to ServiceNow Incident Table API.",
+                )
+            elif resp["status_code"] in (401, 403):
+                res = HealthCheckResult(
+                    status=ProviderStatus.AUTH_FAILED,
+                    latency_ms=round(elapsed, 2),
+                    message=f"HTTP {resp['status_code']}: ServiceNow authentication rejected.",
+                )
+            else:
+                res = HealthCheckResult(
+                    status=ProviderStatus.DEGRADED,
+                    latency_ms=round(elapsed, 2),
+                    message=f"ServiceNow returned HTTP {resp['status_code']}.",
+                )
+        except SSRFDestinationError as se:
+            elapsed = (time.time() - start) * 1000.0
             res = HealthCheckResult(
-                status=st,
+                status=ProviderStatus.UNAVAILABLE,
                 latency_ms=round(elapsed, 2),
-                message=f"HTTP {he.code}: ServiceNow authentication rejected.",
+                message=f"SSRF Protection blocked destination: {str(se)}",
             )
         except Exception as e:
             elapsed = (time.time() - start) * 1000.0
@@ -168,23 +171,21 @@ class ServiceNowAdapter(BaseProvider):
             "urgency": urgency,
             "work_notes": work_notes,
         }
-        body = json.dumps(payload).encode("utf-8")
-        req = urllib.request.Request(url, data=body, headers=self._get_headers())
 
         try:
-            with urllib.request.urlopen(req, timeout=8.0) as resp:
-                if resp.status in (200, 201):
-                    data = json.loads(resp.read().decode("utf-8"))
-                    result = data.get("result", {})
-                    num = result.get("number", "INC-UNKNOWN")
-                    if idempotency_key:
-                        self._created_incidents[idempotency_key] = num
-                    return {
-                        "status": "SUCCEEDED",
-                        "incident_number": num,
-                        "sys_id": result.get("sys_id"),
-                        "details": f"ServiceNow incident '{num}' created.",
-                    }
-                return {"status": "FAILED", "details": f"ServiceNow returned HTTP {resp.status}."}
+            resp = SafeHTTPClient.post(url, json_data=payload, headers=self._get_headers(), timeout=8.0)
+            if resp["status_code"] in (200, 201):
+                data = json.loads(resp["body"])
+                result = data.get("result", {})
+                num = result.get("number", "INC-UNKNOWN")
+                if idempotency_key:
+                    self._created_incidents[idempotency_key] = num
+                return {
+                    "status": "SUCCEEDED",
+                    "incident_number": num,
+                    "sys_id": result.get("sys_id"),
+                    "details": f"ServiceNow incident '{num}' created.",
+                }
+            return {"status": "FAILED", "details": f"ServiceNow returned HTTP {resp['status_code']}."}
         except Exception as e:
             return {"status": "FAILED", "details": sanitize_error_message(str(e))}

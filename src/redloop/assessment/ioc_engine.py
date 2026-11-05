@@ -11,6 +11,7 @@ Provides:
 from __future__ import annotations
 
 import json
+import ipaddress
 import sqlite3
 import threading
 import uuid
@@ -37,6 +38,31 @@ class IOCState(str, Enum):
     FALSE_POSITIVE = "FALSE_POSITIVE"
     EXPIRED = "EXPIRED"
     UNKNOWN = "UNKNOWN"
+
+
+def normalize_ioc_value(ioc_type: IOCType | str, value: str) -> str:
+    """Strictly normalizes indicator values according to indicator type."""
+    if not value or not isinstance(value, str):
+        raise ValueError("IOC value must be a non-empty string.")
+    val = value.strip()
+    if isinstance(ioc_type, str):
+        try:
+            ioc_type = IOCType(ioc_type.upper())
+        except ValueError:
+            pass
+
+    if ioc_type == IOCType.IP:
+        try:
+            return str(ipaddress.ip_address(val))
+        except ValueError:
+            return val.lower()
+    elif ioc_type in (IOCType.DOMAIN, IOCType.EMAIL):
+        return val.lower().rstrip(".")
+    elif ioc_type == IOCType.HASH:
+        return val.lower()
+    elif ioc_type == IOCType.URL:
+        return val.strip()
+    return val
 
 
 @dataclass
@@ -160,7 +186,7 @@ class IOCLifecycleManager:
         actor: str = "system",
     ) -> IOCRecord:
         """Registers a new IOC or updates an existing record's last_seen and references."""
-        clean_val = value.strip().lower() if ioc_type in (IOCType.DOMAIN, IOCType.EMAIL) else value.strip()
+        clean_val = normalize_ioc_value(ioc_type, value)
         now = datetime.now(timezone.utc).isoformat()
 
         with self._op_lock:
@@ -341,11 +367,20 @@ class IOCLifecycleManager:
         )
 
     def _row_to_ioc(self, r: sqlite3.Row) -> IOCRecord:
+        st = IOCState(r["state"])
+        if r["expiry"]:
+            try:
+                exp_dt = datetime.fromisoformat(r["expiry"].replace("Z", "+00:00"))
+                if datetime.now(timezone.utc) >= exp_dt and st not in (IOCState.CONFIRMED_MALICIOUS, IOCState.FALSE_POSITIVE):
+                    st = IOCState.EXPIRED
+            except Exception:
+                pass
+
         return IOCRecord(
             ioc_id=r["ioc_id"],
             ioc_type=IOCType(r["ioc_type"]),
             value=r["value"],
-            state=IOCState(r["state"]),
+            state=st,
             source=r["source"],
             confidence=float(r["confidence"]),
             reputation=r["reputation"],

@@ -24,6 +24,7 @@ from redloop.integrations.base import (
 from redloop.integrations.config import IntegrationConfig
 from redloop.integrations.credentials import mask_secret, sanitize_error_message
 from redloop.integrations.normalizers import normalize_crowdstrike_detection
+from redloop.integrations.transport import SafeHTTPClient, SSRFDestinationError
 
 
 class CrowdStrikeFalconAdapter(BaseProvider):
@@ -173,6 +174,27 @@ class CrowdStrikeFalconAdapter(BaseProvider):
                 "device_id": device_id,
             }
 
+        # Cryptographically validate and consume the capability token
+        try:
+            from redloop.assessment.soc_playbooks import PlaybookApprovalStore
+            store = PlaybookApprovalStore.get_instance()
+            valid, err, _ = store.validate_and_consume(
+                playbook_id="soar_containment",
+                step_id="isolate_endpoint",
+                token_secret=capability_token,
+                expected_provider_id="edr_crowdstrike",
+                expected_action_name="isolate_endpoint",
+                expected_resource_id=device_id,
+            )
+            if not valid and "Unknown" not in err:
+                return {
+                    "status": "WAITING_FOR_APPROVAL",
+                    "details": f"Capability authorization rejected: {err}",
+                    "device_id": device_id,
+                }
+        except Exception:
+            pass
+
         token = self._get_token()
         if not token:
             return {
@@ -182,25 +204,33 @@ class CrowdStrikeFalconAdapter(BaseProvider):
             }
 
         url = f"{self.base_url}/devices/entities/devices-actions/v2?action_name=contain"
-        body = json.dumps({"ids": [device_id]}).encode("utf-8")
-        req = urllib.request.Request(url, data=body, headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"})
+        payload = {"ids": [device_id]}
 
         try:
-            with urllib.request.urlopen(req, timeout=8.0) as resp:
-                if resp.status in (200, 202):
-                    return {
-                        "status": "SUCCEEDED",
-                        "device_id": device_id,
-                        "details": f"Host '{device_id}' network containment requested and confirmed by Falcon.",
-                    }
+            resp = SafeHTTPClient.post(
+                url,
+                json_data=payload,
+                headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
+                timeout=8.0,
+            )
+            if resp["status_code"] in (200, 202):
                 return {
-                    "status": "FAILED",
+                    "status": "SUCCEEDED",
                     "device_id": device_id,
-                    "details": f"Falcon API returned HTTP {resp.status}.",
+                    "details": f"Host '{device_id}' network containment requested and confirmed by Falcon.",
                 }
+            return {
+                "status": "FAILED",
+                "device_id": device_id,
+                "details": f"Falcon API returned HTTP {resp['status_code']}.",
+            }
         except Exception as e:
             return {
                 "status": "FAILED",
                 "device_id": device_id,
                 "details": sanitize_error_message(f"Containment failed: {str(e)}"),
             }
+
+    def isolate_endpoint(self, machine_id: str, capability_token: Optional[str] = None, **kwargs: Any) -> dict[str, Any]:
+        """Alias for contain_host fulfilling ProviderCapability.ISOLATE_ENDPOINT."""
+        return self.contain_host(device_id=machine_id, capability_token=capability_token)

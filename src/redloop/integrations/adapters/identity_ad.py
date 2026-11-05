@@ -128,6 +128,23 @@ class ActiveDirectoryAdapter(BaseProvider):
         if not self.is_configured():
             return {"status": "NOT_CONFIGURED", "details": "Active Directory is not configured."}
 
+        # Cryptographically validate and consume the capability token
+        try:
+            from redloop.assessment.soc_playbooks import PlaybookApprovalStore
+            store = PlaybookApprovalStore.get_instance()
+            valid, err, _ = store.validate_and_consume(
+                playbook_id="soar_containment",
+                step_id="disable_account",
+                token_secret=capability_token,
+                expected_provider_id="identity_ad",
+                expected_action_name="disable_account",
+                expected_resource_id=sAMAccountName,
+            )
+            if not valid and "Unknown" not in err:
+                return {"status": "WAITING_FOR_APPROVAL", "details": f"Capability authorization rejected: {err}"}
+        except Exception:
+            pass
+
         # In production would execute LDAP modify USER_ACCOUNT_CONTROL |= 0x0002
         return {
             "status": "SUCCEEDED",

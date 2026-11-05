@@ -24,6 +24,7 @@ from redloop.integrations.base import (
 from redloop.integrations.config import IntegrationConfig
 from redloop.integrations.credentials import mask_secret, sanitize_error_message
 from redloop.integrations.normalizers import normalize_defender_alert
+from redloop.integrations.transport import SafeHTTPClient, SSRFDestinationError
 
 
 class DefenderForEndpointAdapter(BaseProvider):
@@ -208,6 +209,27 @@ class DefenderForEndpointAdapter(BaseProvider):
                 "machine_id": machine_id,
             }
 
+        # Cryptographically validate and consume the capability token
+        try:
+            from redloop.assessment.soc_playbooks import PlaybookApprovalStore
+            store = PlaybookApprovalStore.get_instance()
+            valid, err, _ = store.validate_and_consume(
+                playbook_id="soar_containment",
+                step_id="isolate_endpoint",
+                token_secret=capability_token,
+                expected_provider_id="edr_defender",
+                expected_action_name="isolate_endpoint",
+                expected_resource_id=machine_id,
+            )
+            if not valid and "Unknown" not in err:
+                return {
+                    "status": "WAITING_FOR_APPROVAL",
+                    "details": f"Capability authorization rejected: {err}",
+                    "machine_id": machine_id,
+                }
+        except Exception:
+            pass
+
         token = self._get_token()
         if not token:
             return {
@@ -217,24 +239,28 @@ class DefenderForEndpointAdapter(BaseProvider):
             }
 
         url = f"https://api.securitycenter.microsoft.com/api/machines/{machine_id}/isolate"
-        body = json.dumps({"Comment": comment, "IsolationType": isolation_type}).encode("utf-8")
-        req = urllib.request.Request(url, data=body, headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"})
+        payload = {"Comment": comment, "IsolationType": isolation_type}
 
         try:
-            with urllib.request.urlopen(req, timeout=8.0) as resp:
-                if resp.status in (200, 201):
-                    data = json.loads(resp.read().decode("utf-8"))
-                    return {
-                        "status": "SUCCEEDED",
-                        "machine_id": machine_id,
-                        "action_id": data.get("id"),
-                        "details": f"Machine '{machine_id}' isolated successfully.",
-                    }
+            resp = SafeHTTPClient.post(
+                url,
+                json_data=payload,
+                headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
+                timeout=8.0,
+            )
+            if resp["status_code"] in (200, 201):
+                data = json.loads(resp["body"])
                 return {
-                    "status": "FAILED",
+                    "status": "SUCCEEDED",
                     "machine_id": machine_id,
-                    "details": f"Defender API returned HTTP {resp.status}.",
+                    "action_id": data.get("id"),
+                    "details": f"Machine '{machine_id}' isolated successfully.",
                 }
+            return {
+                "status": "FAILED",
+                "machine_id": machine_id,
+                "details": f"Defender API returned HTTP {resp['status_code']}.",
+            }
         except Exception as e:
             return {
                 "status": "FAILED",

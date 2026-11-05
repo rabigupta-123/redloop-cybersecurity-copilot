@@ -84,6 +84,8 @@ class IntegrationRegistry:
         "identity_ad": "active_directory",
         "identity_entra": "entra_id",
         "entra": "entra_id",
+        "ticketing_jira": "jira",
+        "ticketing_servicenow": "servicenow",
     }
 
     def get_provider(self, provider_id: str) -> Optional[BaseProvider]:

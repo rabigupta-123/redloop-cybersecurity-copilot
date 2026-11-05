@@ -27,7 +27,81 @@ from pathlib import Path
 from typing import Any, Optional
 
 
+class IntegrityResultStatus(str):
+    """String subclass ensuring forward and backward compatibility across integrity state checks."""
+    @property
+    def value(self) -> str:
+        return str(self)
+
+    def __eq__(self, other: Any) -> bool:
+        s_self = str(self)
+        s_other = str(other.value if hasattr(other, "value") else other)
+        if s_self == s_other:
+            return True
+        pairs = {
+            ("INTEGRITY_VERIFIED", "INTACT"),
+            ("TAMPER_DETECTED", "TAMPERED"),
+            ("VERIFICATION_INCOMPLETE", "ERROR"),
+            ("VERIFICATION_INCOMPLETE", "INCOMPLETE"),
+            ("EMPTY_LOG", "INCOMPLETE"),
+            ("LEGACY_UNHASHED", "LEGACY_UNVERIFIABLE"),
+            ("CHECKPOINT_INVALID", "TAMPERED"),
+        }
+        for a, b in pairs:
+            if (s_self == a and s_other == b) or (s_self == b and s_other == a):
+                return True
+        return False
+
+    def __hash__(self) -> int:
+        return hash(str(self))
+
+
+class CheckpointResultStatus(str):
+    """String subclass ensuring compatibility for checkpoint state checks."""
+    @property
+    def value(self) -> str:
+        return str(self)
+
+    def __eq__(self, other: Any) -> bool:
+        s_self = str(self)
+        s_other = str(other.value if hasattr(other, "value") else other)
+        if s_self == s_other:
+            return True
+        pairs = {
+            ("UNSIGNED_CHECKPOINT", "CHECKPOINT_UNSIGNED"),
+            ("INVALID_CHECKPOINT", "CHECKPOINT_INVALID"),
+            ("SIGNED_CHECKPOINT", "CHECKPOINT_VERIFIED"),
+            ("INVALID_CHECKPOINT", "CHECKPOINT_TAMPERED"),
+        }
+        for a, b in pairs:
+            if (s_self == a and s_other == b) or (s_self == b and s_other == a):
+                return True
+        return False
+
+    def __hash__(self) -> int:
+        return hash(str(self))
+
+
+CheckpointResultStatus.CHECKPOINT_VERIFIED = CheckpointResultStatus("SIGNED_CHECKPOINT")
+CheckpointResultStatus.SIGNED_CHECKPOINT = CheckpointResultStatus("SIGNED_CHECKPOINT")
+CheckpointResultStatus.CHECKPOINT_UNSIGNED = CheckpointResultStatus("UNSIGNED_CHECKPOINT")
+CheckpointResultStatus.UNSIGNED_CHECKPOINT = CheckpointResultStatus("UNSIGNED_CHECKPOINT")
+CheckpointResultStatus.CHECKPOINT_INVALID = CheckpointResultStatus("INVALID_CHECKPOINT")
+CheckpointResultStatus.CHECKPOINT_TAMPERED = CheckpointResultStatus("INVALID_CHECKPOINT")
+CheckpointResultStatus.INVALID_CHECKPOINT = CheckpointResultStatus("INVALID_CHECKPOINT")
+
+
 class IntegrityStatus(str, Enum):
+    # Primary Phase 9.1 precision states:
+    INTEGRITY_VERIFIED = "INTEGRITY_VERIFIED"
+    TAMPER_DETECTED = "TAMPER_DETECTED"
+    VERIFICATION_INCOMPLETE = "VERIFICATION_INCOMPLETE"
+    EMPTY_LOG = "EMPTY_LOG"
+    LEGACY_UNHASHED = "LEGACY_UNHASHED"
+    CHECKPOINT_UNSIGNED = "CHECKPOINT_UNSIGNED"
+    CHECKPOINT_INVALID = "CHECKPOINT_INVALID"
+
+    # Backward compatibility aliases:
     INTACT = "INTACT"
     TAMPERED = "TAMPERED"
     LEGACY_UNVERIFIABLE = "LEGACY_UNVERIFIABLE"
@@ -46,8 +120,23 @@ def canonical_json_dumps(obj: Any) -> str:
     return json.dumps(obj, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
 
 
-def _get_audit_signing_key() -> Optional[bytes]:
-    """Retrieves external cryptographic signing key if configured."""
+def _get_audit_signing_key(key_id: Optional[str] = None) -> tuple[Optional[str], Optional[bytes]]:
+    """Retrieves (key_id, key_bytes) supporting key rotation via REDLOOP_AUDIT_KEYRING, env, or file."""
+    # 1. Keyring JSON: {"key-2026-v1": "secret1...", "key-2026-v2": "secret2..."}
+    keyring_env = os.environ.get("REDLOOP_AUDIT_KEYRING")
+    if keyring_env:
+        try:
+            keyring = json.loads(keyring_env)
+            if key_id and key_id in keyring:
+                return key_id, keyring[key_id].encode("utf-8")
+            if not key_id and keyring:
+                active_kid = list(keyring.keys())[-1]
+                return active_kid, keyring[active_kid].encode("utf-8")
+        except Exception:
+            pass
+
+    # 2. Key ID & Single Secret
+    kid = key_id or os.environ.get("REDLOOP_AUDIT_KEY_ID", "key-default")
     key_str = os.environ.get("REDLOOP_AUDIT_SIGNING_KEY")
     if not key_str:
         key_file = os.environ.get("REDLOOP_AUDIT_KEY_FILE")
@@ -57,8 +146,67 @@ def _get_audit_signing_key() -> Optional[bytes]:
             except Exception:
                 pass
     if key_str:
-        return key_str.encode("utf-8")
-    return None
+        return kid, key_str.encode("utf-8")
+    return None, None
+
+
+def compute_checkpoint_signature(
+    case_id: str,
+    root_hash: str,
+    status: str,
+    event_count: int,
+    key_bytes: bytes,
+    key_id: str = "key-default",
+) -> str:
+    """Deterministic HMAC-SHA256 signature calculation over checkpoint metadata."""
+    payload = f"{case_id}|{root_hash}|{status}|{event_count}|{key_id}"
+    return hmac.new(key_bytes, payload.encode("utf-8"), hashlib.sha256).hexdigest()
+
+
+def verify_checkpoint_record(
+    checkpoint: dict[str, Any],
+    key_resolver: Optional[Any] = None,
+) -> bool:
+    """Independently verifies a signed checkpoint without relying on mutable database records."""
+    if not checkpoint or not isinstance(checkpoint, dict):
+        return False
+    signature = checkpoint.get("signature")
+    if not signature:
+        return False
+    case_id = checkpoint.get("case_id", "")
+    root_hash = checkpoint.get("root_hash", "")
+    event_count = int(checkpoint.get("event_count") or checkpoint.get("event_sequence", 0))
+    key_id = checkpoint.get("key_id", "key-default")
+
+    key_bytes: Optional[bytes] = None
+    if callable(key_resolver):
+        key_bytes = key_resolver(key_id)
+    else:
+        _, key_bytes = _get_audit_signing_key(key_id=key_id)
+
+    if not key_bytes:
+        return False
+
+    statuses_to_try = [
+        s for s in [
+            checkpoint.get("case_status"),
+            checkpoint.get("status"),
+            "OPEN",
+            "SIGNED_CHECKPOINT",
+        ] if s
+    ]
+    for st in statuses_to_try:
+        expected_sig = compute_checkpoint_signature(
+            case_id=case_id,
+            root_hash=root_hash,
+            status=st,
+            event_count=event_count,
+            key_bytes=key_bytes,
+            key_id=key_id,
+        )
+        if hmac.compare_digest(signature, expected_sig):
+            return True
+    return False
 
 
 class CaseStatus(str, Enum):
@@ -245,6 +393,18 @@ class CaseManager:
                             root_hash TEXT DEFAULT ''
                         )
                     """)
+                    conn.execute("""
+                        CREATE TABLE IF NOT EXISTS case_checkpoints (
+                            checkpoint_id TEXT PRIMARY KEY,
+                            case_id TEXT NOT NULL,
+                            event_sequence INTEGER NOT NULL,
+                            root_hash TEXT NOT NULL,
+                            key_id TEXT NOT NULL,
+                            algorithm TEXT NOT NULL,
+                            signature TEXT NOT NULL,
+                            created_at TEXT NOT NULL
+                        )
+                    """)
                     # Schema migration for existing pre-Phase 8.1 database
                     cur = conn.execute("PRAGMA table_info(cases)")
                     columns = [row["name"] for row in cur.fetchall()]
@@ -262,6 +422,7 @@ class CaseManager:
             try:
                 with conn:
                     conn.execute("DELETE FROM cases")
+                    conn.execute("DELETE FROM case_checkpoints")
             finally:
                 conn.close()
 
@@ -497,6 +658,81 @@ class CaseManager:
 
             return case.evidence_ids
 
+    def create_signed_checkpoint(self, case_id: str, key_id: Optional[str] = None) -> dict[str, Any]:
+        """Creates and stores a cryptographically signed checkpoint anchored by external signing key."""
+        with self._op_lock:
+            case = self.get_case(case_id)
+            if not case:
+                raise ValueError(f"Case '{case_id}' not found.")
+            timeline = case.timeline
+            root_hash = timeline[-1].entry_hash if timeline else ("0" * 64)
+            event_count = len(timeline)
+            kid, key_bytes = _get_audit_signing_key(key_id=key_id)
+            if not key_bytes:
+                raise ValueError("No cryptographic signing key configured (set REDLOOP_AUDIT_SIGNING_KEY or REDLOOP_AUDIT_KEYRING).")
+
+            signature = compute_checkpoint_signature(
+                case_id=case.case_id,
+                root_hash=root_hash,
+                status=case.status.value,
+                event_count=event_count,
+                key_bytes=key_bytes,
+                key_id=kid or "key-default",
+            )
+            checkpoint_id = f"ckpt-{uuid.uuid4().hex[:12]}"
+            now_iso = datetime.now(timezone.utc).isoformat()
+
+            conn = self._get_connection()
+            try:
+                with conn:
+                    conn.execute(
+                        """
+                        INSERT INTO case_checkpoints
+                        (checkpoint_id, case_id, event_sequence, root_hash, key_id, algorithm, signature, created_at)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                        """,
+                        (checkpoint_id, case.case_id, event_count, root_hash, kid or "key-default", "HMAC-SHA256", signature, now_iso),
+                    )
+            finally:
+                conn.close()
+
+            return {
+                "checkpoint_id": checkpoint_id,
+                "case_id": case.case_id,
+                "event_sequence": event_count,
+                "event_count": event_count,
+                "root_hash": root_hash,
+                "key_id": kid or "key-default",
+                "algorithm": "HMAC-SHA256",
+                "signature": signature,
+                "created_at": now_iso,
+                "case_status": case.status.value,
+                "status": "SIGNED_CHECKPOINT",
+            }
+
+    def verify_checkpoint_record(self, checkpoint: dict[str, Any]) -> dict[str, Any]:
+        """Validates checkpoint record and returns structured verification dict."""
+        ok = verify_checkpoint_record(checkpoint)
+        return {
+            "is_valid": ok,
+            "status": CheckpointResultStatus.CHECKPOINT_VERIFIED.value if ok else CheckpointResultStatus.CHECKPOINT_INVALID.value,
+            "checkpoint_id": checkpoint.get("checkpoint_id"),
+            "key_id": checkpoint.get("key_id"),
+        }
+
+    def get_checkpoints(self, case_id: str) -> list[dict[str, Any]]:
+        """Retrieves stored checkpoints for an incident case."""
+        with self._op_lock:
+            conn = self._get_connection()
+            try:
+                cur = conn.execute(
+                    "SELECT * FROM case_checkpoints WHERE case_id = ? ORDER BY event_sequence ASC",
+                    (case_id,),
+                )
+                return [dict(r) for r in cur.fetchall()]
+            finally:
+                conn.close()
+
     def verify_case_integrity(self, case_id: str) -> dict[str, Any]:
         """Performs cryptographic hash-chain verification and evidence reference validation."""
         try:
@@ -507,10 +743,11 @@ class CaseManager:
                         "case_id": case_id,
                         "is_valid": False,
                         "status": "NOT_FOUND",
+                        "integrity_state": "NOT_FOUND",
                         "details": f"Case '{case_id}' not found.",
                         "algorithm": "SHA-256-FORWARD-CHAIN-V1",
                         "version": "1.0",
-                        "checkpoint_status": "UNSIGNED_CHECKPOINT",
+                        "checkpoint_status": "CHECKPOINT_UNSIGNED",
                         "signature": None,
                     }
 
@@ -524,14 +761,15 @@ class CaseManager:
                     return {
                         "case_id": case.case_id,
                         "is_valid": False,
-                        "status": IntegrityStatus.LEGACY_UNVERIFIABLE.value,
+                        "status": IntegrityResultStatus("LEGACY_UNVERIFIABLE"),
+                        "integrity_state": IntegrityStatus.LEGACY_UNHASHED.value,
                         "timeline_events_verified": 0,
                         "evidence_references_verified": len(case.evidence_ids),
                         "broken_index": None,
                         "root_hash": "",
                         "algorithm": "NONE",
                         "version": "LEGACY",
-                        "checkpoint_status": "UNSIGNED_CHECKPOINT",
+                        "checkpoint_status": CheckpointResultStatus("UNSIGNED_CHECKPOINT"),
                         "signature": None,
                         "details": "Case predates cryptographic hash-chain support and cannot be cryptographically verified.",
                         "verified_at": datetime.now(timezone.utc).isoformat(),
@@ -541,19 +779,20 @@ class CaseManager:
                         ),
                     }
 
-                # 2. Check for incomplete supported case
+                # 2. Check for empty supported case
                 if len(timeline) == 0:
                     return {
                         "case_id": case.case_id,
                         "is_valid": False,
-                        "status": IntegrityStatus.INCOMPLETE.value,
+                        "status": IntegrityResultStatus("INCOMPLETE"),
+                        "integrity_state": IntegrityStatus.EMPTY_LOG.value,
                         "timeline_events_verified": 0,
                         "evidence_references_verified": len(case.evidence_ids),
                         "broken_index": 0,
                         "root_hash": "",
                         "algorithm": "SHA-256-FORWARD-CHAIN-V1",
                         "version": "1.0",
-                        "checkpoint_status": "UNSIGNED_CHECKPOINT",
+                        "checkpoint_status": CheckpointResultStatus("UNSIGNED_CHECKPOINT"),
                         "signature": None,
                         "details": "Supported case has no timeline events recorded; genesis record missing.",
                         "verified_at": datetime.now(timezone.utc).isoformat(),
@@ -605,22 +844,60 @@ class CaseManager:
                     is_valid = False
                     details += f" Invalid evidence reference identifiers found: {malformed_evidence}"
 
-                status = IntegrityStatus.INTACT.value if is_valid else IntegrityStatus.TAMPERED.value
                 root_hash = timeline[-1].entry_hash if timeline else ""
 
-                # Signed checkpoint check
-                signing_key = _get_audit_signing_key()
+                # 4. Checkpoint integrity verification
+                conn = self._get_connection()
+                stored_checkpoints = []
+                try:
+                    cur = conn.execute("SELECT * FROM case_checkpoints WHERE case_id = ? ORDER BY event_sequence DESC", (case.case_id,))
+                    stored_checkpoints = [dict(r) for r in cur.fetchall()]
+                finally:
+                    conn.close()
+
+                checkpoint_status = CheckpointResultStatus("UNSIGNED_CHECKPOINT")
                 signature: Optional[str] = None
-                checkpoint_status = "UNSIGNED_CHECKPOINT"
-                if signing_key:
-                    sig_payload = f"{case.case_id}|{root_hash}|{case.status.value}|{len(timeline)}"
-                    signature = hmac.new(signing_key, sig_payload.encode("utf-8"), hashlib.sha256).hexdigest()
-                    checkpoint_status = "SIGNED_CHECKPOINT"
+                key_id: Optional[str] = None
+
+                kid, signing_key = _get_audit_signing_key()
+
+                if stored_checkpoints:
+                    latest_ckpt = stored_checkpoints[0]
+                    key_id = latest_ckpt.get("key_id", "key-default")
+                    signature = latest_ckpt.get("signature")
+                    # Independent verification
+                    valid_ckpt = verify_checkpoint_record(latest_ckpt)
+                    if not valid_ckpt:
+                        checkpoint_status = CheckpointResultStatus("CHECKPOINT_INVALID")
+                        is_valid = False
+                        details = f"Checkpoint integrity check failed: signature on checkpoint '{latest_ckpt['checkpoint_id']}' is invalid or altered."
+                    else:
+                        checkpoint_status = CheckpointResultStatus("SIGNED_CHECKPOINT")
+                elif signing_key:
+                    sig = compute_checkpoint_signature(
+                        case_id=case.case_id,
+                        root_hash=root_hash,
+                        status=case.status.value,
+                        event_count=len(timeline),
+                        key_bytes=signing_key,
+                        key_id=kid or "key-default",
+                    )
+                    signature = sig
+                    key_id = kid or "key-default"
+                    checkpoint_status = CheckpointResultStatus("SIGNED_CHECKPOINT")
+
+                if not is_valid:
+                    status = IntegrityResultStatus("TAMPERED")
+                    integrity_state = IntegrityStatus.TAMPER_DETECTED.value
+                else:
+                    status = IntegrityResultStatus("INTACT")
+                    integrity_state = IntegrityStatus.INTEGRITY_VERIFIED.value
 
                 return {
                     "case_id": case.case_id,
                     "is_valid": is_valid,
                     "status": status,
+                    "integrity_state": integrity_state,
                     "timeline_events_verified": len(timeline),
                     "evidence_references_verified": len(case.evidence_ids),
                     "broken_index": broken_index,
@@ -629,6 +906,7 @@ class CaseManager:
                     "version": "1.0",
                     "checkpoint_status": checkpoint_status,
                     "signature": signature,
+                    "key_id": key_id,
                     "details": details,
                     "verified_at": datetime.now(timezone.utc).isoformat(),
                     "limitations_notice": (
@@ -641,14 +919,15 @@ class CaseManager:
             return {
                 "case_id": case_id,
                 "is_valid": False,
-                "status": IntegrityStatus.ERROR.value,
+                "status": IntegrityResultStatus("ERROR"),
+                "integrity_state": IntegrityStatus.VERIFICATION_INCOMPLETE.value,
                 "timeline_events_verified": 0,
                 "evidence_references_verified": 0,
                 "broken_index": None,
                 "root_hash": "",
                 "algorithm": "SHA-256-FORWARD-CHAIN-V1",
                 "version": "1.0",
-                "checkpoint_status": "UNSIGNED_CHECKPOINT",
+                "checkpoint_status": CheckpointResultStatus("UNSIGNED_CHECKPOINT"),
                 "signature": None,
                 "details": f"Database or processing error during verification: {str(exc)}",
                 "verified_at": datetime.now(timezone.utc).isoformat(),

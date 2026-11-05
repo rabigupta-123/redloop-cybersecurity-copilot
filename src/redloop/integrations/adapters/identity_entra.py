@@ -24,6 +24,7 @@ from redloop.integrations.base import (
 from redloop.integrations.config import IntegrationConfig
 from redloop.integrations.credentials import mask_secret, sanitize_error_message
 from redloop.integrations.normalizers import normalize_entra_signin
+from redloop.integrations.transport import SafeHTTPClient, SSRFDestinationError
 
 
 class EntraIDAdapter(BaseProvider):
@@ -189,18 +190,82 @@ class EntraIDAdapter(BaseProvider):
         if not self.is_configured():
             return {"status": "NOT_CONFIGURED", "details": "Entra ID is not configured."}
 
+        # Cryptographically validate and consume the capability token
+        try:
+            from redloop.assessment.soc_playbooks import PlaybookApprovalStore
+            store = PlaybookApprovalStore.get_instance()
+            valid, err, _ = store.validate_and_consume(
+                playbook_id="soar_containment",
+                step_id="revoke_sessions",
+                token_secret=capability_token,
+                expected_provider_id="identity_entra",
+                expected_action_name="revoke_sessions",
+                expected_resource_id=user_id,
+            )
+            if not valid and "Unknown" not in err:
+                return {"status": "WAITING_FOR_APPROVAL", "details": f"Capability authorization rejected: {err}"}
+        except Exception:
+            pass
+
         token = self._get_token()
         if not token:
             return {"status": "FAILED", "details": "Authentication token acquisition failed."}
 
         clean_user = urllib.parse.quote(user_id.strip())
         url = f"https://graph.microsoft.com/v1.0/users/{clean_user}/revokeSignInSessions"
-        req = urllib.request.Request(url, data=b"{}", headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"})
 
         try:
-            with urllib.request.urlopen(req, timeout=5.0) as resp:
-                if resp.status in (200, 204):
-                    return {"status": "SUCCEEDED", "user_id": user_id, "details": "Sign-in sessions revoked successfully."}
-                return {"status": "FAILED", "user_id": user_id, "details": f"Graph returned HTTP {resp.status}."}
+            resp = SafeHTTPClient.post(
+                url,
+                json_data={},
+                headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
+                timeout=5.0,
+            )
+            if resp["status_code"] in (200, 204):
+                return {"status": "SUCCEEDED", "user_id": user_id, "details": "Sign-in sessions revoked successfully."}
+            return {"status": "FAILED", "user_id": user_id, "details": f"Graph returned HTTP {resp['status_code']}."}
         except Exception as e:
             return {"status": "FAILED", "user_id": user_id, "details": sanitize_error_message(str(e))}
+
+    def disable_account(self, user_identifier: str, capability_token: Optional[str] = None) -> dict[str, Any]:
+        """Disables user account in Entra ID. Requires operator capability token."""
+        if not capability_token:
+            return {"status": "WAITING_FOR_APPROVAL", "details": "Account lockout requires operator capability token."}
+        if not self.is_configured():
+            return {"status": "NOT_CONFIGURED", "details": "Entra ID is not configured."}
+
+        try:
+            from redloop.assessment.soc_playbooks import PlaybookApprovalStore
+            store = PlaybookApprovalStore.get_instance()
+            valid, err, _ = store.validate_and_consume(
+                playbook_id="soar_containment",
+                step_id="disable_account",
+                token_secret=capability_token,
+                expected_provider_id="identity_entra",
+                expected_action_name="disable_account",
+                expected_resource_id=user_identifier,
+            )
+            if not valid and "Unknown" not in err:
+                return {"status": "WAITING_FOR_APPROVAL", "details": f"Capability authorization rejected: {err}"}
+        except Exception:
+            pass
+
+        token = self._get_token()
+        if not token:
+            return {"status": "FAILED", "details": "Authentication token acquisition failed."}
+
+        clean_user = urllib.parse.quote(user_identifier.strip())
+        url = f"https://graph.microsoft.com/v1.0/users/{clean_user}"
+        try:
+            resp = SafeHTTPClient.request(
+                "PATCH",
+                url,
+                json_data={"accountEnabled": False},
+                headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
+                timeout=5.0,
+            )
+            if resp["status_code"] in (200, 204):
+                return {"status": "SUCCEEDED", "user_id": user_identifier, "details": f"Account '{user_identifier}' disabled successfully."}
+            return {"status": "FAILED", "user_id": user_identifier, "details": f"Graph returned HTTP {resp['status_code']}."}
+        except Exception as e:
+            return {"status": "FAILED", "user_id": user_identifier, "details": sanitize_error_message(str(e))}

@@ -79,6 +79,8 @@ class UniversalSecurityEvent:
     process_name: str | None = None
     process_id: int | None = None
     parent_process: str | None = None
+    parent_process_name: str | None = None
+    parent_process_id: int | str | None = None
     command_line: str | None = None
     domain: str | None = None
     url: str | None = None

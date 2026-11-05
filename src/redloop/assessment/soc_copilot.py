@@ -13,6 +13,7 @@ Provides autonomous investigation workflows:
 
 from __future__ import annotations
 
+import json
 import re
 import uuid
 from dataclasses import asdict, dataclass, field
@@ -540,12 +541,32 @@ class SOCCopilotEngine:
             intent = "find_related"
         elif any(k in q_lower for k in ("explain attack", "attack sequence", "explain kill chain", "explain sequence", "attack chain")):
             intent = "explain_attack"
+        elif any(k in q_lower for k in ("recommend next hunt", "next hunt", "next threat hunt", "recommend next threat hunt", "suggest hypothesis", "what to hunt", "hunt recommendation")):
+            intent = "recommend_next_hunt"
         elif any(k in q_lower for k in ("recommend next", "what should i do", "recommended action", "next step", "recommended next step")):
             intent = "recommend_next_step"
         elif any(k in q_lower for k in ("prepare containment", "containment plan", "contain incident", "propose containment", "isolate plan")):
             intent = "prepare_containment"
         elif any(k in q_lower for k in ("verify endpoint isolated", "verify isolation", "check endpoint status", "is endpoint isolated", "is host isolated")):
             intent = "verify_isolation"
+        elif any(k in q_lower for k in ("hunt powershell", "powershell hunt", "suspicious powershell", "search powershell")):
+            intent = "hunt_powershell"
+        elif any(k in q_lower for k in ("lineage analysis", "reconstruct process", "process lineage", "process tree")):
+            intent = "lineage_analysis"
+        elif any(k in q_lower for k in ("multi location", "multi-location", "impossible travel", "concurrent logins")):
+            intent = "multi_location_auth"
+        elif any(k in q_lower for k in ("investigate hash", "pivot on hash", "file hash", "hash investigation")):
+            intent = "investigate_hash"
+        elif any(k in q_lower for k in ("build timeline", "reconstruct timeline", "incident timeline")):
+            intent = "build_timeline"
+        elif any(k in q_lower for k in ("find contradictions", "contradictory evidence", "check contradictions")):
+            intent = "find_contradictions"
+        elif any(k in q_lower for k in ("unqueried sources", "check unqueried", "telemetry gaps", "missing sources")):
+            intent = "check_unqueried_sources"
+        elif any(k in q_lower for k in ("recommend next hunt", "next hunt", "suggest hypothesis", "what to hunt")):
+            intent = "recommend_next_hunt"
+        elif any(k in q_lower for k in ("generate report", "investigation report", "export report")):
+            intent = "generate_investigation_report"
 
         # Extract IDs from query if not provided
         if not incident_id:
@@ -579,6 +600,24 @@ class SOCCopilotEngine:
             return cls._op_prepare_containment(user_query, incident_id, entity_id, correlator, ctx)
         elif intent == "verify_isolation":
             return cls._op_verify_isolation(user_query, entity_id, ctx)
+        elif intent == "hunt_powershell":
+            return cls._op_hunt_powershell(user_query, ctx)
+        elif intent == "lineage_analysis":
+            return cls._op_lineage_analysis(user_query, entity_id, ctx)
+        elif intent == "multi_location_auth":
+            return cls._op_multi_location_auth(user_query, ctx)
+        elif intent == "investigate_hash":
+            return cls._op_investigate_hash(user_query, entity_id, ctx)
+        elif intent == "build_timeline":
+            return cls._op_build_timeline(user_query, incident_id, entity_id, ctx)
+        elif intent == "find_contradictions":
+            return cls._op_find_contradictions(user_query, ctx)
+        elif intent == "check_unqueried_sources":
+            return cls._op_check_unqueried_sources(user_query, ctx)
+        elif intent == "recommend_next_hunt":
+            return cls._op_recommend_next_hunt(user_query, ctx)
+        elif intent == "generate_investigation_report":
+            return cls._op_generate_investigation_report(user_query, incident_id, entity_id, ctx)
         else:
             # Fallback to standard start_investigation
             task = cls.start_investigation(user_query, explicit_target=entity_id)
@@ -1005,6 +1044,268 @@ class SOCCopilotEngine:
                 f"- **Evidence:** No confirmed host isolation telemetry received from active EDR providers.\n\n"
                 f"> [!NOTE]\n"
                 f"> RedLoop never fabricates isolation status when providers are unconfigured or offline."
+            ),
+        }
+
+    # ==========================================================================
+    # Phase 10 Investigation & Threat Hunting Operational Intents
+    # ==========================================================================
+
+    @classmethod
+    def _op_hunt_powershell(cls, user_query: str, ctx: dict[str, Any]) -> dict[str, Any]:
+        from redloop.assessment.hunting_query import HuntingQueryEngine
+        engine = HuntingQueryEngine.get_instance()
+        events = ctx.get("events")
+        res = engine.execute_query(
+            "process_name == powershell.exe OR command_line CONTAINS -enc",
+            events=events,
+            operator="copilot",
+        )
+        citations = [f"Event: {e.event_id} ({e.process_name}) - CLI: {str(e.command_line)[:60]}" for e in res.matched_events[:5]]
+        return {
+            "intent": "hunt_powershell",
+            "status": "COMPLETED",
+            "matched_count": res.total_matched,
+            "cost_score": res.cost_score,
+            "complexity": res.complexity_rating,
+            "evidence_citations": citations,
+            "response_text": (
+                f"### Threat Hunt: Suspicious PowerShell Execution\n\n"
+                f"- **Matches Found:** {res.total_matched}\n"
+                f"- **Execution Time:** {res.execution_time_ms}ms (Cost score: {res.cost_score}, Rating: {res.complexity_rating})\n"
+                f"- **Sample Matches:**\n" + ("\n".join(f"  - `{c}`" for c in citations) if citations else "  - *No matching PowerShell executions in telemetry.*")
+            ),
+        }
+
+    @classmethod
+    def _op_lineage_analysis(cls, user_query: str, entity_id: str | None, ctx: dict[str, Any]) -> dict[str, Any]:
+        from redloop.assessment.attack_reconstruction import AttackReconstructionEngine
+        events = ctx.get("events") or []
+        host = entity_id or ctx.get("host") or ctx.get("hostname")
+        graph = AttackReconstructionEngine.reconstruct_process_lineage(events=events, focus_host=host)
+        citations = [f"Process: {n.process_name} (PID: {n.process_id}, User: {n.user}) - Suspicious: {n.is_suspicious}" for n in graph.nodes[:5]]
+        return {
+            "intent": "lineage_analysis",
+            "status": "COMPLETED",
+            "total_nodes": len(graph.nodes),
+            "total_edges": len(graph.edges),
+            "suspicious_nodes_count": graph.suspicious_nodes_count,
+            "attack_techniques": graph.attack_techniques_detected,
+            "evidence_citations": citations,
+            "response_text": (
+                f"### Process Lineage & Attack Reconstruction\n\n"
+                f"- **Total Nodes:** {len(graph.nodes)} | **Edges:** {len(graph.edges)}\n"
+                f"- **Suspicious Processes:** {graph.suspicious_nodes_count}\n"
+                f"- **ATT&CK Techniques:** {', '.join(graph.attack_techniques_detected) or 'None'}\n"
+            ),
+        }
+
+    @classmethod
+    def _op_multi_location_auth(cls, user_query: str, ctx: dict[str, Any]) -> dict[str, Any]:
+        from redloop.assessment.hunting_query import HuntingQueryEngine
+        engine = HuntingQueryEngine.get_instance()
+        events = ctx.get("events")
+        res = engine.execute_query(
+            "event_action == ssh_login OR event_action == user_login OR event_action == auth",
+            events=events,
+            operator="copilot",
+        )
+        user_ips: dict[str, set[str]] = {}
+        for ev in res.matched_events:
+            u = ev.user or ev.username or "unknown"
+            ip = ev.source_ip
+            if ip:
+                user_ips.setdefault(u, set()).add(ip)
+
+        multi_loc_users = {u: list(ips) for u, ips in user_ips.items() if len(ips) > 1}
+        citations = [f"User '{u}' authenticated from {len(ips)} IPs: {', '.join(ips)}" for u, ips in multi_loc_users.items()]
+
+        return {
+            "intent": "multi_location_auth",
+            "status": "COMPLETED",
+            "anomalous_users_count": len(multi_loc_users),
+            "evidence_citations": citations,
+            "response_text": (
+                f"### Multi-Location Authentication Hunt\n\n"
+                f"- **Anomalous Accounts Detected:** {len(multi_loc_users)}\n"
+                f"- **Details:**\n" + ("\n".join(f"  - {c}" for c in citations) if citations else "  - *No concurrent multi-IP logins observed.*")
+            ),
+        }
+
+    @classmethod
+    def _op_investigate_hash(cls, user_query: str, entity_id: str | None, ctx: dict[str, Any]) -> dict[str, Any]:
+        from redloop.assessment.hunting_pivots import ThreatHuntingPivotEngine, PivotEntityType
+        hash_val = entity_id or ctx.get("hash")
+        if not hash_val:
+            m = re.search(r"\b(?:hash|sha256|md5)\s+([a-zA-Z0-9_-]+)\b", user_query, re.IGNORECASE)
+            if m:
+                hash_val = m.group(1)
+            else:
+                m2 = re.search(r"\b([a-fA-F0-9]{8,64})\b", user_query)
+                if m2:
+                    hash_val = m2.group(1)
+
+        if not hash_val:
+            return {
+                "intent": "investigate_hash",
+                "status": "TARGET_REQUIRED",
+                "message": "Specify a cryptographic file hash (MD5, SHA1, SHA256) to investigate.",
+            }
+
+        events = ctx.get("events") or []
+        piv = ThreatHuntingPivotEngine.execute_pivot(PivotEntityType.HASH, hash_val, events=events)
+        return {
+            "intent": "investigate_hash",
+            "status": "COMPLETED",
+            "hash": hash_val,
+            "total_entities_discovered": piv.total_entities_discovered,
+            "entities": piv.entities,
+            "evidence_citations": [f"Hop: {h.from_type} -> {h.to_type} ({h.to_value})" for h in piv.hops[:5]],
+            "response_text": (
+                f"### File Hash Pivot Investigation: `{hash_val}`\n\n"
+                f"- **Total Entities Linked:** {piv.total_entities_discovered}\n"
+                f"- **Discovered Breakdown:** {json.dumps(piv.entities)}\n"
+            ),
+        }
+
+    @classmethod
+    def _op_build_timeline(cls, user_query: str, incident_id: str | None, entity_id: str | None, ctx: dict[str, Any]) -> dict[str, Any]:
+        from redloop.assessment.case_management import CaseManager
+        cm = CaseManager.get_instance()
+        cid = entity_id or incident_id or ctx.get("case_id")
+        case = cm.get_case(cid) if cid else None
+        if not case:
+            cases = cm.list_cases(limit=1)
+            if cases:
+                case = cm.get_case(cases[0]["case_id"])
+
+        if not case:
+            return {
+                "intent": "build_timeline",
+                "status": "NOT_FOUND",
+                "message": "No case or incident found to build timeline.",
+            }
+
+        timeline = [e.to_dict() for e in case.timeline]
+        citations = [f"{t.get('timestamp')}: {t.get('event_type')} by {t.get('actor')}" for t in timeline[:5]]
+        return {
+            "intent": "build_timeline",
+            "status": "COMPLETED",
+            "target": case.case_id,
+            "timeline_length": len(timeline),
+            "evidence_citations": citations,
+            "response_text": (
+                f"### Incident Timeline: `{case.case_id}` ('{case.title}')\n\n"
+                f"- **Timeline Sequence Length:** {len(timeline)} events\n"
+                f"- **Recent Entries:**\n" + "\n".join(f"  - {c}" for c in citations)
+            ),
+        }
+
+    @classmethod
+    def _op_find_contradictions(cls, user_query: str, ctx: dict[str, Any]) -> dict[str, Any]:
+        from redloop.assessment.hypothesis_manager import HypothesisManager
+        mgr = HypothesisManager.get_instance()
+        hyps = mgr.list_hypotheses(limit=50)
+        contradictory_items = []
+        for h in hyps:
+            for ce in h.get("contradictory_evidence", []):
+                contradictory_items.append({
+                    "hypothesis_id": h["hypothesis_id"],
+                    "title": h["title"],
+                    "contradiction": ce.get("description"),
+                    "ref": ce.get("source_reference"),
+                    "weight": ce.get("weight"),
+                })
+
+        citations = [f"Hypothesis {ci['hypothesis_id']}: {ci['contradiction']} (Ref: {ci['ref']})" for ci in contradictory_items]
+        return {
+            "intent": "find_contradictions",
+            "status": "COMPLETED",
+            "total_contradictions_found": len(contradictory_items),
+            "contradictions": contradictory_items,
+            "evidence_citations": citations,
+            "response_text": (
+                f"### Contradictory Evidence Audit\n\n"
+                f"- **Total Contradictory Observations:** {len(contradictory_items)}\n"
+                f"- **Items:**\n" + ("\n".join(f"  - {c}" for c in citations) if citations else "  - *No contradictory observations recorded.*")
+            ),
+        }
+
+    @classmethod
+    def _op_check_unqueried_sources(cls, user_query: str, ctx: dict[str, Any]) -> dict[str, Any]:
+        from redloop.integrations.registry import IntegrationRegistry
+        from redloop.assessment.soc_sync import TelemetrySyncPipeline
+        reg = IntegrationRegistry.get_instance()
+        pipe = TelemetrySyncPipeline.get_instance()
+        all_providers = [p["provider_id"] for p in reg.list_providers()]
+        synced = set(pipe.get_sync_metrics().get("provider_checkpoints", {}).keys())
+        unqueried = [p for p in all_providers if p not in synced]
+
+        citations = [f"Provider '{p}' has not reported telemetry sync jobs." for p in unqueried]
+        return {
+            "intent": "check_unqueried_sources",
+            "status": "COMPLETED",
+            "unqueried_providers": unqueried,
+            "evidence_citations": citations,
+            "response_text": (
+                f"### Unqueried Telemetry Sources Audit\n\n"
+                f"- **Total Registered Providers:** {len(all_providers)}\n"
+                f"- **Unqueried Sources:** {', '.join(unqueried) if unqueried else 'All providers queried'}\n"
+            ),
+        }
+
+    @classmethod
+    def _op_recommend_next_hunt(cls, user_query: str, ctx: dict[str, Any]) -> dict[str, Any]:
+        from redloop.assessment.detection_engineering import DetectionEngineeringManager
+        mgr = DetectionEngineeringManager.get_instance()
+        cov = mgr.get_attack_coverage_matrix()
+        gaps = cov.get("identified_detection_gaps", [])
+        recommendation = "Investigate T1059 (Command and Scripting Interpreter) execution via LOLBins."
+        if gaps:
+            recommendation = f"Target MITRE Gap technique '{gaps[0]}' with structured hunting query."
+
+        return {
+            "intent": "recommend_next_hunt",
+            "status": "COMPLETED",
+            "recommended_hunt": recommendation,
+            "coverage_percentage": cov.get("coverage_percentage", 0.0),
+            "uncovered_gaps_count": len(gaps),
+            "response_text": (
+                f"### Recommended Next Threat Hunt\n\n"
+                f"- **Recommendation:** {recommendation}\n"
+                f"- **Current ATT&CK Technique Coverage:** {cov.get('coverage_percentage', 0.0)}%\n"
+                f"- **Identified Detection Gaps:** {len(gaps)}\n"
+            ),
+        }
+
+    @classmethod
+    def _op_generate_investigation_report(cls, user_query: str, incident_id: str | None, entity_id: str | None, ctx: dict[str, Any]) -> dict[str, Any]:
+        from redloop.assessment.investigation_reports import InvestigationReportGenerator
+        from redloop.assessment.case_management import CaseManager
+        cm = CaseManager.get_instance()
+        cid = entity_id or incident_id or ctx.get("case_id")
+        case = cm.get_case(cid) if cid else None
+        if not case:
+            cases = cm.list_cases(limit=1)
+            if cases:
+                case = cm.get_case(cases[0]["case_id"])
+
+        if case:
+            rep = InvestigationReportGenerator.generate_case_report(case.case_id, author="copilot_lead")
+        else:
+            rep = InvestigationReportGenerator.generate_custom_hunt_report("Threat Hunt Report", events=ctx.get("events") or [])
+
+        return {
+            "intent": "generate_investigation_report",
+            "status": "COMPLETED",
+            "report_id": rep.report_id,
+            "title": rep.title,
+            "markdown_report": rep.to_markdown(),
+            "response_text": (
+                f"### Generated Investigation Report: `{rep.title}`\n\n"
+                f"**Report ID:** `{rep.report_id}`  \n"
+                f"**Executive Summary:** {rep.executive_summary}\n\n"
+                f"```markdown\n{rep.to_markdown()[:400]}...\n```\n"
             ),
         }
 

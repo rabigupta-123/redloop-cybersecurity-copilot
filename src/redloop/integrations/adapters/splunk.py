@@ -43,12 +43,17 @@ PROHIBITED_SPL_COMMANDS = {
 }
 
 
-def validate_spl_query(spl_query: str) -> str:
+def validate_spl_query(spl_query: str, depth: int = 0, max_depth: int = 3, max_stages: int = 15) -> str:
     """Conservatively validates an SPL query for read-only compliance."""
     if not spl_query or not isinstance(spl_query, str):
         raise ValueError("SPL query must be a non-empty string.")
 
+    if depth > max_depth:
+        raise ValueError(f"Subsearch nesting exceeds maximum permitted depth of {max_depth}.")
+
     clean = spl_query.strip()
+    if not clean:
+        raise ValueError("SPL query cannot be empty.")
     if len(clean) > 2048:
         raise ValueError("SPL query exceeds maximum permitted length of 2048 characters.")
 
@@ -64,13 +69,38 @@ def validate_spl_query(spl_query: str) -> str:
     if "/*" in clean or "*/" in clean or clean.startswith("#") or "//" in clean:
         raise ValueError("Comments are prohibited in read-only SPL queries.")
 
-    # Check for subsearches [...] and validate them recursively
-    subsearch_matches = re.findall(r"\[(.*?)\]", clean, re.DOTALL)
-    for sub in subsearch_matches:
-        validate_spl_query(sub.strip())
+    # Parse and validate subsearch bracket nesting
+    current_depth = 0
+    subsearches: list[tuple[int, int]] = []
+    sub_start = -1
+    for i, char in enumerate(clean):
+        if char == "[":
+            if current_depth == 0:
+                sub_start = i
+            current_depth += 1
+            if depth + current_depth > max_depth:
+                raise ValueError(f"Subsearch nesting exceeds maximum permitted depth of {max_depth}.")
+        elif char == "]":
+            current_depth -= 1
+            if current_depth < 0:
+                raise ValueError("Malformed SPL query: unmatched closing bracket.")
+            if current_depth == 0 and sub_start != -1:
+                subsearches.append((sub_start, i))
+                sub_start = -1
 
-    # Remove subsearches for top-level pipeline parsing
-    pipeline_text = re.sub(r"\[.*?\]", " SUBSEARCH ", clean, flags=re.DOTALL)
+    if current_depth != 0:
+        raise ValueError("Malformed SPL query: unclosed bracket.")
+
+    for start_idx, end_idx in subsearches:
+        sub_content = clean[start_idx + 1:end_idx].strip()
+        validate_spl_query(sub_content, depth=depth + 1, max_depth=max_depth, max_stages=max_stages)
+
+    # Replace subsearch spans with spaces for top-level pipeline parsing
+    pipeline_chars = list(clean)
+    for start_idx, end_idx in subsearches:
+        for k in range(start_idx, end_idx + 1):
+            pipeline_chars[k] = " "
+    pipeline_text = "".join(pipeline_chars)
 
     # Tokenize pipeline by pipe (|) outside of quotes
     stages = []
@@ -87,27 +117,36 @@ def validate_spl_query(spl_query: str) -> str:
                 quote_char = None
             current_token.append(char)
         elif char == "|" and not in_quote:
-            stages.append("".join(current_token).strip())
+            stg = "".join(current_token).strip()
+            if stg:
+                stages.append(stg)
             current_token = []
         else:
             current_token.append(char)
     if in_quote:
         raise ValueError("Malformed SPL query: unbalanced quotes.")
     if current_token:
-        stages.append("".join(current_token).strip())
+        stg = "".join(current_token).strip()
+        if stg:
+            stages.append(stg)
+
+    if len(stages) > max_stages:
+        raise ValueError(f"SPL query exceeds maximum pipeline stage limit of {max_stages} (found {len(stages)}).")
 
     for idx, stage in enumerate(stages):
         if not stage:
             continue
         words = stage.split()
-        first_word = words[0].lower().strip()
+        first_word = words[0].lower().strip("\"'()")
+
+        # Check all tokens in stage for prohibited command injection
+        for w in words:
+            clean_w = w.lower().strip("\"'()")
+            if clean_w in PROHIBITED_SPL_COMMANDS:
+                raise ValueError(f"Prohibited non-read-only SPL command '{clean_w}' blocked.")
 
         # Handle implicit search in the first stage (e.g. "index=main error")
         if idx == 0 and ("=" in first_word or first_word.startswith("(") or first_word not in PERMITTED_READ_ONLY_SPL_COMMANDS):
-            for w in words:
-                clean_w = w.lower().strip("()")
-                if clean_w in PROHIBITED_SPL_COMMANDS:
-                    raise ValueError(f"Prohibited non-read-only SPL command '{clean_w}' blocked.")
             continue
 
         if first_word in PROHIBITED_SPL_COMMANDS:
@@ -115,6 +154,19 @@ def validate_spl_query(spl_query: str) -> str:
 
         if first_word not in PERMITTED_READ_ONLY_SPL_COMMANDS:
             raise ValueError(f"Unrecognized or unapproved SPL command '{first_word}' blocked by read-only policy.")
+
+        # Validate and bound head or limit argument values (max 10000)
+        if first_word in ("head", "limit"):
+            for w in words[1:]:
+                cw = w.lower().strip("\"'()")
+                if cw.isdigit():
+                    val = int(cw)
+                    if val > 10000:
+                        raise ValueError(f"SPL {first_word} count {val} exceeds maximum allowed limit of 10000.")
+                elif cw.startswith("limit=") or cw.startswith("count=") or cw.startswith("n="):
+                    part = cw.split("=", 1)[1].strip("\"'()")
+                    if part.isdigit() and int(part) > 10000:
+                        raise ValueError(f"SPL {first_word} count {part} exceeds maximum allowed limit of 10000.")
 
     return clean
 

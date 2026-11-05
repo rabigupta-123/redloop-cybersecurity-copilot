@@ -19925,6 +19925,190 @@ def register_workbench_routes(
         )
         return JSONResponse({"success": True, "result": result})
 
+    # ==========================================================================
+    # Phase 10: Advanced Threat Hunting & Investigation REST APIs
+    # ==========================================================================
+
+    @app.post("/api/hunting/query")
+    async def execute_hunting_query_endpoint(request: Request):
+        _require_same_origin(request)
+        try:
+            body = await request.json()
+        except Exception:
+            raise HTTPException(status_code=400, detail="Invalid JSON body.")
+        from redloop.assessment.hunting_query import HuntingQueryEngine
+        from redloop.assessment.soc_events import UniversalSecurityEvent
+        q = body.get("query") or body.get("ast")
+        if not q:
+            raise HTTPException(status_code=400, detail="'query' or 'ast' is required.")
+        raw_events = body.get("events")
+        events = None
+        if raw_events and isinstance(raw_events, list):
+            events = [UniversalSecurityEvent(**e) if isinstance(e, dict) else e for e in raw_events]
+        engine = HuntingQueryEngine.get_instance()
+        try:
+            res = engine.execute_query(q, events=events, operator=body.get("operator", "analyst"))
+            return JSONResponse({"success": True, "result": res.to_dict()})
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Query execution failed: {str(e)}")
+
+    @app.get("/api/hunting/queries/saved")
+    async def list_saved_hunting_queries_endpoint(request: Request):
+        _require_same_origin(request)
+        from redloop.assessment.hunting_query import HuntingQueryEngine
+        queries = HuntingQueryEngine.get_instance().list_saved_queries()
+        return JSONResponse({"success": True, "queries": queries})
+
+    @app.post("/api/hunting/queries/saved")
+    async def save_hunting_query_endpoint(request: Request):
+        _require_same_origin(request)
+        try:
+            body = await request.json()
+        except Exception:
+            raise HTTPException(status_code=400, detail="Invalid JSON body.")
+        from redloop.assessment.hunting_query import HuntingQueryEngine
+        title = body.get("title", "").strip()
+        query_ast = body.get("query_ast") or body.get("query")
+        if not title or not query_ast:
+            raise HTTPException(status_code=400, detail="'title' and 'query_ast' are required.")
+        res = HuntingQueryEngine.get_instance().save_query(
+            title=title,
+            query_ast=query_ast,
+            description=body.get("description", ""),
+            mitre_techniques=body.get("mitre_techniques", []),
+            created_by=body.get("created_by", "analyst"),
+        )
+        return JSONResponse({"success": True, "saved_query": res})
+
+    @app.delete("/api/hunting/queries/saved/{query_id}")
+    async def delete_saved_hunting_query_endpoint(request: Request, query_id: str):
+        _require_same_origin(request)
+        from redloop.assessment.hunting_query import HuntingQueryEngine
+        deleted = HuntingQueryEngine.get_instance().delete_saved_query(query_id)
+        if not deleted:
+            raise HTTPException(status_code=404, detail="Saved query not found.")
+        return JSONResponse({"success": True, "query_id": query_id})
+
+    @app.get("/api/hunting/hypotheses")
+    async def list_hypotheses_endpoint(request: Request, status: Optional[str] = None, technique: Optional[str] = None, limit: int = 50):
+        _require_same_origin(request)
+        from redloop.assessment.hypothesis_manager import HypothesisManager, HypothesisStatus
+        st_enum = HypothesisStatus(status.upper()) if status else None
+        hyps = HypothesisManager.get_instance().list_hypotheses(status=st_enum, mitre_technique=technique, limit=limit)
+        return JSONResponse({"success": True, "hypotheses": hyps})
+
+    @app.post("/api/hunting/hypotheses")
+    async def create_hypothesis_endpoint(request: Request):
+        _require_same_origin(request)
+        try:
+            body = await request.json()
+        except Exception:
+            raise HTTPException(status_code=400, detail="Invalid JSON body.")
+        title = body.get("title", "").strip()
+        desc = body.get("description", "").strip()
+        if not title:
+            raise HTTPException(status_code=400, detail="'title' is required.")
+        from redloop.assessment.hypothesis_manager import HypothesisManager
+        rec = HypothesisManager.get_instance().create_hypothesis(
+            title=title,
+            description=desc,
+            mitre_techniques=body.get("mitre_techniques", []),
+            expected_evidence=body.get("expected_evidence", []),
+            lead_hunter=body.get("lead_hunter", "analyst"),
+        )
+        return JSONResponse({"success": True, "hypothesis": rec.to_dict()})
+
+    @app.get("/api/hunting/hypotheses/{hypothesis_id}")
+    async def get_hypothesis_endpoint(request: Request, hypothesis_id: str):
+        _require_same_origin(request)
+        from redloop.assessment.hypothesis_manager import HypothesisManager
+        rec = HypothesisManager.get_instance().get_hypothesis(hypothesis_id)
+        if not rec:
+            raise HTTPException(status_code=404, detail="Hypothesis not found.")
+        return JSONResponse({"success": True, "hypothesis": rec.to_dict()})
+
+    @app.post("/api/hunting/hypotheses/{hypothesis_id}/evidence")
+    async def add_hypothesis_evidence_endpoint(request: Request, hypothesis_id: str):
+        _require_same_origin(request)
+        try:
+            body = await request.json()
+        except Exception:
+            raise HTTPException(status_code=400, detail="Invalid JSON body.")
+        desc = body.get("description", "").strip()
+        if not desc:
+            raise HTTPException(status_code=400, detail="'description' is required.")
+        from redloop.assessment.hypothesis_manager import HypothesisManager
+        rec = HypothesisManager.get_instance().add_evidence(
+            hypothesis_id=hypothesis_id,
+            description=desc,
+            source_type=body.get("source_type", "analyst_observation"),
+            source_reference=body.get("source_reference", "manual"),
+            is_contradictory=bool(body.get("is_contradictory", False)),
+            weight=float(body.get("weight", 1.0)),
+            recorded_by=body.get("recorded_by", "analyst"),
+        )
+        return JSONResponse({"success": True, "hypothesis": rec.to_dict()})
+
+    @app.post("/api/hunting/reconstruction/process-tree")
+    async def reconstruct_process_tree_endpoint(request: Request):
+        _require_same_origin(request)
+        try:
+            body = await request.json()
+        except Exception:
+            raise HTTPException(status_code=400, detail="Invalid JSON body.")
+        from redloop.assessment.attack_reconstruction import AttackReconstructionEngine
+        from redloop.assessment.soc_events import UniversalSecurityEvent
+        raw_events = body.get("events", [])
+        events = [UniversalSecurityEvent(**e) if isinstance(e, dict) else e for e in raw_events]
+        focus = body.get("focus_host")
+        graph = AttackReconstructionEngine.reconstruct_process_lineage(events=events, focus_host=focus)
+        return JSONResponse({"success": True, "graph": graph.to_dict()})
+
+    @app.post("/api/hunting/pivot")
+    async def execute_hunting_pivot_endpoint(request: Request):
+        _require_same_origin(request)
+        try:
+            body = await request.json()
+        except Exception:
+            raise HTTPException(status_code=400, detail="Invalid JSON body.")
+        e_type = body.get("entity_type")
+        e_val = body.get("entity_value")
+        if not e_type or not e_val:
+            raise HTTPException(status_code=400, detail="'entity_type' and 'entity_value' are required.")
+        from redloop.assessment.hunting_pivots import ThreatHuntingPivotEngine
+        from redloop.assessment.soc_events import UniversalSecurityEvent
+        raw_events = body.get("events", [])
+        events = [UniversalSecurityEvent(**e) if isinstance(e, dict) else e for e in raw_events]
+        max_depth = int(body.get("max_depth", 3))
+        res = ThreatHuntingPivotEngine.execute_pivot(entity_type=e_type, entity_value=e_val, events=events, max_depth=max_depth)
+        return JSONResponse({"success": True, "pivot": res.to_dict()})
+
+    @app.post("/api/investigations/reports/generate")
+    async def generate_investigation_report_endpoint(request: Request):
+        _require_same_origin(request)
+        try:
+            body = await request.json()
+        except Exception:
+            raise HTTPException(status_code=400, detail="Invalid JSON body.")
+        from redloop.assessment.investigation_reports import InvestigationReportGenerator
+        from redloop.assessment.soc_events import UniversalSecurityEvent
+        case_id = body.get("case_id")
+        title = body.get("title", "Threat Hunting Investigation")
+        author = body.get("author", "threat_hunter")
+        raw_events = body.get("events", [])
+        events = [UniversalSecurityEvent(**e) if isinstance(e, dict) else e for e in raw_events]
+
+        if case_id:
+            rep = InvestigationReportGenerator.generate_case_report(case_id=case_id, author=author)
+        else:
+            rep = InvestigationReportGenerator.generate_custom_hunt_report(title=title, events=events, author=author)
+
+        return JSONResponse({
+            "success": True,
+            "report": rep.to_dict(),
+            "markdown": rep.to_markdown(),
+        })
+
 
 
 

@@ -122,18 +122,28 @@ class SOCMetricsEngine:
             if total_linked_events > 0 else 0.0
         )
 
+        mttd_status = "CALCULATED" if mttd_minutes is not None else "INSUFFICIENT_DATA"
+        mttr_status = "CALCULATED" if mttr_minutes is not None else "INSUFFICIENT_DATA"
+        sync_status = "CALCULATED" if total_ingested > 0 or failed_jobs > 0 or partial_jobs > 0 else "INSUFFICIENT_DATA"
+        reduction_status = "CALCULATED" if total_linked_events > 0 else "INSUFFICIENT_DATA"
+
         return {
             "metrics_timestamp": now,
             "mean_time_to_detect_minutes": mttd_minutes,
+            "mean_time_to_detect_status": mttd_status,
             "mean_time_to_respond_minutes": mttr_minutes,
+            "mean_time_to_respond_status": mttr_status,
             "telemetry_sync_rate_percent": sync_success_rate,
+            "telemetry_sync_status": sync_status,
             "provider_availability_percent": provider_availability_pct,
             "alert_reduction_rate_percent": reduction_pct,
+            "alert_reduction_status": reduction_status,
             "telemetry": {
                 "events_ingested": total_ingested,
                 "sync_jobs_failed": failed_jobs,
                 "sync_jobs_partial": partial_jobs,
                 "sync_success_rate": sync_success_rate,
+                "status": sync_status,
             },
             "alerts_and_incidents": {
                 "total_alerts_clustered": total_linked_events,
@@ -142,6 +152,7 @@ class SOCMetricsEngine:
                 "incidents_by_severity": severity_counts,
                 "confirmed_observations": confirmed_observations,
                 "inferred_relationships": inferred_relationships,
+                "status": reduction_status,
             },
             "detection_engineering": {
                 "active_detection_rules": active_rules_count,
@@ -157,7 +168,9 @@ class SOCMetricsEngine:
             },
             "performance_indicators": {
                 "mean_time_to_detect_minutes": mttd_minutes,
+                "mean_time_to_detect_status": mttd_status,
                 "mean_time_to_respond_minutes": mttr_minutes,
+                "mean_time_to_respond_status": mttr_status,
                 "mttd_supported": mttd_minutes is not None,
                 "mttr_supported": mttr_minutes is not None,
             },

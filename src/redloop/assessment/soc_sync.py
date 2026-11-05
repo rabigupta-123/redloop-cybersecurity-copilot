@@ -311,6 +311,49 @@ class TelemetrySyncPipeline:
             finally:
                 conn.close()
 
+    def _read_local_events(self, limit: int = 50) -> list[UniversalSecurityEvent]:
+        """Queries local SQLite audit log / cases / events to ingest as security events."""
+        events: list[UniversalSecurityEvent] = []
+        now_ts = datetime.now(timezone.utc).isoformat()
+
+        # 1. Query case audit log if available
+        cases_db = Path("data/cases.db")
+        if cases_db.exists():
+            try:
+                conn = sqlite3.connect(str(cases_db), timeout=5.0)
+                conn.row_factory = sqlite3.Row
+                try:
+                    cur = conn.execute(
+                        """
+                        SELECT log_id, case_id, timestamp, action, actor, details_json
+                        FROM case_audit_log
+                        ORDER BY timestamp DESC
+                        LIMIT ?
+                        """,
+                        (limit,),
+                    )
+                    for r in cur.fetchall():
+                        ev_id = f"local-audit-{r['log_id']}"
+                        events.append(
+                            UniversalSecurityEvent(
+                                event_id=ev_id,
+                                timestamp=r["timestamp"] or now_ts,
+                                ingestion_timestamp=now_ts,
+                                source_type="local",
+                                source_file="case_audit_log",
+                                hostname="localhost",
+                                username=r["actor"],
+                                event_action=r["action"],
+                                raw_data=r["details_json"],
+                                parser_status=ParserStatus.NORMALIZED,
+                            )
+                        )
+                finally:
+                    conn.close()
+            except Exception:
+                pass
+        return events
+
     def execute_sync(
         self,
         provider_id: str,
@@ -344,11 +387,15 @@ class TelemetrySyncPipeline:
 
         if mock_events is not None:
             fetched_events = mock_events
+        elif provider_id == "local":
+            fetched_events = self._read_local_events(limit=limit)
         else:
             registry = IntegrationRegistry.get_instance()
             provider = registry.get_provider(provider_id)
             if not provider:
                 sync_error = f"Provider '{provider_id}' is not registered."
+            elif provider_id.lower().strip() in ("identity_ad", "active_directory", "ad", "identity_entra", "entra_id", "entra", "ticketing_jira", "jira", "ticketing_servicenow", "servicenow") or getattr(provider, "provider_id", "") in ("active_directory", "entra_id", "jira", "servicenow"):
+                sync_error = f"Provider '{provider_id}' does not support telemetry streaming/alert ingestion (NOT_IMPLEMENTED)."
             elif not provider.enabled:
                 sync_error = f"Provider '{provider_id}' is disabled."
             elif not provider.is_configured():

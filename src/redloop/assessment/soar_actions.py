@@ -618,7 +618,7 @@ class SOARActionRegistry:
                 details="Action requires explicit human approval and capability authorization token.",
             )
 
-        # If an external provider is specified (e.g. defender, crowdstrike)
+        # If an external provider is specified (e.g. defender, crowdstrike), check configuration first
         if provider and provider.lower() not in ("none", "local_simulation", "unconfigured", "local"):
             from redloop.integrations.registry import IntegrationRegistry
             registry = IntegrationRegistry.get_instance()
@@ -633,6 +633,37 @@ class SOARActionRegistry:
                     parameters={"host_ip": target, "provider": provider},
                     details=f"External EDR provider '{provider}' is not configured on this REDLOOP node.",
                 )
+
+        # Validate capability token binding if issued by approval store
+        try:
+            from redloop.assessment.soc_playbooks import PlaybookApprovalStore
+            store = PlaybookApprovalStore.get_instance()
+            valid, err, _ = store.validate_and_consume(
+                playbook_id="soar_containment",
+                step_id="isolate_endpoint",
+                token_secret=capability_token,
+                expected_provider_id=provider,
+                expected_action_name="isolate_endpoint",
+                expected_resource_id=target,
+            )
+            if not valid and "Unknown" not in err:
+                return ActionResult(
+                    action_id=f"act-iso-{uuid.uuid4().hex[:8]}",
+                    action_name="isolate_endpoint",
+                    category=ActionCategory.CONTAINMENT,
+                    status=ActionExecutionStatus.WAITING_FOR_APPROVAL,
+                    target=target,
+                    parameters={"host_ip": target, "provider": provider},
+                    details=f"Capability rejected: {err}",
+                )
+        except Exception:
+            pass
+
+        # If an external provider is specified and configured, dispatch
+        if provider and provider.lower() not in ("none", "local_simulation", "unconfigured", "local"):
+            from redloop.integrations.registry import IntegrationRegistry
+            registry = IntegrationRegistry.get_instance()
+            prov_obj = registry.get_provider(provider)
             try:
                 res = prov_obj.isolate_endpoint(machine_id=target, capability_token=capability_token)
                 if res.get("status") == "SUCCEEDED":
@@ -718,7 +749,7 @@ class SOARActionRegistry:
                 details="Action requires explicit human approval and capability authorization token.",
             )
 
-        # If external provider specified
+        # If external provider specified, check configuration first
         if provider and provider.lower() not in ("none", "local_simulation", "unconfigured", "local"):
             from redloop.integrations.registry import IntegrationRegistry
             registry = IntegrationRegistry.get_instance()
@@ -733,6 +764,37 @@ class SOARActionRegistry:
                     parameters={"username": user, "provider": provider},
                     details=f"Directory/IdP provider '{provider}' is not configured on this REDLOOP node.",
                 )
+
+        # Validate capability token binding if issued by approval store
+        try:
+            from redloop.assessment.soc_playbooks import PlaybookApprovalStore
+            store = PlaybookApprovalStore.get_instance()
+            valid, err, _ = store.validate_and_consume(
+                playbook_id="soar_containment",
+                step_id="disable_account",
+                token_secret=capability_token,
+                expected_provider_id=provider,
+                expected_action_name="disable_account",
+                expected_resource_id=user,
+            )
+            if not valid and "Unknown" not in err:
+                return ActionResult(
+                    action_id=f"act-dis-{uuid.uuid4().hex[:8]}",
+                    action_name="disable_account",
+                    category=ActionCategory.CONTAINMENT,
+                    status=ActionExecutionStatus.WAITING_FOR_APPROVAL,
+                    target=user,
+                    parameters={"username": user, "provider": provider},
+                    details=f"Capability rejected: {err}",
+                )
+        except Exception:
+            pass
+
+        # If external provider specified and configured, dispatch
+        if provider and provider.lower() not in ("none", "local_simulation", "unconfigured", "local"):
+            from redloop.integrations.registry import IntegrationRegistry
+            registry = IntegrationRegistry.get_instance()
+            prov_obj = registry.get_provider(provider)
             try:
                 # Check if provider has disable_account or revoke_sessions
                 if hasattr(prov_obj, "disable_account"):
