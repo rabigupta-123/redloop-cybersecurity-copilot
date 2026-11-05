@@ -135,6 +135,11 @@ class TargetResolver:
             except ValueError:
                 continue
 
+        # Check for Localhost / Loopback
+        loc_match = re.search(r"\b(localhost|127\.0\.0\.1)\b", prompt, re.IGNORECASE)
+        if loc_match:
+            return "127.0.0.1", "ip"
+
         # Check for Domain
         for m in cls.DOMAIN_PATTERN.finditer(prompt):
             cand = m.group(1).rstrip(".,;!?'\")")

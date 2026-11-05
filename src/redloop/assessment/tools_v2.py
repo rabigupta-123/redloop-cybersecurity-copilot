@@ -319,6 +319,8 @@ class ToolRegistryV2:
 
     _cached_catalog: list[ToolCapabilityInfo] | None = None
     _catalog_cache_time: float = 0.0
+    _cached_summary: dict[str, Any] | None = None
+    _summary_cache_time: float = 0.0
     CATALOG_TTL: float = 60.0
 
     @classmethod
@@ -790,6 +792,37 @@ class ToolRegistryV2:
             },
         ]
 
+        wsl_bins: dict[str, str] = {}
+        wsl_info = environments.get("wsl", {})
+        kali_info = environments.get("kali", {})
+        if wsl_info.get("available") and os.name == "nt":
+            wsl_exe = shutil.which("wsl.exe")
+            target_distro = kali_info.get("distro_name") or wsl_info.get("default_distro")
+            if wsl_exe and target_distro:
+                missing_probe_bins = [
+                    spec["probe"][0]
+                    for spec in tool_specs
+                    if spec.get("probe")
+                    and spec["probe"][0] != "api_key_check"
+                    and not shutil.which(spec["probe"][0])
+                ]
+                if missing_probe_bins:
+                    try:
+                        p = subprocess.run(
+                            [wsl_exe, "-d", target_distro, "--", "which"] + missing_probe_bins,
+                            capture_output=True,
+                            text=True,
+                            timeout=2.0,
+                        )
+                        if p.returncode == 0 and p.stdout:
+                            for line in p.stdout.strip().splitlines():
+                                line_clean = line.strip()
+                                if line_clean and "/" in line_clean:
+                                    bname = line_clean.split("/")[-1]
+                                    wsl_bins[bname] = line_clean
+                    except Exception:
+                        pass
+
         for spec in tool_specs:
             t_id = spec["id"]
             name = spec["name"]
@@ -815,6 +848,7 @@ class ToolRegistryV2:
                 guidance=guidance,
                 environments=environments,
                 now_iso=now_iso,
+                wsl_bins=wsl_bins,
             )
             catalog.append(tool_info)
 
@@ -835,6 +869,7 @@ class ToolRegistryV2:
         guidance: str,
         environments: dict[str, Any],
         now_iso: str,
+        wsl_bins: dict[str, str] | None = None,
     ) -> ToolCapabilityInfo:
         # Check API key based tools first
         if probe and probe[0] == "api_key_check":
@@ -944,7 +979,32 @@ class ToolRegistryV2:
         # Check if WSL / Kali is available and binary exists there
         wsl_info = environments.get("wsl", {})
         kali_info = environments.get("kali", {})
-        if wsl_info.get("available") and os.name == "nt":
+        if wsl_bins is not None:
+            if binary_name in wsl_bins:
+                wsl_bin_path = wsl_bins[binary_name]
+                target_distro = kali_info.get("distro_name") or wsl_info.get("default_distro") or "kali-linux"
+                env_label = "kali" if "kali" in str(target_distro).lower() else "wsl"
+                return ToolCapabilityInfo(
+                    tool_id=tool_id,
+                    name=name,
+                    category=category,
+                    description=description,
+                    installed=True,
+                    available=True,
+                    version=f"WSL ({target_distro})",
+                    executable_path=f"wsl:{target_distro}:{wsl_bin_path}",
+                    environment=env_label,
+                    health_status=ToolHealthStatus.AVAILABLE,
+                    verification_method="wsl_which_probe",
+                    last_checked=now_iso,
+                    reason=f"Available inside WSL distribution '{target_distro}'",
+                    installation_guidance=guidance,
+                    supported_operations=supported_operations,
+                    supported_target_types=supported_target_types,
+                    requires_authorization=requires_authorization,
+                    passive_or_active=passive_or_active,
+                )
+        elif wsl_info.get("available") and os.name == "nt":
             # Quick non-blocking WSL which check (max 1.5s)
             wsl_exe = shutil.which("wsl.exe")
             target_distro = kali_info.get("distro_name") or wsl_info.get("default_distro")
@@ -1018,6 +1078,10 @@ class ToolRegistryV2:
 
     @classmethod
     def get_capabilities_summary(cls, force_refresh: bool = False) -> dict[str, Any]:
+        now = time.time()
+        if not force_refresh and cls._cached_summary is not None and (now - cls._summary_cache_time) < cls.CATALOG_TTL:
+            return cls._cached_summary
+
         tools = cls.list_all_tools(force_refresh=force_refresh)
         environments = EnvironmentDetector.detect_all(force_refresh=force_refresh)
 
@@ -1047,11 +1111,14 @@ class ToolRegistryV2:
             else:
                 summary["not_checked"] += 1
 
-        return {
+        res = {
             "success": True,
             "generated_at": datetime.now(timezone.utc).isoformat(),
             "environments": environments,
             "tools": [t.to_dict() for t in tools],
             "summary": summary,
         }
+        cls._cached_summary = res
+        cls._summary_cache_time = now
+        return res
 

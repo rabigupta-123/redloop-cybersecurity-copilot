@@ -139,7 +139,24 @@ class InvestigationGraph:
                 fh.write(payload)
                 fh.flush()
                 os.fsync(fh.fileno())
-            os.replace(tmp_path, self.graph_file)
+
+            # Robust atomic replacement with retry on Windows
+            replaced = False
+            for attempt in range(5):
+                try:
+                    os.replace(tmp_path, self.graph_file)
+                    replaced = True
+                    break
+                except PermissionError:
+                    if attempt == 4:
+                        break
+                    time.sleep(0.05 * (attempt + 1))
+
+            if not replaced:
+                # Direct overwrite fallback if atomic replace blocked by Windows locking
+                with open(self.graph_file, "w", encoding="utf-8") as fh:
+                    fh.write(payload)
+                tmp_path.unlink(missing_ok=True)
         except Exception as e:
             logger.error("Failed to save investigation graph: %s", e)
             try:

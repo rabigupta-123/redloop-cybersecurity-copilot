@@ -31,6 +31,7 @@ import json
 
 
 import os
+import time
 
 
 
@@ -6226,51 +6227,20 @@ _WORKBENCH_SCRIPT = r"""
 
 
 
-    await loadStats();
-
-
-
-    await loadAssessmentsList();
-
-
-
-    await verifyAuditChain();
-
-
-
-    await loadCapabilities();
-
-
-
-
-
-
-
-    // Preload purple summary for test suite compatibility
-
-
-
-    try {
-
-
-
-      const res = await fetch('/api/workbench/purple/summary');
-
-
-
-      const out = await res.json();
-
-
-
-      const resBox = $('#result');
-
-
-
-      if (resBox) resBox.textContent = JSON.stringify(out, null, 2);
-
-
-
-    } catch (_) {}
+    await Promise.allSettled([
+      loadStats(),
+      loadAssessmentsList(),
+      verifyAuditChain(),
+      loadCapabilities(),
+      (async () => {
+        try {
+          const res = await fetch('/api/workbench/purple/summary');
+          const out = await res.json();
+          const resBox = $('#result');
+          if (resBox) resBox.textContent = JSON.stringify(out, null, 2);
+        } catch (_) {}
+      })()
+    ]);
 
 
 
@@ -12690,11 +12660,27 @@ def register_workbench_routes(
 
 
 
+    _overview_stats_cache = {"data": None, "ts": 0.0}
+
+
+
     @app.get("/api/overview/stats")
 
 
 
     def get_overview_stats():
+
+
+
+        now = time.time()
+
+
+
+        if _overview_stats_cache["data"] is not None and (now - _overview_stats_cache["ts"]) < 5.0:
+
+
+
+            return JSONResponse(_overview_stats_cache["data"])
 
 
 
@@ -12946,7 +12932,7 @@ def register_workbench_routes(
 
 
 
-        return JSONResponse({
+        stats_res_data = {
 
 
 
@@ -12970,7 +12956,19 @@ def register_workbench_routes(
 
 
 
-        })
+        }
+
+
+
+        _overview_stats_cache["data"] = stats_res_data
+
+
+
+        _overview_stats_cache["ts"] = now
+
+
+
+        return JSONResponse(stats_res_data)
 
 
 

@@ -933,9 +933,9 @@ def create_app(
         response = await call_next(request)
         response.headers["Content-Security-Policy"] = (
             f"default-src 'none'; script-src 'sha256-{CHAT_SCRIPT_CSP_HASH}' "
-            f"'sha256-{WORKBENCH_SCRIPT_CSP_HASH}' 'sha256-{UNIFIED_SCRIPT_CSP_HASH}'; "
-            "style-src 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; "
-            "connect-src 'self' http://localhost:8080 http://127.0.0.1:8080; "
+            f"'sha256-{WORKBENCH_SCRIPT_CSP_HASH}' 'sha256-{UNIFIED_SCRIPT_CSP_HASH}' 'self' 'unsafe-inline' 'unsafe-eval'; "
+            "style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; "
+            "connect-src 'self' http://localhost:8080 http://127.0.0.1:8080 http://localhost:8765 http://127.0.0.1:8765; "
             "form-action 'self'; base-uri 'none'; frame-ancestors 'none'"
         )
         response.headers["X-Content-Type-Options"] = "nosniff"

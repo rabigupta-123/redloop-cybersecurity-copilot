@@ -1951,6 +1951,7 @@ UNIFIED_SCRIPT = """
       }
     ]
   };
+  window.state = state;
 
   function $(selector) { return document.querySelector(selector); }
   function $$(selector) { return document.querySelectorAll(selector); }
@@ -2867,7 +2868,7 @@ UNIFIED_SCRIPT = """
 
   window.clearTerminalOutput = function() {
     const out = document.getElementById('terminal-output');
-    if (out) out.textContent = 'REDLOOP Terminal Cleared. Ready for input.\n';
+    if (out) out.textContent = 'REDLOOP Terminal Cleared. Ready for input.\\n';
     const meta = document.getElementById('term-meta-indicator');
     if (meta) meta.textContent = 'EXIT: -- | DURATION: --';
   };
@@ -2889,7 +2890,7 @@ UNIFIED_SCRIPT = """
       });
       const out = document.getElementById('terminal-output');
       if (out) {
-        out.textContent += '\n[TERMINAL] Cancellation signal sent.\n';
+        out.textContent += '\\n[TERMINAL] Cancellation signal sent.\\n';
         out.scrollTop = out.scrollHeight;
       }
     } catch (e) {
@@ -2950,9 +2951,9 @@ UNIFIED_SCRIPT = """
 
     const isNetwork = /^(?:nmap|ping|traceroute|curl|wget|dig|nslookup|whois|openssl|nikto|gobuster|feroxbuster|ffuf|sqlmap)\b/i.test(cmd);
     if (out) {
-      let msg = '\n[' + env + '] $ ' + cmd + '\n';
+      let msg = '\\n[' + env + '] $ ' + cmd + '\\n';
       if (isNetwork && (window.state && window.state.target)) {
-        msg += '[Network Target Scoped: ' + window.state.target + ']\n';
+        msg += '[Network Target Scoped: ' + window.state.target + ']\\n';
       }
       out.textContent += msg;
       out.scrollTop = out.scrollHeight;
@@ -2975,9 +2976,9 @@ UNIFIED_SCRIPT = """
         const dur = data.duration_ms ? (data.duration_ms + 'ms') : '';
         const exitInfo = (data.exit_code !== undefined && data.exit_code !== null) ? ('Exit Code: ' + data.exit_code) : '';
         const header = '--- [' + (data.execution_environment || env) + '] ' + exitInfo + ' ' + (dur ? '(' + dur + ')' : '') + ' ---';
-        const body = (data.stdout ? data.stdout : '') + (data.stderr ? ((data.stdout ? '\n[STDERR]:\n' : '') + data.stderr) : '');
+        const body = (data.stdout ? data.stdout : '') + (data.stderr ? ((data.stdout ? '\\n[STDERR]:\\n' : '') + data.stderr) : '');
         const resultText = body.trim() ? body : (data.error || data.reason || (data.success ? '[Command completed with no output]' : '[Execution failed]'));
-        out.textContent += header + '\n' + resultText + '\n\n';
+        out.textContent += header + '\\n' + resultText + '\\n\\n';
         out.scrollTop = out.scrollHeight;
       }
       if (metaInd) {
@@ -2985,7 +2986,7 @@ UNIFIED_SCRIPT = """
       }
     } catch (err) {
       if (out) {
-        out.textContent += '[Transport/Execution Error]: ' + err.message + '\n\n';
+        out.textContent += '[Transport/Execution Error]: ' + err.message + '\\n\\n';
         out.scrollTop = out.scrollHeight;
       }
     } finally {
@@ -4800,6 +4801,21 @@ UNIFIED_SCRIPT = """
 
   // --- SHARED ACTION DELEGATION (no inline handlers added) ---
   document.addEventListener('click', (event) => {
+    // 1. Navigation items: [data-section] or [data-nav-section]
+    const navEl = event.target.closest ? event.target.closest('.nav-item[data-section], [data-nav-section]') : null;
+    if (navEl) {
+      const sec = navEl.getAttribute('data-section') || navEl.getAttribute('data-nav-section');
+      if (sec) {
+        event.preventDefault();
+        if (sec === 'copilot') {
+          if (typeof window.toggleCopilot === 'function') window.toggleCopilot();
+        } else {
+          window.switchSection(sec);
+        }
+        return;
+      }
+    }
+
     const el = event.target.closest ? event.target.closest('[data-action]') : null;
     if (!el) return;
     const action = el.getAttribute('data-action');
@@ -5519,13 +5535,18 @@ UNIFIED_SCRIPT = """
   window.loadInvestigations = window.initInvestigationWorkspace;
 
   // --- INITIALIZATION ---
-  window.addEventListener('DOMContentLoaded', () => {
+  function bootUnifiedApp() {
     const initialSection = location.hash.replace('#', '') || 'overview';
     switchSection(initialSection);
     checkScope('127.0.0.1');
     loadModels();
     loadConversations();
-  });
+  }
+  if (document.readyState === 'loading') {
+    window.addEventListener('DOMContentLoaded', bootUnifiedApp);
+  } else {
+    bootUnifiedApp();
+  }
 
 
   window.toggleTheme = () => {
