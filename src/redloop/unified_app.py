@@ -1407,6 +1407,177 @@ tr:hover td { background: rgba(79, 140, 255, 0.03); }
 }
 #section-overview .btn-action { border-radius: var(--radius-md); font-weight: 700; }
 
+/* Modern Unified SOC Dashboard Cards & Grid */
+.soc-dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.soc-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  padding: 20px 24px;
+  box-shadow: var(--shadow-sm);
+}
+.soc-header-title {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--fg);
+  margin: 0 0 4px;
+  letter-spacing: -0.02em;
+}
+.soc-header-subtitle {
+  font-size: 13px;
+  color: var(--fg-muted);
+  margin: 0;
+}
+.soc-header-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.soc-clock {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg-muted);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+}
+.soc-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 14px;
+}
+@media (max-width: 1200px) {
+  .soc-kpi-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 768px) {
+  .soc-kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+.soc-kpi-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px 18px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+.soc-kpi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--border-glow);
+}
+.soc-kpi-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.soc-kpi-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--fg-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.soc-kpi-icon {
+  font-size: 15px;
+  opacity: 0.85;
+}
+.soc-kpi-value {
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--fg);
+  margin-bottom: 4px;
+}
+.soc-kpi-sub {
+  font-size: 11px;
+  color: var(--fg-subtle);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.soc-row-4 {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+@media (max-width: 1400px) {
+  .soc-row-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 768px) {
+  .soc-row-4 { grid-template-columns: 1fr; }
+}
+.soc-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: border-color 180ms ease;
+}
+.soc-card:hover {
+  border-color: var(--border-glow);
+}
+.soc-card-head {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--surface-2);
+}
+.soc-card-title {
+  font-family: var(--font-display);
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--fg);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.soc-card-body {
+  padding: 16px 18px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.soc-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 7px;
+  border-radius: 9999px;
+  font-size: 10.5px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+.soc-badge-info { background: var(--info-bg); color: var(--info-strong); }
+.soc-badge-success { background: var(--success-bg); color: var(--success-strong); }
+.soc-badge-warning { background: var(--warning-bg); color: var(--warning-strong); }
+.soc-badge-critical { background: var(--critical-bg); color: var(--critical); }
+.soc-badge-neutral { background: var(--surface-2); color: var(--fg-muted); border: 1px solid var(--border); }
+
+
 /* --------------------------------------------------------------------------
    THEME LAYER — shared components (12/14/16/20/28/36 type scale)
    -------------------------------------------------------------------------- */
@@ -1718,26 +1889,26 @@ tr:hover td { background: rgba(79, 140, 255, 0.03); }
 /* LIGHT THEME STRUCTURAL OVERRIDES */
 :root[data-theme="light"] body {
   background:
-    radial-gradient(1200px 520px at 50% -120px, rgba(249, 115, 22, 0.10), transparent 62%),
-    radial-gradient(680px 380px at 92% 8%, rgba(255, 237, 213, 0.9), transparent 60%),
+    radial-gradient(1200px 520px at 50% -120px, rgba(59, 130, 246, 0.10), transparent 62%),
+    radial-gradient(680px 380px at 92% 8%, rgba(219, 234, 254, 0.72), transparent 60%),
     var(--bg);
 }
 :root[data-theme="light"] .sidebar {
-  background: linear-gradient(180deg, #FFFFFF 0%, #FFF8F2 100%);
-  box-shadow: 4px 0 30px rgba(31, 27, 22, 0.06);
+  background: linear-gradient(180deg, #FFFFFF 0%, #F2F7FD 100%);
+  box-shadow: 4px 0 30px rgba(23, 43, 77, 0.06);
 }
 :root[data-theme="light"] .topbar { background: var(--surface-glass); }
 :root[data-theme="light"] .brand-mark {
   background: linear-gradient(135deg, var(--accent-button), var(--accent-button-hover));
-  color: #FFFFFF; box-shadow: 0 6px 18px rgba(249, 115, 22, 0.28);
+  color: #FFFFFF; box-shadow: 0 6px 18px rgba(37, 99, 235, 0.22);
 }
 :root[data-theme="light"] .nav-item:hover {
   background: var(--accent-soft); color: var(--fg);
-  border-color: #FED7AA;
+  border-color: #BFDBFE;
 }
 :root[data-theme="light"] .nav-item.active {
   background: var(--accent-soft); color: var(--fg);
-  border-color: #FDBA74;
+  border-color: #93C5FD;
   box-shadow: inset 3px 0 0 var(--accent-strong);
 }
 :root[data-theme="light"] .nav-item.active::before {
@@ -1752,7 +1923,7 @@ tr:hover td { background: rgba(79, 140, 255, 0.03); }
 :root[data-theme="light"] .card-panel:hover,
 :root[data-theme="light"] .kpi-card:hover,
 :root[data-theme="light"] .overview-kpi:hover {
-  border-color: #FDBA74; box-shadow: var(--shadow-lg);
+  border-color: #93C5FD; box-shadow: var(--shadow-lg);
 }
 :root[data-theme="light"] .brand-sub,
 :root[data-theme="light"] .sidebar-footer { color: var(--fg-muted); }
@@ -1761,36 +1932,36 @@ tr:hover td { background: rgba(79, 140, 255, 0.03); }
 :root[data-theme="light"] .chat-search-input,
 :root[data-theme="light"] .chat-select,
 :root[data-theme="light"] .target-select { background: var(--surface); }
-:root[data-theme="light"] .conv-card:hover { background: var(--surface-2); border-color: #FDBA74; }
+:root[data-theme="light"] .conv-card:hover { background: var(--surface-2); border-color: #93C5FD; }
 :root[data-theme="light"] .conv-card.active { background: var(--accent-soft); border-color: var(--accent-strong); }
 :root[data-theme="light"] .btn-conv-action:hover { background: var(--accent-soft); }
 :root[data-theme="light"] .turn-user {
-  background: var(--surface-2); border-color: #FDBA74; border-right-color: var(--accent-strong);
+  background: var(--surface-2); border-color: #BFDBFE; border-right-color: var(--accent-strong);
   box-shadow: var(--shadow-sm);
 }
 :root[data-theme="light"] .turn-author { color: var(--info-strong); }
 :root[data-theme="light"] .chat-target-chip {
-  background: var(--accent-soft); border-color: #FDBA74; color: var(--accent-ink);
+  background: var(--accent-soft); border-color: #BFDBFE; color: var(--accent-ink);
 }
 :root[data-theme="light"] .quick-chip:hover,
 :root[data-theme="light"] .btn-turn-action:hover {
   background: var(--accent-soft); border-color: var(--accent-strong); color: var(--fg);
 }
 :root[data-theme="light"] .code-block,
-:root[data-theme="light"] .kali-card { background: #FFF8F2; }
+:root[data-theme="light"] .kali-card { background: #F5F8FC; }
 :root[data-theme="light"] .code-header { background: var(--surface-2); }
 :root[data-theme="light"] .copy-code { background: var(--surface); color: var(--fg-muted); }
 :root[data-theme="light"] .copy-code:hover,
 :root[data-theme="light"] .btn-copy:hover { background: var(--accent-soft); color: var(--accent-ink); }
 :root[data-theme="light"] .chat-meta-details { background: var(--surface-2); }
 :root[data-theme="light"] .chat-meta-details summary { color: var(--accent-ink); }
-:root[data-theme="light"] .kali-cmd-line { background: #FFF1E6; color: #9A3412; }
+:root[data-theme="light"] .kali-cmd-line { background: #EFF4FA; color: #1E40AF; }
 :root[data-theme="light"] .kali-card-head { color: var(--accent-ink); }
 :root[data-theme="light"] .kali-scope-notice { background: var(--warning-bg); }
 :root[data-theme="light"] .btn-send { background: linear-gradient(135deg, var(--accent-button), var(--accent-button-hover)); color: #FFFFFF; }
 :root[data-theme="light"] .badge-blocked { background: var(--surface-2); }
 :root[data-theme="light"] .shimmer { background: var(--surface-2); }
-:root[data-theme="light"] #terminal-output { background: #FFF8F2 !important; color: #166534 !important; }
+:root[data-theme="light"] #terminal-output { background: #F5F8FC !important; color: #166534 !important; }
 
 /* RESPONSIVE: 768–1199 icon rail + two-column, <768 single column */
 @media (max-width: 1199px) {
@@ -2245,7 +2416,7 @@ UNIFIED_SCRIPT = """
           code = { language: fence[1] || 'text', lines: [] };
         } else {
           const rawCode = code.lines.join('\\n');
-          blocks.push(`<div class="code-block"><div class="code-header"><span>${escapeHtml(code.language)}</span><button type="button" class="copy-code" onclick="copyCode(this)">Copy</button></div><pre style="margin:0;padding:12px;overflow-x:auto;font-family:var(--font-mono);font-size:12px;background:#05080f;color:#e2e8f0;"><code>${escapeHtml(rawCode)}</code></pre></div>`);
+          blocks.push(`<div class="code-block"><div class="code-header"><span>${escapeHtml(code.language)}</span><button type="button" class="copy-code" data-click="copyCode(this)">Copy</button></div><pre style="margin:0;padding:12px;overflow-x:auto;font-family:var(--font-mono);font-size:12px;background:#05080f;color:#e2e8f0;"><code>${escapeHtml(rawCode)}</code></pre></div>`);
           code = null;
         }
         continue;
@@ -2300,7 +2471,7 @@ UNIFIED_SCRIPT = """
       paragraph.push(line);
     }
     if (code !== null) {
-      blocks.push(`<div class="code-block"><div class="code-header"><span>${escapeHtml(code.language)}</span><button type="button" class="copy-code" onclick="copyCode(this)">Copy</button></div><pre style="margin:0;padding:12px;overflow-x:auto;font-family:var(--font-mono);font-size:12px;background:#05080f;color:#e2e8f0;"><code>${escapeHtml(code.lines.join('\\n'))}</code></pre></div>`);
+      blocks.push(`<div class="code-block"><div class="code-header"><span>${escapeHtml(code.language)}</span><button type="button" class="copy-code" data-click="copyCode(this)">Copy</button></div><pre style="margin:0;padding:12px;overflow-x:auto;font-family:var(--font-mono);font-size:12px;background:#05080f;color:#e2e8f0;"><code>${escapeHtml(code.lines.join('\\n'))}</code></pre></div>`);
     }
     flushParagraph();
     flushList();
@@ -2373,12 +2544,12 @@ UNIFIED_SCRIPT = """
     }
 
     list.innerHTML = state.conversations.map(c => `
-      <div class="conv-card ${c.id === state.conversationId ? 'active' : ''}" data-id="${escapeHtml(c.id)}" onclick="selectConversation('${escapeHtml(c.id)}')">
+      <div class="conv-card ${c.id === state.conversationId ? 'active' : ''}" data-id="${escapeHtml(c.id)}" data-click="selectConversation('${escapeHtml(c.id)}')">
         <div class="conv-header">
           <span class="conv-title" title="${escapeHtml(c.title || 'Untitled')}">${escapeHtml(c.title || 'Untitled')}</span>
           <div class="conv-actions">
-            <button class="btn-conv-action" title="Rename" onclick="promptRenameConversation('${escapeHtml(c.id)}', event)">✏️</button>
-            <button class="btn-conv-action delete" title="Delete" onclick="deleteConversationById('${escapeHtml(c.id)}', event)">🗑️</button>
+            <button class="btn-conv-action" title="Rename" data-click="promptRenameConversation('${escapeHtml(c.id)}', event)">✏️</button>
+            <button class="btn-conv-action delete" title="Delete" data-click="deleteConversationById('${escapeHtml(c.id)}', event)">🗑️</button>
           </div>
         </div>
         <div class="conv-preview">${escapeHtml(c.last_preview || 'No messages yet')}</div>
@@ -2525,17 +2696,17 @@ UNIFIED_SCRIPT = """
             </div>
             <div class="turn-content" style="white-space:pre-wrap;line-height:1.6;">${escapeHtml(m.content)}</div>
             <div class="turn-actions">
-              <button class="btn-turn-action" onclick="promptEditMessage(${m.position}, this)">✏️ Edit</button>
+              <button class="btn-turn-action" data-click="promptEditMessage(${m.position}, this)">✏️ Edit</button>
             </div>
           </div>
         `;
       } else {
         const cap = m.capability || 'GENERAL_CHAT';
-        const latency = Math.round(m.latency_ms || 0);
-        const tokens = m.token_count || 0;
-        const auditId = m.audit_event_id || 'audit-local';
-        const model = m.model || 'auto';
-        const provider = m.provider || 'default';
+        const latency = (m.latency_ms !== null && m.latency_ms !== undefined && m.latency_ms > 0) ? `${Math.round(m.latency_ms)} ms` : 'NOT_MEASURED';
+        const tokens = (m.token_count !== null && m.token_count !== undefined && m.token_count !== '') ? m.token_count : 'NOT_AVAILABLE';
+        const auditId = m.audit_event_id || 'NOT_AVAILABLE';
+        const model = m.model || 'deterministic_local_engine';
+        const provider = m.provider || 'OFFLINE_DETERMINISTIC';
 
         return `
           <div class="turn-assistant" data-position="${m.position}">
@@ -2547,17 +2718,17 @@ UNIFIED_SCRIPT = """
             </div>
             <div class="turn-content">${renderMarkdown(m.content)}</div>
             <details class="chat-meta-details">
-              <summary>ℹ️ Metadata (${escapeHtml(model)} · ${latency}ms · ${tokens} tokens)</summary>
+              <summary>ℹ️ Metadata (${escapeHtml(model)} · ${latency} · ${tokens === 'NOT_AVAILABLE' ? tokens : tokens + ' tokens'})</summary>
               <div class="chat-meta-grid">
                 <div class="chat-meta-item"><span class="chat-meta-lbl">Model</span><span class="chat-meta-val">${escapeHtml(model)}</span></div>
                 <div class="chat-meta-item"><span class="chat-meta-lbl">Provider</span><span class="chat-meta-val">${escapeHtml(provider)}</span></div>
-                <div class="chat-meta-item"><span class="chat-meta-lbl">Latency</span><span class="chat-meta-val">${latency} ms</span></div>
+                <div class="chat-meta-item"><span class="chat-meta-lbl">Latency</span><span class="chat-meta-val">${latency}</span></div>
                 <div class="chat-meta-item"><span class="chat-meta-lbl">Tokens</span><span class="chat-meta-val">${tokens}</span></div>
                 <div class="chat-meta-item"><span class="chat-meta-lbl">Audit Event ID</span><span class="chat-meta-val">${escapeHtml(auditId)}</span></div>
               </div>
             </details>
             <div class="turn-actions">
-              <button class="btn-turn-action" onclick="regenerateResponse()">🔄 Regenerate</button>
+              <button class="btn-turn-action" data-click="regenerateResponse()">🔄 Regenerate</button>
             </div>
           </div>
         `;
@@ -2731,23 +2902,29 @@ UNIFIED_SCRIPT = """
               if (badge) badge.textContent = `[${cap}]`;
               contentDiv.innerHTML = renderMarkdown(data.response || fullText);
 
+              const latStr = (data.latency_ms !== null && data.latency_ms !== undefined && data.latency_ms > 0) ? `${Math.round(data.latency_ms)} ms` : 'NOT_MEASURED';
+              const tokStr = (data.token_count !== null && data.token_count !== undefined && data.token_count !== '') ? data.token_count : 'NOT_AVAILABLE';
+              const provStr = data.provider || 'OFFLINE_DETERMINISTIC';
+              const modStr = data.model || 'deterministic_local_engine';
+              const auditStr = data.audit_event_id || 'NOT_AVAILABLE';
+
               const metaDetails = document.createElement('details');
               metaDetails.className = 'chat-meta-details';
               metaDetails.innerHTML = `
-                <summary>ℹ️ Metadata (${escapeHtml(data.model || 'auto')} · ${Math.round(data.latency_ms || 0)}ms · ${data.token_count || 0} tokens)</summary>
+                <summary>ℹ️ Metadata (${escapeHtml(modStr)} · ${latStr} · ${tokStr === 'NOT_AVAILABLE' ? tokStr : tokStr + ' tokens'})</summary>
                 <div class="chat-meta-grid">
-                  <div class="chat-meta-item"><span class="chat-meta-lbl">Model</span><span class="chat-meta-val">${escapeHtml(data.model || 'auto')}</span></div>
-                  <div class="chat-meta-item"><span class="chat-meta-lbl">Provider</span><span class="chat-meta-val">${escapeHtml(data.provider || 'default')}</span></div>
-                  <div class="chat-meta-item"><span class="chat-meta-lbl">Latency</span><span class="chat-meta-val">${Math.round(data.latency_ms || 0)} ms</span></div>
-                  <div class="chat-meta-item"><span class="chat-meta-lbl">Tokens</span><span class="chat-meta-val">${data.token_count || 0}</span></div>
-                  <div class="chat-meta-item"><span class="chat-meta-lbl">Audit Event ID</span><span class="chat-meta-val">${escapeHtml(data.audit_event_id || 'audit-local')}</span></div>
+                  <div class="chat-meta-item"><span class="chat-meta-lbl">Model</span><span class="chat-meta-val">${escapeHtml(modStr)}</span></div>
+                  <div class="chat-meta-item"><span class="chat-meta-lbl">Provider</span><span class="chat-meta-val">${escapeHtml(provStr)}</span></div>
+                  <div class="chat-meta-item"><span class="chat-meta-lbl">Latency</span><span class="chat-meta-val">${latStr}</span></div>
+                  <div class="chat-meta-item"><span class="chat-meta-lbl">Tokens</span><span class="chat-meta-val">${tokStr}</span></div>
+                  <div class="chat-meta-item"><span class="chat-meta-lbl">Audit Event ID</span><span class="chat-meta-val">${escapeHtml(auditStr)}</span></div>
                 </div>
               `;
               asstDiv.appendChild(metaDetails);
 
               const actDiv = document.createElement('div');
               actDiv.className = 'turn-actions';
-              actDiv.innerHTML = `<button class="btn-turn-action" onclick="regenerateResponse()">🔄 Regenerate</button>`;
+              actDiv.innerHTML = `<button class="btn-turn-action" data-click="regenerateResponse()">🔄 Regenerate</button>`;
               asstDiv.appendChild(actDiv);
             }
           } catch (_) {}
@@ -2814,7 +2991,7 @@ UNIFIED_SCRIPT = """
     const container = $('#chat-attached-chips');
     if (!container) return;
     container.innerHTML = state.attachedFiles.map((f, i) => `
-      <span class="attached-chip">📎 ${escapeHtml(f.name)} <span class="attached-chip-remove" onclick="removeAttachment(${i})">✕</span></span>
+      <span class="attached-chip">📎 ${escapeHtml(f.name)} <span class="attached-chip-remove" data-click="removeAttachment(${i})">✕</span></span>
     `).join('');
   }
 
@@ -3167,7 +3344,7 @@ UNIFIED_SCRIPT = """
             <span class="badge ${integrityOk ? 'badge-success' : 'badge-warning'}" style="margin-right:8px;">${integrityOk ? 'SHA-256 VERIFIED' : 'HASH UNVERIFIED'}</span>
             <code style="color:var(--primary);">${escapeHtml(d.evidence_hash || '')}</code>
           </span>
-          <button class="btn-action" onclick="switchSection('graph')">View in Investigation Graph</button>
+          <button class="btn-action" data-click="switchSection('graph')">View in Investigation Graph</button>
         </div>
       </div>
     `;
@@ -3375,9 +3552,9 @@ UNIFIED_SCRIPT = """
             <span class="badge ${reviewBadge}">${escapeHtml(c.review_status || 'UNREVIEWED')}</span>
             <span style="font-size:11px; color:var(--fg-muted);">${c.member_count} observation(s) · confidence ${Number.isFinite(c.confidence) ? Math.round(c.confidence * 100) + '%' : 'N/A'}</span>
             <span style="margin-left:auto; display:flex; gap:6px;">
-              <button class="btn-action" style="padding:3px 8px; font-size:11px;" onclick="reviewIdentityCluster('${escapeHtml(c.cluster_id)}', 'CONFIRM')">Confirm</button>
-              <button class="btn-action" style="padding:3px 8px; font-size:11px; color:var(--critical);" onclick="reviewIdentityCluster('${escapeHtml(c.cluster_id)}', 'REJECT')">Reject</button>
-              <button class="btn-action" style="padding:3px 8px; font-size:11px;" onclick="reviewIdentityCluster('${escapeHtml(c.cluster_id)}', 'UNVERIFIED')">Unverified</button>
+              <button class="btn-action" style="padding:3px 8px; font-size:11px;" data-click="reviewIdentityCluster('${escapeHtml(c.cluster_id)}', 'CONFIRM')">Confirm</button>
+              <button class="btn-action" style="padding:3px 8px; font-size:11px; color:var(--critical);" data-click="reviewIdentityCluster('${escapeHtml(c.cluster_id)}', 'REJECT')">Reject</button>
+              <button class="btn-action" style="padding:3px 8px; font-size:11px;" data-click="reviewIdentityCluster('${escapeHtml(c.cluster_id)}', 'UNVERIFIED')">Unverified</button>
             </span>
           </div>
           <div class="table-wrap"><table>
@@ -3945,7 +4122,7 @@ UNIFIED_SCRIPT = """
 
         <div style="margin-top:14px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.06); display:flex; justify-content:space-between; align-items:center; font-size:11px;">
           <span style="color:var(--success);">✅ Cryptographically backed by authentic evidence ledger</span>
-          <button type="button" class="btn-action" onclick="switchSection('evidence')" style="font-size:11px; padding:4px 10px;">Inspect Raw Evidence →</button>
+          <button type="button" class="btn-action" data-click="switchSection('evidence')" style="font-size:11px; padding:4px 10px;">Inspect Raw Evidence →</button>
         </div>
       </div>
     `;
@@ -4084,7 +4261,7 @@ UNIFIED_SCRIPT = """
           <td>${envBadge}</td>
           <td style="font-size:11px; color:var(--fg-muted); max-width:280px;">${escapeHtml(t.installation_guidance || '—')}</td>
           <td>
-            ${isAvail ? `<button class="btn-action" style="padding:3px 8px; font-size:11px;" onclick="document.getElementById('chat-input-field').value='Analyze authorized localhost using ${escapeHtml(t.tool_id)}.'; switchSection('copilot'); sendChatMessage();">Probe Target</button>` : '<span style="color:var(--fg-muted); font-size:11px;">N/A</span>'}
+            ${isAvail ? `<button class="btn-action" style="padding:3px 8px; font-size:11px;" data-click="document.getElementById('chat-input-field').value='Analyze authorized localhost using ${escapeHtml(t.tool_id)}.'; switchSection('copilot'); sendChatMessage();">Probe Target</button>` : '<span style="color:var(--fg-muted); font-size:11px;">N/A</span>'}
           </td>
         </tr>
       `;
@@ -4170,8 +4347,8 @@ UNIFIED_SCRIPT = """
             <td>${statusBadge}</td>
             <td>
               ${item.status === 'PENDING_REVIEW' ? `
-                <button class="btn-action" style="padding:2px 8px; font-size:11px; color:var(--success);" onclick="resolveLowConfidenceItem('${escapeHtml(item.id)}', 'APPROVED')">Approve</button>
-                <button class="btn-action" style="padding:2px 8px; font-size:11px; color:var(--critical);" onclick="resolveLowConfidenceItem('${escapeHtml(item.id)}', 'DISMISSED')">Dismiss</button>
+                <button class="btn-action" style="padding:2px 8px; font-size:11px; color:var(--success);" data-click="resolveLowConfidenceItem('${escapeHtml(item.id)}', 'APPROVED')">Approve</button>
+                <button class="btn-action" style="padding:2px 8px; font-size:11px; color:var(--critical);" data-click="resolveLowConfidenceItem('${escapeHtml(item.id)}', 'DISMISSED')">Dismiss</button>
               ` : '<span style="color:var(--fg-muted); font-size:11px;">Resolved</span>'}
             </td>
           </tr>
@@ -4203,7 +4380,7 @@ UNIFIED_SCRIPT = """
     return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 
-  // --- THEME (light default follows OS preference; stored choice wins) ---
+  // --- THEME (light default; stored choice wins) ---
   function applyTheme(theme, persist) {
     const next = theme === 'light' ? 'light' : 'dark';
     document.documentElement.setAttribute('data-theme', next);
@@ -4213,7 +4390,7 @@ UNIFIED_SCRIPT = """
       btn.setAttribute('aria-label', next === 'light' ? 'Switch to dark theme' : 'Switch to light theme');
     }
     const meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.setAttribute('content', next === 'light' ? '#FFF8F2' : '#0a0e17');
+    if (meta) meta.setAttribute('content', next === 'light' ? '#F5F8FC' : '#0a0e17');
     if (persist) {
       try { localStorage.setItem('redloop_theme', next); } catch (_) {}
     }
@@ -4231,19 +4408,8 @@ UNIFIED_SCRIPT = """
         }
       }
     } catch (_) {}
-    const prefersLight = !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches);
-    const theme = stored === 'light' || stored === 'dark' ? stored : (prefersLight ? 'light' : 'dark');
+    const theme = stored === 'light' || stored === 'dark' ? stored : 'light';
     applyTheme(theme, false);
-    if (window.matchMedia) {
-      const query = window.matchMedia('(prefers-color-scheme: light)');
-      const onChange = (event) => {
-        let saved = null;
-        try { saved = localStorage.getItem('redloop_theme'); } catch (_) {}
-        if (!saved) applyTheme(event.matches ? 'light' : 'dark', false);
-      };
-      if (query.addEventListener) query.addEventListener('change', onChange);
-      else if (query.addListener) query.addListener(onChange);
-    }
   }
 
   function showToast(message, tone) {
@@ -4635,6 +4801,211 @@ UNIFIED_SCRIPT = """
     state.overview.totalFindings = Number(metrics.total_findings) || 0;
   }
 
+  function updateLiveClock() {
+    const clock = document.getElementById('soc-live-clock');
+    if (!clock) return;
+    const d = new Date();
+    clock.textContent = d.toISOString().replace('T', ' ').slice(0, 19) + ' UTC';
+  }
+  if (!window._socClockInterval) {
+    window._socClockInterval = setInterval(updateLiveClock, 1000);
+  }
+
+  function renderSocDashboard(data, animate) {
+    if (!data) return;
+    const k = data.kpis || {};
+    const a = data.analytics || {};
+    const w = data.workspace || {};
+    const act = data.activity || {};
+
+    // Row 1 KPIs
+    setKpiValue($('#ov-kpi-total-alerts'), k.total_alerts || 0, animate);
+    setKpiValue($('#ov-kpi-crit-alerts'), k.critical_high_alerts || 0, animate);
+    setKpiValue($('#ov-kpi-active-incidents'), k.active_incidents || 0, animate);
+    setKpiValue($('#ov-kpi-active-invs'), k.active_investigations || 0, animate);
+
+    const integEl = $('#ov-kpi-integrations');
+    if (integEl) integEl.textContent = `${k.connected_integrations || 0} / ${k.total_integrations || 0}`;
+    const integSub = $('#ov-kpi-integrations-sub');
+    if (integSub) {
+      integSub.textContent = (k.connected_integrations || 0) > 0 ? `${k.connected_integrations} CONNECTED` : '0/9 CONNECTED';
+      integSub.className = 'soc-badge ' + ((k.connected_integrations || 0) > 0 ? 'soc-badge-success' : 'soc-badge-neutral');
+    }
+
+    const riskEl = $('#ov-kpi-risk-score');
+    if (riskEl) riskEl.textContent = `${k.risk_posture_score || 0} / 100`;
+    const riskBadge = $('#ov-kpi-risk-badge');
+    if (riskBadge) {
+      const lvl = k.risk_posture_level || 'EVALUATING';
+      riskBadge.textContent = lvl;
+      riskBadge.className = 'soc-badge ' + (lvl === 'CRITICAL' ? 'soc-badge-critical' : (lvl === 'HIGH' ? 'soc-badge-warning' : 'soc-badge-info'));
+    }
+
+    // Row 2 Analytics
+    const trendHost = $('#ov-alert-trend-chart');
+    if (trendHost && Array.isArray(a.alert_trend) && a.alert_trend.length) {
+      const maxCount = Math.max(...a.alert_trend.map(t => t.count), 5);
+      trendHost.innerHTML = a.alert_trend.map(t => {
+        const pct = Math.round((t.count / maxCount) * 100);
+        return `<div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; height:100%; justify-content:flex-end;">
+          <div style="font-size:10px; color:var(--fg-muted);">${t.count}</div>
+          <div style="width:100%; max-width:24px; height:${Math.max(6, pct)}%; background:var(--accent); border-radius:4px 4px 0 0; transition:height 0.3s ease;"></div>
+          <div style="font-size:9.5px; color:var(--fg-subtle);">${escapeHtml(t.label || '')}</div>
+        </div>`;
+      }).join('');
+    }
+
+    const iocList = $('#ov-threat-intel-list');
+    if (iocList) {
+      if (Array.isArray(a.threat_intel) && a.threat_intel.length) {
+        iocList.innerHTML = a.threat_intel.map(i => `
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:6px 8px; background:var(--surface-2); border-radius:6px; border:1px solid var(--border);">
+            <div style="font-family:var(--font-mono); font-weight:600; font-size:11.5px;">${escapeHtml(i.value || '')}</div>
+            <div style="display:flex; gap:6px; align-items:center;">
+              <span class="soc-badge soc-badge-info">${escapeHtml(i.ioc_type || 'IOC')}</span>
+              <span class="soc-badge soc-badge-critical">${escapeHtml(i.reputation || 'MALICIOUS')}</span>
+            </div>
+          </div>
+        `).join('');
+      } else {
+        iocList.innerHTML = '<div style="color:var(--fg-muted); padding:10px 0; text-align:center;">No active threat indicators observed in local scope.</div>';
+      }
+    }
+
+    const riskMeter = $('#ov-risk-meter');
+    if (riskMeter) riskMeter.style.width = Math.min(100, Math.max(5, k.risk_posture_score || 0)) + '%';
+    const riskRat = $('#ov-risk-rationale');
+    if (riskRat && a.risk_trend) riskRat.textContent = a.risk_trend.rationale || '';
+
+    const health = a.soc_health || {};
+    const mttdEl = $('#soc-health-mttd');
+    if (mttdEl) {
+      mttdEl.textContent = health.mttd_minutes !== null ? `${health.mttd_minutes} min` : 'INSUFFICIENT_DATA';
+      mttdEl.className = health.mttd_minutes !== null ? 'soc-badge soc-badge-success' : 'soc-badge soc-badge-neutral';
+    }
+    const mttrEl = $('#soc-health-mttr');
+    if (mttrEl) {
+      mttrEl.textContent = health.mttr_minutes !== null ? `${health.mttr_minutes} min` : 'INSUFFICIENT_DATA';
+      mttrEl.className = health.mttr_minutes !== null ? 'soc-badge soc-badge-success' : 'soc-badge-neutral';
+    }
+    const syncEl = $('#soc-health-sync');
+    if (syncEl) {
+      syncEl.textContent = health.sync_success_rate !== null ? `${health.sync_success_rate}%` : 'INSUFFICIENT_DATA';
+      syncEl.className = health.sync_success_rate !== null ? 'soc-badge soc-badge-success' : 'soc-badge-neutral';
+    }
+    const redEl = $('#soc-health-reduction');
+    if (redEl) {
+      redEl.textContent = health.reduction_status || 'UNSUPPORTED';
+    }
+
+    // Row 3 Workspace
+    const incHost = $('#ov-incidents-table');
+    if (incHost) {
+      if (Array.isArray(w.incidents) && w.incidents.length) {
+        incHost.innerHTML = '<table style="width:100%; border-collapse:collapse; font-size:12px;">' +
+          w.incidents.map(c => `
+            <tr style="border-bottom:1px solid var(--border); padding:6px 0;">
+              <td style="padding:8px 12px; font-family:var(--font-mono); font-weight:700; color:var(--accent);">${escapeHtml(c.id || '')}</td>
+              <td style="padding:8px 6px; font-weight:600;">${escapeHtml(c.title || '')}</td>
+              <td style="padding:8px 6px;"><span class="soc-badge ${c.severity === 'CRITICAL' ? 'soc-badge-critical' : (c.severity === 'HIGH' ? 'soc-badge-warning' : 'soc-badge-info')}">${escapeHtml(c.severity || '')}</span></td>
+              <td style="padding:8px 12px; text-align:right;"><span class="soc-badge soc-badge-neutral">${escapeHtml(c.status || '')}</span></td>
+            </tr>
+          `).join('') + '</table>';
+      } else {
+        incHost.innerHTML = '<div style="padding:16px; color:var(--fg-muted); text-align:center;">No active incidents in queue.</div>';
+      }
+    }
+
+    const invHost = $('#ov-investigations-list');
+    if (invHost) {
+      if (Array.isArray(w.investigations) && w.investigations.length) {
+        invHost.innerHTML = w.investigations.map(inv => `
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 14px; border-bottom:1px solid var(--border);">
+            <div>
+              <div style="font-weight:600; font-size:12.5px;">${escapeHtml(inv.title || '')}</div>
+              <div style="font-family:var(--font-mono); font-size:11px; color:var(--fg-muted);">Target: ${escapeHtml(inv.target || '')}</div>
+            </div>
+            <span class="soc-badge soc-badge-info">${escapeHtml(inv.status || '')}</span>
+          </div>
+        `).join('');
+      } else {
+        invHost.innerHTML = '<div style="padding:16px; color:var(--fg-muted); text-align:center;">No investigations in progress.</div>';
+      }
+    }
+
+    const detHost = $('#ov-detections-list');
+    if (detHost) {
+      if (Array.isArray(w.detections) && w.detections.length) {
+        detHost.innerHTML = w.detections.map(r => `
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 14px; border-bottom:1px solid var(--border);">
+            <div>
+              <div style="font-weight:600; font-size:12px;">${escapeHtml(r.title || '')}</div>
+              <div style="font-family:var(--font-mono); font-size:10.5px; color:var(--fg-muted);">Technique: ${escapeHtml(r.technique_id || 'ATT&CK')}</div>
+            </div>
+            <span class="soc-badge ${r.severity === 'critical' ? 'soc-badge-critical' : 'soc-badge-info'}">${escapeHtml((r.severity || '').toUpperCase())}</span>
+          </div>
+        `).join('');
+      } else {
+        detHost.innerHTML = '<div style="padding:16px; color:var(--fg-muted); text-align:center;">No detection rules loaded.</div>';
+      }
+    }
+
+    const integGrid = $('#ov-integrations-grid');
+    if (integGrid) {
+      if (Array.isArray(w.integrations) && w.integrations.length) {
+        integGrid.innerHTML = w.integrations.map(p => `
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:6px 10px; background:var(--surface-2); border-radius:6px; border:1px solid var(--border); font-size:11.5px;">
+            <div style="font-weight:600;">${escapeHtml(p.display_name || p.provider_id || '')}</div>
+            <span class="soc-badge ${p.is_configured ? 'soc-badge-success' : 'soc-badge-neutral'}">${p.is_configured ? 'CONNECTED' : 'NOT_CONFIGURED'}</span>
+          </div>
+        `).join('');
+      } else {
+        integGrid.innerHTML = '<div style="padding:10px; color:var(--fg-muted); text-align:center;">No provider adapters loaded.</div>';
+      }
+    }
+
+    // Row 4 Activity
+    const auditHost = $('#ov-audit-list');
+    if (auditHost) {
+      if (Array.isArray(act.recent_audit) && act.recent_audit.length) {
+        auditHost.innerHTML = act.recent_audit.map(e => `
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:4px 0; border-bottom:1px solid var(--border);">
+            <div>
+              <span style="font-family:var(--font-mono); font-weight:600; color:var(--accent);">${escapeHtml(e.action || '')}</span>
+              <span style="color:var(--fg-muted);">by ${escapeHtml(e.actor || 'system')}</span>
+            </div>
+            <span style="color:var(--fg-subtle); font-size:10.5px;">${escapeHtml((e.timestamp || '').slice(11, 19))}</span>
+          </div>
+        `).join('');
+      } else {
+        auditHost.innerHTML = '<div style="color:var(--fg-muted); text-align:center; padding:10px;">Audit trail synchronized.</div>';
+      }
+    }
+
+    const eviSum = $('#ov-evidence-summary');
+    if (eviSum && act.evidence_status) {
+      eviSum.textContent = `Ledger: ${act.evidence_status.total_items} items · Cryptographic Chain ${act.evidence_status.status}`;
+    }
+
+    const soarHost = $('#ov-soar-history');
+    if (soarHost && act.soar_history) {
+      const sh = act.soar_history;
+      if (Array.isArray(sh.recent_executions) && sh.recent_executions.length) {
+        soarHost.innerHTML = sh.recent_executions.map(ex => `
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid var(--border);">
+            <div>
+              <div style="font-weight:600;">${escapeHtml(ex.title || ex.id || '')}</div>
+              <div style="font-size:10.5px; color:var(--fg-muted); font-family:var(--font-mono);">${escapeHtml(ex.id || '')}</div>
+            </div>
+            <span class="soc-badge ${ex.state === 'COMPLETED' ? 'soc-badge-success' : 'soc-badge-info'}">${escapeHtml(ex.state || '')}</span>
+          </div>
+        `).join('');
+      } else {
+        soarHost.innerHTML = '<div style="color:var(--fg-muted); text-align:center; padding:10px;">All playbooks ready · 0 in flight</div>';
+      }
+    }
+  }
+
   async function loadOverview(manual) {
     const ov = state.overview;
     if (ov.loading) return;
@@ -4642,6 +5013,7 @@ UNIFIED_SCRIPT = """
     const animate = !ov.loaded;
     const refresh = $('#ov-refresh');
     if (refresh) { refresh.disabled = true; refresh.setAttribute('aria-busy', 'true'); }
+    updateLiveClock();
 
     const jobs = [
       getJson('/api/scope?target=' + encodeURIComponent(state.target || '127.0.0.1')),
@@ -4651,7 +5023,8 @@ UNIFIED_SCRIPT = """
       getJson('/api/entries?limit=8'),
       getJson('/api/tools/matrix'),
       getJson('/api/audit/verify'),
-      getJson('/api/audit/checkpoint')
+      getJson('/api/audit/checkpoint'),
+      getJson('/api/soc/dashboard/summary')
     ];
     const results = await Promise.allSettled(jobs);
     const failures = [];
@@ -4669,6 +5042,7 @@ UNIFIED_SCRIPT = """
     let tasksData = null;
     let assessmentsData = null;
     let entriesData = null;
+    let socSummaryData = null;
 
     settle(0, 'Scope', (data) => { scopeData = data; });
     settle(1, 'Findings', (data) => { statsData = data; });
@@ -4678,6 +5052,11 @@ UNIFIED_SCRIPT = """
     settle(5, 'Tool availability', (data) => { renderTools(data); });
     settle(6, 'Audit chain', (data) => { ov.audit = data; });
     settle(7, 'Audit checkpoint', (data) => { ov.checkpoint = data; });
+    settle(8, 'SOC Summary', (data) => { socSummaryData = data; });
+
+    if (socSummaryData) {
+      renderSocDashboard(socSummaryData, animate);
+    }
 
     if (scopeData) {
       const targets = Array.isArray(scopeData.targets) ? scopeData.targets : [];
@@ -4816,6 +5195,21 @@ UNIFIED_SCRIPT = """
       }
     }
 
+    // 2. Generic data-click delegation (eliminates CSP inline event handler violations)
+    const clickEl = event.target.closest ? event.target.closest('[data-click]') : null;
+    if (clickEl) {
+      const code = clickEl.getAttribute('data-click');
+      if (code) {
+        try {
+          const fn = new Function('event', code);
+          fn.call(clickEl, event);
+        } catch (e) {
+          console.error('[Data-Click Error]', e);
+        }
+        return;
+      }
+    }
+
     const el = event.target.closest ? event.target.closest('[data-action]') : null;
     if (!el) return;
     const action = el.getAttribute('data-action');
@@ -4858,6 +5252,21 @@ UNIFIED_SCRIPT = """
       switchSection('chat');
       return;
     }
+    if (action === 'open-palette') {
+      event.preventDefault();
+      if (typeof window.openPalette === 'function') window.openPalette();
+      return;
+    }
+    if (action === 'toggle-copilot') {
+      event.preventDefault();
+      if (typeof window.toggleCopilot === 'function') window.toggleCopilot();
+      return;
+    }
+    if (action === 'export-soc-report') {
+      event.preventDefault();
+      window.open('/api/soc/dashboard/summary', '_blank');
+      return;
+    }
   });
 
   document.addEventListener('input', (event) => {
@@ -4871,6 +5280,43 @@ UNIFIED_SCRIPT = """
     if (event.target && event.target.id === 'ov-assess-status') {
       state.overview.statusFilter = event.target.value;
       renderAssessments();
+    }
+    const el = event.target.closest ? event.target.closest('[data-change]') : null;
+    if (el) {
+      const code = el.getAttribute('data-change');
+      if (code) {
+        try { new Function('event', code).call(el, event); } catch(e) { console.error('[Data-Change Error]', e); }
+      }
+    }
+  });
+
+  document.addEventListener('input', (event) => {
+    const el = event.target.closest ? event.target.closest('[data-input]') : null;
+    if (el) {
+      const code = el.getAttribute('data-input');
+      if (code) {
+        try { new Function('event', code).call(el, event); } catch(e) { console.error('[Data-Input Error]', e); }
+      }
+    }
+  });
+
+  document.addEventListener('keydown', (event) => {
+    const el = event.target.closest ? event.target.closest('[data-keydown]') : null;
+    if (el) {
+      const code = el.getAttribute('data-keydown');
+      if (code) {
+        try { new Function('event', code).call(el, event); } catch(e) { console.error('[Data-Keydown Error]', e); }
+      }
+    }
+  });
+
+  document.addEventListener('submit', (event) => {
+    const el = event.target.closest ? event.target.closest('[data-submit]') : null;
+    if (el) {
+      const code = el.getAttribute('data-submit');
+      if (code) {
+        try { new Function('event', code).call(el, event); } catch(e) { console.error('[Data-Submit Error]', e); }
+      }
     }
   });
 
@@ -5415,7 +5861,7 @@ UNIFIED_SCRIPT = """
         <td style="font-family:var(--font-mono); font-size:12px;">${escapeHtml(f.target)}</td>
         <td style="font-family:var(--font-mono); font-size:11px; color:var(--fg-muted);">${escapeHtml(f.evidence_hash.substring(0, 24))}...</td>
         <td style="text-align:right;">
-          <button type="button" class="btn btn-sm btn-action btn-primary" onclick="askCopilotAboutFinding('${escapeHtml(f.id)}', '${escapeHtml(f.title).replace(/'/g, "\\'")}', '${escapeHtml(f.severity)}')">
+          <button type="button" class="btn btn-sm btn-action btn-primary" data-click="askCopilotAboutFinding('${escapeHtml(f.id)}', '${escapeHtml(f.title).replace(/'/g, "\\'")}', '${escapeHtml(f.severity)}')">
             🤖 Ask Copilot
           </button>
         </td>
@@ -5442,7 +5888,7 @@ UNIFIED_SCRIPT = """
         <td style="font-family:var(--font-mono); font-size:11px; color:var(--fg);">${escapeHtml(e.hash.substring(0, 28))}...</td>
         <td><span class="status-pill status-pill-success" style="font-size:11px;">${Math.round((e.confidence || 0.95) * 100)}% Provenance</span></td>
         <td style="text-align:right;">
-          <button type="button" class="btn btn-sm btn-action" onclick="askCopilotAboutEvidence('${escapeHtml(e.id)}', '${escapeHtml(e.module)}', '${escapeHtml(e.hash)}')">
+          <button type="button" class="btn btn-sm btn-action" data-click="askCopilotAboutEvidence('${escapeHtml(e.id)}', '${escapeHtml(e.module)}', '${escapeHtml(e.hash)}')">
             🔍 Explain Evidence
           </button>
         </td>
@@ -5506,7 +5952,7 @@ UNIFIED_SCRIPT = """
             <td><span class="status-pill status-pill-success">${escapeHtml(e.status || 'SUCCESS')}</span></td>
             <td>${e.details ? '1 finding' : 'Clean'}</td>
             <td style="text-align:right;">
-              <button type="button" class="btn btn-sm btn-secondary" onclick="loadInvestigationIntoWorkspace('inv-${e.id || idx + 1}')">
+              <button type="button" class="btn btn-sm btn-secondary" data-click="loadInvestigationIntoWorkspace('inv-${e.id || idx + 1}')">
                 Load View
               </button>
             </td>

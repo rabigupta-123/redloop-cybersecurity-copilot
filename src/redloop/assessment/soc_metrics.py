@@ -33,7 +33,9 @@ class SOCMetricsEngine:
         sync_pipe = TelemetrySyncPipeline.get_instance()
         sync_stats = sync_pipe.get_sync_metrics()
         total_ingested = sync_stats.get("total_events_ingested", 0)
-        sync_success_rate = sync_stats.get("sync_success_rate_percent", 100.0)
+        sync_success_rate = sync_stats.get("sync_success_rate_percent", 0.0)
+        if sync_success_rate is None:
+            sync_success_rate = 0.0
 
         # Ingested events rejected / duplicates
         job_breakdown = sync_stats.get("job_status_breakdown", {})
@@ -58,7 +60,7 @@ class SOCMetricsEngine:
             confirmed_observations += inc.get("confirmed_observations_count", 0)
             inferred_relationships += inc.get("inferred_relationships_count", 0)
 
-        duplicate_alerts_suppressed = max(0, total_linked_events - open_incidents_count)
+        duplicate_alerts_suppressed = None
 
         # 3. Detection Engineering Metrics
         det_mgr = DetectionEngineeringManager.get_instance()
@@ -75,7 +77,7 @@ class SOCMetricsEngine:
         ]
         provider_availability_pct = (
             round((len(connected_providers) / len(enabled_providers) * 100.0), 1)
-            if enabled_providers else 100.0
+            if enabled_providers else None
         )
 
         # 5. Case Management & MTTD / MTTR Calculations
@@ -106,26 +108,32 @@ class SOCMetricsEngine:
             for inc in active_incidents:
                 links = inc.get("linked_events", [])
                 if links:
+                    event_times = []
+                    for event in links:
+                        try:
+                            event_times.append(datetime.fromisoformat(event["timestamp"]))
+                        except (KeyError, TypeError, ValueError):
+                            continue
                     try:
-                        earliest_event_ts = datetime.fromisoformat(links[0]["timestamp"])
+                        if not event_times:
+                            continue
+                        earliest_event_ts = min(event_times)
                         inc_created_ts = datetime.fromisoformat(inc["created_at"])
                         diff_m = (inc_created_ts - earliest_event_ts).total_seconds() / 60.0
                         if diff_m >= 0:
                             mttd_diffs.append(diff_m)
-                    except Exception:
+                    except (KeyError, TypeError, ValueError):
                         pass
             if mttd_diffs:
                 mttd_minutes = round(sum(mttd_diffs) / len(mttd_diffs), 1)
 
-        reduction_pct = (
-            round((duplicate_alerts_suppressed / total_linked_events * 100.0), 1)
-            if total_linked_events > 0 else 0.0
-        )
+        reduction_pct = None
 
         mttd_status = "CALCULATED" if mttd_minutes is not None else "INSUFFICIENT_DATA"
         mttr_status = "CALCULATED" if mttr_minutes is not None else "INSUFFICIENT_DATA"
         sync_status = "CALCULATED" if total_ingested > 0 or failed_jobs > 0 or partial_jobs > 0 else "INSUFFICIENT_DATA"
-        reduction_status = "CALCULATED" if total_linked_events > 0 else "INSUFFICIENT_DATA"
+        reduction_status = "UNSUPPORTED"
+        provider_status = "CALCULATED" if enabled_providers else "NOT_CONFIGURED"
 
         return {
             "metrics_timestamp": now,
@@ -136,6 +144,7 @@ class SOCMetricsEngine:
             "telemetry_sync_rate_percent": sync_success_rate,
             "telemetry_sync_status": sync_status,
             "provider_availability_percent": provider_availability_pct,
+            "provider_availability_status": provider_status,
             "alert_reduction_rate_percent": reduction_pct,
             "alert_reduction_status": reduction_status,
             "telemetry": {
@@ -165,6 +174,7 @@ class SOCMetricsEngine:
                 "enabled_providers": len(enabled_providers),
                 "connected_providers": len(connected_providers),
                 "availability_rate_percent": provider_availability_pct,
+                "status": provider_status,
             },
             "performance_indicators": {
                 "mean_time_to_detect_minutes": mttd_minutes,
@@ -185,7 +195,7 @@ class SOCMetricsEngine:
                 },
                 "alert_reduction_rate": {
                     "latex": r"\text{ARR} = \left(\frac{N_{\text{clustered\_events}} - N_{\text{incidents}}}{N_{\text{clustered\_events}}}\right) \times 100\%",
-                    "description": "Percentage of duplicate or correlated noisy alerts collapsed into unified incident cases.",
+                    "description": "Unsupported until a valid pre-correlation alert baseline is available; clustered event and incident counts are not a deduplication baseline.",
                 },
                 "telemetry_sync_success_rate": {
                     "latex": r"\text{Sync Rate} = \left(\frac{J_{\text{completed}}}{J_{\text{total}}}\right) \times 100\%",

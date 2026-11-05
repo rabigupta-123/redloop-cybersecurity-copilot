@@ -45,3 +45,4 @@ light_tokens.css
 test_scope*.yaml
 data/
 test_tmp_audit*
+claude-proxy.yaml

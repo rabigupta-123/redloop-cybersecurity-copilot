@@ -1,4 +1,4 @@
-﻿"""Local RedLoop chat interface with private, persistent conversations."""
+"""Local RedLoop chat interface with private, persistent conversations."""
 
 from __future__ import annotations
 
@@ -2542,11 +2542,27 @@ def register_chat_routes(
         if "response" not in result:
             result["response"] = response_text
         capability = result.get("capability") or "GENERAL_CHAT"
-        token_count = result.get("token_count") or result.get("tokens") or 0
-        latency_ms = result.get("latency_ms") or 0.0
-        audit_event_id = result.get("audit_event_id") or result.get("task_id") or ""
-        model_used = result.get("model") or model or "auto"
-        provider_used = result.get("provider") or ""
+        telem = result.get("telemetry") or {}
+        token_count = result.get("token_count") or telem.get("total_tokens") or result.get("tokens") or None
+        latency_ms = result.get("latency_ms") or telem.get("latency_ms") or 0.0
+        audit_event_id = result.get("audit_event_id") or result.get("task_id")
+        if not audit_event_id:
+            row_id = audit.log(
+                "copilot-turn",
+                "chat_turn",
+                "assistant",
+                "completed",
+                {
+                    "conversation_id": conv_id,
+                    "prompt": prompt[:200],
+                    "capability": capability,
+                },
+            )
+            audit_event_id = f"audit-evt-{row_id}" if row_id else f"evt-{int(time.time()*1000)}"
+            result["audit_event_id"] = audit_event_id
+
+        model_used = result.get("model") or telem.get("model") or model or "deterministic_local_engine"
+        provider_used = result.get("provider") or telem.get("provider") or "OFFLINE_DETERMINISTIC"
 
         # 4. Persist Assistant Turn in SQLite store
         asst_pos = store.append_turn(

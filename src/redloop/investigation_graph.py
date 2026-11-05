@@ -153,17 +153,18 @@ class InvestigationGraph:
                     time.sleep(0.05 * (attempt + 1))
 
             if not replaced:
-                # Direct overwrite fallback if atomic replace blocked by Windows locking
-                with open(self.graph_file, "w", encoding="utf-8") as fh:
-                    fh.write(payload)
-                tmp_path.unlink(missing_ok=True)
+                raise PermissionError(
+                    f"Atomic replacement of investigation graph {self.graph_file} "
+                    "failed after 5 attempts."
+                )
         except Exception as e:
             logger.error("Failed to save investigation graph: %s", e)
+            raise
+        finally:
             try:
                 tmp_path.unlink(missing_ok=True)
-            except Exception:
-                pass
-            raise
+            except OSError as cleanup_error:
+                logger.warning("Failed to remove temporary investigation graph %s: %s", tmp_path, cleanup_error)
 
     def add_node(
         self,

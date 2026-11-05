@@ -89,29 +89,28 @@ _DARK_TOKENS = """
 """
 
 _LIGHT_TOKENS = """
-  /* Light "white + orange" palette. Body text always uses --fg; --accent-strong
-     is reserved for large text, icons, and UI strokes (>= 3:1 on white). */
-  --bg: #FFF8F2;
+  /* Light blue palette. Body text always uses --fg; accents retain readable contrast. */
+  --bg: #F5F8FC;
   --bg-elevated: #FFFFFF;
   --surface: #FFFFFF;
-  --surface-2: #FFF1E6;
+  --surface-2: #EFF4FA;
   --surface-elevated: #FFFFFF;
   --surface-glass: rgba(255, 255, 255, 0.84);
-  --border: #F1E3D6;
-  --border-subtle: rgba(31, 27, 22, 0.08);
-  --border-glow: rgba(234, 88, 12, 0.28);
-  --border-cyan: rgba(234, 88, 12, 0.24);
-  --border-amber-glow: rgba(234, 88, 12, 0.28);
-  --fg: #1F1B16;
-  --fg-muted: #756A61;
-  --fg-subtle: #6F645B;
-  --accent: #F97316;
-  --accent-strong: #EA580C;
-  --accent-soft: #FFEDD5;
-  --accent-hover: #EA580C;
-  --accent-cyber: #C2410C;
-  --accent-cyber-hover: #9A3412;
-  --accent-blue: #C2410C;
+  --border: #D8E2EE;
+  --border-subtle: rgba(23, 43, 77, 0.08);
+  --border-glow: rgba(37, 99, 235, 0.24);
+  --border-cyan: rgba(8, 145, 178, 0.22);
+  --border-amber-glow: rgba(37, 99, 235, 0.24);
+  --fg: #172B4D;
+  --fg-muted: #52657A;
+  --fg-subtle: #62758A;
+  --accent: #3B82F6;
+  --accent-strong: #1D4ED8;
+  --accent-soft: #EAF2FF;
+  --accent-hover: #1E40AF;
+  --accent-cyber: #0891B2;
+  --accent-cyber-hover: #0E7490;
+  --accent-blue: #1D4ED8;
   --accent-amber: #D97706;
   --accent-purple: #7E22CE;
   --accent-green: #16A34A;
@@ -128,22 +127,22 @@ _LIGHT_TOKENS = """
   --info-strong: #0369A1;
   --critical: #DC2626;
   --critical-bg: rgba(220, 38, 38, 0.10);
-  --accent-ink: #C2410C;
-  --accent-button: #C2410C;
-  --accent-button-hover: #9A3412;
-  --brand: #EA580C;
-  --primary: #EA580C;
+  --accent-ink: #1E40AF;
+  --accent-button: #2563EB;
+  --accent-button-hover: #1D4ED8;
+  --brand: #1D4ED8;
+  --primary: #1D4ED8;
   --radius: 16px;
   --radius-sm: 10px;
   --radius-md: 12px;
   --radius-lg: 16px;
   --radius-xl: 22px;
-  --shadow-sm: 0 1px 2px rgba(31, 27, 22, 0.06);
-  --shadow-md: 0 6px 20px rgba(31, 27, 22, 0.08), 0 1px 3px rgba(31, 27, 22, 0.06);
-  --shadow-lg: 0 18px 40px rgba(31, 27, 22, 0.12);
-  --shadow-glow: 0 10px 28px rgba(249, 115, 22, 0.18);
-  --bg-old: #FFF8F2;
-  --accent-old: #F97316;
+  --shadow-sm: 0 1px 2px rgba(23, 43, 77, 0.06);
+  --shadow-md: 0 6px 20px rgba(23, 43, 77, 0.08), 0 1px 3px rgba(23, 43, 77, 0.06);
+  --shadow-lg: 0 18px 40px rgba(23, 43, 77, 0.12);
+  --shadow-glow: 0 10px 28px rgba(37, 99, 235, 0.16);
+  --bg-old: #F5F8FC;
+  --accent-old: #3B82F6;
   --text-xs: 12px;
   --text-sm: 14px;
   --text-md: 16px;
@@ -158,8 +157,7 @@ _LIGHT_TOKENS = """
 THEME_TOKENS_CSS = (
     ":root {" + _DARK_TOKENS + "  color-scheme: dark;\n}\n"
     ':root[data-theme="light"] {' + _LIGHT_TOKENS + "  color-scheme: light;\n}\n"
-    "@media (prefers-color-scheme: light) {\n"
-    '  :root:not([data-theme]) {' + _LIGHT_TOKENS + "    color-scheme: light;\n  }\n}\n"
+    ':root:not([data-theme]) {' + _LIGHT_TOKENS + "  color-scheme: light;\n}\n"
 )
 
 _SHARED_DASHBOARD_CSS = THEME_TOKENS_CSS + """
@@ -1114,37 +1112,36 @@ def create_app(
     <nav aria-label="Primary navigation" class="sidebar-nav">
       <div class="nav-section">
         <div class="nav-label">OPERATE</div>
-        <a class="nav-item active" data-section="overview" onclick="switchSection('overview')" href="#overview">{_svg_icon("overview")}<span>Overview</span></a>
-        <a class="nav-item" data-section="chat" onclick="switchSection('chat')" href="/chat">{_svg_icon("chat")}<span>Chat</span></a>
-        <a class="nav-item" data-section="copilot" onclick="toggleCopilot()" href="javascript:void(0)">{_svg_icon("copilot")}<span>Copilot Drawer</span></a>
-        <a class="nav-item" data-section="terminal" onclick="switchSection('terminal')" href="#terminal">{_svg_icon("terminal")}<span>Terminal</span></a>
-        <a class="nav-item" data-section="tools" onclick="switchSection('tools')" href="#tools">{_svg_icon("tools")}<span>Tools</span></a>
+        <a class="nav-item active" data-section="overview" href="#overview">{_svg_icon("overview")}<span>Overview</span></a>
+        <a class="nav-item" data-section="chat" href="/chat">{_svg_icon("chat")}<span>Chat</span></a>
+        <a class="nav-item" data-section="copilot" href="javascript:void(0)">{_svg_icon("copilot")}<span>Copilot Drawer</span></a>
+        <a class="nav-item" data-section="terminal" href="#terminal">{_svg_icon("terminal")}<span>Terminal</span></a>
+        <a class="nav-item" data-section="tools" href="#tools">{_svg_icon("tools")}<span>Tools</span></a>
       </div>
       <div class="nav-section">
         <div class="nav-label">INVESTIGATE</div>
-        <a class="nav-item" data-section="investigations" onclick="switchSection('investigations')" href="#investigations">{_svg_icon("investigations")}<span>Investigations</span></a>
-        <a class="nav-item" data-section="evidence" onclick="switchSection('evidence')" href="#evidence">{_svg_icon("evidence")}<span>Evidence</span></a>
-        <a class="nav-item" data-section="graph" onclick="switchSection('graph')" href="#graph">{_svg_icon("graph")}<span>Graph</span></a>
-        <a class="nav-item" data-section="osint" onclick="switchSection('osint')" href="#osint">{_svg_icon("osint")}<span>OSINT</span></a>
-        <a class="nav-item" data-section="email-footprint" onclick="switchSection('email-footprint')" href="#email-footprint">{_svg_icon("osint")}<span>Email Footprint</span></a>
-        <a class="nav-item" data-section="threat-intel" onclick="switchSection('threat-intel')" href="#threat-intel">{_svg_icon("findings")}<span>Threat Intel</span></a>
-        <a class="nav-item" data-section="identity" onclick="switchSection('identity')" href="#identity">{_svg_icon("investigations")}<span>Identity</span></a>
+        <a class="nav-item" data-section="investigations" href="#investigations">{_svg_icon("investigations")}<span>Investigations</span></a>
+        <a class="nav-item" data-section="evidence" href="#evidence">{_svg_icon("evidence")}<span>Evidence</span></a>
+        <a class="nav-item" data-section="graph" href="#graph">{_svg_icon("graph")}<span>Graph</span></a>
+        <a class="nav-item" data-section="osint" href="#osint">{_svg_icon("osint")}<span>OSINT</span></a>
+        <a class="nav-item" data-section="email-footprint" href="#email-footprint">{_svg_icon("osint")}<span>Email Footprint</span></a>
+        <a class="nav-item" data-section="threat-intel" href="#threat-intel">{_svg_icon("findings")}<span>Threat Intel</span></a>
+        <a class="nav-item" data-section="identity" href="#identity">{_svg_icon("investigations")}<span>Identity</span></a>
       </div>
       <div class="nav-section">
         <div class="nav-label">SECURITY</div>
-        <a class="nav-item" data-section="investigations" onclick="switchSection('investigations')" href="#investigations">{_svg_icon("assessments")}<span>Investigation Workspace</span></a>
-        <a class="nav-item" data-section="findings" onclick="switchSection('findings')" href="#findings">{_svg_icon("findings")}<span>Findings</span></a>
-        <a class="nav-item" data-section="reports" onclick="switchSection('reports')" href="#reports">{_svg_icon("reports")}<span>Reports</span></a>
+        <a class="nav-item" data-section="findings" href="#findings">{_svg_icon("findings")}<span>Findings</span></a>
+        <a class="nav-item" data-section="reports" href="#reports">{_svg_icon("reports")}<span>Reports</span></a>
       </div>
       <div class="nav-section">
         <div class="nav-label">GOVERN</div>
-        <a class="nav-item" data-section="audit" onclick="switchSection('audit')" href="#audit">{_svg_icon("audit")}<span>Audit</span></a>
-        <a class="nav-item" data-section="providers" onclick="switchSection('providers')" href="#providers">{_svg_icon("providers")}<span>Providers</span></a>
+        <a class="nav-item" data-section="audit" href="#audit">{_svg_icon("audit")}<span>Audit</span></a>
+        <a class="nav-item" data-section="providers" href="#providers">{_svg_icon("providers")}<span>Providers</span></a>
       </div>
       <div class="nav-section">
         <div class="nav-label">SYSTEM</div>
-        <a class="nav-item" data-section="system-health" onclick="switchSection('system-health')" href="/performance">{_svg_icon("system-health")}<span>System Health</span></a>
-        <a class="nav-item" data-section="settings" onclick="switchSection('settings')" href="#settings">{_svg_icon("settings")}<span>Settings</span></a>
+        <a class="nav-item" data-section="system-health" href="/performance">{_svg_icon("system-health")}<span>System Health</span></a>
+        <a class="nav-item" data-section="settings" href="#settings">{_svg_icon("settings")}<span>Settings</span></a>
       </div>
     </nav>
     <div class="sidebar-footer">
@@ -1165,7 +1162,7 @@ def create_app(
       </div>
       <div class="topbar-right">
         <div class="target-select-wrap">
-          <select id="target-selector" class="target-select" onchange="changeTarget(this.value)">
+          <select id="target-selector" class="target-select" data-change="changeTarget(this.value)">
             {''.join(target_options)}
           </select>
         </div>
@@ -1175,8 +1172,8 @@ def create_app(
           <svg class="theme-icon theme-icon-sun" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
           <svg class="theme-icon theme-icon-moon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>
         </button>
-        <button class="btn-action" onclick="openPalette()"><kbd>Ctrl+K</kbd> Command Palette</button>
-        <button class="btn-action btn-primary" onclick="toggleCopilot()"><kbd>Ctrl+/</kbd> AI Copilot</button>
+        <button class="btn-action" data-action="open-palette"><kbd>Ctrl+K</kbd> Command Palette</button>
+        <button class="btn-action btn-primary" data-action="toggle-copilot"><kbd>Ctrl+/</kbd> AI Copilot</button>
       </div>
     </header>
 
@@ -1187,11 +1184,11 @@ def create_app(
           <!-- LEFT CONVERSATION RAIL -->
           <aside class="chat-rail" id="chat-rail">
             <div class="chat-rail-header">
-              <button class="btn-new-chat" id="btn-new-chat" onclick="createNewChat()">
+              <button class="btn-new-chat" id="btn-new-chat" data-click="createNewChat()">
                 <svg viewBox="0 0 24 24" class="svg-icon" style="width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;"><path d="M12 5v14M5 12h14"/></svg>
                 <span>New chat</span>
               </button>
-              <input type="text" id="chat-search-input" class="chat-search-input" placeholder="Search conversations..." oninput="filterConversations(this.value)">
+              <input type="text" id="chat-search-input" class="chat-search-input" placeholder="Search conversations..." data-input="filterConversations(this.value)">
             </div>
             <div class="chat-conv-list" id="chat-conv-list" role="list">
               <!-- Dynamically populated via loadConversations() -->
@@ -1204,14 +1201,14 @@ def create_app(
             <div class="chat-topbar">
               <div class="chat-title-wrap">
                 <span id="active-chat-title" class="active-chat-title">New chat</span>
-                <button class="btn-icon-subtle" title="Rename conversation" onclick="promptRenameActiveChat()">
+                <button class="btn-icon-subtle" title="Rename conversation" data-click="promptRenameActiveChat()">
                   <svg viewBox="0 0 24 24" class="svg-icon" style="width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2;"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
                 </button>
               </div>
               <span id="chat-target-chip" class="chat-target-chip">🎯 Target: {escape(active_target)}</span>
               <div class="chat-model-selector-wrap" style="margin-left:auto; display:flex; align-items:center; gap:8px;">
                 <span style="font-size:11px; color:var(--fg-muted); font-family:var(--font-mono);">MODEL:</span>
-                <select id="chat-model-select" class="chat-select" style="min-width:220px;" onchange="saveModelPreference(this.value)">
+                <select id="chat-model-select" class="chat-select" style="min-width:220px;" data-change="saveModelPreference(this.value)">
                   <option value="auto">🟢 Auto · Best fit</option>
                 </select>
               </div>
@@ -1225,21 +1222,21 @@ def create_app(
             <!-- CHAT COMPOSER -->
             <div class="chat-bottom">
               <div class="quick-chips">
-                <span class="quick-chip" onclick="setAndSendPrompt('Explain TCP three-way handshake.')">Explain TCP Handshake</span>
-                <span class="quick-chip" onclick="setAndSendPrompt('Investigate public IP 8.8.8.8.')">Investigate 8.8.8.8</span>
-                <span class="quick-chip" onclick="setAndSendPrompt('Scan authorized localhost with Nmap.')">Scan Localhost</span>
-                <span class="quick-chip" onclick="setAndSendPrompt('Verify audit chain')">Verify Audit Chain</span>
-                <span class="quick-chip" onclick="setAndSendPrompt('Suggest a Wireshark filter for DNS queries')">Wireshark Filter</span>
+                <span class="quick-chip" data-click="setAndSendPrompt('Explain TCP three-way handshake.')">Explain TCP Handshake</span>
+                <span class="quick-chip" data-click="setAndSendPrompt('Investigate public IP 8.8.8.8.')">Investigate 8.8.8.8</span>
+                <span class="quick-chip" data-click="setAndSendPrompt('Scan authorized localhost with Nmap.')">Scan Localhost</span>
+                <span class="quick-chip" data-click="setAndSendPrompt('Verify audit chain')">Verify Audit Chain</span>
+                <span class="quick-chip" data-click="setAndSendPrompt('Suggest a Wireshark filter for DNS queries')">Wireshark Filter</span>
               </div>
               <div id="chat-attached-chips" class="attached-chips"></div>
               <div class="chat-input-row">
-                <input type="file" id="chat-file-input" style="display:none;" onchange="handleFileAttachment(this)">
-                <button type="button" class="btn-attach" onclick="document.getElementById('chat-file-input').click()" title="Attach file or log">
+                <input type="file" id="chat-file-input" style="display:none;" data-change="handleFileAttachment(this)">
+                <button type="button" class="btn-attach" data-click="document.getElementById('chat-file-input').click()" title="Attach file or log">
                   <svg viewBox="0 0 24 24" class="svg-icon"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
                 </button>
-                <textarea id="chat-input-field" class="chat-input" rows="1" placeholder="Type a cybersecurity command, investigation, or question (Enter to send, Shift+Enter for newline)..." onkeydown="handleChatKeydown(event)" oninput="autoGrowTextarea(this)"></textarea>
-                <button id="chat-send-btn" class="btn-send" onclick="sendChatMessage()">Send</button>
-                <button id="chat-stop-btn" class="btn-stop" style="display:none;" onclick="cancelActiveChat()">
+                <textarea id="chat-input-field" class="chat-input" rows="1" placeholder="Type a cybersecurity command, investigation, or question (Enter to send, Shift+Enter for newline)..." data-keydown="handleChatKeydown(event)" data-input="autoGrowTextarea(this)"></textarea>
+                <button id="chat-send-btn" class="btn-send" data-click="sendChatMessage()">Send</button>
+                <button id="chat-stop-btn" class="btn-stop" style="display:none;" data-click="cancelActiveChat()">
                   <span style="font-size:10px;">◼</span> Stop
                 </button>
               </div>
@@ -1261,15 +1258,15 @@ def create_app(
             </div>
             <div style="display:flex; align-items:center; gap:8px;">
               <label for="terminal-env" style="font-size:12px; color:var(--fg-muted); font-weight:600;">ENV:</label>
-              <select id="terminal-env" style="background:var(--surface-2); border:1px solid var(--border); color:var(--fg); padding:4px 10px; border-radius:6px; font-size:12px; font-family:var(--font-mono);" onchange="updateTerminalEnv()">
+              <select id="terminal-env" style="background:var(--surface-2); border:1px solid var(--border); color:var(--fg); padding:4px 10px; border-radius:6px; font-size:12px; font-family:var(--font-mono);" data-change="updateTerminalEnv()">
                 <option value="host">Host (Windows)</option>
                 <option value="wsl">WSL</option>
                 <option value="kali">Kali Linux</option>
                 <option value="docker">Docker</option>
               </select>
               <span id="terminal-env-badge" class="badge badge-success">READY</span>
-              <button type="button" class="btn btn-sm btn-ghost" onclick="clearTerminalOutput()" title="Clear terminal output" style="font-size:11px; padding:3px 8px;">Clear</button>
-              <button type="button" class="btn btn-sm btn-ghost" onclick="copyTerminalOutput()" title="Copy output to clipboard" style="font-size:11px; padding:3px 8px;">Copy</button>
+              <button type="button" class="btn btn-sm btn-ghost" data-click="clearTerminalOutput()" title="Clear terminal output" style="font-size:11px; padding:3px 8px;">Clear</button>
+              <button type="button" class="btn btn-sm btn-ghost" data-click="copyTerminalOutput()" title="Copy output to clipboard" style="font-size:11px; padding:3px 8px;">Copy</button>
             </div>
           </div>
           <div style="background:#050811; border:1px solid var(--border); border-radius:8px; padding:16px; margin-bottom:14px; position:relative;">
@@ -1282,16 +1279,16 @@ Ready. Enter diagnostic, inspection, or authorized scoped commands.</pre>
           </div>
           <div style="display:flex; gap:10px; align-items:center;">
             <span id="terminal-prompt-sym" style="font-family:var(--font-mono); font-weight:700; color:var(--accent);">[host] $</span>
-            <input type="text" id="terminal-input" class="chat-input" placeholder="Enter command (e.g. whoami, hostname, or nmap -sT 127.0.0.1)..." onkeydown="handleTerminalKey(event)">
-            <button id="btn-terminal-exec" class="btn-action btn-primary" onclick="runTerminal()">Execute</button>
-            <button id="btn-terminal-cancel" class="btn-action" style="background:#dc2626; color:#fff; display:none;" onclick="cancelTerminal()">Stop</button>
+            <input type="text" id="terminal-input" class="chat-input" placeholder="Enter command (e.g. whoami, hostname, or nmap -sT 127.0.0.1)..." data-keydown="handleTerminalKey(event)">
+            <button id="btn-terminal-exec" class="btn-action btn-primary" data-click="runTerminal()">Execute</button>
+            <button id="btn-terminal-cancel" class="btn-action" style="background:#dc2626; color:#fff; display:none;" data-click="cancelTerminal()">Stop</button>
           </div>
           <div class="quick-chips" style="margin-top:12px;">
-            <span class="quick-chip" onclick="document.getElementById('terminal-input').value='whoami'; runTerminal();">whoami</span>
-            <span class="quick-chip" onclick="document.getElementById('terminal-input').value='hostname'; runTerminal();">hostname</span>
-            <span class="quick-chip" onclick="document.getElementById('terminal-input').value='nmap -sT 127.0.0.1'; runTerminal();">nmap -sT 127.0.0.1</span>
-            <span class="quick-chip" onclick="document.getElementById('terminal-input').value='curl -sI http://127.0.0.1'; runTerminal();">curl -sI http://127.0.0.1</span>
-            <span class="quick-chip" onclick="document.getElementById('terminal-input').value='netstat -an'; runTerminal();">netstat -an</span>
+            <span class="quick-chip" data-click="document.getElementById('terminal-input').value='whoami'; runTerminal();">whoami</span>
+            <span class="quick-chip" data-click="document.getElementById('terminal-input').value='hostname'; runTerminal();">hostname</span>
+            <span class="quick-chip" data-click="document.getElementById('terminal-input').value='nmap -sT 127.0.0.1'; runTerminal();">nmap -sT 127.0.0.1</span>
+            <span class="quick-chip" data-click="document.getElementById('terminal-input').value='curl -sI http://127.0.0.1'; runTerminal();">curl -sI http://127.0.0.1</span>
+            <span class="quick-chip" data-click="document.getElementById('terminal-input').value='netstat -an'; runTerminal();">netstat -an</span>
           </div>
         </div>
       </section>
@@ -1309,7 +1306,7 @@ Ready. Enter diagnostic, inspection, or authorized scoped commands.</pre>
                 <span class="badge badge-critical" id="tools-kpi-unavail">Unavailable: --</span>
               </div>
             </div>
-            <button class="btn-action" id="btn-refresh-tools" onclick="loadToolsMatrix(true)">↻ Refresh Matrix</button>
+            <button class="btn-action" id="btn-refresh-tools" data-click="loadToolsMatrix(true)">↻ Refresh Matrix</button>
           </div>
           <p style="color:var(--fg-muted); margin-bottom:14px; font-size:13px;">Truthful operational matrix across Windows Host, WSL, Kali Linux, and Docker. Verified runtime detection without fabricated statuses.</p>
           
@@ -1317,7 +1314,7 @@ Ready. Enter diagnostic, inspection, or authorized scoped commands.</pre>
           <div style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:16px; align-items:center; background:var(--surface-2); padding:10px 14px; border-radius:var(--radius-sm); border:1px solid var(--border);">
             <div style="display:flex; align-items:center; gap:6px;">
               <label for="tools-env-filter" style="font-size:11.5px; font-weight:700; color:var(--fg-muted);">ENVIRONMENT:</label>
-              <select id="tools-env-filter" onchange="filterToolsMatrix()" style="padding:4px 8px; font-size:12px; border-radius:6px; border:1px solid var(--border); background:var(--surface); color:var(--fg);">
+              <select id="tools-env-filter" data-change="filterToolsMatrix()" style="padding:4px 8px; font-size:12px; border-radius:6px; border:1px solid var(--border); background:var(--surface); color:var(--fg);">
                 <option value="all">All Environments</option>
                 <option value="host">Host</option>
                 <option value="wsl">WSL</option>
@@ -1328,7 +1325,7 @@ Ready. Enter diagnostic, inspection, or authorized scoped commands.</pre>
             </div>
             <div style="display:flex; align-items:center; gap:6px;">
               <label for="tools-cat-filter" style="font-size:11.5px; font-weight:700; color:var(--fg-muted);">CATEGORY:</label>
-              <select id="tools-cat-filter" onchange="filterToolsMatrix()" style="padding:4px 8px; font-size:12px; border-radius:6px; border:1px solid var(--border); background:var(--surface); color:var(--fg);">
+              <select id="tools-cat-filter" data-change="filterToolsMatrix()" style="padding:4px 8px; font-size:12px; border-radius:6px; border:1px solid var(--border); background:var(--surface); color:var(--fg);">
                 <option value="all">All Categories</option>
                 <option value="network_recon">Network Recon</option>
                 <option value="web_security">Web Security</option>
@@ -1342,7 +1339,7 @@ Ready. Enter diagnostic, inspection, or authorized scoped commands.</pre>
             </div>
             <div style="display:flex; align-items:center; gap:6px;">
               <label for="tools-status-filter" style="font-size:11.5px; font-weight:700; color:var(--fg-muted);">STATUS:</label>
-              <select id="tools-status-filter" onchange="filterToolsMatrix()" style="padding:4px 8px; font-size:12px; border-radius:6px; border:1px solid var(--border); background:var(--surface); color:var(--fg);">
+              <select id="tools-status-filter" data-change="filterToolsMatrix()" style="padding:4px 8px; font-size:12px; border-radius:6px; border:1px solid var(--border); background:var(--surface); color:var(--fg);">
                 <option value="all">All Statuses</option>
                 <option value="AVAILABLE">Available</option>
                 <option value="DEGRADED">Degraded</option>
@@ -1431,14 +1428,14 @@ Ready. Enter diagnostic, inspection, or authorized scoped commands.</pre>
           <div class="panel-header">
             <span class="panel-title">Investigation Execution Controls</span>
             <div style="display:flex; gap:8px;">
-              <button type="button" class="btn btn-sm btn-ghost" onclick="loadInvestigationsList()">↻ Refresh History</button>
+              <button type="button" class="btn btn-sm btn-ghost" data-click="loadInvestigationsList()">↻ Refresh History</button>
             </div>
           </div>
-          <form id="ws-investigation-form" onsubmit="event.preventDefault(); executeWorkspaceScan();">
+          <form id="ws-investigation-form" data-submit="event.preventDefault(); executeWorkspaceScan();">
             <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:12px; margin-bottom:14px;">
               <div>
                 <label class="field-label" for="ws-target-input">Target Host / IP / Domain / URL</label>
-                <input type="text" id="ws-target-input" class="input" value="{escape(active_target)}" placeholder="e.g. 127.0.0.1 or example.local" required oninput="syncTargetWithTopbar(this.value)">
+                <input type="text" id="ws-target-input" class="input" value="{escape(active_target)}" placeholder="e.g. 127.0.0.1 or example.local" required data-input="syncTargetWithTopbar(this.value)">
               </div>
               <div>
                 <label class="field-label" for="ws-title-input">Investigation Title</label>
@@ -1446,7 +1443,7 @@ Ready. Enter diagnostic, inspection, or authorized scoped commands.</pre>
               </div>
               <div>
                 <label class="field-label" for="ws-scan-type">Scan Type</label>
-                <select id="ws-scan-type" class="select" onchange="onScanTypeChanged(this.value)">
+                <select id="ws-scan-type" class="select" data-change="onScanTypeChanged(this.value)">
                   <option value="autonomous">Full Autonomous Assessment</option>
                   <option value="recon">Port &amp; Service Reconnaissance</option>
                   <option value="webapp">Web App &amp; Vulnerability Triage</option>
@@ -1471,10 +1468,10 @@ Ready. Enter diagnostic, inspection, or authorized scoped commands.</pre>
                 <button type="submit" id="ws-btn-run" class="btn btn-primary" style="padding:8px 18px; font-weight:600;">
                   ⚡ Execute Deep Investigation
                 </button>
-                <button type="button" id="ws-btn-cancel" class="btn btn-secondary" onclick="cancelWorkspaceScan()" style="display:none;">
+                <button type="button" id="ws-btn-cancel" class="btn btn-secondary" data-click="cancelWorkspaceScan()" style="display:none;">
                   ⏹ Stop Scan
                 </button>
-                <button type="button" class="btn btn-ghost" onclick="clearWorkspaceResults()">
+                <button type="button" class="btn btn-ghost" data-click="clearWorkspaceResults()">
                   🗑️ Clear
                 </button>
               </div>
@@ -1595,7 +1592,7 @@ Ready. Enter diagnostic, inspection, or authorized scoped commands.</pre>
           <div>
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
               <span style="font-size:12px; font-weight:600; color:var(--fg-muted); text-transform:uppercase; letter-spacing:0.05em;">Execution Console Log</span>
-              <button type="button" class="btn btn-sm btn-ghost" onclick="clearWorkspaceTerminal()" style="padding:2px 8px; font-size:11px;">Clear Log</button>
+              <button type="button" class="btn btn-sm btn-ghost" data-click="clearWorkspaceTerminal()" style="padding:2px 8px; font-size:11px;">Clear Log</button>
             </div>
             <div id="ws-terminal-logs" style="background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:12px; font-family:var(--font-mono); font-size:12px; min-height:140px; max-height:220px; overflow-y:auto; color:var(--fg-muted); line-height:1.6;">
               <div style="color:var(--accent);">[System] Workspace initialized. Ready to execute investigation against authorized targets.</div>
@@ -1607,13 +1604,13 @@ Ready. Enter diagnostic, inspection, or authorized scoped commands.</pre>
         <div class="card-panel">
           <div class="panel-header" style="border-bottom:1px solid var(--border); padding-bottom:12px; margin-bottom:14px;">
             <div class="tabs" role="tablist" style="display:flex; gap:8px;">
-              <button type="button" class="btn btn-sm btn-action active" id="ws-tab-findings" onclick="switchWorkspaceSubTab('findings')">
+              <button type="button" class="btn btn-sm btn-action active" id="ws-tab-findings" data-click="switchWorkspaceSubTab('findings')">
                 Findings (<span id="ws-tab-findings-count">0</span>)
               </button>
-              <button type="button" class="btn btn-sm btn-action" id="ws-tab-evidence" onclick="switchWorkspaceSubTab('evidence')">
+              <button type="button" class="btn btn-sm btn-action" id="ws-tab-evidence" data-click="switchWorkspaceSubTab('evidence')">
                 Cryptographic Evidence (<span id="ws-tab-evidence-count">0</span>)
               </button>
-              <button type="button" class="btn btn-sm btn-action" id="ws-tab-history" onclick="switchWorkspaceSubTab('history')">
+              <button type="button" class="btn btn-sm btn-action" id="ws-tab-history" data-click="switchWorkspaceSubTab('history')">
                 Saved Investigations
               </button>
             </div>
@@ -1745,12 +1742,12 @@ Ready. Enter diagnostic, inspection, or authorized scoped commands.</pre>
             </div>
             <div style="display:flex; gap:8px; align-items:center;">
               <div class="graph-zoom-controls" style="display:inline-flex; border:1px solid var(--border); border-radius:6px; overflow:hidden;">
-                <button type="button" class="btn-tool" onclick="graphZoom(1.2)" title="Zoom In" style="padding:4px 10px; background:var(--surface-2); border:none; color:var(--fg); cursor:pointer; font-weight:700;">+</button>
-                <button type="button" class="btn-tool" onclick="graphZoom(0.8)" title="Zoom Out" style="padding:4px 10px; background:var(--surface-2); border:none; border-left:1px solid var(--border); color:var(--fg); cursor:pointer; font-weight:700;">−</button>
-                <button type="button" class="btn-tool" onclick="graphResetView()" title="Fit / Reset View" style="padding:4px 10px; background:var(--surface-2); border:none; border-left:1px solid var(--border); color:var(--fg); font-size:11px; cursor:pointer;">⤢</button>
+                <button type="button" class="btn-tool" data-click="graphZoom(1.2)" title="Zoom In" style="padding:4px 10px; background:var(--surface-2); border:none; color:var(--fg); cursor:pointer; font-weight:700;">+</button>
+                <button type="button" class="btn-tool" data-click="graphZoom(0.8)" title="Zoom Out" style="padding:4px 10px; background:var(--surface-2); border:none; border-left:1px solid var(--border); color:var(--fg); cursor:pointer; font-weight:700;">−</button>
+                <button type="button" class="btn-tool" data-click="graphResetView()" title="Fit / Reset View" style="padding:4px 10px; background:var(--surface-2); border:none; border-left:1px solid var(--border); color:var(--fg); font-size:11px; cursor:pointer;">⤢</button>
               </div>
-              <button class="btn-action" onclick="loadGraph()">↻ Refresh</button>
-              <button class="btn-action" onclick="clearGraph()" style="color:var(--critical); border-color:rgba(239,68,68,0.3);">🗑️ Clear</button>
+              <button class="btn-action" data-click="loadGraph()">↻ Refresh</button>
+              <button class="btn-action" data-click="clearGraph()" style="color:var(--critical); border-color:rgba(239,68,68,0.3);">🗑️ Clear</button>
             </div>
           </div>
           <p style="color:var(--fg-muted); margin-bottom:14px;">Interactive force-directed entity graph backed 100% by authentic evidence. Drag nodes to reposition; mouse wheel to zoom; click to inspect cryptographic provenance.</p>
@@ -1776,16 +1773,16 @@ Ready. Enter diagnostic, inspection, or authorized scoped commands.</pre>
           </div>
           <p style="color:var(--fg-muted); margin-bottom:14px;">Deterministic reconnaissance with exponential backoff, TTL caching, and offline mode enforcement.</p>
           <div style="display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap;">
-            <button class="btn-action osint-tab-btn active" data-tab="ip" onclick="switchOSINTTab('ip')">IP / RDAP</button>
-            <button class="btn-action osint-tab-btn" data-tab="domain" onclick="switchOSINTTab('domain')">DNS / Domain</button>
-            <button class="btn-action osint-tab-btn" data-tab="email" onclick="switchOSINTTab('email')">Email Exposure</button>
-            <button class="btn-action osint-tab-btn" data-tab="username" onclick="switchOSINTTab('username')">Username Intel</button>
-            <button class="btn-action osint-tab-btn" data-tab="phone" onclick="switchOSINTTab('phone')">Phone Format</button>
-            <button class="btn-action osint-tab-btn" data-tab="metadata" onclick="switchOSINTTab('metadata')">File Metadata</button>
+            <button class="btn-action osint-tab-btn active" data-tab="ip" data-click="switchOSINTTab('ip')">IP / RDAP</button>
+            <button class="btn-action osint-tab-btn" data-tab="domain" data-click="switchOSINTTab('domain')">DNS / Domain</button>
+            <button class="btn-action osint-tab-btn" data-tab="email" data-click="switchOSINTTab('email')">Email Exposure</button>
+            <button class="btn-action osint-tab-btn" data-tab="username" data-click="switchOSINTTab('username')">Username Intel</button>
+            <button class="btn-action osint-tab-btn" data-tab="phone" data-click="switchOSINTTab('phone')">Phone Format</button>
+            <button class="btn-action osint-tab-btn" data-tab="metadata" data-click="switchOSINTTab('metadata')">File Metadata</button>
           </div>
           <div style="display:flex; gap:10px;">
-            <input type="text" id="osint-query-input" class="chat-input" placeholder="Enter IPv4 or IPv6 address (e.g. 8.8.8.8 or 1.1.1.1)..." onkeydown="if(event.key==='Enter') runOSINT();">
-            <button class="btn-action btn-primary" onclick="runOSINT()">Investigate Target</button>
+            <input type="text" id="osint-query-input" class="chat-input" placeholder="Enter IPv4 or IPv6 address (e.g. 8.8.8.8 or 1.1.1.1)..." data-keydown="if(event.key==='Enter') runOSINT();">
+            <button class="btn-action btn-primary" data-click="runOSINT()">Investigate Target</button>
           </div>
           <div id="osint-result-card" style="margin-top:16px; display:none;"></div>
         </div>
@@ -1800,11 +1797,11 @@ Ready. Enter diagnostic, inspection, or authorized scoped commands.</pre>
           </div>
           <p style="color:var(--fg-muted); margin-bottom:14px;">Public-source email associations from Gravatar, OpenPGP keyservers, breach corpora, and public commit authorship. Live lookups are opt-in and never confirm ownership.</p>
           <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
-            <input type="text" id="email-footprint-input" class="chat-input" placeholder="analyst@example.com" onkeydown="if(event.key==='Enter') runEmailFootprint();">
+            <input type="text" id="email-footprint-input" class="chat-input" placeholder="analyst@example.com" data-keydown="if(event.key==='Enter') runEmailFootprint();">
             <label style="display:flex; align-items:center; gap:6px; font-size:12px; color:var(--fg-muted);">
               <input type="checkbox" id="email-footprint-live"> Enable live public lookups
             </label>
-            <button class="btn-action btn-primary" onclick="runEmailFootprint()">Investigate Email</button>
+            <button class="btn-action btn-primary" data-click="runEmailFootprint()">Investigate Email</button>
           </div>
           <div id="email-footprint-result" style="margin-top:16px;"></div>
         </div>
@@ -1819,7 +1816,7 @@ Ready. Enter diagnostic, inspection, or authorized scoped commands.</pre>
           </div>
           <p style="color:var(--fg-muted); margin-bottom:14px;">VirusTotal API v3 lookups for IPs, domains, URLs, and file hashes. Detection ratio is the share of voting engines that flagged the indicator — not a probability of maliciousness.</p>
           <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:14px;">
-            <input type="text" id="vt-indicator-input" class="chat-input" placeholder="8.8.8.8, example.com, URL, or SHA-256" onkeydown="if(event.key==='Enter') runVirusTotal();">
+            <input type="text" id="vt-indicator-input" class="chat-input" placeholder="8.8.8.8, example.com, URL, or SHA-256" data-keydown="if(event.key==='Enter') runVirusTotal();">
             <select id="vt-indicator-type" style="background:var(--surface-2); border:1px solid var(--border); color:var(--fg); padding:8px 12px; border-radius:6px;">
               <option value="">Auto-detect</option>
               <option value="ip">IP</option>
@@ -1827,7 +1824,7 @@ Ready. Enter diagnostic, inspection, or authorized scoped commands.</pre>
               <option value="url">URL</option>
               <option value="file">File hash</option>
             </select>
-            <button class="btn-action btn-primary" onclick="runVirusTotal()">Lookup Indicator</button>
+            <button class="btn-action btn-primary" data-click="runVirusTotal()">Lookup Indicator</button>
           </div>
           <div style="border-top:1px solid var(--border); padding-top:14px; margin-bottom:14px;">
             <div style="font-size:12px; font-weight:700; color:var(--fg); margin-bottom:8px;">File hash / upload</div>
@@ -1836,7 +1833,7 @@ Ready. Enter diagnostic, inspection, or authorized scoped commands.</pre>
               <label style="display:flex; align-items:center; gap:6px; font-size:12px; color:var(--fg-muted);">
                 <input type="checkbox" id="vt-upload-consent"> I consent to uploading this file to VirusTotal
               </label>
-              <button class="btn-action" onclick="runVirusTotalFile()">Analyze File</button>
+              <button class="btn-action" data-click="runVirusTotalFile()">Analyze File</button>
             </div>
             <p style="font-size:11px; color:var(--fg-muted); margin-top:8px;">Uploads are opt-in and require the explicit consent checkbox. Files over 32 MiB are rejected.</p>
           </div>
@@ -1849,7 +1846,7 @@ Ready. Enter diagnostic, inspection, or authorized scoped commands.</pre>
         <div class="card-panel">
           <div class="panel-header">
             <span class="panel-title">Identity Correlation &amp; Analyst Review</span>
-            <button class="btn-action" onclick="loadIdentityClusters()">Refresh Clusters</button>
+            <button class="btn-action" data-click="loadIdentityClusters()">Refresh Clusters</button>
           </div>
           <p style="color:var(--fg-muted); margin-bottom:14px;">Exact shared identifiers and explicit correlation keys merge. Names or avatar similarity never confirm an identity. Analyst confirmation is recorded in the audit ledger.</p>
           <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:10px; margin-bottom:14px;">
@@ -1880,7 +1877,7 @@ Ready. Enter diagnostic, inspection, or authorized scoped commands.</pre>
             <label style="display:flex; align-items:center; gap:6px; font-size:12px; color:var(--fg-muted);">
               <input type="checkbox" id="identity-authoritative"> Authoritative source
             </label>
-            <button class="btn-action btn-primary" onclick="addIdentityObservation()">Add Observation</button>
+            <button class="btn-action btn-primary" data-click="addIdentityObservation()">Add Observation</button>
           </div>
           <div id="identity-result" style="margin-bottom:16px;"></div>
           <div id="identity-clusters"></div>
@@ -1891,15 +1888,15 @@ Ready. Enter diagnostic, inspection, or authorized scoped commands.</pre>
       <section id="section-assessments" class="spa-section">
         <div class="kpi-grid">
           <div class="kpi-card info"><div class="kpi-label">Active Target</div><div class="kpi-value" style="font-size:22px;">{escape(active_target)}</div><div class="kpi-sub">Scope Verified</div></div>
-          <div class="kpi-card critical"><div class="kpi-label">Critical Findings</div><div class="kpi-value" id="wb-kpi-crit">0</div><div class="kpi-sub">Immediate Action</div></div>
-          <div class="kpi-card warning"><div class="kpi-label">High Findings</div><div class="kpi-value" id="wb-kpi-high">0</div><div class="kpi-sub">High Priority</div></div>
-          <div class="kpi-card success"><div class="kpi-label">Risk Posture Score</div><div class="kpi-value">0.0</div><div class="kpi-sub">Target Verified</div></div>
+          <div class="kpi-card critical"><div class="kpi-label">Critical Findings</div><div class="kpi-value" id="wb-kpi-crit">—</div><div class="kpi-sub">No assessment data</div></div>
+          <div class="kpi-card warning"><div class="kpi-label">High Findings</div><div class="kpi-value" id="wb-kpi-high">—</div><div class="kpi-sub">No assessment data</div></div>
+          <div class="kpi-card success"><div class="kpi-label">Risk Posture Score</div><div class="kpi-value">—</div><div class="kpi-sub">No assessment data</div></div>
         </div>
 
         <div class="card-panel">
           <div class="panel-header">
             <span class="panel-title">Autonomous Assessment Orchestrator</span>
-            <span class="badge badge-success">READY</span>
+            <span class="badge badge-unknown">STATUS NOT LOADED</span>
           </div>
           <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
             <input type="text" id="asmt-target-input" value="{escape(active_target)}" style="background:var(--surface-2); border:1px solid var(--border); color:var(--fg); padding:8px 12px; border-radius:6px; width:220px;">
@@ -1908,34 +1905,17 @@ Ready. Enter diagnostic, inspection, or authorized scoped commands.</pre>
               <option value="standard" selected>Depth: Standard (Recon + Web + TLS + DNS)</option>
               <option value="exhaustive">Depth: Exhaustive (Full Audit)</option>
             </select>
-            <button class="btn-action btn-primary" onclick="switchSection('copilot'); document.getElementById('chat-input-field').value='Run assessment on ' + document.getElementById('asmt-target-input').value; sendChatMessage();">🚀 Launch Assessment via Copilot</button>
-            <button class="btn-action" onclick="toggleCopilot(true)">🤖 Consult AI Copilot</button>
+            <button class="btn-action btn-primary" data-click="switchSection('copilot'); document.getElementById('chat-input-field').value='Run assessment on ' + document.getElementById('asmt-target-input').value; sendChatMessage();">🚀 Launch Assessment via Copilot</button>
+            <button class="btn-action" data-click="toggleCopilot(true)">🤖 Consult AI Copilot</button>
           </div>
         </div>
 
         <div class="card-panel">
           <div class="panel-header">
-            <span class="panel-title">Task Graph DAG Execution Matrix</span>
+            <span class="panel-title">Assessment workflow</span>
+            <span class="badge badge-unknown">ILLUSTRATIVE · NOT A LIVE RUN</span>
           </div>
-          <div style="background:#050811; border:1px solid var(--border); border-radius:8px; padding:24px; min-height:220px; display:flex; align-items:center; justify-content:center; gap:24px;">
-            <div style="padding:12px 18px; background:var(--surface-2); border:1px solid var(--border-glow); border-radius:8px; box-shadow:0 0 16px rgba(79,140,255,0.2); text-align:center;">
-              <div style="font-size:10px; color:var(--fg-muted); font-family:var(--font-mono);">STAGE 1</div>
-              <div style="font-weight:700; color:var(--accent-blue);">Scope Validation</div>
-              <span class="badge badge-success" style="margin-top:6px;">PASSED</span>
-            </div>
-            <div style="color:var(--accent-blue); font-size:20px;">→</div>
-            <div style="padding:12px 18px; background:var(--surface-2); border:1px solid var(--border-glow); border-radius:8px; box-shadow:0 0 16px rgba(79,140,255,0.2); text-align:center;">
-              <div style="font-size:10px; color:var(--fg-muted); font-family:var(--font-mono);">STAGE 2</div>
-              <div style="font-weight:700; color:var(--accent-cyber);">Surface Discovery</div>
-              <span class="badge badge-success" style="margin-top:6px;">VERIFIED</span>
-            </div>
-            <div style="color:var(--accent-cyber); font-size:20px;">→</div>
-            <div style="padding:12px 18px; background:var(--surface-2); border:1px solid var(--border); border-radius:8px; text-align:center;">
-              <div style="font-size:10px; color:var(--fg-muted); font-family:var(--font-mono);">STAGE 3</div>
-              <div style="font-weight:700; color:var(--fg);">Risk Analysis</div>
-              <span class="badge badge-info" style="margin-top:6px;">READY</span>
-            </div>
-          </div>
+          <p class="panel-hint">Authorized workflows validate scope before discovery and risk analysis. Start an assessment to see live execution status.</p>
         </div>
       </section>
 
@@ -1982,14 +1962,14 @@ Ready. Enter diagnostic, inspection, or authorized scoped commands.</pre>
         <div class="card-panel">
           <div class="panel-header">
             <span class="panel-title">Cryptographic Tamper-Evident Audit Ledger</span>
-            <button class="btn-action btn-primary" onclick="verifyAuditChain()">Verify Audit Chain Integrity</button>
+            <button class="btn-action btn-primary" data-click="verifyAuditChain()">Verify Audit Chain Integrity</button>
           </div>
           <div id="audit-verify-status" style="margin-bottom:14px;"></div>
           <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:14px; padding:12px; border:1px solid var(--border); border-radius:8px; background:var(--surface-2);">
             <span style="font-size:12px; font-weight:700; color:var(--fg);">External checkpoint</span>
-            <button class="btn-action" onclick="verifyAuditCheckpoint()">Verify Checkpoint</button>
-            <button class="btn-action btn-primary" onclick="createAuditCheckpoint()">Create Checkpoint</button>
-            <button class="btn-action" onclick="rotateAuditCheckpointKey()">Rotate Key</button>
+            <button class="btn-action" data-click="verifyAuditCheckpoint()">Verify Checkpoint</button>
+            <button class="btn-action btn-primary" data-click="createAuditCheckpoint()">Create Checkpoint</button>
+            <button class="btn-action" data-click="rotateAuditCheckpointKey()">Rotate Key</button>
             <span id="audit-checkpoint-status" style="font-size:11.5px; color:var(--fg-muted);"></span>
           </div>
           <p style="color:var(--fg-muted); margin-bottom:14px;">Cryptographic SHA-256 hash-chain guaranteeing immutable operational logs. The external checkpoint binds the ledger head to an independent HMAC file.</p>
@@ -2062,7 +2042,7 @@ Ready. Enter diagnostic, inspection, or authorized scoped commands.</pre>
               <span class="panel-title">Low-Confidence Review Queue</span>
               <span class="badge badge-warning" id="lcr-pending-count">0 PENDING</span>
             </div>
-            <button class="btn-action" onclick="loadLowConfidenceQueue()">↻ Refresh Queue</button>
+            <button class="btn-action" data-click="loadLowConfidenceQueue()">↻ Refresh Queue</button>
           </div>
           <p style="color:var(--fg-muted); font-size:12px; margin-bottom:14px;">
             Inferences and classifications scoring below threshold (&lt; 0.50) are flagged here for human operator validation. No unverified inference is ever automatically promoted without explicit ground-truth or observation.
@@ -2107,7 +2087,7 @@ Ready. Enter diagnostic, inspection, or authorized scoped commands.</pre>
 
       <!-- 0. SECTION: OVERVIEW -->
       <section id="section-overview" class="spa-section active" aria-labelledby="overview-title">
-        <div class="scope-banner" id="scope-manifest" aria-label="Active target scope" style="margin-bottom:16px;">
+        <div class="scope-banner" id="scope-manifest" aria-label="Active target scope" style="margin-bottom:18px;">
           <div class="scope-item">
             <span class="key">Active target</span>
             <span class="value" style="color:var(--accent);font-weight:600;">{escape(active_target)}</span>
@@ -2126,129 +2106,263 @@ Ready. Enter diagnostic, inspection, or authorized scoped commands.</pre>
           </div>
           <span class="scope-pill {status_class}">{escape(scope_status)}</span>
         </div>
-        <div class="overview-head">
-          <div>
-            <div class="overview-eyebrow">RedLoop command center</div>
-            <h1 id="overview-title">Overview</h1>
-            <p class="overview-lede">Scope-verified security operations, evidence, and AI copiloting in one calm surface.</p>
-          </div>
-          <div class="overview-actions">
-            <button type="button" class="btn btn-secondary" data-action="refresh-overview" id="ov-refresh">Refresh data</button>
-            <a class="btn btn-primary" href="#chat" data-action="goto-chat">Start a session</a>
-            <a class="btn btn-ghost" href="#investigations" onclick="switchSection('investigations')">Open Investigation Workspace</a>
-          </div>
-        </div>
 
-        <div class="overview-kpis" aria-label="Operations summary">
-          <article class="kpi-tile" data-kpi="scope">
-            <div class="kpi-label">Scoped targets</div>
-            <div class="kpi-value" id="ov-scope-targets">{len(scope_manager.scope.targets) if scope_manager else "—"}</div>
-            <div class="kpi-note"><span id="ov-scope-note">Signature verified</span> · <span>Actions logged {actions_label}</span></div>
-          </article>
-          <article class="kpi-tile" data-kpi="findings">
-            <div class="kpi-label">Findings logged</div>
-            <div class="kpi-value" id="ov-findings-total">—</div>
-            <div class="kpi-note" id="ov-findings-note">Loading severity split…</div>
-          </article>
-          <article class="kpi-tile" data-kpi="tasks">
-            <div class="kpi-label">Active tasks</div>
-            <div class="kpi-value" id="ov-active-tasks">—</div>
-            <div class="kpi-note" id="ov-active-note">Tasks and assessments in flight</div>
-          </article>
-          <article class="kpi-tile" data-kpi="audit">
-            <div class="kpi-label">Audit health</div>
-            <div class="kpi-value kpi-value-sm" id="ov-audit-status">{escape(scope_status)}</div>
-            <div class="kpi-note" id="ov-audit-note">Verifying chain…</div>
-          </article>
-        </div>
-        <div id="ov-kpi-error" class="inline-error-host" role="status" aria-live="polite"></div>
-
-        <div class="overview-chart-grid">
-          <section class="card-panel chart-card" aria-labelledby="findings-chart-title">
-            <div class="panel-header chart-head">
-              <div>
-                <span class="panel-title" id="findings-chart-title">Findings over time</span>
-                <p class="panel-hint">Total findings per assessment, grouped by creation date.</p>
-              </div>
-              <div class="tabs" role="tablist" aria-label="Findings time range">
-                <button type="button" class="tab" role="tab" aria-selected="false" data-action="ov-range" data-range="30">30d</button>
-                <button type="button" class="tab" role="tab" aria-selected="true" data-action="ov-range" data-range="90">90d</button>
-                <button type="button" class="tab" role="tab" aria-selected="false" data-action="ov-range" data-range="all">All</button>
-              </div>
-            </div>
-            <div class="chart-host" id="ov-findings-chart"><div class="skeleton skeleton-chart" aria-hidden="true"></div></div>
-            <p class="chart-caption" id="ov-findings-caption" role="status">Loading assessment history…</p>
-          </section>
-
-          <section class="card-panel chart-card" aria-labelledby="severity-chart-title">
-            <div class="panel-header chart-head">
-              <div>
-                <span class="panel-title" id="severity-chart-title">Severity distribution</span>
-                <p class="panel-hint">Latest assessment findings by severity.</p>
-              </div>
-            </div>
-            <div class="chart-host" id="ov-severity-chart"><div class="skeleton skeleton-chart" aria-hidden="true"></div></div>
-            <ul class="severity-legend" id="ov-severity-legend" aria-label="Severity legend"></ul>
-            <p class="chart-caption" id="ov-severity-caption" role="status">Loading severity data…</p>
-          </section>
-        </div>
-
-        <div class="overview-grid">
-          <section class="card-panel" id="activity" aria-labelledby="activity-title">
-            <div class="panel-header">
-              <div>
-                <span class="panel-title" id="activity-title">Recent activity</span>
-                <p class="panel-hint">Latest audit events from the read-only trail.</p>
-              </div>
-              <span class="status-pill status-pill-neutral" id="ov-activity-count">—</span>
-            </div>
-            <div id="ov-activity" class="table-wrap" aria-live="polite"><div class="skeleton skeleton-row" aria-hidden="true"></div></div>
-          </section>
-
-          <section class="card-panel" aria-labelledby="tools-title">
-            <div class="panel-header">
-              <div>
-                <span class="panel-title" id="tools-title">Tool availability</span>
-                <p class="panel-hint">Runtime capability probe, not a static list.</p>
-              </div>
-              <span class="status-pill status-pill-neutral" id="ov-tools-count">—</span>
-            </div>
-            <div id="ov-tools" class="tool-list" aria-live="polite"><div class="skeleton skeleton-row" aria-hidden="true"></div></div>
-          </section>
-        </div>
-
-        <section class="card-panel" aria-labelledby="assessments-title">
-          <div class="panel-header">
+        <div class="soc-dashboard">
+          <!-- GREETING & CONTROLS HEADER -->
+          <div class="soc-header">
             <div>
-              <span class="panel-title" id="assessments-title">Assessments</span>
-              <p class="panel-hint">Search, filter, and sort recorded assessments.</p>
+              <div style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:var(--accent); margin-bottom:4px;">Autonomous Cyber Operations & Threat Command</div>
+              <h1 id="overview-title" class="soc-header-title">Good afternoon, Security Analyst</h1>
+              <p class="soc-header-subtitle">Unified threat intelligence, incident orchestration, and forensic evidence in one calm surface.</p>
             </div>
-            <a class="btn btn-ghost" href="#investigations" onclick="switchSection('investigations')">Open Investigation Workspace</a>
+            <div class="soc-header-controls">
+              <span id="soc-live-clock" class="soc-clock">--:--:-- UTC</span>
+              <div class="tabs" role="tablist" aria-label="Time range selector">
+                <button type="button" class="tab" role="tab" aria-selected="false" data-action="ov-range" data-range="24h">24h</button>
+                <button type="button" class="tab" role="tab" aria-selected="true" data-action="ov-range" data-range="7d">7d</button>
+                <button type="button" class="tab" role="tab" aria-selected="false" data-action="ov-range" data-range="30d">30d</button>
+                <button type="button" class="tab" role="tab" aria-selected="false" data-action="ov-range" data-range="90d">90d</button>
+              </div>
+              <button type="button" class="btn btn-secondary" id="ov-refresh" data-action="refresh-overview">🔄 Refresh</button>
+              <button type="button" class="btn btn-primary" id="ov-export-btn" data-action="export-soc-report">📄 Export Report</button>
+            </div>
           </div>
-          <div class="table-toolbar">
-            <label class="field">
-              <span class="field-label">Search</span>
-              <input id="ov-assess-search" class="input" type="search" placeholder="Target or assessment ID" autocomplete="off">
-            </label>
-            <label class="field">
-              <span class="field-label">Status</span>
-              <select id="ov-assess-status" class="select">
-                <option value="all">All statuses</option>
-                <option value="running">Running</option>
-                <option value="completed">Completed</option>
-                <option value="failed">Failed</option>
-                <option value="paused">Paused</option>
-                <option value="cancelled">Cancelled</option>
-                <option value="blocked">Blocked</option>
-                <option value="partially_blocked">Partially blocked</option>
-              </select>
-            </label>
-            <span class="table-count" id="ov-assess-count" role="status">—</span>
-          </div>
-          <div id="ov-assessments" class="table-wrap" aria-live="polite"><div class="skeleton skeleton-row" aria-hidden="true"></div></div>
-        </section>
 
-        <footer class="overview-foot">Scope: {escape(scope_manager_status)} — audit records are read-only</footer>
+          <!-- ROW 1: 6 KPI CARDS -->
+          <div class="soc-kpi-grid">
+            <article class="soc-kpi-card" data-kpi="total-alerts">
+              <div class="soc-kpi-top">
+                <span class="soc-kpi-label">Total Alerts</span>
+                <span class="soc-kpi-icon">🔔</span>
+              </div>
+              <div class="soc-kpi-value" id="ov-kpi-total-alerts">—</div>
+              <div class="soc-kpi-sub"><span id="ov-kpi-alerts-sub">Ingested telemetry</span></div>
+            </article>
+
+            <article class="soc-kpi-card" data-kpi="critical-alerts">
+              <div class="soc-kpi-top">
+                <span class="soc-kpi-label">Critical & High</span>
+                <span class="soc-kpi-icon">🚨</span>
+              </div>
+              <div class="soc-kpi-value" id="ov-kpi-crit-alerts" style="color:var(--accent-critical);">—</div>
+              <div class="soc-kpi-sub"><span>Immediate triage</span></div>
+            </article>
+
+            <article class="soc-kpi-card" data-kpi="active-incidents">
+              <div class="soc-kpi-top">
+                <span class="soc-kpi-label">Active Incidents</span>
+                <span class="soc-kpi-icon">📁</span>
+              </div>
+              <div class="soc-kpi-value" id="ov-kpi-active-incidents" style="color:var(--accent-amber);">—</div>
+              <div class="soc-kpi-sub"><span>Open case investigations</span></div>
+            </article>
+
+            <article class="soc-kpi-card" data-kpi="investigations">
+              <div class="soc-kpi-top">
+                <span class="soc-kpi-label">Investigations</span>
+                <span class="soc-kpi-icon">🔍</span>
+              </div>
+              <div class="soc-kpi-value" id="ov-kpi-active-invs" style="color:var(--accent-blue);">—</div>
+              <div class="soc-kpi-sub"><span>Active graph workspaces</span></div>
+            </article>
+
+            <article class="soc-kpi-card" data-kpi="integrations">
+              <div class="soc-kpi-top">
+                <span class="soc-kpi-label">Integrations</span>
+                <span class="soc-kpi-icon">🔌</span>
+              </div>
+              <div class="soc-kpi-value" id="ov-kpi-integrations">—</div>
+              <div class="soc-kpi-sub"><span id="ov-kpi-integrations-sub" class="soc-badge soc-badge-neutral">0/9 CONNECTED</span></div>
+            </article>
+
+            <article class="soc-kpi-card" data-kpi="risk-posture">
+              <div class="soc-kpi-top">
+                <span class="soc-kpi-label">Risk Posture</span>
+                <span class="soc-kpi-icon">🛡️</span>
+              </div>
+              <div class="soc-kpi-value" id="ov-kpi-risk-score">—</div>
+              <div class="soc-kpi-sub"><span id="ov-kpi-risk-badge" class="soc-badge soc-badge-info">EVALUATING</span></div>
+            </article>
+          </div>
+
+          <!-- ROW 2: 4 ANALYTICS CARDS -->
+          <div class="soc-row-4">
+            <div class="soc-card">
+              <div class="soc-card-head">
+                <h3 class="soc-card-title">📈 Alert Trend</h3>
+                <span class="soc-badge soc-badge-info" id="ov-alert-trend-period">Past 7 Days</span>
+              </div>
+              <div class="soc-card-body">
+                <div id="ov-alert-trend-chart" style="height:140px; display:flex; align-items:flex-end; gap:8px; padding-top:10px;">
+                  <div class="skeleton skeleton-chart" style="width:100%; height:100%;"></div>
+                </div>
+                <div style="font-size:11.5px; color:var(--fg-subtle); display:flex; justify-content:space-between;" id="ov-alert-trend-labels">
+                  <span>Day 1</span><span>Day 7</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="soc-card">
+              <div class="soc-card-head">
+                <h3 class="soc-card-title">🎯 Threat Intelligence</h3>
+                <span class="soc-badge soc-badge-neutral" id="ov-ioc-count">0 IOCs</span>
+              </div>
+              <div class="soc-card-body">
+                <div id="ov-threat-intel-list" style="font-size:12px; display:flex; flex-direction:column; gap:8px;">
+                  <div class="skeleton skeleton-row"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="soc-card">
+              <div class="soc-card-head">
+                <h3 class="soc-card-title">⚖️ Risk Posture Model</h3>
+                <span class="soc-badge soc-badge-info" id="ov-risk-model-badge">Bounded 0-100</span>
+              </div>
+              <div class="soc-card-body">
+                <div style="background:var(--surface-2); border-radius:8px; height:12px; overflow:hidden; border:1px solid var(--border);">
+                  <div id="ov-risk-meter" style="width:0%; height:100%; background:linear-gradient(90deg, #16A34A, #D97706, #DC2626); transition:width 0.4s ease;"></div>
+                </div>
+                <div style="font-size:11px; color:var(--fg-muted); line-height:1.4;" id="ov-risk-rationale">
+                  Calculated from exposure weighting across active triage incidents and uncontained assets.
+                </div>
+                <div style="font-family:var(--font-mono); font-size:10px; color:var(--fg-subtle); background:var(--surface-2); padding:6px; border-radius:6px;">
+                  R_posture = min(100, 65*(Crit/Total) + 20*I_active + 15*I_inv)
+                </div>
+              </div>
+            </div>
+
+            <div class="soc-card">
+              <div class="soc-card-head">
+                <h3 class="soc-card-title">🩺 SOC Health</h3>
+                <span class="soc-badge soc-badge-success">Operational</span>
+              </div>
+              <div class="soc-card-body" style="justify-content:space-around;">
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding-bottom:6px;">
+                  <span style="font-size:12px; color:var(--fg-muted);">MTTD (Detect)</span>
+                  <span id="soc-health-mttd" style="font-family:var(--font-mono); font-weight:700;">INSUFFICIENT_DATA</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding-bottom:6px;">
+                  <span style="font-size:12px; color:var(--fg-muted);">MTTR (Respond)</span>
+                  <span id="soc-health-mttr" style="font-family:var(--font-mono); font-weight:700;">INSUFFICIENT_DATA</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding-bottom:6px;">
+                  <span style="font-size:12px; color:var(--fg-muted);">Telemetry Sync</span>
+                  <span id="soc-health-sync" style="font-family:var(--font-mono); font-weight:700;">INSUFFICIENT_DATA</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <span style="font-size:12px; color:var(--fg-muted);">Alert Reduction</span>
+                  <span id="soc-health-reduction" class="soc-badge soc-badge-neutral">UNSUPPORTED</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ROW 3: 4 WORKSPACE CARDS -->
+          <div class="soc-row-4">
+            <div class="soc-card">
+              <div class="soc-card-head">
+                <h3 class="soc-card-title">🚨 Incident Queue</h3>
+                <a href="#workbench" class="soc-badge soc-badge-info" style="text-decoration:none;" data-click="switchSection('workbench')">View All</a>
+              </div>
+              <div class="soc-card-body" style="padding:0;">
+                <div id="ov-incidents-table" style="max-height:220px; overflow-y:auto;">
+                  <div class="skeleton skeleton-row" style="margin:12px;"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="soc-card">
+              <div class="soc-card-head">
+                <h3 class="soc-card-title">🔬 Investigations</h3>
+                <a href="#investigations" class="soc-badge soc-badge-info" style="text-decoration:none;" data-click="switchSection('investigations')">Workspace</a>
+              </div>
+              <div class="soc-card-body" style="padding:0;">
+                <div id="ov-investigations-list" style="max-height:220px; overflow-y:auto;">
+                  <div class="skeleton skeleton-row" style="margin:12px;"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="soc-card">
+              <div class="soc-card-head">
+                <h3 class="soc-card-title">⚡ Detection Rules</h3>
+                <span class="soc-badge soc-badge-neutral" id="ov-rules-count">4 Rules</span>
+              </div>
+              <div class="soc-card-body" style="padding:0;">
+                <div id="ov-detections-list" style="max-height:220px; overflow-y:auto;">
+                  <div class="skeleton skeleton-row" style="margin:12px;"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="soc-card">
+              <div class="soc-card-head">
+                <h3 class="soc-card-title">🔌 Integrations</h3>
+                <span class="soc-badge soc-badge-neutral" id="ov-integrations-count">9 Providers</span>
+              </div>
+              <div class="soc-card-body" style="padding:0;">
+                <div id="ov-integrations-grid" style="max-height:220px; overflow-y:auto; display:flex; flex-direction:column; gap:4px; padding:8px 12px;">
+                  <div class="skeleton skeleton-row"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ROW 4: 4 SECURITY ACTIVITY CARDS -->
+          <div class="soc-row-4">
+            <div class="soc-card">
+              <div class="soc-card-head">
+                <h3 class="soc-card-title">📜 Cryptographic Audit</h3>
+                <span class="soc-badge soc-badge-success" id="ov-audit-validity">PASS</span>
+              </div>
+              <div class="soc-card-body" style="padding:0;">
+                <div id="ov-audit-list" style="max-height:200px; overflow-y:auto; font-size:11.5px; padding:8px 12px;">
+                  <div class="skeleton skeleton-row"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="soc-card">
+              <div class="soc-card-head">
+                <h3 class="soc-card-title">🔒 Evidence Integrity</h3>
+                <span class="soc-badge soc-badge-success" id="ov-evidence-badge">VERIFIED</span>
+              </div>
+              <div class="soc-card-body">
+                <div style="font-size:12px; color:var(--fg-muted);">Cryptographic SHA-256 chain verified against immutable ledger.</div>
+                <div style="font-family:var(--font-mono); font-size:11px; background:var(--surface-2); padding:8px; border-radius:6px; border:1px solid var(--border);" id="ov-evidence-summary">
+                  Ledger: 0 artifacts · Chain HMAC Verified
+                </div>
+              </div>
+            </div>
+
+            <div class="soc-card">
+              <div class="soc-card-head">
+                <h3 class="soc-card-title">✋ Pending Approvals</h3>
+                <span class="soc-badge soc-badge-neutral" id="ov-approvals-count">0 Pending</span>
+              </div>
+              <div class="soc-card-body">
+                <div id="ov-approvals-list" style="font-size:12px; color:var(--fg-muted); display:flex; align-items:center; justify-content:center; height:100px;">
+                  <span>No authorization gates pending</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="soc-card">
+              <div class="soc-card-head">
+                <h3 class="soc-card-title">🤖 SOAR Automation</h3>
+                <span class="soc-badge soc-badge-info" id="ov-soar-count">10 Workflows</span>
+              </div>
+              <div class="soc-card-body" style="padding:0;">
+                <div id="ov-soar-history" style="max-height:200px; overflow-y:auto; padding:8px 12px; font-size:11.5px;">
+                  <div class="skeleton skeleton-row"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <footer class="overview-foot" style="margin-top:20px;">Scope: {escape(scope_manager_status)} — audit records are cryptographically verified & read-only</footer>
       </section>
     </main>
   </div>
@@ -2262,7 +2376,7 @@ Ready. Enter diagnostic, inspection, or authorized scoped commands.</pre>
       <span>REDLOOP AI COPILOT</span>
     </div>
     <div style="display:flex; gap:8px;">
-      <button class="btn-action" style="padding:2px 8px; font-size:11px;" onclick="toggleCopilot(false)">✕</button>
+      <button class="btn-action" style="padding:2px 8px; font-size:11px;" data-click="toggleCopilot(false)">✕</button>
     </div>
   </div>
   <div class="copilot-drawer-context">
@@ -2271,8 +2385,8 @@ Ready. Enter diagnostic, inspection, or authorized scoped commands.</pre>
     <span style="color:var(--success);">In Scope</span>
   </div>
   <div class="copilot-drawer-messages" id="copilot-drawer-messages"></div>
-  <form class="copilot-drawer-composer" onsubmit="sendCopilotMessage(event)">
-    <textarea id="copilot-drawer-input" placeholder="Ask AI Copilot or enter security objective..." onkeydown="if(event.key==='Enter' && !event.shiftKey){{ event.preventDefault(); sendCopilotMessage(event); }}"></textarea>
+  <form class="copilot-drawer-composer" data-submit="sendCopilotMessage(event)">
+    <textarea id="copilot-drawer-input" placeholder="Ask AI Copilot or enter security objective..." data-keydown="if(event.key==='Enter' && !event.shiftKey){{ event.preventDefault(); sendCopilotMessage(event); }}"></textarea>
     <div class="copilot-composer-actions">
       <span class="copilot-hint">Enter to send · Shift+Enter for newline</span>
       <button type="submit" class="btn-action btn-primary" style="padding:6px 14px;">Execute</button>
@@ -2281,32 +2395,32 @@ Ready. Enter diagnostic, inspection, or authorized scoped commands.</pre>
 </aside>
 
 <!-- COMMAND PALETTE MODAL (Ctrl+K) -->
-<div class="modal-overlay" id="cmd-palette" onclick="if(event.target===this) closePalette()">
+<div class="modal-overlay" id="cmd-palette" data-click="if(event.target===this) closePalette()">
   <div class="palette-box">
     <div class="palette-search-wrap">
       <svg class="svg-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <input id="palette-search" placeholder="Type a section name or command..." oninput="filterPalette(this.value)">
+      <input id="palette-search" placeholder="Type a section name or command..." data-input="filterPalette(this.value)">
       <kbd style="background:var(--surface-2); padding:2px 6px; border-radius:4px; font-size:11px;">ESC</kbd>
     </div>
     <div class="palette-list" id="palette-list">
-      <div class="palette-item active" onclick="switchSection('chat'); closePalette();"><span class="palette-item-title">Chat (Standalone &amp; Conversations)</span><span class="palette-item-tag">OPERATE</span></div>
-      <div class="palette-item" onclick="switchSection('terminal'); closePalette();"><span class="palette-item-title">Terminal</span><span class="palette-item-tag">OPERATE</span></div>
-      <div class="palette-item" onclick="switchSection('tools'); closePalette();"><span class="palette-item-title">Tools</span><span class="palette-item-tag">OPERATE</span></div>
-      <div class="palette-item" onclick="switchSection('investigations'); closePalette();"><span class="palette-item-title">Investigations</span><span class="palette-item-tag">INVESTIGATE</span></div>
-      <div class="palette-item" onclick="switchSection('evidence'); closePalette();"><span class="palette-item-title">Evidence Ledger</span><span class="palette-item-tag">INVESTIGATE</span></div>
-      <div class="palette-item" onclick="switchSection('graph'); closePalette();"><span class="palette-item-title">Entity Knowledge Graph</span><span class="palette-item-tag">INVESTIGATE</span></div>
-      <div class="palette-item" onclick="switchSection('osint'); closePalette();"><span class="palette-item-title">OSINT Intelligence</span><span class="palette-item-tag">INVESTIGATE</span></div>
-      <div class="palette-item" onclick="switchSection('assessments'); closePalette();"><span class="palette-item-title">Assessments</span><span class="palette-item-tag">SECURITY</span></div>
-      <div class="palette-item" onclick="switchSection('findings'); closePalette();"><span class="palette-item-title">Findings</span><span class="palette-item-tag">SECURITY</span></div>
-      <div class="palette-item" onclick="switchSection('reports'); closePalette();"><span class="palette-item-title">Reports</span><span class="palette-item-tag">SECURITY</span></div>
-      <div class="palette-item" onclick="switchSection('scope'); closePalette();"><span class="palette-item-title">Scope &amp; HMAC Authorization</span><span class="palette-item-tag">GOVERN</span></div>
-      <div class="palette-item" onclick="switchSection('audit'); closePalette();"><span class="palette-item-title">Cryptographic Audit Trail</span><span class="palette-item-tag">GOVERN</span></div>
-      <div class="palette-item" onclick="switchSection('providers'); closePalette();"><span class="palette-item-title">LLM Providers &amp; Models</span><span class="palette-item-tag">GOVERN</span></div>
-      <div class="palette-item" onclick="switchSection('system-health'); closePalette();"><span class="palette-item-title">System Health &amp; Diagnostics</span><span class="palette-item-tag">SYSTEM</span></div>
-      <div class="palette-item" onclick="switchSection('settings'); closePalette();"><span class="palette-item-title">Settings</span><span class="palette-item-tag">SYSTEM</span></div>
-      <div class="palette-item" onclick="closePalette(); createNewChat(); switchSection('chat');"><span class="palette-item-title">💬 Start New Chat Conversation</span><span class="palette-item-tag">QUICK ACTION</span></div>
-      <div class="palette-item" onclick="closePalette(); toggleCopilot(true);"><span class="palette-item-title">🤖 Open AI Copilot Drawer</span><span class="palette-item-tag">QUICK ACTION</span></div>
-      <div class="palette-item" onclick="closePalette(); switchSection('graph'); loadGraph();"><span class="palette-item-title">🕸️ Refresh Entity Graph</span><span class="palette-item-tag">QUICK ACTION</span></div>
+      <div class="palette-item active" data-click="switchSection('chat'); closePalette();"><span class="palette-item-title">Chat (Standalone &amp; Conversations)</span><span class="palette-item-tag">OPERATE</span></div>
+      <div class="palette-item" data-click="switchSection('terminal'); closePalette();"><span class="palette-item-title">Terminal</span><span class="palette-item-tag">OPERATE</span></div>
+      <div class="palette-item" data-click="switchSection('tools'); closePalette();"><span class="palette-item-title">Tools</span><span class="palette-item-tag">OPERATE</span></div>
+      <div class="palette-item" data-click="switchSection('investigations'); closePalette();"><span class="palette-item-title">Investigations</span><span class="palette-item-tag">INVESTIGATE</span></div>
+      <div class="palette-item" data-click="switchSection('evidence'); closePalette();"><span class="palette-item-title">Evidence Ledger</span><span class="palette-item-tag">INVESTIGATE</span></div>
+      <div class="palette-item" data-click="switchSection('graph'); closePalette();"><span class="palette-item-title">Entity Knowledge Graph</span><span class="palette-item-tag">INVESTIGATE</span></div>
+      <div class="palette-item" data-click="switchSection('osint'); closePalette();"><span class="palette-item-title">OSINT Intelligence</span><span class="palette-item-tag">INVESTIGATE</span></div>
+      <div class="palette-item" data-click="switchSection('assessments'); closePalette();"><span class="palette-item-title">Assessments</span><span class="palette-item-tag">SECURITY</span></div>
+      <div class="palette-item" data-click="switchSection('findings'); closePalette();"><span class="palette-item-title">Findings</span><span class="palette-item-tag">SECURITY</span></div>
+      <div class="palette-item" data-click="switchSection('reports'); closePalette();"><span class="palette-item-title">Reports</span><span class="palette-item-tag">SECURITY</span></div>
+      <div class="palette-item" data-click="switchSection('scope'); closePalette();"><span class="palette-item-title">Scope &amp; HMAC Authorization</span><span class="palette-item-tag">GOVERN</span></div>
+      <div class="palette-item" data-click="switchSection('audit'); closePalette();"><span class="palette-item-title">Cryptographic Audit Trail</span><span class="palette-item-tag">GOVERN</span></div>
+      <div class="palette-item" data-click="switchSection('providers'); closePalette();"><span class="palette-item-title">LLM Providers &amp; Models</span><span class="palette-item-tag">GOVERN</span></div>
+      <div class="palette-item" data-click="switchSection('system-health'); closePalette();"><span class="palette-item-title">System Health &amp; Diagnostics</span><span class="palette-item-tag">SYSTEM</span></div>
+      <div class="palette-item" data-click="switchSection('settings'); closePalette();"><span class="palette-item-title">Settings</span><span class="palette-item-tag">SYSTEM</span></div>
+      <div class="palette-item" data-click="closePalette(); createNewChat(); switchSection('chat');"><span class="palette-item-title">💬 Start New Chat Conversation</span><span class="palette-item-tag">QUICK ACTION</span></div>
+      <div class="palette-item" data-click="closePalette(); toggleCopilot(true);"><span class="palette-item-title">🤖 Open AI Copilot Drawer</span><span class="palette-item-tag">QUICK ACTION</span></div>
+      <div class="palette-item" data-click="closePalette(); switchSection('graph'); loadGraph();"><span class="palette-item-title">🕸️ Refresh Entity Graph</span><span class="palette-item-tag">QUICK ACTION</span></div>
     </div>
     <div class="palette-footer" style="padding:10px 18px; border-top:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; font-size:11px; color:var(--fg-muted); font-family:var(--font-mono); background:rgba(10,14,23,0.9);">
       <div style="display:flex; gap:14px;">
@@ -2324,6 +2438,10 @@ Ready. Enter diagnostic, inspection, or authorized scoped commands.</pre>
 </body>
 </html>"""
         return HTMLResponse(html)
+
+    @app.get("/favicon.ico")
+    def favicon():
+        return Response(status_code=204)
 
     @app.get("/api/scope")
     def api_scope(target: str | None = Query(default=None)):

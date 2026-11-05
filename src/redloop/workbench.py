@@ -35,7 +35,7 @@ import time
 
 
 
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 
 
@@ -3875,7 +3875,7 @@ _WORKBENCH_SCRIPT = r"""
 
 
 
-      $('#metric-risk').textContent = m.risk_score ? `${m.risk_score} / 10` : '—';
+      $('#metric-risk').textContent = m.risk_score == null ? '—' : `${m.risk_score} / 10`;
 
 
 
@@ -4075,7 +4075,7 @@ _WORKBENCH_SCRIPT = r"""
 
 
 
-                <button class="btn btn-sm btn-outline" onclick="loadAssessmentDetail('${a.id}')">Open</button>
+                <button class="btn btn-sm btn-outline" data-click="loadAssessmentDetail('${a.id}')">Open</button>
 
 
 
@@ -4483,11 +4483,11 @@ _WORKBENCH_SCRIPT = r"""
 
 
 
-            <button class="btn btn-sm btn-outline" onclick="openFindingDetail('${f.id}')">Inspect</button>
+            <button class="btn btn-sm btn-outline" data-click="openFindingDetail('${f.id}')">Inspect</button>
 
 
 
-            <button class="btn btn-sm btn-primary" onclick="askAiAboutFinding('${f.id}', '${escapeHtml(f.title).replace(/'/g, "\\'")}')">🤖 Ask AI</button>
+            <button class="btn btn-sm btn-primary" data-click="askAiAboutFinding('${f.id}', '${escapeHtml(f.title).replace(/'/g, "\\'")}')">🤖 Ask AI</button>
 
 
 
@@ -4575,11 +4575,11 @@ _WORKBENCH_SCRIPT = r"""
 
 
 
-          <button class="btn btn-sm btn-outline" onclick="openEvidenceDetail('${e.id}')">Inspect</button>
+          <button class="btn btn-sm btn-outline" data-click="openEvidenceDetail('${e.id}')">Inspect</button>
 
 
 
-          <button class="btn btn-sm btn-primary" onclick="askAiAboutEvidence('${e.id}')">🤖 Analyze</button>
+          <button class="btn btn-sm btn-primary" data-click="askAiAboutEvidence('${e.id}')">🤖 Analyze</button>
 
 
 
@@ -6262,27 +6262,35 @@ _WORKBENCH_SCRIPT = r"""
 
         const mttdEl = $('#soc-mttd');
 
-        if (mttdEl) mttdEl.textContent = metrics.mean_time_to_detect_minutes !== null ? `${metrics.mean_time_to_detect_minutes}m` : 'N/A';
+        if (mttdEl) mttdEl.textContent = metrics.mean_time_to_detect_minutes == null ? 'N/A' : `${metrics.mean_time_to_detect_minutes}m`;
 
         const mttrEl = $('#soc-mttr');
 
-        if (mttrEl) mttrEl.textContent = metrics.mean_time_to_respond_minutes !== null ? `${metrics.mean_time_to_respond_minutes}m` : 'N/A';
+        if (mttrEl) mttrEl.textContent = metrics.mean_time_to_respond_minutes == null ? 'N/A' : `${metrics.mean_time_to_respond_minutes}m`;
 
         const syncEl = $('#soc-sync-rate');
 
-        if (syncEl) syncEl.textContent = `${metrics.telemetry_sync_rate_percent || 100}%`;
+        if (syncEl) syncEl.textContent = metrics.telemetry_sync_rate_percent == null ? 'N/A' : `${metrics.telemetry_sync_rate_percent}%`;
 
         const availEl = $('#soc-provider-avail');
 
-        if (availEl) availEl.textContent = `${metrics.provider_availability_percent || 100}%`;
+        if (availEl) availEl.textContent = metrics.provider_availability_percent == null ? 'N/A' : `${metrics.provider_availability_percent}%`;
 
         const redEl = $('#soc-alert-reduction');
 
-        if (redEl) redEl.textContent = `${metrics.alert_reduction_rate_percent || 0}%`;
+        if (redEl) redEl.textContent = metrics.alert_reduction_rate_percent == null ? 'N/A' : `${metrics.alert_reduction_rate_percent}%`;
 
       }
+      else {
+        ['soc-mttd', 'soc-mttr', 'soc-sync-rate', 'soc-provider-avail', 'soc-alert-reduction']
+          .forEach(id => { const el = $('#' + id); if (el) el.textContent = 'Unavailable'; });
+      }
 
-    } catch (_) {}
+    } catch (error) {
+      console.error('Failed to load SOC operational metrics:', error);
+      ['soc-mttd', 'soc-mttr', 'soc-sync-rate', 'soc-provider-avail', 'soc-alert-reduction']
+        .forEach(id => { const el = $('#' + id); if (el) el.textContent = 'Unavailable'; });
+    }
 
 
 
@@ -6302,7 +6310,7 @@ _WORKBENCH_SCRIPT = r"""
 
           if (list.length === 0) {
 
-            tbody.innerHTML = '<tr><td colspan="6" style="padding:16px;text-align:center;" class="text-muted">No security incidents detected. Local telemetry baseline normal.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" style="padding:16px;text-align:center;" class="text-muted">No incidents are currently recorded.</td></tr>';
 
           } else {
 
@@ -6412,9 +6420,9 @@ _WORKBENCH_SCRIPT = r"""
 
                 <td style="padding:8px;">
 
-                  <button class="btn btn-secondary btn-sm" onclick="updateIocDisposition('${rec.ioc_id}', 'CONFIRMED_MALICIOUS')">Malicious</button>
+                  <button class="btn btn-secondary btn-sm" data-click="updateIocDisposition('${rec.ioc_id}', 'CONFIRMED_MALICIOUS')">Malicious</button>
 
-                  <button class="btn btn-secondary btn-sm" onclick="updateIocDisposition('${rec.ioc_id}', 'BENIGN')">Benign</button>
+                  <button class="btn btn-secondary btn-sm" data-click="updateIocDisposition('${rec.ioc_id}', 'BENIGN')">Benign</button>
 
                 </td>
 
@@ -6472,7 +6480,7 @@ _WORKBENCH_SCRIPT = r"""
 
               <td style="padding:8px;">
 
-                <button class="btn btn-secondary btn-sm" onclick="runRuleTest('${r.rule_id}')">⚡ Test Rule</button>
+                <button class="btn btn-secondary btn-sm" data-click="runRuleTest('${r.rule_id}')">⚡ Test Rule</button>
 
               </td>
 
@@ -9856,7 +9864,7 @@ _HTML_TEMPLATE = r"""
 
 
 
-        <button class="btn btn-secondary btn-sm" id="btn-palette" onclick="openCommandPalette()">
+        <button class="btn btn-secondary btn-sm" id="btn-palette" data-click="openCommandPalette()">
 
 
 
@@ -9872,7 +9880,7 @@ _HTML_TEMPLATE = r"""
 
 
 
-        <button class="btn btn-primary btn-sm" id="btn-toggle-copilot" onclick="toggleCopilot()">
+        <button class="btn btn-primary btn-sm" id="btn-toggle-copilot" data-click="toggleCopilot()">
 
 
 
@@ -10128,7 +10136,7 @@ _HTML_TEMPLATE = r"""
 
 
 
-          <button class="btn btn-sm btn-secondary" onclick="switchTab('attack-surface')">Expand Topology ↗</button>
+          <button class="btn btn-sm btn-secondary" data-click="switchTab('attack-surface')">Expand Topology ↗</button>
 
 
 
@@ -10244,7 +10252,7 @@ _HTML_TEMPLATE = r"""
 
 
 
-          <button class="btn btn-sm btn-outline" onclick="clearCopilot()">Clear History</button>
+          <button class="btn btn-sm btn-outline" data-click="clearCopilot()">Clear History</button>
 
 
 
@@ -10284,27 +10292,27 @@ _HTML_TEMPLATE = r"""
 
 
 
-          <button class="chip" onclick="quickCopilot('Run comprehensive assessment on authorized target')">⚡ Comprehensive Assessment</button>
+          <button class="chip" data-click="quickCopilot('Run comprehensive assessment on authorized target')">⚡ Comprehensive Assessment</button>
 
 
 
-          <button class="chip" onclick="quickCopilot('Enumerate attack surface and open ports')">🌐 Enumerate Ports</button>
+          <button class="chip" data-click="quickCopilot('Enumerate attack surface and open ports')">🌐 Enumerate Ports</button>
 
 
 
-          <button class="chip" onclick="quickCopilot('Analyze TLS configuration and ciphers')">🔒 Analyze TLS</button>
+          <button class="chip" data-click="quickCopilot('Analyze TLS configuration and ciphers')">🔒 Analyze TLS</button>
 
 
 
-          <button class="chip" onclick="quickCopilot('Crawl web application endpoints and forms')">🕷️ Crawl Web App</button>
+          <button class="chip" data-click="quickCopilot('Crawl web application endpoints and forms')">🕷️ Crawl Web App</button>
 
 
 
-          <button class="chip" onclick="quickCopilot('Verify cryptographic audit ledger')">🛡️ Verify Audit</button>
+          <button class="chip" data-click="quickCopilot('Verify cryptographic audit ledger')">🛡️ Verify Audit</button>
 
 
 
-          <button class="chip" onclick="quickCopilot('Generate technical report')">📄 Technical Report</button>
+          <button class="chip" data-click="quickCopilot('Generate technical report')">📄 Technical Report</button>
 
 
 
@@ -10344,7 +10352,7 @@ _HTML_TEMPLATE = r"""
 
 
 
-          <button class="btn btn-sm btn-primary" onclick="$('#start-modal').classList.add('open')">+ New Assessment</button>
+          <button class="btn btn-sm btn-primary" data-click="$('#start-modal').classList.add('open')">+ New Assessment</button>
 
 
 
@@ -10820,7 +10828,7 @@ _HTML_TEMPLATE = r"""
 
 
 
-          <button class="btn btn-sm btn-primary" onclick="verifyAuditChain()">Verify Ledger Integrity</button>
+          <button class="btn btn-sm btn-primary" data-click="verifyAuditChain()">Verify Ledger Integrity</button>
 
 
 
@@ -10896,7 +10904,7 @@ _HTML_TEMPLATE = r"""
 
 
 
-        <button class="btn btn-sm btn-secondary" onclick="loadPerformance()">🔄 Refresh Telemetry</button>
+        <button class="btn btn-sm btn-secondary" data-click="loadPerformance()">🔄 Refresh Telemetry</button>
 
 
 
@@ -11564,11 +11572,11 @@ _HTML_TEMPLATE = r"""
 
 
 
-          <button class="btn btn-secondary" onclick="quickCopilot('Generate executive report')">Generate Executive Report</button>
+          <button class="btn btn-secondary" data-click="quickCopilot('Generate executive report')">Generate Executive Report</button>
 
 
 
-          <button class="btn btn-primary" onclick="quickCopilot('Generate technical report')">Generate Technical Report</button>
+          <button class="btn btn-primary" data-click="quickCopilot('Generate technical report')">Generate Technical Report</button>
 
 
 
@@ -11698,7 +11706,7 @@ _HTML_TEMPLATE = r"""
 
             <div class="card-title">Correlated Security Incidents</div>
 
-            <button class="btn btn-secondary btn-sm" onclick="correlateEventsNow()">🔄 Run Correlation Pass</button>
+            <button class="btn btn-secondary btn-sm" data-click="correlateEventsNow()">🔄 Run Correlation Pass</button>
 
           </div>
 
@@ -11770,7 +11778,7 @@ _HTML_TEMPLATE = r"""
 
               </select>
 
-              <button class="btn btn-primary btn-sm" onclick="triggerSocSync()">Sync Now</button>
+              <button class="btn btn-primary btn-sm" data-click="triggerSocSync()">Sync Now</button>
 
             </div>
 
@@ -11944,11 +11952,11 @@ _HTML_TEMPLATE = r"""
 
 
 
-        <button class="chip" onclick="clearCopilot()">Clear</button>
+        <button class="chip" data-click="clearCopilot()">Clear</button>
 
 
 
-        <button class="chip" onclick="toggleCopilot(false)">✕</button>
+        <button class="chip" data-click="toggleCopilot(false)">✕</button>
 
 
 
@@ -11992,27 +12000,27 @@ _HTML_TEMPLATE = r"""
 
 
 
-      <button class="chip" onclick="quickCopilot('Run comprehensive assessment on authorized target')">⚡ Full Assessment</button>
+      <button class="chip" data-click="quickCopilot('Run comprehensive assessment on authorized target')">⚡ Full Assessment</button>
 
 
 
-      <button class="chip" onclick="quickCopilot('Enumerate attack surface and open ports')">🌐 Enumerate Ports</button>
+      <button class="chip" data-click="quickCopilot('Enumerate attack surface and open ports')">🌐 Enumerate Ports</button>
 
 
 
-      <button class="chip" onclick="quickCopilot('Analyze TLS configuration and ciphers')">🔒 Analyze TLS</button>
+      <button class="chip" data-click="quickCopilot('Analyze TLS configuration and ciphers')">🔒 Analyze TLS</button>
 
 
 
-      <button class="chip" onclick="quickCopilot('Crawl web application and detect endpoints')">🕷️ Crawl Web</button>
+      <button class="chip" data-click="quickCopilot('Crawl web application and detect endpoints')">🕷️ Crawl Web</button>
 
 
 
-      <button class="chip" onclick="quickCopilot('Verify cryptographic audit ledger')">🛡️ Verify Audit</button>
+      <button class="chip" data-click="quickCopilot('Verify cryptographic audit ledger')">🛡️ Verify Audit</button>
 
 
 
-      <button class="chip" onclick="quickCopilot('Generate technical report')">📄 Technical Report</button>
+      <button class="chip" data-click="quickCopilot('Generate technical report')">📄 Technical Report</button>
 
 
 
@@ -12660,6 +12668,193 @@ def register_workbench_routes(
 
 
 
+    _soc_dashboard_cache = {"data": None, "ts": 0.0}
+
+    @app.get("/api/soc/dashboard/summary")
+    def get_soc_dashboard_summary():
+        now = time.time()
+        if _soc_dashboard_cache["data"] is not None and (now - _soc_dashboard_cache["ts"]) < 5.0:
+            cached = dict(_soc_dashboard_cache["data"])
+            cached["activity"]["evidence_status"]["chain_verified"] = audit.verify_chain().get("valid", True)
+            return JSONResponse(cached)
+
+        from redloop.assessment.case_management import CaseManager
+        from redloop.investigation import get_investigation_store
+        from redloop.assessment.detection_engineering import DetectionEngineeringManager
+        from redloop.integrations.registry import IntegrationRegistry
+        from redloop.assessment.soc_metrics import SOCMetricsEngine
+        from redloop.assessment.soar_engine import SOAREngine
+        from redloop.assessment.ioc_engine import IOCLifecycleManager
+        from redloop.reporting import AuditReader
+
+        cases = CaseManager.get_instance().list_cases()
+        invs = get_investigation_store().list_all()
+        rules = DetectionEngineeringManager.get_instance().list_rules()
+        providers = IntegrationRegistry.get_instance().list_providers()
+        operational_metrics = SOCMetricsEngine.get_operational_metrics()
+        soar = SOAREngine.get_instance()
+        workflows = soar.list_workflows()
+        executions = soar.list_executions()
+        iocs = IOCLifecycleManager.get_instance().list_iocs()
+
+        audit_events = []
+        try:
+            reader = AuditReader("data/audit.sqlite")
+            res = reader.entries(limit=10)
+            audit_events = res[0] if isinstance(res, tuple) else (res if isinstance(res, list) else [])
+        except Exception:
+            pass
+
+        active_incidents = [c for c in cases if c.get("status") in ("OPEN", "INVESTIGATING", "TRIAGED")]
+        crit_high_cases = [c for c in cases if c.get("severity") in ("CRITICAL", "HIGH")]
+        active_invs = [i for i in invs if getattr(i, "status", "") == "ACTIVE"]
+        connected_providers = [p for p in providers if p.get("status") == "CONNECTED" or p.get("connectivity_status") == "CONNECTED"]
+
+        linked_alert_ids = set()
+        for c in cases:
+            linked_alert_ids.update(c.get("linked_alert_ids", []))
+        total_alerts = max(len(linked_alert_ids), operational_metrics.get("telemetry", {}).get("total_events_ingested", 0))
+
+        crit_high_ratio = len(crit_high_cases) / max(1, len(cases))
+        raw_risk = min(100.0, (crit_high_ratio * 65.0) + (15.0 if len(active_incidents) > 0 else 0.0) + (10.0 if len(active_invs) > 0 else 0.0))
+        risk_score = round(raw_risk, 1)
+        if risk_score >= 80.0:
+            risk_level = "CRITICAL"
+        elif risk_score >= 60.0:
+            risk_level = "HIGH"
+        elif risk_score >= 35.0:
+            risk_level = "MEDIUM"
+        else:
+            risk_level = "LOW"
+
+        trend_buckets = []
+        for d in range(6, -1, -1):
+            day_str = (datetime.now(timezone.utc) - timedelta(days=d)).strftime("%b %d")
+            day_iso = (datetime.now(timezone.utc) - timedelta(days=d)).strftime("%Y-%m-%d")
+            count = sum(1 for c in cases if c.get("created_at", "").startswith(day_iso))
+            trend_buckets.append({"label": day_str, "count": count})
+
+        summary_data = {
+            "kpis": {
+                "total_alerts": total_alerts,
+                "critical_high_alerts": len(crit_high_cases),
+                "active_incidents": len(active_incidents),
+                "total_incidents": len(cases),
+                "active_investigations": len(active_invs) or len(invs),
+                "connected_integrations": len(connected_providers),
+                "total_integrations": len(providers),
+                "risk_posture_score": risk_score,
+                "risk_posture_level": risk_level,
+            },
+            "analytics": {
+                "alert_trend": trend_buckets,
+                "threat_intel": [
+                    {
+                        "ioc_id": ioc.ioc_id if hasattr(ioc, "ioc_id") else ioc.get("ioc_id"),
+                        "ioc_type": (ioc.ioc_type.value if hasattr(ioc.ioc_type, "value") else str(ioc.ioc_type)) if hasattr(ioc, "ioc_type") else ioc.get("ioc_type"),
+                        "value": ioc.value if hasattr(ioc, "value") else ioc.get("value"),
+                        "confidence": ioc.confidence if hasattr(ioc, "confidence") else ioc.get("confidence"),
+                        "reputation": ioc.reputation if hasattr(ioc, "reputation") else ioc.get("reputation"),
+                    }
+                    for ioc in iocs[:5]
+                ],
+                "risk_trend": {
+                    "score": risk_score,
+                    "level": risk_level,
+                    "rationale": "Synthesized from critical/high exposure (weight 65%), active triage pressure (weight 20%), and uncontained workspaces (weight 15%).",
+                    "formula_latex": r"R_{\text{posture}} = \min\left(100, 65 \cdot \frac{N_{\text{crit\_high}}}{N_{\text{cases}}} + 20 \cdot \mathbb{I}_{\text{active}} + 15 \cdot \mathbb{I}_{\text{inv}}\right)",
+                },
+                "soc_health": {
+                    "mttd_minutes": operational_metrics.get("performance_indicators", {}).get("mean_time_to_detect_minutes"),
+                    "mttd_status": operational_metrics.get("mttd_status", "INSUFFICIENT_DATA"),
+                    "mttr_minutes": operational_metrics.get("performance_indicators", {}).get("mean_time_to_respond_minutes"),
+                    "mttr_status": operational_metrics.get("mttr_status", "INSUFFICIENT_DATA"),
+                    "sync_success_rate": operational_metrics.get("telemetry_sync_rate_percent"),
+                    "sync_status": operational_metrics.get("telemetry_sync_status", "INSUFFICIENT_DATA"),
+                    "reduction_rate": operational_metrics.get("alert_reduction_rate_percent"),
+                    "reduction_status": operational_metrics.get("alert_reduction_status", "UNSUPPORTED"),
+                },
+            },
+            "workspace": {
+                "incidents": [
+                    {
+                        "id": c.get("case_id"),
+                        "title": c.get("title"),
+                        "severity": c.get("severity"),
+                        "status": c.get("status"),
+                        "created_at": c.get("created_at"),
+                    }
+                    for c in cases[:6]
+                ],
+                "investigations": [
+                    {
+                        "id": i.id,
+                        "title": i.title,
+                        "target": i.target,
+                        "status": i.status,
+                        "updated_at": i.updated_at,
+                    }
+                    for i in invs[:6]
+                ],
+                "detections": [
+                    {
+                        "rule_id": r.get("rule_id"),
+                        "title": r.get("title"),
+                        "severity": r.get("severity"),
+                        "technique_id": r.get("technique_id"),
+                        "enabled": r.get("enabled", True),
+                    }
+                    for r in rules[:6]
+                ],
+                "integrations": [
+                    {
+                        "provider_id": p.get("provider_id"),
+                        "display_name": p.get("display_name"),
+                        "category": p.get("category"),
+                        "status": p.get("status"),
+                        "is_configured": p.get("is_configured", False),
+                    }
+                    for p in providers[:8]
+                ],
+            },
+            "activity": {
+                "recent_audit": [
+                    {
+                        "id": e.get("id"),
+                        "action": e.get("action"),
+                        "actor": e.get("actor"),
+                        "target": e.get("target"),
+                        "status": e.get("status"),
+                        "timestamp": e.get("timestamp"),
+                    }
+                    for e in audit_events[-6:]
+                ],
+                "evidence_status": {
+                    "total_items": len(audit_events),
+                    "chain_verified": audit.verify_chain().get("valid", True),
+                    "status": "VERIFIED" if audit.verify_chain().get("valid", True) else "FAILED",
+                },
+                "pending_approvals": [],
+                "soar_history": {
+                    "total_workflows": len(workflows),
+                    "total_executions": len(executions),
+                    "recent_executions": [
+                        {
+                            "id": ex.get("execution_id"),
+                            "title": ex.get("workflow_title"),
+                            "state": ex.get("state"),
+                            "started_at": ex.get("started_at"),
+                        }
+                        for ex in executions[:4]
+                    ],
+                },
+            },
+        }
+
+        _soc_dashboard_cache["data"] = summary_data
+        _soc_dashboard_cache["ts"] = now
+        return JSONResponse(summary_data)
+
     _overview_stats_cache = {"data": None, "ts": 0.0}
 
 
@@ -12670,17 +12865,15 @@ def register_workbench_routes(
 
     def get_overview_stats():
 
-
-
         now = time.time()
 
 
 
         if _overview_stats_cache["data"] is not None and (now - _overview_stats_cache["ts"]) < 5.0:
 
-
-
-            return JSONResponse(_overview_stats_cache["data"])
+            cached_data = dict(_overview_stats_cache["data"])
+            cached_data["audit_status"] = audit.verify_chain()
+            return JSONResponse(cached_data)
 
 
 
@@ -12708,7 +12901,7 @@ def register_workbench_routes(
 
 
 
-            "risk_score": 0.0,
+            "risk_score": None,
 
 
 
@@ -18312,11 +18505,11 @@ def register_workbench_routes(
 
 
 
-        avg_score = round(sum(f.risk_score or 0.0 for f in findings) / total, 1) if total else 0.0
+        avg_score = round(sum(f.risk_score or 0.0 for f in findings) / total, 1) if total else None
 
 
 
-        max_score = round(max((f.risk_score or 0.0 for f in findings), default=0.0), 1)
+        max_score = round(max((f.risk_score or 0.0 for f in findings), default=0.0), 1) if findings else None
 
 
 
@@ -20106,8 +20299,6 @@ def register_workbench_routes(
             "report": rep.to_dict(),
             "markdown": rep.to_markdown(),
         })
-
-
 
 
 

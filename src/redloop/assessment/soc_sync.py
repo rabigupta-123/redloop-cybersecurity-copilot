@@ -567,7 +567,7 @@ class TelemetrySyncPipeline:
 
                 total_jobs = sum(job_counts.values())
                 success_jobs = job_counts.get("COMPLETED", 0)
-                success_rate = round((success_jobs / total_jobs * 100.0), 1) if total_jobs > 0 else 100.0
+                success_rate = round((success_jobs / total_jobs * 100.0), 1) if total_jobs > 0 else 0.0
 
                 return {
                     "total_events_ingested": total_events,
@@ -582,4 +582,3 @@ class TelemetrySyncPipeline:
 
 TelemetrySyncPipeline.get_engine = classmethod(lambda cls, db_path=None: cls.get_instance(db_path=db_path))
 TelemetrySyncEngine = TelemetrySyncPipeline
-

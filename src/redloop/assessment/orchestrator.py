@@ -884,6 +884,7 @@ class TaskOrchestrator:
         if action in ("ctf_analysis", "ctf_codec"):
             return self._handle_ctf_analysis(
                 prompt=prompt,
+                attachment_context=attachment_context,
                 task=task,
                 start_time=start_time,
             )
@@ -2381,19 +2382,50 @@ class TaskOrchestrator:
     def _handle_ctf_analysis(
         self,
         prompt: str,
+        attachment_context: str,
         task: Task,
         start_time: float,
     ) -> dict[str, Any]:
-        """Analyze CTF challenge, distinguish decoy flags vs candidate flags, and verify decoding steps."""
-        task.status = "COMPLETED"
+        """Analyze supplied challenge evidence without claiming unsupported verification."""
         task.capability = "ctf.challenge_analysis"
+        evidence = attachment_context.strip()
+        if not evidence:
+            evidence = re.sub(
+                r"^\s*(?:(?:please\s+)?(?:solve|analyze|analyse|identify|find|decode|inspect)\s+)?"
+                r"(?:this\s+)?(?:ctf\s+)?(?:challenge|flag)?\s*[:,-]?\s*",
+                "",
+                prompt,
+                flags=re.IGNORECASE,
+            ).strip()
+        if not evidence or re.fullmatch(
+            r"(?:this\s+)?(?:ctf\s+)?(?:challenge|flag)?[?.! ]*",
+            evidence,
+            flags=re.IGNORECASE,
+        ):
+            task.status = "NEEDS_INPUT"
+            task.completed_at = utc_now().isoformat()
+            task.response_text = (
+                "### CTF Challenge Analysis\n\n"
+                "No challenge artifact or evidence was provided. Attach or paste the challenge "
+                "text, encoded value, file excerpt, or relevant output to continue."
+            )
+            self.task_store.save(task)
+            return {
+                "response": task.response_text,
+                "task": task.to_dict(),
+                "assessment_id": None,
+                "conversation_id": task.conversation_id,
+                "telemetry": {"latency_ms": round((time.monotonic() - start_time) * 1000, 2)},
+            }
+
+        task.status = "COMPLETED"
         task.completed_at = utc_now().isoformat()
 
         from redloop.assessment.ctf_toolkit import CTFCodec
 
         lines = [
             "### 🚩 CTF Challenge Analysis & Flag Verification",
-            "> ℹ️ *Evaluating supplied challenge tokens, encodings, and decoy signatures.*\n",
+            "> ℹ️ *Candidate analysis only; no flag is verified against an authoritative challenge answer.*\n",
         ]
 
         decoy_patterns = [
@@ -2406,7 +2438,7 @@ class TaskOrchestrator:
         ]
         decoys_found = []
         for pat in decoy_patterns:
-            matches = re.findall(pat, prompt, re.IGNORECASE)
+            matches = re.findall(pat, evidence, re.IGNORECASE)
             decoys_found.extend(matches)
 
         if decoys_found:
@@ -2415,7 +2447,7 @@ class TaskOrchestrator:
                 lines.append(f"- 🚫 `{d}` *(Verified Decoy / Rabbit Hole - Do NOT submit)*")
             lines.append("")
 
-        tokens = re.findall(r'[a-zA-Z0-9+/=_-]{16,}', prompt)
+        tokens = re.findall(r'[a-zA-Z0-9+/=_-]{16,}', evidence)
         candidate_flags = []
         if tokens:
             lines.append("#### 🧩 Candidate Encoded Tokens & Decoded Plaintexts")
@@ -2430,19 +2462,23 @@ class TaskOrchestrator:
                     lines.append(f"| `{tok[:16]}...` | **{cand['format']}** | `{val_str}` |")
             lines.append("")
 
-        all_flags = re.findall(r"(?:flag|ctf|picoCTF|HTB)\{[a-zA-Z0-9_\-!@#$%^&*]+\}", prompt, re.IGNORECASE)
+        all_flags = re.findall(
+            r"(?:flag|ctf|picoCTF|HTB)\{[a-zA-Z0-9_\-!@#$%^&*]+\}",
+            evidence,
+            re.IGNORECASE,
+        )
         valid_candidates = [f for f in all_flags if f not in decoys_found]
         if valid_candidates:
-            lines.append("#### 🏆 Verified Candidate Flags")
+            lines.append("#### Candidate Flags (Unverified)")
             for vf in set(valid_candidates):
-                lines.append(f"- 🟢 **`{vf}`** *(Matches verified flag structure and passes decoy filters)*")
+                lines.append(f"- **`{vf}`** *(Matches a flag-like format; not verified against an answer key)*")
         elif candidate_flags:
-            lines.append("#### 🏆 Decoded Flags from Challenge Evidence")
+            lines.append("#### Decoded Flag Candidates (Unverified)")
             for cf in set(candidate_flags):
-                lines.append(f"- 🟢 **`{cf}`**")
+                lines.append(f"- **`{cf}`**")
         else:
             lines.append("#### 🔍 Flag Identification Summary")
-            lines.append("Challenge evidence inspected. No immediate plaintext flag matches. Decode candidate tokens above or supply challenge ciphertext.")
+            lines.append("No plaintext flag candidate was identified in the supplied evidence.")
 
         task.response_text = "\n".join(lines)
         self.task_store.save(task)
@@ -2706,7 +2742,7 @@ class TaskOrchestrator:
             "### 🛡️ REDLOOP Autonomous Cybersecurity Engine (Offline Analysis)",
             "> ℹ️ *Notice: External AI providers are currently unreachable. Operating in deterministic offline security analysis mode.*\n",
         ]
-        if "dns" in p_lower:
+        if re.search(r"\b(dns|domain name system)\b", p_lower):
             lines.extend([
                 "#### 🌐 Domain Name System (DNS) Fundamentals",
                 "- **Core Purpose:** The phonebook of the Internet, translating human-readable hostnames (e.g. `example.com`) to IP addresses (`93.184.216.34`).",
@@ -2719,7 +2755,7 @@ class TaskOrchestrator:
                 "  - `TXT`: Arbitrary text data, crucial for email security policies (`SPF`, `DKIM`, `DMARC`).",
                 "- **Security Considerations:** Vulnerable to DNS Spoofing/Cache Poisoning, Subdomain Takeover, and Zone Transfers if misconfigured. Mitigated by `DNSSEC` (cryptographic record signing).",
             ])
-        elif "tcp" in p_lower or "handshake" in p_lower:
+        elif re.search(r"\b(tcp|three-way handshake|syn[- ]ack)\b", p_lower):
             lines.extend([
                 "#### 🔄 TCP Three-Way Handshake (SYN, SYN-ACK, ACK)",
                 "- **Step 1 (SYN):** The client sends a packet with the `SYN` (Synchronize) bit set and an initial sequence number (ISN_c) to initiate a reliable TCP connection.",
@@ -2727,28 +2763,28 @@ class TaskOrchestrator:
                 "- **Step 3 (ACK):** The client sends an `ACK` packet acknowledging the server's sequence number (`ACK = ISN_s + 1`). The socket transitions to `ESTABLISHED` state.",
                 "- **Security Relevance:** Half-open connections (sending SYN without final ACK) form the basis of SYN Flood DoS attacks and stealth SYN port scanning (`nmap -sS`).",
             ])
-        elif "sql" in p_lower:
+        elif re.search(r"\b(sql|sqli|sql injection)\b", p_lower):
             lines.extend([
                 "#### 🔍 SQL Injection (CWE-89 / OWASP A03)",
                 "- **Vulnerability Class:** Untrusted input concatenation into dynamic SQL interpreters.",
                 "- **Impact:** Database exfiltration, authentication bypass, remote code execution (e.g. `xp_cmdshell`).",
                 "- **Remediation:** Use parameterized queries / prepared statements (e.g. `cursor.execute('SELECT * FROM users WHERE id = ?', (uid,))`), never string formatting.",
             ])
-        elif "xss" in p_lower:
+        elif re.search(r"\b(xss|cross-site scripting)\b", p_lower):
             lines.extend([
                 "#### 🔍 Cross-Site Scripting (CWE-79 / OWASP A03)",
                 "- **Vulnerability Class:** Client-side code injection executed in victim's browser context.",
                 "- **Impact:** Session hijacking (cookie theft), DOM defacement, credential harvesting.",
                 "- **Remediation:** Context-aware output encoding, Content-Security-Policy (CSP `script-src 'self'`), and `HttpOnly` cookie flags.",
             ])
-        elif any(w in p_lower for w in ("csrf", "cross-site request forgery", "xsrf")):
+        elif re.search(r"\b(csrf|xsrf|cross-site request forgery)\b", p_lower):
             lines.extend([
                 "#### 🔍 Cross-Site Request Forgery (CWE-352 / OWASP A01)",
                 "- **Vulnerability Class:** Unauthorized commands transmitted from a user that the web application trusts.",
                 "- **Impact:** Unintended state-changing actions (e.g. fund transfers, password changes, email updates).",
                 "- **Remediation:** Synchronizer token pattern (`CSRF` token), `SameSite` cookie attributes (`Strict`/`Lax`), double-submit cookies, and `Origin`/`Referer` header validation.",
             ])
-        elif "nmap" in p_lower:
+        elif re.search(r"\b(nmap|network mapper)\b", p_lower):
             lines.extend([
                 "#### 🛠️ Network Mapper (Nmap) Architecture & Scan Mechanics",
                 "- **Overview:** Open-source utility for network exploration, host discovery, and vulnerability auditing.",
@@ -2759,7 +2795,7 @@ class TaskOrchestrator:
                 "  - `OS Fingerprinting (-O)`: Analyzes TCP sequence generation and IP header quirks.",
                 "- **Defensive Detection:** Detected via IDS/IPS rules checking for excessive SYN/RST ratios and sequential port probes.",
             ])
-        elif "buffer" in p_lower or "overflow" in p_lower:
+        elif re.search(r"\b(buffer overflow|bof|stack overflow|heap overflow)\b", p_lower):
             lines.extend([
                 "#### 💥 Buffer Overflow (CWE-121 Stack-based / CWE-122 Heap-based)",
                 "- **Root Cause:** Writing input data beyond allocated memory buffer boundaries without boundary validation (e.g. `strcpy`, `gets`).",
@@ -2769,7 +2805,7 @@ class TaskOrchestrator:
                 "  - `DEP / NX` (No-Execute / W^X): Marks stack and heap memory pages as non-executable.",
                 "  - `Stack Canaries`: Cryptographic compiler tokens placed before the saved return address; terminates program if altered (`-fstack-protector`).",
             ])
-        elif "encrypt" in p_lower or "crypto" in p_lower or "cipher" in p_lower:
+        elif re.search(r"\b(cryptograph(?:y|ic)|symmetric encryption|asymmetric encryption|ciphers?)\b", p_lower):
             lines.extend([
                 "#### 🔐 Cryptographic Principles: Symmetric vs. Asymmetric",
                 "- **Symmetric Encryption (Single Secret Key):**",
@@ -3026,21 +3062,21 @@ class TaskOrchestrator:
         # All configured providers failed -> OFFLINE DETERMINISTIC
         provider_status["status"] = "UNAVAILABLE"
         provider_status["reason"] = f"All providers unavailable ({type(last_error).__name__ if last_error else 'No providers configured'})"
-        provider_status["provider"] = "offline"
+        provider_status["provider"] = "OFFLINE_DETERMINISTIC"
         provider_status["model"] = "deterministic_local_engine"
         if preferred_provider:
             provider_status["fallback_used"] = True
-            provider_status["fallback_provider"] = "offline"
+            provider_status["fallback_provider"] = "OFFLINE_DETERMINISTIC"
             provider_status["fallback_model"] = "deterministic_local_engine"
 
         offline_text = self._generate_offline_cyber_response(user_prompt)
         offline_result = {
             "text": offline_text,
-            "provider": "offline",
+            "provider": "OFFLINE_DETERMINISTIC",
             "model": "deterministic_local_engine",
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "total_tokens": 0,
+            "prompt_tokens": None,
+            "completion_tokens": None,
+            "total_tokens": None,
             "token_usage_reported": False,
         }
         return offline_result, provider_status

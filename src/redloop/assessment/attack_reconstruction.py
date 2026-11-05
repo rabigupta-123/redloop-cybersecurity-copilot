@@ -48,6 +48,51 @@ def calculate_shannon_entropy(text: str) -> float:
     return round(entropy, 3)
 
 
+def calculate_normalized_entropy(text: str, alphabet_size: int | None = None) -> float:
+    """Calculates Normalized Shannon Entropy H_norm(X) in [0.0, 1.0].
+    
+    Formula:
+        H_{norm}(X) = \\frac{H(X)}{\\log_2(k)}
+        
+    Where k is the alphabet size or unique character count.
+    If k < 2, returns 0.0.
+    """
+    if not text:
+        return 0.0
+    h = calculate_shannon_entropy(text)
+    k = alphabet_size if (alphabet_size and alphabet_size > 1) else len(set(text))
+    if k < 2:
+        return 0.0
+    max_h = math.log2(k)
+    if max_h <= 0.0:
+        return 0.0
+    return round(min(1.0, max(0.0, h / max_h)), 3)
+
+
+def calculate_bounded_graph_risk(
+    nodes_count: int,
+    critical_indicators: int,
+    high_indicators: int,
+    medium_indicators: int,
+    has_lolbin: bool = False,
+    has_high_entropy: bool = False,
+) -> float:
+    """Calculates strictly bounded composite attack graph risk score in [0.0, 100.0].
+    
+    Formula:
+        R_{graph} = 100 \\times \\text{clamp}\\left(\\frac{\\sum w_i I_i}{W_{\\text{norm}}}, 0.0, 1.0\\right)
+    """
+    raw_score = (
+        (critical_indicators * 30.0) +
+        (high_indicators * 20.0) +
+        (medium_indicators * 10.0) +
+        (20.0 if has_lolbin else 0.0) +
+        (15.0 if has_high_entropy else 0.0)
+    )
+    clamped = max(0.0, min(100.0, raw_score))
+    return round(clamped, 1)
+
+
 class LineageEdgeType(str, Enum):
     DIRECTLY_OBSERVED = "DIRECTLY_OBSERVED"
     CORRELATED = "CORRELATED"
