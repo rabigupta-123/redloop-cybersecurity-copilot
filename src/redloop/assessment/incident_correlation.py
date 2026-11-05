@@ -114,6 +114,10 @@ class CorrelatedIncident:
     def telemetry_gaps(self) -> list[str]:
         return self.investigation_gaps
 
+    @property
+    def entity_relationships(self) -> list[CorrelatedEventLink]:
+        return self.linked_events
+
 
 class IncidentCorrelationEngine:
     """Orchestrates alert aggregation, entity graph clustering, and incident tracking."""

@@ -486,7 +486,10 @@ class TaskOrchestrator:
                 "eventid 4625", "eventid 7045", "eventid 4688", "auth.log", "windows event",
                 "forensic triage", "analyze log", "pcap", "packet analysis", "wireshark", "memory dump"
             ))
-            and not any(w in prompt_lower for w in ("filter", "syntax", "how to use wireshark", "suggest a wireshark"))
+            and not any(w in prompt_lower for w in (
+                "filter", "syntax", "how to use wireshark", "suggest a wireshark",
+                "write a ", "write code", "write script", "bash script", "python script"
+            ))
         )
         if is_forensics:
             return {
@@ -540,7 +543,12 @@ class TaskOrchestrator:
         if is_coding:
             return {"action": "coding_and_research", "intent": "CODING_AND_RESEARCH", "target": target}
 
-        # 12. GENERAL_CHAT EXPLANATIONS (PRIOR TO SECURITY TOOLS)
+        # 12. GENERAL_CHAT EXPLANATIONS (PRIOR TO SECURITY TOOLS, EXCLUDING SPECIFIC FINDING/EVIDENCE IDS)
+        has_finding_or_evi_id = bool(
+            self._extract_id(prompt, "find-")
+            or self._extract_id(prompt, "evi-")
+            or context.get("type") in ("finding", "evidence", "asset")
+        )
         is_imperative_scan = (
             bool(re.search(r"\b(?:run|execute|launch|start|perform)\s+(?:an?\s+)?(?:nmap|scan|assessment|probe)\b", prompt_lower))
             or bool(re.search(r"\b(?:scan|assess|probe)\s+(?:https?://|[0-9.]+|[a-zA-Z0-9-]+\.[a-zA-Z]{2,}|localhost|target\b)", prompt_lower))
@@ -551,6 +559,7 @@ class TaskOrchestrator:
                 "define", "difference between", "describe", "teach me", "overview of", "why does"
             ))
             and not is_imperative_scan
+            and not has_finding_or_evi_id
         )
         if is_explanation:
             return {"action": "general_chat", "intent": "GENERAL_CHAT", "target": target}
@@ -652,7 +661,7 @@ class TaskOrchestrator:
 
         # E. OSINT_DOMAIN
         if not (has_scan_verb or has_assess_verb):
-            if (host_match and (any(w in prompt_lower for w in ("investigate", "whois", "lookup", "subdomain")) or prompt_lower.startswith("investigate"))) or any(w in prompt_lower for w in ("investigate domain", "domain intelligence", "dns footprint", "whois domain", "subdomains for", "crt.sh")):
+            if (host_match and (any(w in prompt_lower for w in ("investigate", "osint", "investigation", "whois", "lookup", "subdomain")) or prompt_lower.startswith("investigate"))) or any(w in prompt_lower for w in ("investigate domain", "domain intelligence", "dns footprint", "whois domain", "subdomains for", "crt.sh")):
                 host_val = host_match.group(1) if host_match else target
                 return {"action": "osint_domain", "intent": "OSINT_DOMAIN", "target": host_val}
 
@@ -2621,7 +2630,7 @@ class TaskOrchestrator:
                 "telemetry": {"latency_ms": round((time.monotonic() - start_time) * 1000, 2)},
             }
 
-        title_label = f"Investigation Summary: `{inv.title}`"
+        title_label = f"Active Investigation Summary: `{inv.title}`"
         lines = [
             f"### 🗂️ {title_label}",
             f"**ID:** `{inv.id}` · **Target:** `{inv.target}` · **Scope Status:** `🟢 {inv.scope_status}` · **Status:** `{inv.status}`\n",

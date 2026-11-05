@@ -56,3 +56,4 @@ Every requirement from Phase 8.1 and Phase 9 has been audited directly against t
 
 2. **DNS Rebinding & Connection-Time SSRF**:
    Validating a hostname before dispatching an HTTP request is insufficient because DNS rebinding can return a safe IP during validation and a private/metadata IP (e.g. `169.254.169.254`) during connection. REDLOOP resolves DNS once, validates every resolved address, pins the socket connection directly to the pre-validated IP address, and verifies `sock.getpeername()` post-handshake while preserving SNI for TLS.
+

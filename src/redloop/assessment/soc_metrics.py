@@ -175,9 +175,29 @@ class SOCMetricsEngine:
                 "mttr_supported": mttr_minutes is not None,
             },
             "formula_documentation": {
-                "mttd": "Mean duration (minutes) between earliest raw event timestamp and correlated incident cluster genesis.",
-                "mttr": "Mean duration (minutes) between incident case creation and formal case resolution timestamp.",
-                "sync_success_rate": "(Completed sync jobs / Total sync jobs) * 100",
-                "availability": "(Connected enabled providers / Total enabled providers) * 100",
+                "mean_time_to_detect": {
+                    "latex": r"\text{MTTD} = \frac{1}{|I|} \sum_{i \in I} (t_{\text{incident\_created}}^{(i)} - t_{\text{earliest\_event}}^{(i)})",
+                    "description": "Mean duration (minutes) between earliest raw event timestamp and correlated incident cluster genesis.",
+                },
+                "mean_time_to_respond": {
+                    "latex": r"\text{MTTR} = \frac{1}{|C_{\text{resolved}}|} \sum_{c \in C_{\text{resolved}}} (t_{\text{case\_resolved}}^{(c)} - t_{\text{case\_created}}^{(c)})",
+                    "description": "Mean duration (minutes) between incident case creation and formal case resolution timestamp.",
+                },
+                "alert_reduction_rate": {
+                    "latex": r"\text{ARR} = \left(\frac{N_{\text{clustered\_events}} - N_{\text{incidents}}}{N_{\text{clustered\_events}}}\right) \times 100\%",
+                    "description": "Percentage of duplicate or correlated noisy alerts collapsed into unified incident cases.",
+                },
+                "telemetry_sync_success_rate": {
+                    "latex": r"\text{Sync Rate} = \left(\frac{J_{\text{completed}}}{J_{\text{total}}}\right) \times 100\%",
+                    "description": "Percentage of telemetry synchronization jobs completed without unhandled ingestion faults.",
+                },
+                "provider_availability_rate": {
+                    "latex": r"\text{Availability} = \left(\frac{P_{\text{connected}}}{P_{\text{enabled}}}\right) \times 100\%",
+                    "description": "Percentage of configured and enabled external telemetry providers maintaining active heartbeat.",
+                },
+                "mitre_coverage_rate": {
+                    "latex": r"\text{Coverage} = \left(\frac{T_{\text{covered}}}{T_{\text{monitored}}}\right) \times 100\%",
+                    "description": "Percentage of monitored MITRE ATT&CK techniques with at least one active, validated detection rule.",
+                },
             },
         }

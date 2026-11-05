@@ -195,6 +195,31 @@ class InvestigationReport:
             lines.append("1. Continue monitoring active endpoint and directory event streams.")
             lines.append("2. Implement automated Sigma detection rules for observed execution patterns.")
 
+        lines.extend([
+            "",
+            "---",
+            "",
+            "## 9. Mathematical Models & Scoring Formulas",
+            "",
+            "This investigation report is backed by verified mathematical scoring models:",
+            "",
+            "### 1. Bayesian Dual-Track Hypothesis Confidence",
+            r"$$C_{\text{hyp}} = \text{clamp}_{[0, 1]}\left(\frac{\sum w_{\text{supp}} + 0.5}{\sum w_{\text{supp}} + 2.0 \sum w_{\text{contra}} + 1.0}\right)$$",
+            "",
+            "### 2. Shannon Entropy Obfuscation Detection",
+            r"$$H(X) = -\sum_{i=1}^{n} P(x_i) \log_2 P(x_i) \quad \text{bits/char (flagged if } H \ge 4.6 \text{ on strings } \ge 30 \text{ chars)}$$",
+            "",
+            "### 3. Attack Lineage Graph Composite Risk",
+            r"$$R_{\text{graph}} = \min\left(100, \sum_{n \in N} (20 \cdot \mathbb{I}_{\text{lolbin}} + 25 \cdot \mathbb{I}_{\text{pair}} + 15 \cdot \mathbb{I}_{\text{cli}} + 15 \cdot \mathbb{I}_{\text{entropy}})\right)$$",
+            "",
+            "### 4. Exponential Half-Life Indicator Decay",
+            r"$$C(t) = C_0 \cdot \exp\left(-\frac{\ln 2}{T_{1/2}} \cdot \Delta t\right) \quad (T_{1/2} = 30.0 \text{ days})$$",
+            "",
+            "### 5. Multi-Entity Correlation Scoring",
+            r"$$S_{\text{corr}} = \text{clamp}_{[0, 1]}\left(0.35 \cdot \mathbb{I}_{\text{host}} + 0.35 \cdot \mathbb{I}_{\text{user}} + 0.20 \cdot \mathbb{I}_{\text{ip}} + 0.10 \cdot \mathbb{I}_{\text{proc}}\right)$$",
+            "",
+        ])
+
         return "\n".join(lines)
 
 

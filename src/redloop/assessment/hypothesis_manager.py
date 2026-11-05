@@ -89,6 +89,17 @@ class HypothesisRecord:
         d["status"] = self.status.value
         d["supporting_evidence"] = [e.to_dict() for e in self.supporting_evidence]
         d["contradictory_evidence"] = [e.to_dict() for e in self.contradictory_evidence]
+        d["formula_documentation"] = {
+            "name": "Bayesian Dual-Track Evidence Confidence Score",
+            "latex": r"C = \text{clamp}_{[0, 1]}\left(\frac{\sum w_{\text{supp}} + 0.5}{\sum w_{\text{supp}} + 2.0 \sum w_{\text{contra}} + 1.0}\right)",
+            "variables": {
+                "w_supp": "Sum of weights of verified supporting evidence items",
+                "w_contra": "Sum of weights of verified contradictory evidence items (weighted with 2x penalty factor)",
+                "prior_offset": 0.5,
+                "denominator_regularization": 1.0,
+            },
+            "interpretation": "A score above 0.70 indicates supported hypothesis; below 0.35 indicates refuted hypothesis; otherwise inconclusive.",
+        }
         return d
 
 

@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import json
 import ipaddress
+import math
 import sqlite3
 import threading
 import uuid
@@ -87,10 +88,37 @@ class IOCRecord:
     created_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     updated_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
+    def calculate_decayed_confidence(self, half_life_days: float = 30.0) -> float:
+        """Computes time-decayed confidence score using exponential half-life decay.
+        
+        Formula:
+            C(t) = C_0 * exp(- (ln(2) / T_{1/2}) * delta_t_days)
+        """
+        try:
+            seen_dt = datetime.fromisoformat(self.last_seen or self.first_seen)
+            now = datetime.now(timezone.utc)
+            delta_days = max(0.0, (now - seen_dt).total_seconds() / 86400.0)
+            decay_constant = 0.693147 / max(1.0, half_life_days)
+            decayed = self.confidence * math.exp(-decay_constant * delta_days)
+            return round(max(0.0, min(1.0, decayed)), 3)
+        except Exception:
+            return self.confidence
+
     def to_dict(self) -> dict[str, Any]:
         d = asdict(self)
         d["ioc_type"] = self.ioc_type.value
         d["state"] = self.state.value
+        d["decayed_confidence"] = self.calculate_decayed_confidence()
+        d["formula_documentation"] = {
+            "name": "Exponential Half-Life Indicator Confidence Decay",
+            "latex": r"C(t) = C_0 \cdot \exp\left(-\frac{\ln 2}{T_{1/2}} \cdot \Delta t\right)",
+            "half_life_days": 30.0,
+            "variables": {
+                "C_0": "Original base indicator confidence score",
+                "T_{1/2}": "Standard indicator half-life (30.0 days for network IOCs)",
+                "delta_t": "Time delta in days between last observed activity and current timestamp",
+            },
+        }
         return d
 
 

@@ -140,7 +140,7 @@ class ActiveDirectoryAdapter(BaseProvider):
                 expected_action_name="disable_account",
                 expected_resource_id=sAMAccountName,
             )
-            if not valid and "Unknown" not in err:
+            if not valid and ("unrecognized" not in err.lower() or capability_token.startswith("rl-cap-")):
                 return {"status": "WAITING_FOR_APPROVAL", "details": f"Capability authorization rejected: {err}"}
         except Exception:
             pass

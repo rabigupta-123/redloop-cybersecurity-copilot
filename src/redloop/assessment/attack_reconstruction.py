@@ -14,6 +14,7 @@ Provides:
 from __future__ import annotations
 
 import json
+import math
 import re
 import uuid
 from dataclasses import asdict, dataclass, field
@@ -22,6 +23,29 @@ from enum import Enum
 from typing import Any, Optional
 
 from redloop.assessment.soc_events import UniversalSecurityEvent
+
+
+def calculate_shannon_entropy(text: str) -> float:
+    """Calculates the Shannon Entropy H(X) in bits per character.
+    
+    Formula:
+        H(X) = - \\sum_{i=1}^{n} P(x_i) \\log_2 P(x_i)
+    
+    Where P(x_i) is the frequency of character x_i in the string of length N.
+    Standard plain text commands typically exhibit entropy between 2.5 and 3.8.
+    Obfuscated or base64-encoded command lines generally exhibit entropy >= 4.6.
+    """
+    if not text:
+        return 0.0
+    length = len(text)
+    freq: dict[str, int] = {}
+    for char in text:
+        freq[char] = freq.get(char, 0) + 1
+    entropy = 0.0
+    for count in freq.values():
+        p = count / length
+        entropy -= p * math.log2(p)
+    return round(entropy, 3)
 
 
 class LineageEdgeType(str, Enum):
@@ -98,6 +122,7 @@ class ProcessNode:
     event_id: str
     is_lolbin: bool = False
     is_suspicious: bool = False
+    command_entropy: float = 0.0
     suspicious_indicators: list[str] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
@@ -121,13 +146,15 @@ class ProcessEdge:
 
 @dataclass
 class ProcessLineageGraph:
-    """Full execution tree and attack graph."""
+    """Full execution tree and attack graph with explicit mathematical risk and confidence models."""
     graph_id: str
     nodes: list[ProcessNode]
     edges: list[ProcessEdge]
     root_nodes: list[str]
     suspicious_nodes_count: int
     attack_techniques_detected: list[str]
+    composite_risk_score: float = 0.0
+    chain_confidence: float = 1.0
     reconstructed_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
     def to_dict(self) -> dict[str, Any]:
@@ -138,7 +165,23 @@ class ProcessLineageGraph:
             "root_nodes": self.root_nodes,
             "suspicious_nodes_count": self.suspicious_nodes_count,
             "attack_techniques_detected": self.attack_techniques_detected,
+            "composite_risk_score": self.composite_risk_score,
+            "chain_confidence": self.chain_confidence,
             "reconstructed_at": self.reconstructed_at,
+            "formula_documentation": {
+                "shannon_entropy": {
+                    "latex": r"H(X) = -\sum_{i=1}^{n} P(x_i) \log_2 P(x_i)",
+                    "description": "Calculates informational entropy in bits/char; values >= 4.6 on strings >= 30 chars flag obfuscation.",
+                },
+                "composite_risk_score": {
+                    "latex": r"R = \min\left(100, \sum_{n \in N} (20 \cdot \mathbb{I}_{\text{lolbin}} + 25 \cdot \mathbb{I}_{\text{pair}} + 15 \cdot \mathbb{I}_{\text{cli}} + 15 \cdot \mathbb{I}_{\text{entropy}})\right)",
+                    "description": "Additive multi-indicator risk bounded at 100 points.",
+                },
+                "chain_confidence": {
+                    "latex": r"C = \frac{1}{|E|} \sum_{e \in E} C_e \quad \text{for } |E| > 0 \text{ else } 1.0",
+                    "description": "Arithmetic mean of verified edge provenance confidences.",
+                },
+            },
         }
 
 
@@ -185,8 +228,13 @@ class AttackReconstructionEngine:
                 indicators.append(f"Suspicious Execution Chain: '{pp_name_clean}' launched '{p_name_clean}'")
                 attack_techniques.add("T1059 (Command and Scripting Interpreter)")
 
-            # Check CLI patterns
+            # Check CLI patterns and Shannon Entropy
             cli = ev.command_line or ""
+            cli_entropy = calculate_shannon_entropy(cli)
+            if len(cli) >= 30 and cli_entropy >= 4.6:
+                indicators.append(f"High Command-Line Shannon Entropy ({cli_entropy:.2f} bits/char): Possible Base64/Obfuscated Payload")
+                attack_techniques.add("T1027 (Obfuscated Files or Information)")
+
             for pat, desc in SUSPICIOUS_CLI_PATTERNS:
                 if re.search(pat, cli, re.IGNORECASE):
                     indicators.append(f"Suspicious Command Line: {desc}")
@@ -210,6 +258,7 @@ class AttackReconstructionEngine:
                 event_id=ev.event_id,
                 is_lolbin=is_lol,
                 is_suspicious=is_suspicious,
+                command_entropy=cli_entropy,
                 suspicious_indicators=indicators,
             )
             nodes[nid] = node
@@ -262,6 +311,20 @@ class AttackReconstructionEngine:
         root_nodes = [nid for nid in nodes.keys() if nid not in child_node_ids]
         susp_count = sum(1 for n in nodes.values() if n.is_suspicious)
 
+        # Mathematical Risk and Confidence Models
+        risk_total = 0.0
+        for n in nodes.values():
+            if n.is_lolbin:
+                risk_total += 20.0
+            if any("Suspicious Execution Chain" in ind for ind in n.suspicious_indicators):
+                risk_total += 25.0
+            if any("Suspicious Command Line" in ind for ind in n.suspicious_indicators):
+                risk_total += 15.0
+            if any("High Command-Line Shannon Entropy" in ind for ind in n.suspicious_indicators):
+                risk_total += 15.0
+        composite_risk = round(min(100.0, risk_total), 1)
+        chain_conf = round(sum(e.confidence for e in edges) / len(edges), 2) if edges else 1.0
+
         return ProcessLineageGraph(
             graph_id=gid,
             nodes=nodes_list,
@@ -269,4 +332,7 @@ class AttackReconstructionEngine:
             root_nodes=root_nodes,
             suspicious_nodes_count=susp_count,
             attack_techniques_detected=sorted(attack_techniques),
+            composite_risk_score=composite_risk,
+            chain_confidence=chain_conf,
         )
+

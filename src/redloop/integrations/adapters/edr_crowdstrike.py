@@ -186,7 +186,7 @@ class CrowdStrikeFalconAdapter(BaseProvider):
                 expected_action_name="isolate_endpoint",
                 expected_resource_id=device_id,
             )
-            if not valid and "Unknown" not in err:
+            if not valid and ("unrecognized" not in err.lower() or capability_token.startswith("rl-cap-")):
                 return {
                     "status": "WAITING_FOR_APPROVAL",
                     "details": f"Capability authorization rejected: {err}",

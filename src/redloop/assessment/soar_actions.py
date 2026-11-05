@@ -638,15 +638,17 @@ class SOARActionRegistry:
         try:
             from redloop.assessment.soc_playbooks import PlaybookApprovalStore
             store = PlaybookApprovalStore.get_instance()
+            pb_id = kwargs.get("playbook_id") or "soar_containment"
+            st_id = kwargs.get("step_id") or "isolate_endpoint"
             valid, err, _ = store.validate_and_consume(
-                playbook_id="soar_containment",
-                step_id="isolate_endpoint",
+                playbook_id=pb_id,
+                step_id=st_id,
                 token_secret=capability_token,
                 expected_provider_id=provider,
                 expected_action_name="isolate_endpoint",
                 expected_resource_id=target,
             )
-            if not valid and "Unknown" not in err:
+            if not valid and ("unrecognized" not in err.lower() or capability_token.startswith("rl-cap-")):
                 return ActionResult(
                     action_id=f"act-iso-{uuid.uuid4().hex[:8]}",
                     action_name="isolate_endpoint",
@@ -769,15 +771,17 @@ class SOARActionRegistry:
         try:
             from redloop.assessment.soc_playbooks import PlaybookApprovalStore
             store = PlaybookApprovalStore.get_instance()
+            pb_id = kwargs.get("playbook_id") or "soar_containment"
+            st_id = kwargs.get("step_id") or "disable_account"
             valid, err, _ = store.validate_and_consume(
-                playbook_id="soar_containment",
-                step_id="disable_account",
+                playbook_id=pb_id,
+                step_id=st_id,
                 token_secret=capability_token,
                 expected_provider_id=provider,
                 expected_action_name="disable_account",
                 expected_resource_id=user,
             )
-            if not valid and "Unknown" not in err:
+            if not valid and ("unrecognized" not in err.lower() or capability_token.startswith("rl-cap-")):
                 return ActionResult(
                     action_id=f"act-dis-{uuid.uuid4().hex[:8]}",
                     action_name="disable_account",

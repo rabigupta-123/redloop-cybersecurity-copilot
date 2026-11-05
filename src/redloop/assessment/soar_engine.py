@@ -481,6 +481,8 @@ class SOAREngine:
             step_params["capability_token"] = capability_token
             step_params["operator"] = operator
             step_params["stored_events"] = stored_events
+            step_params["playbook_id"] = workflow_id
+            step_params["step_id"] = step.step_id
 
             action_handler = getattr(SOARActionRegistry, step.action_name, None)
             if not action_handler or not callable(action_handler):

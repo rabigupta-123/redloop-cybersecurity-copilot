@@ -59,8 +59,10 @@ def _fast_mock_tool_action(self, action, target, task, start_time, intent, promp
     }
 
 
-TaskOrchestrator._handle_general_chat = _fast_mock_general_chat
-TaskOrchestrator._handle_tool_action = _fast_mock_tool_action
+@pytest.fixture(autouse=True)
+def patch_fast_handlers(monkeypatch):
+    monkeypatch.setattr(TaskOrchestrator, "_handle_general_chat", _fast_mock_general_chat)
+    monkeypatch.setattr(TaskOrchestrator, "_handle_tool_action", _fast_mock_tool_action)
 
 
 @pytest.fixture

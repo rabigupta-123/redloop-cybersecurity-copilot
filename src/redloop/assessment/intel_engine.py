@@ -368,15 +368,27 @@ class VulnerabilityIntelligenceEngine:
 
                 if (now - mtime) >= self.cache_ttl_seconds:
 
-                    record.provider_status = IntelligenceProviderStatus.STALE
+                    if clean_cve not in self._AUTHORITATIVE_CVE_DB:
 
-                if not record.retrieved_at:
+                        record.provider_status = IntelligenceProviderStatus.STALE
 
-                    record.retrieved_at = record.cache_timestamp or now_iso
+                        if not record.retrieved_at:
 
-                self._memory_cache[clean_cve] = (record, now)
+                            record.retrieved_at = record.cache_timestamp or now_iso
 
-                return record
+                        self._memory_cache[clean_cve] = (record, now)
+
+                        return record
+
+                else:
+
+                    if not record.retrieved_at:
+
+                        record.retrieved_at = record.cache_timestamp or now_iso
+
+                    self._memory_cache[clean_cve] = (record, now)
+
+                    return record
 
             except Exception:
 

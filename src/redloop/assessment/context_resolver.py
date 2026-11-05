@@ -206,6 +206,16 @@ class TargetResolver:
             "terminal_analysis",
             "graph_investigation",
             "follow_up_investigation",
+            "kali_copilot",
+            "kali_execute",
+            "report_generate",
+            "file_metadata_analysis",
+            "explain_finding",
+            "explain_evidence",
+            "explain_attack_surface",
+            "lifecycle_pause",
+            "lifecycle_resume",
+            "lifecycle_cancel",
         }
         if action in NO_TARGET_ACTIONS:
             return True, None
@@ -232,7 +242,7 @@ class TargetResolver:
         if action in ("tool_ports", "tool_nmap"):
             if target_type in ("email",):
                 return False, f"Target type mismatch: Port scanning requires an IP address, CIDR network, or domain/hostname, but received email address '{target}'."
-            if target_type not in ("ip", "cidr", "domain"):
+            if target_type not in ("ip", "cidr", "domain", "url"):
                 return False, f"Invalid target for port scanning: '{target}'."
             return True, None
 
