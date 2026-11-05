@@ -2915,6 +2915,164 @@ class TaskOrchestrator:
                 "```",
                 "- **Defensive Remediation:** Always enforce input length checks and compile with security flags (`-fstack-protector-strong -D_FORTIFY_SOURCE=2`).",
             ])
+
+        elif re.search(r"\b(s3|aws s3|s3 ransomware|bucket ransomware|cloud storage ransom)\b", p_lower):
+            lines.extend([
+                "#### ☁️ AWS S3 Ransomware Defense & Cloud Storage Hardening",
+                "- **Primary Ransomware Attack Vectors in S3:**",
+                "  - Attacker obtains IAM credentials (via SSRF, leaked keys, or compromised EC2 instance profile).",
+                "  - Attacker overwrites objects with encrypted payloads or deletes all object versions via `s3:DeleteObject`.",
+                "  - Attacker applies a restrictive bucket policy locking out legitimate administrators.",
+                "- **Architectural Defense & Mitigation Controls:**",
+                "  - **1. S3 Object Lock (WORM - Write Once, Read Many):**",
+                "    - Enforce Object Lock in `Compliance Mode`. Even the AWS root account cannot overwrite or delete locked objects during the retention period.",
+                "    - Use `Governance Mode` for operational flexibility while requiring specialized IAM permissions (`s3:BypassGovernanceRetention`) to override.",
+                "  - **2. S3 Bucket Versioning & MFA Delete:**",
+                "    - Enable Bucket Versioning so overwrite operations simply create a new version without destroying historical data.",
+                "    - Enable `MFA Delete` on the bucket (`aws s3api put-bucket-versioning --mfa ...`). Permanent deletion of object versions requires physical hardware MFA token authentication.",
+                "  - **3. IAM Least Privilege & Explicit Denies:**",
+                "    - Explicitly `Deny` destructive actions (`s3:DeleteBucket`, `s3:DeleteObjectVersion`, `s3:PutBucketPolicy`) in SCPs (Service Control Policies) for all standard workloads.",
+                "  - **4. Cryptographic Key Management (AWS KMS CMK):**",
+                "    - Enforce server-side encryption using Customer Managed Keys (AWS KMS CMK) rather than standard AWS-managed keys (`aws/s3`).",
+                "    - Set key policy with separate administration: even if an adversary gains S3 access, lack of KMS `kms:Decrypt` prevents object tampering.",
+                "  - **5. CloudTrail S3 Data Events & Real-time Alerting:**",
+                "    - Enable CloudTrail S3 Data Events logging to an isolated, cross-account log archive bucket.",
+                "    - Create EventBridge rules triggering immediate incident response upon high volumes of `DeleteObjects` or `PutBucketPolicy`.",
+            ])
+        elif re.search(r"\b(saml|oauth|oidc|openid connect|saml vs oauth|saml 2\.0)\b", p_lower):
+            lines.extend([
+                "#### 🔑 SAML 2.0 vs. OAuth 2.0 vs. OpenID Connect (OIDC) Architectural Analysis",
+                "- **1. SAML 2.0 (Security Assertion Markup Language):**",
+                "  - **Core Purpose:** Enterprise Federated Single Sign-On (SSO) and cross-domain identity federation.",
+                "  - **Data Format:** XML-based security assertions digitally signed with XML-DSig (W3C).",
+                "  - **Key Roles:** Identity Provider (IdP, e.g. Okta, Azure AD) and Service Provider (SP, e.g. Salesforce, AWS Console).",
+                "  - **Primary Flow:** Web browser redirect / POST binding. User authenticates at IdP, IdP signs XML assertion, browser posts assertion to SP ACS (Assertion Consumer Service) URL.",
+                "  - **Security Considerations:** Vulnerable to XML Signature Wrapping (XSW), XML External Entity (XXE) injection, and replay attacks if assertion `ID` / `NotOnOrAfter` timestamps are unvalidated.",
+                "",
+                "- **2. OAuth 2.0 (Open Authorization Framework - RFC 6749):**",
+                "  - **Core Purpose:** Delegated API Authorization. Allows third-party clients to access protected server resources on behalf of a resource owner.",
+                "  - **Data Format:** JSON Access Tokens (commonly opaque bearer tokens or structured JSON Web Tokens / JWTs).",
+                "  - **Key Roles:** Resource Owner (User), Client (App), Authorization Server (Auth0/Google), Resource Server (API).",
+                "  - **Key Flow:** Authorization Code Flow with PKCE (Proof Key for Code Exchange - RFC 7636) for native/SPA clients.",
+                "  - **Critical Distinction:** OAuth 2.0 is an *authorization* framework, NOT an authentication protocol. It answers 'what can this app access?', not 'who is this user?'.",
+                "",
+                "- **3. OpenID Connect (OIDC 1.0):**",
+                "  - **Core Purpose:** Modern User Authentication built directly as an identity layer on top of OAuth 2.0.",
+                "  - **Data Format:** JSON Web Token (`id_token`) signed with RS256/ES256, verified via the IdP's JWKS endpoint.",
+                "  - **Token Composition:** `id_token` (user identity claims: `sub`, `email`, `iss`, `aud`, `exp`) + `access_token` (API permission scopes).",
+                "  - **Modern Standard:** Preferred protocol for modern mobile apps, SPAs, and microservices due to lightweight JSON payload size and native HTTPS API compatibility.",
+            ])
+        elif re.search(r"\b(sysmon|eventid 1|event id 1|process creation|t1033|whoami\.exe)\b", p_lower):
+            lines.extend([
+                "#### 🕵️ Windows Sysmon EventID 1 (Process Creation) & Adversary Discovery TTPs",
+                "- **Sysmon EventID 1 Core Telemetry Fields:**",
+                "  - `UtcTime`: Timestamp of process launch (UTC).",
+                "  - `ProcessGuid` / `ProcessId`: Globally unique OS identifier and PID.",
+                "  - `Image`: Full filesystem path to the executable (e.g. `C:\\Windows\\System32\\whoami.exe`).",
+                "  - `CommandLine`: Complete CLI arguments and switches executed.",
+                "  - `CurrentDirectory`: Working directory at execution time.",
+                "  - `User`: Security context (e.g. `NT AUTHORITY\\SYSTEM` or `CORP\\john.doe`).",
+                "  - `ParentImage` / `ParentCommandLine`: The spawning process image and its arguments.",
+                "  - `Hashes`: Cryptographic image signatures (SHA256, MD5, IMPHASH).",
+                "- **MITRE ATT&CK Mapping:**",
+                "  - `T1033` (System Owner/User Discovery): Execution of `whoami.exe`, `net user`, `id`, `quser`.",
+                "  - `T1082` (System Information Discovery): Execution of `systeminfo.exe`, `hostname`, `uname -a`.",
+                "  - `T1049` (System Network Connections Discovery): Execution of `netstat -ano`, `ipconfig /all`.",
+                "- **SOC Threat Hunting & Anomaly Signatures:**",
+                "  - **Web Shell Activity:** Spawning process is a web server (`w3wp.exe`, `httpd.exe`, `nginx.exe`, `tomcat.exe`) launching command interpreters (`cmd.exe`, `powershell.exe`, `whoami.exe`).",
+                "  - **Office Malware Execution:** Spawning process is an Office application (`winword.exe`, `excel.exe`) launching `powershell.exe -enc ...` or `mshta.exe`.",
+                "  - **Rapid Discovery Scripting:** Multiple discovery utilities (`whoami`, `nltest /dclist:`, `net group 'Domain Admins' /dom`) spawned within < 60 seconds of an interactive session logon.",
+            ])
+        elif re.search(r"\b(127\.0\.0\.1|localhost|rfc 1918|private ip|internal ip|loopback)\b", p_lower):
+            lines.extend([
+                "#### 🔒 Network Target Telemetry & Boundary Scope: Loopback (127.0.0.1) & RFC 1918",
+                "- **Network Boundary Definitions:**",
+                "  - **Loopback (`127.0.0.0/8` / RFC 1122):** Internal host software interface reserved strictly for inter-process communication on the local machine.",
+                "  - **RFC 1918 Private Ranges:** `10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`. Reserved for non-routable private local area networks.",
+                "- **Telemetry Availability & External Enrichment Boundary:**",
+                "  - **External Providers Skipped:** Public intelligence services (Shodan, VirusTotal IP reputation, public WHOIS, BGP routing tables) cannot enrich loopback or private IPs because they are not advertised on the public Internet routing plane.",
+                "  - **Truthful Provenance:** Any query for external threat intelligence against `127.0.0.1` is strictly classified as **`NOT_APPLICABLE`** or **`LOCAL_TELEMETRY_ONLY`**.",
+                "- **Applicable Grounded Security Operations on Loopback/RFC 1918:**",
+                "  - Local service port discovery (`nmap -sT 127.0.0.1`).",
+                "  - Local socket and listening service verification (`netstat -ano`, `ss -tulpn`).",
+                "  - Local TLS/SSL certificate inspection on listening services (`tool_tls 127.0.0.1:8765`).",
+                "  - Internal web application vulnerability assessment within authorized test scope.",
+            ])
+        elif re.search(r"\b(crowdstrike|edr|host isolation|falcon|containment playbook)\b", p_lower):
+            lines.extend([
+                "#### 🛡️ Autonomous SOAR Containment & EDR Integration Architecture",
+                "- **Containment Playbook Protocol (e.g. PB-HOST-ISOLATION):**",
+                "  - Containment operations (isolating an endpoint from the network, disabling active user accounts, blocking IP ranges at perimeter firewalls) are classified as **HIGH IMPACT**.",
+                "  - Strict Execution-Time Authorization: Execution requires an explicit cryptographic human approval capability token issued by an authenticated Senior Analyst or Admin.",
+                "- **Handling Unconfigured External Providers (CrowdStrike / Defender / SentinelOne):**",
+                "  - If the external EDR API credentials (`CROWDSTRIKE_CLIENT_ID`, `CROWDSTRIKE_CLIENT_SECRET`) are unconfigured in environment settings:",
+                "  - **Fail-Closed Principle:** REDLOOP marks the execution step **`PROVIDER_NOT_CONFIGURED`**.",
+                "  - **Zero Fabrication:** Under no circumstances does the engine simulate successful containment, generate fake host isolation events, or report false success.",
+                "  - **State Preservation:** The playbook step remains in a clear pending/unexecuted state, allowing operators to inspect logs, configure credentials, or execute approved containment commands manually.",
+            ])
+        elif re.search(r"\b(phone|carrier|line type|phone osint|e\.164)\b", p_lower):
+            lines.extend([
+                "#### 📱 Telephone Intelligence & Telecommunications OSINT Methodology",
+                "- **1. Normalization & International Standard:**",
+                "  - Numbers are normalized to ITU-T standard **`E.164`** format: `+[country_code][national_number]` (e.g. `+14155552671`).",
+                "- **2. Analytical Intelligence Layers:**",
+                "  - **ITU-T Geographic Allocation:** Country code, national numbering plan, and assigned geographic exchange.",
+                "  - **Telecom Carrier Attribution:** Original block allocation carrier (e.g. AT&T, Verizon, T-Mobile, Vodafone, Bharti Airtel).",
+                "  - **Line-Type Classification:**",
+                "    - `Mobile`: Assigned to cellular mobile subscribers (supports SMS/MFA).",
+                "    - `Landline / Fixed`: Hardwired POTS / PSTN connections.",
+                "    - `VoIP (Voice over IP)`: Virtual telephone services (e.g. Google Voice, Twilio, Skype). Poses elevated fraud/spoofing risk.",
+                "    - `Toll-Free / Premium Rate`: Inbound non-geographic services.",
+                "- **3. Grounded Provenance:**",
+                "  - Prefix-based telecom allocations are deterministic.",
+                "  - Live HLR (Home Location Register) porting lookups require active telecom SS7/API integration and are labeled **`NOT_CHECKED`** if unconfigured.",
+            ])
+        elif re.search(r"\b(username|handle|username osint|account enumeration|user reconnaissance)\b", p_lower):
+            lines.extend([
+                "#### 👤 Username & Online Identity Reconnaissance Framework",
+                "- **1. Enumeration Methodology:**",
+                "  - Probes candidate social networks, developer platforms, and forums across standardized URI schemes (e.g. `github.com/{user}`, `gitlab.com/{user}`).",
+                "- **2. Status Code Disambiguation & Rate Limiting:**",
+                "  - `200 OK`: Potential profile presence.",
+                "  - `404 Not Found`: Profile absent on target platform.",
+                "  - `403 Forbidden` / `429 Too Many Requests`: Target platform active rate-limiting or Cloudflare/Akamai bot-protection gate.",
+                "- **3. False-Positive Mitigation (Soft-404 Detection):**",
+                "  - Many platforms return HTTP 200 with a custom 'User Not Found' or redirected landing page.",
+                "  - REDLOOP evaluates page response content, canonical title, and response byte length before confirming profile existence.",
+                "- **4. Evidence & Provenance:**",
+                "  - Every confirmed handle observation stores the exact URL, HTTP status code, title, and timestamp in the investigation ledger.",
+            ])
+        elif re.search(r"\b(kerberoast(?:ing)?|spn|service principal name|tgs-req|active directory attack)\b", p_lower):
+            lines.extend([
+                "#### 🏹 Active Directory Kerberoasting (MITRE ATT&CK T1558.003)",
+                "- **Attack Mechanism:**",
+                "  - Any authenticated domain user requests a Kerberos Ticket Granting Service (TGS) ticket for a domain service account configured with a ServicePrincipalName (`SPN`).",
+                "  - The domain controller (KDC) encrypts the TGS ticket using the NTLM or AES key derived from the target service account's password.",
+                "  - The attacker extracts the ticket from memory and cracks the password hash completely offline (Hashcat mode 13100 for RC4-HMAC, mode 19600 for Kerberos 5 TGS AES-128, mode 19700 for AES-256).",
+                "- **Detection Signatures (EventID 4769):**",
+                "  - High volume of Windows Security EventID `4769` (A Kerberos service ticket was requested) where `Ticket Options` contains `0x40810000` and `Ticket Encryption Type` is `0x17` (RC4-HMAC-MD5).",
+                "- **Defensive Remediation:**",
+                "  - Transition service accounts to **Group Managed Service Accounts (gMSA)**, where Windows automatically manages and rotates 128-character complex passwords every 30 days.",
+                "  - For non-gMSA accounts, enforce password lengths exceeding 25 characters with high entropy.",
+                "  - Disable RC4 encryption domain-wide; enforce AES-128 and AES-256 Kerberos encryption (`msDS-SupportedEncryptionTypes = 0x18`).",
+            ])
+        elif re.search(r"\b(zero-day|0-day|cvss|vulnerability triage|patch advisory)\b", p_lower):
+            lines.extend([
+                "#### ⚡ Vulnerability Triage, CVSS Scoring & Compensating Controls",
+                "- **1. CVSS Severity Decomposition (CVSS v3.1 / v4.0):**",
+                "  - **Attack Vector (AV):** Network (`AV:N`), Adjacent (`AV:A`), Local (`AV:L`), Physical (`AV:P`).",
+                "  - **Attack Complexity (AC):** Low (`AC:L`) vs. High (`AC:H`).",
+                "  - **Privileges Required (PR):** None (`PR:N`), Low (`PR:L`), High (`PR:H`).",
+                "  - **User Interaction (UI):** None (`UI:N`), Required (`UI:R`).",
+                "  - **Scope (S):** Unchanged (`S:U`) vs. Changed (`S:C`).",
+                "  - **Impact (CIA):** Confidentiality, Integrity, Availability (None / Low / High).",
+                "- **2. Exploit Maturity & Threat Context:**",
+                "  - Theoretical / Unproven -> Proof of Concept (PoC) -> Functional Exploit -> High / Weaponized in the Wild (CISA KEV Catalog).",
+                "- **3. Immediate Compensating Controls Pending Patch Deployment:**",
+                "  - **WAF Virtual Patching:** Deploy targeted regular expression or behavioral blocking rules at the web application firewall.",
+                "  - **Network Micro-segmentation:** Restrict ingress/egress network flows to the vulnerable asset to strictly authorized internal subnets.",
+                "  - **Feature Disabling:** Disable unneeded vulnerable service daemons or legacy protocol modules if business-critical operations permit.",
+            ])
         else:
             lines.extend([
                 "#### 📋 Technical Security Assessment Guidelines",
@@ -2960,16 +3118,30 @@ class TaskOrchestrator:
         if preferred_provider:
             chain.append((preferred_provider, preferred_model, False))
 
+        configured_provs = client.configured_providers() if hasattr(client, "configured_providers") else []
+        DEFAULT_MODELS = {
+            Provider.GROQ: "qwen/qwen3.8-27b",
+            Provider.OPENROUTER: "meta-llama/llama-3.3-70b-instruct",
+            Provider.NVIDIA: "meta/llama-3.2-11b-vision-instruct",
+            Provider.GEMINI: "gemini-2.0-flash",
+            Provider.APINEX: "default",
+        }
+
         # Primary: Groq (ultra-fast verified cloud provider)
-        if preferred_provider != PRIMARY_PROVIDER and client.is_provider_configured(PRIMARY_PROVIDER):
-            chain.append((PRIMARY_PROVIDER, PRIMARY_MODEL, True if preferred_provider else False))
+        if Provider.GROQ in configured_provs and preferred_provider != Provider.GROQ:
+            chain.append((Provider.GROQ, DEFAULT_MODELS[Provider.GROQ], True if preferred_provider else False))
 
         # Secondary fallback: OpenRouter
-        if preferred_provider != SECONDARY_PROVIDER and client.is_provider_configured(SECONDARY_PROVIDER):
-            chain.append((SECONDARY_PROVIDER, SECONDARY_MODEL, True))
+        if Provider.OPENROUTER in configured_provs and preferred_provider != Provider.OPENROUTER:
+            chain.append((Provider.OPENROUTER, DEFAULT_MODELS[Provider.OPENROUTER], True))
+
+        # Additional configured cloud providers (NVIDIA, Gemini, Apinex)
+        for extra_p in (Provider.NVIDIA, Provider.GEMINI, Provider.APINEX):
+            if extra_p in configured_provs and extra_p != preferred_provider and extra_p not in [c[0] for c in chain]:
+                chain.append((extra_p, DEFAULT_MODELS.get(extra_p), True))
 
         # Tertiary fallback: Local Ollama (only if socket is open)
-        if preferred_provider != LOCAL_PROVIDER:
+        if preferred_provider != LOCAL_PROVIDER and LOCAL_PROVIDER not in [c[0] for c in chain]:
             chain.append((LOCAL_PROVIDER, LOCAL_MODEL, True))
 
         call_kwargs: dict[str, Any] = {}

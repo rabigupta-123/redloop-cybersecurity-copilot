@@ -2178,6 +2178,7 @@ UNIFIED_SCRIPT = """
     if (sectionId === 'identity') loadIdentityClusters();
     if (sectionId === 'audit') verifyAuditCheckpoint();
     if (sectionId === 'system-health') loadLowConfidenceQueue();
+    if (sectionId === 'providers') loadCoreIntegrations();
   };
 
   window.toggleSidebar = function() {
@@ -2376,6 +2377,13 @@ UNIFIED_SCRIPT = """
   // --- MARKDOWN RENDERING ---
   function inlineMarkdown(text) {
     let out = escapeHtml(text || '');
+    // Provenance badges
+    out = out.replace(/\\[VERIFIED\\]/g, '<span class="badge badge-success" style="font-size:10px;font-weight:700;padding:1px 6px;">VERIFIED</span>');
+    out = out.replace(/\\[OBSERVED\\]/g, '<span class="badge badge-info" style="font-size:10px;font-weight:700;padding:1px 6px;">OBSERVED</span>');
+    out = out.replace(/\\[INFERENCE\\]/g, '<span class="badge badge-warning" style="font-size:10px;font-weight:700;padding:1px 6px;">INFERENCE</span>');
+    out = out.replace(/\\[EVIDENCE\\]/g, '<span class="badge badge-cyber" style="font-size:10px;font-weight:700;padding:1px 6px;">EVIDENCE</span>');
+    out = out.replace(/\\[AI_GENERATED\\]/g, '<span class="badge badge-neutral" style="font-size:10px;font-weight:700;padding:1px 6px;">AI_GENERATED</span>');
+
     out = out.replace(/`([^`]+)`/g, '<code class="code-inline" style="background:rgba(255,255,255,0.08);padding:2px 5px;border-radius:4px;font-family:var(--font-mono);font-size:11.5px;color:#38bdf8;">$1</code>');
     out = out.replace(/\\*\\*([^*]+)\\*\\*/g, '<strong>$1</strong>');
     out = out.replace(/\\*([^*]+)\\*/g, '<em>$1</em>');
@@ -2795,6 +2803,24 @@ UNIFIED_SCRIPT = """
   };
 
   // --- STREAMING CHAT & CANCELLATION ---
+  window.insertChatPill = function(actionType) {
+    const input = $('#chat-input-field');
+    if (!input) return;
+    if (actionType === 'tools') {
+      input.value = (input.value ? input.value + ' ' : '') + '@tools execute nmap_scan target=127.0.0.1';
+    } else if (actionType === 'attach') {
+      const fileInput = $('#chat-file-input');
+      if (fileInput) fileInput.click();
+    } else if (actionType === 'osint') {
+      input.value = (input.value ? input.value + ' ' : '') + 'Investigate OSINT indicator: ';
+    } else if (actionType === 'reasoning') {
+      if (!input.value.startsWith('[DEEP_REASONING]')) {
+        input.value = '[DEEP_REASONING] ' + input.value;
+      }
+    }
+    input.focus();
+  };
+
   window.sendChatMessage = async function(overridePrompt) {
     const input = $('#chat-input-field');
     const msg = (overridePrompt || input?.value || '').trim();
@@ -4392,21 +4418,17 @@ UNIFIED_SCRIPT = """
     const meta = document.querySelector('meta[name="theme-color"]');
     if (meta) meta.setAttribute('content', next === 'light' ? '#F5F8FC' : '#0a0e17');
     if (persist) {
-      try { localStorage.setItem('redloop_theme', next); } catch (_) {}
+      try {
+        localStorage.setItem('redloop-theme', next);
+        localStorage.setItem('redloop_theme', next);
+      } catch (_) {}
     }
   }
 
   function initTheme() {
     let stored = null;
     try {
-      stored = localStorage.getItem('redloop_theme');
-      if (!stored) {
-        const legacy = localStorage.getItem('redloop-theme');
-        if (legacy === 'light' || legacy === 'dark') {
-          stored = legacy;
-          localStorage.setItem('redloop_theme', legacy);
-        }
-      }
+      stored = localStorage.getItem('redloop-theme') || localStorage.getItem('redloop_theme');
     } catch (_) {}
     const theme = stored === 'light' || stored === 'dark' ? stored : 'light';
     applyTheme(theme, false);
@@ -5612,9 +5634,14 @@ UNIFIED_SCRIPT = """
     if (scopeStatus) { scopeStatus.textContent = 'VERIFIED'; scopeStatus.className = 'stage-status status-pill status-pill-success'; }
   };
 
-  window.cancelWorkspaceScan = function() {
+  window.cancelWorkspaceScan = async function() {
     state.scanInProgress = false;
-    logWorkspaceTerminal('[System] Scan cancelled by operator.', 'var(--warning)');
+    if (state.activePipelineRunId) {
+      try {
+        await fetch(`/api/investigation/pipeline/${encodeURIComponent(state.activePipelineRunId)}/cancel`, { method: 'POST' });
+      } catch (_) {}
+    }
+    logWorkspaceTerminal('[System] Scan cancellation signaled by operator.', 'var(--warning)');
     const btn = $('#ws-btn-run');
     if (btn) { btn.disabled = false; btn.innerHTML = '⚡ Execute Deep Investigation'; }
     const cancelBtn = $('#ws-btn-cancel');
@@ -5642,6 +5669,170 @@ UNIFIED_SCRIPT = """
     }
   }
 
+  // --- CANONICAL 9/9 INTEGRATIONS MANAGEMENT ---
+  window.loadCoreIntegrations = async function() {
+    try {
+      const res = await fetch('/api/core-integrations');
+      if (!res.ok) return;
+      const data = await res.json();
+      state.coreIntegrations = data;
+
+      // Update badges & KPI numbers
+      const connCount = data.connected_count || 0;
+      const totCount = data.total_count || 9;
+      const liveBadge = $('#core-integrations-live-badge');
+      if (liveBadge) {
+        liveBadge.textContent = `${connCount} / ${totCount} CONNECTED`;
+        liveBadge.className = 'badge ' + (connCount > 0 ? 'badge-success' : 'badge-warning');
+      }
+
+      const kpiConn = $('#ci-kpi-connected');
+      if (kpiConn) kpiConn.textContent = connCount;
+
+      let authFailedCount = 0;
+      let unconfCount = 0;
+      const items = data.integrations || [];
+      items.forEach(it => {
+        if (it.status === 'AUTH_FAILED') authFailedCount++;
+        if (it.status === 'NOT_CONFIGURED') unconfCount++;
+      });
+
+      const kpiAuth = $('#ci-kpi-auth-failed');
+      if (kpiAuth) kpiAuth.textContent = authFailedCount;
+      const kpiUnconf = $('#ci-kpi-unconfigured');
+      if (kpiUnconf) kpiUnconf.textContent = unconfCount;
+
+      // Update Overview KPI & Grid
+      const ovKpi = $('#ov-kpi-integrations');
+      if (ovKpi) ovKpi.textContent = `${connCount} / ${totCount}`;
+      const ovSub = $('#ov-kpi-integrations-sub');
+      if (ovSub) {
+        ovSub.textContent = `${connCount}/${totCount} CONNECTED`;
+        ovSub.className = 'soc-badge ' + (connCount > 0 ? 'soc-badge-success' : 'soc-badge-neutral');
+      }
+      const ovGrid = $('#ov-integrations-grid');
+      if (ovGrid) {
+        ovGrid.innerHTML = items.map(it => `
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:7px 12px; border-bottom:1px solid var(--border-subtle); font-size:12px;">
+            <div style="display:flex; align-items:center; gap:6px;">
+              <span style="font-weight:600; color:var(--fg);">${escapeHtml(it.name)}</span>
+              <span style="font-size:10px; color:var(--fg-muted);">(${escapeHtml(it.category)})</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="font-family:var(--font-mono); font-size:10.5px; color:var(--fg-muted);">${it.latency_ms ? Math.round(it.latency_ms) + 'ms' : '--'}</span>
+              <span class="soc-badge ${it.status === 'CONNECTED' ? 'soc-badge-success' : (it.status === 'AUTH_FAILED' ? 'soc-badge-critical' : 'soc-badge-neutral')}" style="font-size:10px;">
+                ${escapeHtml(it.status)}
+              </span>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      // Populate Table Body in Section Providers
+      const tbody = $('#core-integrations-table-body');
+      if (tbody) {
+        tbody.innerHTML = items.map(it => {
+          const isConn = it.status === 'CONNECTED';
+          const isAuth = it.status === 'AUTH_FAILED';
+          const badgeClass = isConn ? 'badge-success' : (isAuth ? 'badge-critical' : 'badge-neutral');
+          const latText = it.latency_ms ? `${Math.round(it.latency_ms)} ms` : '--';
+          const lastCheckText = it.last_check ? it.last_check.substring(11, 19) + ' UTC' : 'Never';
+          return `
+            <tr style="border-bottom:1px solid var(--border);">
+              <td style="padding:10px 14px; font-weight:600; font-size:12.5px; color:var(--fg);">
+                ${escapeHtml(it.name)}
+                <div style="font-size:11px; font-weight:400; color:var(--fg-muted);">${escapeHtml(it.description || '')}</div>
+              </td>
+              <td style="padding:10px 14px; font-size:11.5px; font-family:var(--font-mono); color:var(--fg-muted);">${escapeHtml(it.category)}</td>
+              <td style="padding:10px 14px; font-size:11.5px; font-family:var(--font-mono); color:var(--accent);">${escapeHtml(it.active_model || it.endpoint || '--')}</td>
+              <td style="padding:10px 14px;">
+                <span class="badge ${badgeClass}" style="font-size:10.5px; font-weight:700;">${escapeHtml(it.status)}</span>
+                ${it.error_message ? `<div style="font-size:10px; color:var(--critical); margin-top:2px;" title="${escapeHtml(it.error_message)}">${escapeHtml(it.error_message.substring(0, 45))}...</div>` : ''}
+              </td>
+              <td style="padding:10px 14px; font-family:var(--font-mono); font-size:11.5px; color:var(--fg-muted);">${latText}</td>
+              <td style="padding:10px 14px; font-family:var(--font-mono); font-size:11px; color:var(--fg-muted);">${lastCheckText}</td>
+              <td style="padding:10px 14px; text-align:right;">
+                <button type="button" class="btn btn-sm btn-ghost" data-click="testCoreIntegration('${escapeHtml(it.id)}', this)" style="padding:3px 10px; font-size:11px; border:1px solid var(--border);">
+                  Test Connection
+                </button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      // Populate Chat Model Selector
+      populateModelSelector(items);
+
+    } catch (err) {
+      console.error('Error loading core integrations:', err);
+    }
+  };
+
+  window.populateModelSelector = function(integrations) {
+    const sel = $('#chat-model-select');
+    if (!sel) return;
+    const curVal = sel.value || 'auto';
+    const models = [
+      { id: 'auto', label: '🟢 Auto · Best fit' }
+    ];
+
+    (integrations || []).forEach(it => {
+      if (it.status === 'CONNECTED' && it.category !== 'THREAT_INTEL') {
+        const modelName = it.active_model || it.id;
+        models.push({
+          id: `${it.id}:${modelName}`,
+          label: `⚡ ${it.name} (${modelName})`
+        });
+      }
+    });
+
+    sel.innerHTML = models.map(m => `
+      <option value="${escapeHtml(m.id)}" ${m.id === curVal ? 'selected' : ''}>${escapeHtml(m.label)}</option>
+    `).join('');
+  };
+
+  window.testCoreIntegration = async function(id, btn) {
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = 'Testing...';
+    }
+    try {
+      const res = await fetch(`/api/core-integrations/${encodeURIComponent(id)}/test`, { method: 'POST' });
+      const data = await res.json();
+      showToast(`${data.name}: ${data.status} (${data.latency_ms ? Math.round(data.latency_ms) + 'ms' : 'No reply'})`, data.status === 'CONNECTED' ? 'success' : 'warning');
+      await loadCoreIntegrations();
+    } catch (err) {
+      showToast(`Test failed: ${err.message}`, 'critical');
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = 'Test Connection';
+      }
+    }
+  };
+
+  window.testAllCoreIntegrations = async function() {
+    const btn = $('#btn-test-all-integrations');
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<span class="loading-spin">↻</span> Probing Integrations...';
+    }
+    try {
+      const res = await fetch('/api/core-integrations/test-all', { method: 'POST' });
+      const data = await res.json();
+      showToast(`Integrations tested: ${data.connected_count}/${data.total_count} CONNECTED`, data.connected_count > 0 ? 'success' : 'warning');
+      await loadCoreIntegrations();
+    } catch (err) {
+      showToast(`Batch probe failed: ${err.message}`, 'critical');
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = '⚡ Test All Integrations';
+      }
+    }
+  };
+
   window.executeWorkspaceScan = async function() {
     if (state.scanInProgress) return;
     const targetInput = $('#ws-target-input');
@@ -5651,14 +5842,14 @@ UNIFIED_SCRIPT = """
 
     state.scanInProgress = true;
     const btn = $('#ws-btn-run');
-    if (btn) { btn.disabled = true; btn.innerHTML = '<span class="loading-spin">↻</span> Running Scan...'; }
+    if (btn) { btn.disabled = true; btn.innerHTML = '<span class="loading-spin">↻</span> Running Pipeline...'; }
     const cancelBtn = $('#ws-btn-cancel');
     if (cancelBtn) cancelBtn.style.display = 'inline-flex';
 
     const overall = $('#ws-overall-status');
     if (overall) { overall.textContent = 'RUNNING'; overall.className = 'status-pill status-pill-info'; }
 
-    logWorkspaceTerminal(`Starting ${scanType.toUpperCase()} investigation on ${target} (Depth: ${depth})...`, 'var(--accent)');
+    logWorkspaceTerminal(`Initiating verified 10-stage pipeline for ${target} (${scanType.toUpperCase()}, depth: ${depth})...`, 'var(--accent)');
 
     // Reset findings & evidence
     state.investigationFindings = [];
@@ -5676,158 +5867,88 @@ UNIFIED_SCRIPT = """
     };
 
     try {
-      // Stage 1: Scope Validation
-      updateProgress(10, 'Validating target authorization & loopback boundary...');
-      setStageStatus('scope', 'VERIFIED', 'success');
-      logWorkspaceTerminal(`[Stage 1/10] Scope check passed for ${target}. Authorized loopback/private target verified.`, 'var(--success)');
-
-      // Stage 2: Recon & Ports
-      updateProgress(20, 'Enumerating ports and network services...');
-      setStageStatus('recon', 'RUNNING', 'info');
-      try {
-        const portRes = await fetch('/api/workbench/red/port-scan', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ target: target.replace('https://', '').replace('http://', '').split('/')[0].split(':')[0], ports: [80, 443, 8080, 8443, 3000] })
-        });
-        if (portRes.ok) {
-          const portData = await portRes.json();
-          logWorkspaceTerminal(`[Stage 2/10] Port scan complete. Service open count: ${portData.open_ports ? portData.open_ports.length : 0}.`, 'var(--success)');
-        }
-      } catch (err) {
-        logWorkspaceTerminal(`[Stage 2/10] Port scan executed. Status logged.`, 'var(--fg-muted)');
+      updateProgress(5, 'Submitting pipeline run to backend engine...');
+      const startRes = await fetch('/api/investigation/pipeline/start', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ target: target, scan_type: scanType, depth: depth })
+      });
+      if (!startRes.ok) {
+        throw new Error(`Pipeline start failed: HTTP ${startRes.status}`);
       }
-      setStageStatus('recon', 'COMPLETED', 'success');
+      const startData = await startRes.json();
+      state.activePipelineRunId = startData.run_id;
+      logWorkspaceTerminal(`[Engine] Pipeline job accepted. Job ID: ${startData.run_id}`, 'var(--info)');
 
-      // Stage 3: DNS & Domain
-      updateProgress(35, 'Resolving 7-record DNS and domain posture...');
-      setStageStatus('dns', 'RUNNING', 'info');
-      try {
-        const osintRes = await fetch(`/api/osint/investigate?indicator=${encodeURIComponent(target)}&query_type=ip`);
-        if (osintRes.ok) {
-          const osintData = await osintRes.json();
-          logWorkspaceTerminal(`[Stage 3/10] DNS/IP posture resolved. Classification: ${osintData.result ? osintData.result.status : 'OBSERVED'}.`, 'var(--success)');
-        }
-      } catch (_) {}
-      setStageStatus('dns', 'COMPLETED', 'success');
+      // Poll pipeline status until completion or cancellation
+      let completed = false;
+      let lastReportedStage = '';
+      while (state.scanInProgress && !completed) {
+        await new Promise(r => setTimeout(r, 450));
+        const statusRes = await fetch(`/api/investigation/pipeline/${encodeURIComponent(state.activePipelineRunId)}/status`);
+        if (!statusRes.ok) break;
+        const statusData = await statusRes.json();
 
-      // Stage 4: TLS & SSL
-      updateProgress(50, 'Inspecting TLS certificate validity and cipher suites...');
-      setStageStatus('tls', 'RUNNING', 'info');
-      try {
-        const tlsRes = await fetch('/api/workbench/red/tls-check', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ target: target.replace('https://', '').replace('http://', '').split('/')[0].split(':')[0], port: 443 })
+        // Update stages
+        const stages = statusData.stages || [];
+        let completedCount = 0;
+        stages.forEach(st => {
+          const stStatus = (st.status || 'idle').toLowerCase();
+          const pillType = (stStatus === 'verified' || stStatus === 'completed') ? 'success' : (stStatus === 'running' ? 'info' : (stStatus === 'failed' ? 'danger' : 'neutral'));
+          setStageStatus(st.stage_id, (st.status || 'idle').toUpperCase(), pillType);
+          if (stStatus === 'verified' || stStatus === 'completed') completedCount++;
+
+          if (stStatus === 'running' && lastReportedStage !== st.stage_id) {
+            lastReportedStage = st.stage_id;
+            logWorkspaceTerminal(`[Stage ${completedCount + 1}/10] Executing ${st.name}...`, 'var(--accent)');
+          }
         });
-        if (tlsRes.ok) {
-          logWorkspaceTerminal(`[Stage 4/10] TLS check completed. Certificate chain verified.`, 'var(--success)');
-        }
-      } catch (_) {}
-      setStageStatus('tls', 'COMPLETED', 'success');
 
-      // Stage 5: Web Metadata
-      updateProgress(65, 'Analyzing web application headers, CSP, and security flags...');
-      setStageStatus('web', 'RUNNING', 'info');
-      try {
-        const webRes = await fetch('/api/workbench/red/web-check', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ url: target.startsWith('http') ? target : 'http://' + target + '/' })
-        });
-        if (webRes.ok) {
-          const webData = await webRes.json();
-          const findings = webData.findings || [];
-          logWorkspaceTerminal(`[Stage 5/10] Web check complete. ${findings.length} web metadata checks evaluated.`, 'var(--success)');
-          findings.forEach(f => {
-            state.investigationFindings.push({
-              id: 'find-' + Math.random().toString(36).substr(2, 8),
-              title: f.check || f.title || 'Missing Security Header',
-              severity: (f.severity || 'low').toUpperCase(),
-              target: target,
-              evidence_hash: f.evidence_hash || 'sha256:' + Math.random().toString(36).substr(2, 12),
-              remediation: f.remediation || 'Configure HTTP security headers.'
-            });
-          });
-        }
-      } catch (_) {}
-      setStageStatus('web', 'COMPLETED', 'success');
+        const pct = Math.min(100, Math.round((completedCount / (stages.length || 10)) * 100));
+        const currentStageObj = stages.find(s => s.status === 'running') || stages[stages.length - 1];
+        updateProgress(pct, currentStageObj ? `${currentStageObj.name} (${currentStageObj.status.toUpperCase()})` : 'Processing...');
 
-      // Stage 6-8: API, Host, Software
-      updateProgress(80, 'Querying operational audit evidence and purple team summary...');
-      setStageStatus('api', 'RUNNING', 'info');
-      setStageStatus('host', 'RUNNING', 'info');
-      setStageStatus('software', 'RUNNING', 'info');
-      try {
-        const purpleRes = await fetch('/api/workbench/purple/summary');
-        if (purpleRes.ok) {
-          const purpleData = await purpleRes.json();
-          logWorkspaceTerminal(`[Stage 6-8/10] Audit events: ${purpleData.team_activity ? purpleData.team_activity.red.success : 0} red, ${purpleData.team_activity ? purpleData.team_activity.blue.success : 0} blue.`, 'var(--success)');
-        }
-      } catch (_) {}
-      setStageStatus('api', 'COMPLETED', 'success');
-      setStageStatus('host', 'COMPLETED', 'success');
-      setStageStatus('software', 'COMPLETED', 'success');
+        if (statusData.status === 'completed' || statusData.status === 'failed' || statusData.status === 'cancelled') {
+          completed = true;
+          if (statusData.status === 'completed') {
+            updateProgress(100, 'Investigation completed. All 10 stages verified.');
+            if (overall) { overall.textContent = 'VERIFIED'; overall.className = 'status-pill status-pill-success'; }
+            logWorkspaceTerminal(`[Completed] All 10 stages executed and cryptographically verified.`, 'var(--success)');
 
-      // Stage 9: File Forensics & Static Hash
-      updateProgress(90, 'Validating file forensics and cryptographic proofs...');
-      setStageStatus('forensics', 'RUNNING', 'info');
-      try {
-        const entriesRes = await fetch('/api/entries?limit=15');
-        if (entriesRes.ok) {
-          const entriesData = await entriesRes.json();
-          const entries = entriesData.entries || [];
-          entries.forEach(e => {
-            state.investigationEvidence.push({
-              id: 'ev-' + (e.id || Math.random().toString(36).substr(2, 6)),
-              timestamp: e.timestamp || new Date().toISOString(),
-              target: e.target || target,
-              module: e.module || 'workbench',
-              action: e.action || 'scan',
-              hash: e.event_hash || ('sha256:' + Math.random().toString(36).substr(2, 16)),
-              confidence: 0.95
-            });
-          });
-        }
-      } catch (_) {}
-      setStageStatus('forensics', 'COMPLETED', 'success');
+            // Fetch final report & load findings / evidence
+            try {
+              const repRes = await fetch(`/api/investigation/pipeline/${encodeURIComponent(state.activePipelineRunId)}/report`);
+              if (repRes.ok) {
+                const repData = await repRes.json();
+                if (Array.isArray(repData.findings) && repData.findings.length > 0) {
+                  state.investigationFindings = repData.findings;
+                }
+                if (Array.isArray(repData.evidence) && repData.evidence.length > 0) {
+                  state.investigationEvidence = repData.evidence;
+                }
+              }
+            } catch (_) {}
 
-      // Stage 10: Risk & ASVS Evaluation
-      updateProgress(100, 'Verifying cryptographic audit chain & ASVS score...');
-      setStageStatus('risk', 'RUNNING', 'info');
-      try {
-        const auditRes = await fetch('/api/audit/verify');
-        if (auditRes.ok) {
-          const auditData = await auditRes.json();
-          logWorkspaceTerminal(`[Stage 10/10] Audit ledger status: ${auditData.status}. Verified ${auditData.verified_events || 0} events.`, 'var(--success)');
+            renderWorkspaceFindings();
+            renderWorkspaceEvidence();
+            refreshWorkspaceStats();
+            showToast('Investigation pipeline completed and verified!', 'success');
+          } else if (statusData.status === 'cancelled') {
+            if (overall) { overall.textContent = 'CANCELLED'; overall.className = 'status-pill status-pill-warning'; }
+            logWorkspaceTerminal(`[Cancelled] Pipeline run cancelled by operator.`, 'var(--warning)');
+            showToast('Investigation cancelled', 'warning');
+          } else {
+            if (overall) { overall.textContent = 'FAILED'; overall.className = 'status-pill status-pill-critical'; }
+            logWorkspaceTerminal(`[Error] Pipeline execution failed: ${statusData.error || 'Unknown error'}`, 'var(--critical)');
+            showToast('Pipeline encountered an error', 'critical');
+          }
+          break;
         }
-      } catch (_) {}
-      setStageStatus('risk', 'COMPLETED', 'success');
-
-      // Ensure at least sample baseline finding exists if none returned
-      if (state.investigationFindings.length === 0) {
-        state.investigationFindings.push({
-          id: 'find-web-meta',
-          title: 'Web Metadata Check: Content-Security-Policy & Frame Protection',
-          severity: 'INFO',
-          target: target,
-          evidence_hash: 'sha256:verified_local_audit_ledger',
-          remediation: 'Ensure restrictive Content-Security-Policy and X-Frame-Options headers are enforced.'
-        });
       }
-
-      renderWorkspaceFindings();
-      renderWorkspaceEvidence();
-      refreshWorkspaceStats();
-
-      if (overall) { overall.textContent = 'COMPLETED'; overall.className = 'status-pill status-pill-success'; }
-      logWorkspaceTerminal(`[Completed] Investigation finished with ${state.investigationFindings.length} findings and ${state.investigationEvidence.length} evidence records.`, 'var(--success)');
-      showToast('Investigation completed successfully', 'success');
-
     } catch (err) {
-      logWorkspaceTerminal(`[Error] Investigation failed: ${err.message}`, 'var(--critical)');
+      logWorkspaceTerminal(`[Error] Pipeline failure: ${err.message}`, 'var(--critical)');
       if (overall) { overall.textContent = 'FAILED'; overall.className = 'status-pill status-pill-critical'; }
-      showToast('Investigation encountered an error', 'critical');
+      showToast('Investigation failed: ' + err.message, 'critical');
     } finally {
       state.scanInProgress = false;
       if (btn) { btn.disabled = false; btn.innerHTML = '⚡ Execute Deep Investigation'; }
@@ -5981,12 +6102,34 @@ UNIFIED_SCRIPT = """
   window.loadInvestigations = window.initInvestigationWorkspace;
 
   // --- INITIALIZATION ---
+
+  async function fetchActiveOperator() {
+    try {
+      const res = await fetch('/api/auth/me');
+      if (res.ok) {
+        const data = await res.json();
+        const pill = document.getElementById('topbar-operator-pill');
+        if (pill) {
+          if (data.authenticated && data.user) {
+            pill.textContent = `🛡️ ${data.user.full_name || data.user.username} (${data.user.role})`;
+            pill.className = 'scope-pill scope-pill-success';
+          } else {
+            pill.textContent = `🛡️ Operator: sec_analyst (local)`;
+            pill.className = 'scope-pill scope-pill-neutral';
+          }
+        }
+      }
+    } catch (_) {}
+  }
+
   function bootUnifiedApp() {
     const initialSection = location.hash.replace('#', '') || 'overview';
     switchSection(initialSection);
     checkScope('127.0.0.1');
     loadModels();
     loadConversations();
+    fetchActiveOperator();
+    loadCoreIntegrations();
   }
   if (document.readyState === 'loading') {
     window.addEventListener('DOMContentLoaded', bootUnifiedApp);
