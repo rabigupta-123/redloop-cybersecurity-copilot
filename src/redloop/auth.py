@@ -92,6 +92,13 @@ class User:
     last_login: Optional[str] = None
     is_active: bool = True
 
+    @property
+    def permissions(self) -> set[Permission]:
+        """Set of permissions granted to this user's role."""
+        if not self.is_active:
+            return set()
+        return ROLE_PERMISSIONS.get(self.role, set())
+
     def has_permission(self, permission: Permission) -> bool:
         """Check if this user's role grants the requested permission."""
         if not self.is_active:
@@ -288,10 +295,12 @@ class AuthManager:
         self,
         username: str,
         password: str,
-        role: UserRole,
+        role: UserRole | str,
         full_name: str = "",
     ) -> User:
         """Create a new user with verified role and password hash."""
+        if isinstance(role, str):
+            role = UserRole(role)
         now_iso = datetime.now(timezone.utc).isoformat()
         uid = f"usr-{secrets.token_hex(6)}"
         p_hash, salt = self.hash_password(password)
@@ -331,6 +340,10 @@ class AuthManager:
                 last_login=row["last_login"],
                 is_active=bool(row["is_active"]),
             )
+
+    def get_user(self, identifier: str) -> Optional[User]:
+        """Lookup user by username or user_id."""
+        return self.get_user_by_username(identifier) or self.get_user_by_id(identifier)
 
     def get_user_by_username(self, username: str) -> Optional[User]:
         with self._get_connection() as conn:

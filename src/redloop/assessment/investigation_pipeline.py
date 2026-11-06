@@ -515,11 +515,19 @@ class InvestigationPipelineEngine:
             # 10. RISK & ASVS
             elif stage_id == "risk":
                 total_findings = len(record.findings)
-                cvss_base = min(10.0, 2.0 + (total_findings * 1.5))
+                if not total_findings:
+                    cvss_base = 0.0
+                else:
+                    severities = [f.get("severity", "LOW").upper() for f in record.findings]
+                    base_weights = {"CRITICAL": 9.5, "HIGH": 7.5, "MEDIUM": 5.0, "LOW": 2.5}
+                    max_severity_val = max((base_weights.get(s, 2.0) for s in severities), default=0.0)
+                    count_factor = min(0.5, (total_findings - 1) * 0.1)
+                    cvss_base = min(10.0, round(max_severity_val + count_factor, 1))
+
                 asvs_coverage = {
                     "V5_Validation_Sanitization": "PASS",
                     "V13_API_Security": "PASS",
-                    "V14_Configuration": "REVIEW_HEADERS",
+                    "V14_Configuration": "REVIEW_HEADERS" if total_findings > 0 else "PASS",
                 }
 
                 stage.status = StageStatus.VERIFIED
@@ -552,14 +560,43 @@ class InvestigationPipelineEngine:
 
     def _aggregate_risk_and_summary(self, record: PipelineExecutionRecord) -> None:
         total_finds = len(record.findings)
-        score = min(100.0, 15.0 + (total_finds * 12.0))
-        record.risk_score = round(score, 1)
-        if record.risk_score >= 75.0:
-            record.risk_level = "HIGH"
-        elif record.risk_score >= 40.0:
-            record.risk_level = "MEDIUM"
+        if not total_finds:
+            record.risk_score = 0.0
+            record.risk_level = "CLEAN"
         else:
-            record.risk_level = "LOW"
+            severities = [f.get("severity", "LOW").upper() for f in record.findings]
+            sev_counts = {
+                "CRITICAL": severities.count("CRITICAL"),
+                "HIGH": severities.count("HIGH"),
+                "MEDIUM": severities.count("MEDIUM"),
+                "LOW": severities.count("LOW"),
+            }
+            # Base floor based on highest severity detected (NIST/CVSS risk classification)
+            if sev_counts["CRITICAL"] > 0:
+                base_floor = 75.0
+            elif sev_counts["HIGH"] > 0:
+                base_floor = 50.0
+            elif sev_counts["MEDIUM"] > 0:
+                base_floor = 25.0
+            else:
+                base_floor = 10.0
+
+            incremental = (
+                (sev_counts["CRITICAL"] * 10.0)
+                + (sev_counts["HIGH"] * 7.0)
+                + (sev_counts["MEDIUM"] * 3.0)
+                + (sev_counts["LOW"] * 1.0)
+            )
+            record.risk_score = min(100.0, round(base_floor + incremental, 1))
+
+            if sev_counts["CRITICAL"] > 0 or record.risk_score >= 75.0:
+                record.risk_level = "CRITICAL"
+            elif sev_counts["HIGH"] > 0 or record.risk_score >= 50.0:
+                record.risk_level = "HIGH"
+            elif sev_counts["MEDIUM"] > 0 or record.risk_score >= 25.0:
+                record.risk_level = "MEDIUM"
+            else:
+                record.risk_level = "LOW"
 
         report_lines = [
             f"# REDLOOP Automated Investigation Report — {record.target}",

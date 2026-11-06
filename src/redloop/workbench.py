@@ -12702,6 +12702,29 @@ def register_workbench_routes(
         )
         return resp
 
+    @app.get("/api/auth/operator")
+    def auth_operator_endpoint(request: Request):
+        user, session = _get_authenticated_operator(request)
+        if user and session:
+            return JSONResponse({
+                "authenticated": True,
+                "username": user.username,
+                "display_name": user.full_name,
+                "role": user.role.value,
+                "permissions": [p.value for p in user.permissions],
+                "session_id": session.session_id,
+            })
+        default_user = auth_mgr.get_user("sec_analyst")
+        perms = [p.value for p in default_user.permissions] if default_user else ["view_telemetry", "view_dashboard", "run_assessment", "run_osint"]
+        return JSONResponse({
+            "authenticated": True,
+            "username": "sec_analyst",
+            "display_name": default_user.full_name if default_user else "Security Analyst (Local)",
+            "role": default_user.role.value if default_user else "analyst",
+            "permissions": perms,
+            "mode": "local_lab_operator",
+        })
+
     @app.get("/api/auth/me")
     def auth_me_endpoint(request: Request):
         user, session = _get_authenticated_operator(request)
@@ -15757,6 +15780,88 @@ def register_workbench_routes(
 
 
     # --- Unified OSINT Workspace API Endpoints (Phase 3 & 4) ---
+
+    @app.get("/api/osint/investigate")
+    @app.post("/api/osint/investigate")
+    async def osint_investigate_unified(request: Request):
+        _require_same_origin(request)
+        indicator = ""
+        query_type = "auto"
+        investigation_id = None
+        if request.method == "POST":
+            try:
+                body = await request.json()
+            except Exception:
+                body = {}
+            indicator = str(body.get("indicator") or body.get("target") or body.get("query") or "").strip()
+            query_type = str(body.get("query_type") or body.get("type") or "auto").strip().lower()
+            investigation_id = body.get("investigation_id")
+        else:
+            indicator = str(request.query_params.get("indicator") or request.query_params.get("target") or request.query_params.get("query") or "").strip()
+            query_type = str(request.query_params.get("query_type") or request.query_params.get("type") or "auto").strip().lower()
+            investigation_id = request.query_params.get("investigation_id")
+
+        if not indicator:
+            raise HTTPException(status_code=400, detail="Missing required 'indicator' parameter")
+
+        if query_type in ("auto", "", "detect"):
+            import ipaddress
+            import re
+            clean_ind = indicator.strip()
+            try:
+                ipaddress.ip_address(clean_ind)
+                query_type = "ip"
+            except ValueError:
+                if "@" in clean_ind and "." in clean_ind.split("@")[-1]:
+                    query_type = "email"
+                elif (clean_ind.startswith("+") or clean_ind.startswith("tel:")) and len(re.sub(r"[^\d]", "", clean_ind)) >= 7:
+                    query_type = "phone"
+                elif len(clean_ind) in (32, 40, 64) and re.fullmatch(r"[0-9a-fA-F]+", clean_ind):
+                    query_type = "hash"
+                elif "." in clean_ind and "/" not in clean_ind and " " not in clean_ind:
+                    query_type = "domain"
+                else:
+                    query_type = "username"
+
+        from redloop.osint_engine import get_osint_engine, populate_investigation_graph_from_osint
+        engine = get_osint_engine()
+
+        if query_type == "ip":
+            res = engine.investigate_ip(indicator)
+        elif query_type == "domain":
+            res = engine.investigate_domain(indicator)
+        elif query_type == "email":
+            res = engine.investigate_email(indicator)
+        elif query_type == "username":
+            res = engine.investigate_username(indicator)
+        elif query_type == "phone":
+            res = engine.investigate_phone(indicator)
+        elif query_type in ("hash", "file"):
+            from dataclasses import asdict
+            from redloop.virustotal import get_virustotal_client
+            vt_client = get_virustotal_client()
+            vt_res = vt_client.inspect(indicator, "file")
+            data = vt_res.to_dict() if hasattr(vt_res, "to_dict") else asdict(vt_res)
+            data["success"] = True
+            data["indicator"] = indicator
+            data["query_type"] = "hash"
+            return JSONResponse(data)
+        else:
+            res = engine.investigate_domain(indicator)
+
+        if investigation_id:
+            inv_store = get_investigation_store()
+            inv = inv_store.get(investigation_id)
+            if inv:
+                inv_type = query_type.upper()
+                inv.add_event("evidence", f"OSINT {inv_type}: {res.indicator}", res.actual_finding, "INFO", {"evidence_id": res.evidence_id, "evidence_hash": res.evidence_hash})
+                inv_store.save(inv)
+                graph = InvestigationGraph(investigation_id=inv.id)
+                populate_investigation_graph_from_osint(graph, res)
+
+        out = res.model_dump(mode="json")
+        out["success"] = True
+        return JSONResponse(out)
 
 
 
