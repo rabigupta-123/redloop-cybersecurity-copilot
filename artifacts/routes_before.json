@@ -1,0 +1,926 @@
+[
+  {
+    "method": "GET",
+    "path": "/"
+  },
+  {
+    "method": "GET",
+    "path": "/api/agent/tasks"
+  },
+  {
+    "method": "POST",
+    "path": "/api/agent/tasks"
+  },
+  {
+    "method": "GET",
+    "path": "/api/agent/tasks/{task_id}"
+  },
+  {
+    "method": "POST",
+    "path": "/api/agent/tasks/{task_id}/approve"
+  },
+  {
+    "method": "POST",
+    "path": "/api/agent/tasks/{task_id}/cancel"
+  },
+  {
+    "method": "GET",
+    "path": "/api/agent/tasks/{task_id}/steps"
+  },
+  {
+    "method": "POST",
+    "path": "/api/agentic/execute"
+  },
+  {
+    "method": "POST",
+    "path": "/api/agentic/plan"
+  },
+  {
+    "method": "GET",
+    "path": "/api/analytics/risk"
+  },
+  {
+    "method": "GET",
+    "path": "/api/architecture/matrix"
+  },
+  {
+    "method": "GET",
+    "path": "/api/assessment/list"
+  },
+  {
+    "method": "POST",
+    "path": "/api/assessment/start"
+  },
+  {
+    "method": "GET",
+    "path": "/api/assessment/{assessment_id}"
+  },
+  {
+    "method": "POST",
+    "path": "/api/assessment/{assessment_id}/cancel"
+  },
+  {
+    "method": "POST",
+    "path": "/api/assessment/{assessment_id}/pause"
+  },
+  {
+    "method": "GET",
+    "path": "/api/assessment/{assessment_id}/report/{variant}"
+  },
+  {
+    "method": "POST",
+    "path": "/api/assessment/{assessment_id}/resume"
+  },
+  {
+    "method": "GET",
+    "path": "/api/assets/graph"
+  },
+  {
+    "method": "POST",
+    "path": "/api/asvs/evaluate"
+  },
+  {
+    "method": "GET",
+    "path": "/api/attack-paths"
+  },
+  {
+    "method": "GET",
+    "path": "/api/audit/checkpoint"
+  },
+  {
+    "method": "POST",
+    "path": "/api/audit/checkpoint"
+  },
+  {
+    "method": "POST",
+    "path": "/api/audit/checkpoint/rotate"
+  },
+  {
+    "method": "GET",
+    "path": "/api/audit/verify"
+  },
+  {
+    "method": "POST",
+    "path": "/api/auth/login"
+  },
+  {
+    "method": "POST",
+    "path": "/api/auth/logout"
+  },
+  {
+    "method": "GET",
+    "path": "/api/auth/me"
+  },
+  {
+    "method": "GET",
+    "path": "/api/auth/operator"
+  },
+  {
+    "method": "GET",
+    "path": "/api/auth/users"
+  },
+  {
+    "method": "GET",
+    "path": "/api/capabilities"
+  },
+  {
+    "method": "GET",
+    "path": "/api/cases"
+  },
+  {
+    "method": "POST",
+    "path": "/api/cases"
+  },
+  {
+    "method": "GET",
+    "path": "/api/cases/{case_id}"
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/cases/{case_id}"
+  },
+  {
+    "method": "GET",
+    "path": "/api/cases/{case_id}/audit-report"
+  },
+  {
+    "method": "POST",
+    "path": "/api/cases/{case_id}/evidence"
+  },
+  {
+    "method": "GET",
+    "path": "/api/cases/{case_id}/integrity"
+  },
+  {
+    "method": "POST",
+    "path": "/api/cases/{case_id}/notes"
+  },
+  {
+    "method": "GET",
+    "path": "/api/cases/{case_id}/timeline"
+  },
+  {
+    "method": "POST",
+    "path": "/api/chat"
+  },
+  {
+    "method": "POST",
+    "path": "/api/chat"
+  },
+  {
+    "method": "GET",
+    "path": "/api/chat/conversations"
+  },
+  {
+    "method": "POST",
+    "path": "/api/chat/conversations"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/chat/conversations/{conversation_id}"
+  },
+  {
+    "method": "GET",
+    "path": "/api/chat/conversations/{conversation_id}"
+  },
+  {
+    "method": "POST",
+    "path": "/api/chat/conversations/{conversation_id}/cancel"
+  },
+  {
+    "method": "POST",
+    "path": "/api/chat/conversations/{conversation_id}/messages/{position}/edit"
+  },
+  {
+    "method": "POST",
+    "path": "/api/chat/conversations/{conversation_id}/regenerate"
+  },
+  {
+    "method": "POST",
+    "path": "/api/chat/conversations/{conversation_id}/rename"
+  },
+  {
+    "method": "POST",
+    "path": "/api/chat/generations/{generation_id}/stop"
+  },
+  {
+    "method": "POST",
+    "path": "/api/chat/message"
+  },
+  {
+    "method": "POST",
+    "path": "/api/chat/message"
+  },
+  {
+    "method": "POST",
+    "path": "/api/chat/stream"
+  },
+  {
+    "method": "GET",
+    "path": "/api/core-integrations"
+  },
+  {
+    "method": "POST",
+    "path": "/api/core-integrations/test-all"
+  },
+  {
+    "method": "POST",
+    "path": "/api/core-integrations/{provider_id}/test"
+  },
+  {
+    "method": "GET",
+    "path": "/api/detections/coverage"
+  },
+  {
+    "method": "GET",
+    "path": "/api/detections/rules"
+  },
+  {
+    "method": "POST",
+    "path": "/api/detections/rules"
+  },
+  {
+    "method": "GET",
+    "path": "/api/detections/rules/{rule_id}"
+  },
+  {
+    "method": "POST",
+    "path": "/api/detections/rules/{rule_id}/false-positive"
+  },
+  {
+    "method": "POST",
+    "path": "/api/detections/rules/{rule_id}/test"
+  },
+  {
+    "method": "GET",
+    "path": "/api/entries"
+  },
+  {
+    "method": "GET",
+    "path": "/api/findings"
+  },
+  {
+    "method": "GET",
+    "path": "/api/findings/{finding_id}"
+  },
+  {
+    "method": "POST",
+    "path": "/api/findings/{finding_id}/validate"
+  },
+  {
+    "method": "POST",
+    "path": "/api/forensics/advanced-triage"
+  },
+  {
+    "method": "GET",
+    "path": "/api/health"
+  },
+  {
+    "method": "POST",
+    "path": "/api/hunting/attack/map"
+  },
+  {
+    "method": "GET",
+    "path": "/api/hunting/attack/matrix"
+  },
+  {
+    "method": "GET",
+    "path": "/api/hunting/attack/tactics"
+  },
+  {
+    "method": "GET",
+    "path": "/api/hunting/attack/techniques"
+  },
+  {
+    "method": "POST",
+    "path": "/api/hunting/chain/reconstruct"
+  },
+  {
+    "method": "GET",
+    "path": "/api/hunting/hypotheses"
+  },
+  {
+    "method": "POST",
+    "path": "/api/hunting/hypotheses"
+  },
+  {
+    "method": "GET",
+    "path": "/api/hunting/hypotheses/{hypothesis_id}"
+  },
+  {
+    "method": "POST",
+    "path": "/api/hunting/hypotheses/{hypothesis_id}/evidence"
+  },
+  {
+    "method": "POST",
+    "path": "/api/hunting/pivot"
+  },
+  {
+    "method": "GET",
+    "path": "/api/hunting/queries/saved"
+  },
+  {
+    "method": "POST",
+    "path": "/api/hunting/queries/saved"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/hunting/queries/saved/{query_id}"
+  },
+  {
+    "method": "POST",
+    "path": "/api/hunting/query"
+  },
+  {
+    "method": "POST",
+    "path": "/api/hunting/query/execute"
+  },
+  {
+    "method": "POST",
+    "path": "/api/hunting/query/plan"
+  },
+  {
+    "method": "POST",
+    "path": "/api/hunting/reconstruction/process-tree"
+  },
+  {
+    "method": "GET",
+    "path": "/api/hunting/sigma/matrix"
+  },
+  {
+    "method": "POST",
+    "path": "/api/hunting/sigma/test"
+  },
+  {
+    "method": "POST",
+    "path": "/api/hunting/sigma/validate"
+  },
+  {
+    "method": "GET",
+    "path": "/api/identity/clusters"
+  },
+  {
+    "method": "GET",
+    "path": "/api/identity/clusters/{cluster_id}"
+  },
+  {
+    "method": "POST",
+    "path": "/api/identity/clusters/{cluster_id}/review"
+  },
+  {
+    "method": "POST",
+    "path": "/api/identity/observations"
+  },
+  {
+    "method": "GET",
+    "path": "/api/identity/reviews"
+  },
+  {
+    "method": "GET",
+    "path": "/api/incidents"
+  },
+  {
+    "method": "POST",
+    "path": "/api/incidents/correlate"
+  },
+  {
+    "method": "POST",
+    "path": "/api/incidents/merge"
+  },
+  {
+    "method": "GET",
+    "path": "/api/incidents/{incident_id}"
+  },
+  {
+    "method": "POST",
+    "path": "/api/incidents/{incident_id}/split"
+  },
+  {
+    "method": "GET",
+    "path": "/api/integrations"
+  },
+  {
+    "method": "GET",
+    "path": "/api/integrations/audit"
+  },
+  {
+    "method": "POST",
+    "path": "/api/integrations/sync"
+  },
+  {
+    "method": "GET",
+    "path": "/api/integrations/sync/{job_id}"
+  },
+  {
+    "method": "GET",
+    "path": "/api/integrations/{provider_id}"
+  },
+  {
+    "method": "GET",
+    "path": "/api/integrations/{provider_id}/capabilities"
+  },
+  {
+    "method": "POST",
+    "path": "/api/integrations/{provider_id}/disable"
+  },
+  {
+    "method": "POST",
+    "path": "/api/integrations/{provider_id}/enable"
+  },
+  {
+    "method": "GET",
+    "path": "/api/integrations/{provider_id}/events"
+  },
+  {
+    "method": "GET",
+    "path": "/api/integrations/{provider_id}/health"
+  },
+  {
+    "method": "POST",
+    "path": "/api/integrations/{provider_id}/test"
+  },
+  {
+    "method": "GET",
+    "path": "/api/intelligence/cve/{cve_id}"
+  },
+  {
+    "method": "GET",
+    "path": "/api/intelligence/epss/{cve_id}"
+  },
+  {
+    "method": "POST",
+    "path": "/api/investigation/pipeline/start"
+  },
+  {
+    "method": "POST",
+    "path": "/api/investigation/pipeline/{pipeline_id}/cancel"
+  },
+  {
+    "method": "GET",
+    "path": "/api/investigation/pipeline/{pipeline_id}/report"
+  },
+  {
+    "method": "POST",
+    "path": "/api/investigation/pipeline/{pipeline_id}/stage/{stage_id}/run"
+  },
+  {
+    "method": "GET",
+    "path": "/api/investigation/pipeline/{pipeline_id}/status"
+  },
+  {
+    "method": "GET",
+    "path": "/api/investigations"
+  },
+  {
+    "method": "POST",
+    "path": "/api/investigations"
+  },
+  {
+    "method": "GET",
+    "path": "/api/investigations/active"
+  },
+  {
+    "method": "POST",
+    "path": "/api/investigations/replay"
+  },
+  {
+    "method": "POST",
+    "path": "/api/investigations/reports/generate"
+  },
+  {
+    "method": "GET",
+    "path": "/api/investigations/{inv_id}"
+  },
+  {
+    "method": "GET",
+    "path": "/api/investigations/{inv_id}/graph"
+  },
+  {
+    "method": "POST",
+    "path": "/api/investigations/{inv_id}/graph/clear"
+  },
+  {
+    "method": "POST",
+    "path": "/api/investigations/{inv_id}/verify-remediation"
+  },
+  {
+    "method": "GET",
+    "path": "/api/iocs"
+  },
+  {
+    "method": "POST",
+    "path": "/api/iocs"
+  },
+  {
+    "method": "GET",
+    "path": "/api/iocs/{ioc_id}"
+  },
+  {
+    "method": "POST",
+    "path": "/api/iocs/{ioc_id}/disposition"
+  },
+  {
+    "method": "POST",
+    "path": "/api/kali/analyze-output"
+  },
+  {
+    "method": "POST",
+    "path": "/api/kali/execute"
+  },
+  {
+    "method": "GET",
+    "path": "/api/knowledge/diagnostics"
+  },
+  {
+    "method": "POST",
+    "path": "/api/knowledge/feedback"
+  },
+  {
+    "method": "POST",
+    "path": "/api/knowledge/lessons/review"
+  },
+  {
+    "method": "GET",
+    "path": "/api/metrics/soc"
+  },
+  {
+    "method": "GET",
+    "path": "/api/models"
+  },
+  {
+    "method": "GET",
+    "path": "/api/models/evaluator"
+  },
+  {
+    "method": "POST",
+    "path": "/api/osint/domain"
+  },
+  {
+    "method": "POST",
+    "path": "/api/osint/email"
+  },
+  {
+    "method": "POST",
+    "path": "/api/osint/email/footprint"
+  },
+  {
+    "method": "GET",
+    "path": "/api/osint/investigate"
+  },
+  {
+    "method": "POST",
+    "path": "/api/osint/investigate"
+  },
+  {
+    "method": "POST",
+    "path": "/api/osint/ip"
+  },
+  {
+    "method": "POST",
+    "path": "/api/osint/metadata"
+  },
+  {
+    "method": "POST",
+    "path": "/api/osint/phone"
+  },
+  {
+    "method": "POST",
+    "path": "/api/osint/username"
+  },
+  {
+    "method": "GET",
+    "path": "/api/overview/stats"
+  },
+  {
+    "method": "GET",
+    "path": "/api/performance"
+  },
+  {
+    "method": "GET",
+    "path": "/api/performance"
+  },
+  {
+    "method": "GET",
+    "path": "/api/performance/summary"
+  },
+  {
+    "method": "GET",
+    "path": "/api/providers/config"
+  },
+  {
+    "method": "POST",
+    "path": "/api/providers/config"
+  },
+  {
+    "method": "POST",
+    "path": "/api/providers/test"
+  },
+  {
+    "method": "POST",
+    "path": "/api/rag/ingest"
+  },
+  {
+    "method": "GET",
+    "path": "/api/rag/query"
+  },
+  {
+    "method": "GET",
+    "path": "/api/reports/{task_id}"
+  },
+  {
+    "method": "GET",
+    "path": "/api/scope"
+  },
+  {
+    "method": "GET",
+    "path": "/api/search"
+  },
+  {
+    "method": "GET",
+    "path": "/api/search"
+  },
+  {
+    "method": "GET",
+    "path": "/api/soar/executions"
+  },
+  {
+    "method": "GET",
+    "path": "/api/soar/executions/{execution_id}"
+  },
+  {
+    "method": "POST",
+    "path": "/api/soar/executions/{execution_id}/cancel"
+  },
+  {
+    "method": "GET",
+    "path": "/api/soar/workflows"
+  },
+  {
+    "method": "GET",
+    "path": "/api/soar/workflows/{workflow_id}"
+  },
+  {
+    "method": "POST",
+    "path": "/api/soar/workflows/{workflow_id}/execute"
+  },
+  {
+    "method": "GET",
+    "path": "/api/soc/alerts"
+  },
+  {
+    "method": "GET",
+    "path": "/api/soc/alerts/{alert_id}"
+  },
+  {
+    "method": "POST",
+    "path": "/api/soc/copilot/op"
+  },
+  {
+    "method": "GET",
+    "path": "/api/soc/dashboard/summary"
+  },
+  {
+    "method": "POST",
+    "path": "/api/soc/detect"
+  },
+  {
+    "method": "GET",
+    "path": "/api/soc/events"
+  },
+  {
+    "method": "GET",
+    "path": "/api/soc/events/{event_id}"
+  },
+  {
+    "method": "POST",
+    "path": "/api/soc/incidents"
+  },
+  {
+    "method": "POST",
+    "path": "/api/soc/ingest"
+  },
+  {
+    "method": "POST",
+    "path": "/api/soc/investigate"
+  },
+  {
+    "method": "GET",
+    "path": "/api/soc/playbooks"
+  },
+  {
+    "method": "GET",
+    "path": "/api/soc/playbooks/{playbook_id}"
+  },
+  {
+    "method": "POST",
+    "path": "/api/soc/playbooks/{playbook_id}/approve"
+  },
+  {
+    "method": "POST",
+    "path": "/api/soc/playbooks/{playbook_id}/execute"
+  },
+  {
+    "method": "GET",
+    "path": "/api/soc/reports/{investigation_id}"
+  },
+  {
+    "method": "GET",
+    "path": "/api/soc/sync/jobs"
+  },
+  {
+    "method": "GET",
+    "path": "/api/soc/sync/metrics"
+  },
+  {
+    "method": "POST",
+    "path": "/api/soc/sync/trigger"
+  },
+  {
+    "method": "POST",
+    "path": "/api/soc/sync/{job_id}/cancel"
+  },
+  {
+    "method": "GET",
+    "path": "/api/soc/timeline"
+  },
+  {
+    "method": "GET",
+    "path": "/api/system/low-confidence-queue"
+  },
+  {
+    "method": "POST",
+    "path": "/api/system/low-confidence-queue/{item_id}/resolve"
+  },
+  {
+    "method": "GET",
+    "path": "/api/tasks"
+  },
+  {
+    "method": "GET",
+    "path": "/api/tasks/{task_id}"
+  },
+  {
+    "method": "POST",
+    "path": "/api/terminal/cancel"
+  },
+  {
+    "method": "GET",
+    "path": "/api/terminal/environments"
+  },
+  {
+    "method": "POST",
+    "path": "/api/terminal/execute"
+  },
+  {
+    "method": "GET",
+    "path": "/api/threat-intel/cve/{cve_id}"
+  },
+  {
+    "method": "GET",
+    "path": "/api/threat-intel/ip/{ip}"
+  },
+  {
+    "method": "POST",
+    "path": "/api/threat-intel/virustotal"
+  },
+  {
+    "method": "POST",
+    "path": "/api/threat-intel/virustotal/file"
+  },
+  {
+    "method": "GET",
+    "path": "/api/threat-intel/virustotal/status"
+  },
+  {
+    "method": "GET",
+    "path": "/api/tools/capabilities"
+  },
+  {
+    "method": "POST",
+    "path": "/api/tools/cyber-codec"
+  },
+  {
+    "method": "GET",
+    "path": "/api/tools/environments"
+  },
+  {
+    "method": "POST",
+    "path": "/api/tools/execute"
+  },
+  {
+    "method": "GET",
+    "path": "/api/tools/health"
+  },
+  {
+    "method": "GET",
+    "path": "/api/tools/matrix"
+  },
+  {
+    "method": "POST",
+    "path": "/api/tools/plan"
+  },
+  {
+    "method": "GET",
+    "path": "/api/tools/status"
+  },
+  {
+    "method": "POST",
+    "path": "/api/workbench/blue/file-triage"
+  },
+  {
+    "method": "POST",
+    "path": "/api/workbench/copilot/chat"
+  },
+  {
+    "method": "POST",
+    "path": "/api/workbench/osint/shodan"
+  },
+  {
+    "method": "GET",
+    "path": "/api/workbench/purple/summary"
+  },
+  {
+    "method": "POST",
+    "path": "/api/workbench/red/exploit-simulate"
+  },
+  {
+    "method": "POST",
+    "path": "/api/workbench/red/port-scan"
+  },
+  {
+    "method": "POST",
+    "path": "/api/workbench/red/tls-check"
+  },
+  {
+    "method": "POST",
+    "path": "/api/workbench/red/web-check"
+  },
+  {
+    "method": "GET",
+    "path": "/api/workbench/task-graphs"
+  },
+  {
+    "method": "GET",
+    "path": "/api/workbench/task-graphs/{graph_id}"
+  },
+  {
+    "method": "GET",
+    "path": "/api/workbench/tasks"
+  },
+  {
+    "method": "GET",
+    "path": "/api/workbench/tools"
+  },
+  {
+    "method": "GET",
+    "path": "/chat"
+  },
+  {
+    "method": "POST",
+    "path": "/chat"
+  },
+  {
+    "method": "GET",
+    "path": "/favicon.ico"
+  },
+  {
+    "method": "GET",
+    "path": "/health"
+  },
+  {
+    "method": "GET",
+    "path": "/openapi.json"
+  },
+  {
+    "method": "GET",
+    "path": "/performance"
+  },
+  {
+    "method": "GET",
+    "path": "/report/html"
+  },
+  {
+    "method": "GET",
+    "path": "/report/json"
+  },
+  {
+    "method": "GET",
+    "path": "/report/markdown"
+  },
+  {
+    "method": "GET",
+    "path": "/report/md"
+  },
+  {
+    "method": "GET",
+    "path": "/report/pdf"
+  },
+  {
+    "method": "GET",
+    "path": "/report/pptx"
+  },
+  {
+    "method": "GET",
+    "path": "/workbench"
+  }
+]

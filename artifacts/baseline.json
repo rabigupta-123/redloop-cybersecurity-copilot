@@ -1,0 +1,11 @@
+{
+  "timestamp": "2026-11-07T13:14:20Z",
+  "total_collected": 1009,
+  "passed": 990,
+  "failed": 19,
+  "skipped": 0,
+  "errors": 0,
+  "timeouts": 0,
+  "runtime_seconds": 1693.18,
+  "return_code": 1
+}
