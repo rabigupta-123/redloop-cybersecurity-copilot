@@ -13,6 +13,18 @@ MAX_REPORT_ROWS = 5_000
 MAX_DASHBOARD_ROWS = 100
 MAX_DETAIL_CHARS = 8_000
 _SAFE_SLUG = re.compile(r"[^A-Za-z0-9_-]+")
+
+SECRET_PATTERNS = [
+    re.compile(r"gsk_[a-zA-Z0-9_\-]{20,}"),
+    re.compile(r"AIza[a-zA-Z0-9_\-]{30,}"),
+    re.compile(r"sk-ant-[a-zA-Z0-9_\-]{20,}"),
+    re.compile(r"sk-[a-zA-Z0-9_\-]{20,}"),
+    re.compile(r"Bearer\s+[a-zA-Z0-9_\-\.]{15,}", re.IGNORECASE),
+    re.compile(r"(api[_-]?key\s*[:=]\s*)[a-zA-Z0-9_\-]{15,}", re.IGNORECASE),
+    re.compile(r"(secret\s*[:=]\s*)[a-zA-Z0-9_\-]{10,}", re.IGNORECASE),
+    re.compile(r"(password\s*[:=]\s*)[^\s]{4,}", re.IGNORECASE),
+]
+
 _AUDIT_COLUMNS = (
     "id",
     "timestamp",

@@ -51,7 +51,32 @@ CREATE TABLE IF NOT EXISTS audit_chain_anchor (
     event_count INTEGER NOT NULL,
     sealed_at   TEXT    NOT NULL
 );
+
+-- Defense-in-depth: SQLite database-level triggers enforcing append-only immutability.
+-- Any direct SQL UPDATE or DELETE statement is aborted immediately.
+CREATE TRIGGER IF NOT EXISTS audit_no_update BEFORE UPDATE ON audit_log BEGIN SELECT RAISE(ABORT, 'audit_log is append-only: UPDATE forbidden'); END;
+CREATE TRIGGER IF NOT EXISTS audit_no_delete BEFORE DELETE ON audit_log BEGIN SELECT RAISE(ABORT, 'audit_log is append-only: DELETE forbidden'); END;
 """
+
+def install_audit_triggers(conn_or_db_path: sqlite3.Connection | str | Path) -> None:
+    """Installs database-level append-only triggers on the audit_log table.
+
+    Provides defense-in-depth even against direct SQL execution by aborting
+    any UPDATE or DELETE operations at the SQLite engine level.
+    """
+    trigger_sql = """
+    CREATE TRIGGER IF NOT EXISTS audit_no_update BEFORE UPDATE ON audit_log BEGIN SELECT RAISE(ABORT, 'audit_log is append-only: UPDATE forbidden'); END;
+    CREATE TRIGGER IF NOT EXISTS audit_no_delete BEFORE DELETE ON audit_log BEGIN SELECT RAISE(ABORT, 'audit_log is append-only: DELETE forbidden'); END;
+    """
+    if isinstance(conn_or_db_path, sqlite3.Connection):
+        conn_or_db_path.executescript(trigger_sql)
+    else:
+        conn = sqlite3.connect(str(conn_or_db_path))
+        try:
+            conn.executescript(trigger_sql)
+            conn.commit()
+        finally:
+            conn.close()
 
 # Canonical verification outcomes. These are the only statuses the API and UI
 # may display; `valid` is retained for backwards compatibility and is true only
@@ -231,6 +256,7 @@ class AuditLogger:
                     )
                 current_prev = e_hash
             conn.commit()
+        install_audit_triggers(conn)
 
     @contextmanager
     def _conn(self):

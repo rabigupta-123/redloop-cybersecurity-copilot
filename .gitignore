@@ -2,6 +2,7 @@
 .env
 .env.*
 !.env.example
+*.key
 
 # Local Cryptographic Keys & Runtime Databases
 data/.ephemeral_vault_key

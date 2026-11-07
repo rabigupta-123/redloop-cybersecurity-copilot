@@ -13,7 +13,10 @@ Provides:
 from __future__ import annotations
 
 import hashlib
+import hmac
 import json
+import os
+import secrets
 import sqlite3
 import threading
 import time
@@ -23,6 +26,89 @@ from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
 from typing import Any, Callable, Optional
+
+OPERATOR_TOKEN_FILE = Path("data/.operator_token")
+OPERATOR_TOKEN_HASH_FILE = Path("data/.operator_token_hash")
+
+
+def get_or_create_operator_token(force_generate: bool = False) -> tuple[str, str]:
+    """Return (token, token_hash). Generates a new operator token if missing or forced."""
+    OPERATOR_TOKEN_FILE.parent.mkdir(parents=True, exist_ok=True)
+    if not force_generate and OPERATOR_TOKEN_FILE.exists():
+        try:
+            tok = OPERATOR_TOKEN_FILE.read_text(encoding="utf-8").strip()
+            if tok:
+                h = hashlib.sha256(tok.encode("utf-8")).hexdigest()
+                return tok, h
+        except Exception:
+            pass
+
+    tok = secrets.token_urlsafe(32)
+    h = hashlib.sha256(tok.encode("utf-8")).hexdigest()
+    try:
+        OPERATOR_TOKEN_FILE.write_text(tok, encoding="utf-8")
+        if os.name != "nt":
+            os.chmod(OPERATOR_TOKEN_FILE, 0o600)
+    except Exception:
+        pass
+    try:
+        OPERATOR_TOKEN_HASH_FILE.write_text(h, encoding="utf-8")
+        if os.name != "nt":
+            os.chmod(OPERATOR_TOKEN_HASH_FILE, 0o600)
+    except Exception:
+        pass
+    return tok, h
+
+
+def is_operator_token_enabled() -> bool:
+    """Check if operator token is present / enabled without generating a new one."""
+    env_tok = os.environ.get("REDLOOP_OPERATOR_TOKEN")
+    if env_tok and env_tok.strip():
+        return True
+    env_hash = os.environ.get("REDLOOP_OPERATOR_TOKEN_HASH")
+    if env_hash and env_hash.strip():
+        return True
+    if OPERATOR_TOKEN_HASH_FILE.exists():
+        try:
+            content = OPERATOR_TOKEN_HASH_FILE.read_text(encoding="utf-8").strip()
+            if content:
+                return True
+        except Exception:
+            pass
+    if OPERATOR_TOKEN_FILE.exists():
+        try:
+            content = OPERATOR_TOKEN_FILE.read_text(encoding="utf-8").strip()
+            if content:
+                return True
+        except Exception:
+            pass
+    return False
+
+
+def get_operator_token_hash() -> str:
+    """Return stored SHA-256 hash of the operator token."""
+    env_hash = os.environ.get("REDLOOP_OPERATOR_TOKEN_HASH")
+    if env_hash:
+        return env_hash.strip().lower()
+    if OPERATOR_TOKEN_HASH_FILE.exists():
+        try:
+            h = OPERATOR_TOKEN_HASH_FILE.read_text(encoding="utf-8").strip().lower()
+            if h:
+                return h
+        except Exception:
+            pass
+    _, h = get_or_create_operator_token()
+    return h
+
+
+def verify_operator_token(provided_token: str | None) -> bool:
+    """Verify operator token header using constant-time comparison."""
+    if not provided_token:
+        return False
+    expected_hash = get_operator_token_hash()
+    actual_hash = hashlib.sha256(provided_token.strip().encode("utf-8")).hexdigest().lower()
+    return hmac.compare_digest(actual_hash, expected_hash)
+
 
 from redloop.assessment.soar_actions import (
     ActionCategory,

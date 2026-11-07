@@ -19,16 +19,19 @@ Enforces:
 from __future__ import annotations
 
 import hashlib
+import ipaddress
 import os
 import platform
 import re
 import shlex
 import shutil
 import signal
+import socket
 import sys
 import subprocess
 import threading
 import time
+import urllib.parse
 import uuid
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
@@ -174,6 +177,346 @@ SECRET_PATTERNS = [
 ]
 
 _SUBPROCESS_SEMAPHORE = threading.Semaphore(8)  # Max 8 concurrent subprocesses
+
+ALLOWED_NETWORK_BINARIES = {
+    "nmap", "curl", "wget", "nc", "ncat", "ping", "ssh", "telnet",
+    "dig", "nslookup", "whatweb", "nikto", "gobuster", "nuclei", "tshark",
+}
+
+FORBIDDEN_SHELL_CHARS = re.compile(r"[;&|`$<>\n\(\)]")
+
+
+def _normalize_host(host_str: str) -> str:
+    """Normalize and de-obfuscate target hosts (decimal/hex/octal IPv4, trailing dots, userinfo)."""
+    h = host_str.strip().rstrip(".")
+    if "@" in h:
+        h = h.split("@")[-1]
+
+    if h.startswith("[") and "]" in h:
+        h = h[1:h.index("]")]
+
+    # Obfuscated decimal IPv4 e.g. 2130706433 -> 127.0.0.1
+    if h.isdigit():
+        try:
+            val = int(h)
+            if 0 <= val <= 0xFFFFFFFF:
+                return str(ipaddress.IPv4Address(val))
+        except Exception:
+            pass
+
+    # Obfuscated hex IPv4 e.g. 0x7f000001 -> 127.0.0.1
+    if h.lower().startswith("0x"):
+        try:
+            val = int(h, 16)
+            if 0 <= val <= 0xFFFFFFFF:
+                return str(ipaddress.IPv4Address(val))
+        except Exception:
+            pass
+
+    # Obfuscated octal IPv4 e.g. 017700000001 or 0177.0.0.1
+    if re.match(r"^0[0-7]+$", h):
+        try:
+            val = int(h, 8)
+            if 0 <= val <= 0xFFFFFFFF:
+                return str(ipaddress.IPv4Address(val))
+        except Exception:
+            pass
+
+    parts = h.split(".")
+    if len(parts) == 4 and any(p.startswith("0") and len(p) > 1 for p in parts):
+        try:
+            octets = [int(p, 8) if p.startswith("0") and not p.startswith("0x") else int(p) for p in parts]
+            if all(0 <= o <= 255 for o in octets):
+                return ".".join(str(o) for o in octets)
+        except Exception:
+            pass
+
+    return h
+
+
+def _parse_url_or_endpoint(raw: str) -> tuple[str, int | None]:
+    """Extract (host, port) from URL, host:port, or bare host."""
+    m_v6 = re.match(r"^\[([a-fA-F0-9:]+)\]:(\d+)$", raw)
+    if m_v6:
+        return m_v6.group(1), int(m_v6.group(2))
+
+    if "://" in raw:
+        parsed = urllib.parse.urlsplit(raw)
+        hostname = parsed.hostname
+        if not hostname:
+            raise ValueError(f"Unparseable URL target: {raw}")
+        norm_h = _normalize_host(hostname)
+        port = parsed.port
+        if port is None:
+            if parsed.scheme == "http":
+                port = 80
+            elif parsed.scheme == "https":
+                port = 443
+            elif parsed.scheme == "ftp":
+                port = 21
+            elif parsed.scheme == "ssh":
+                port = 22
+        return norm_h, port
+
+    if ":" in raw and not raw.startswith(":") and raw.count(":") == 1:
+        h_part, p_part = raw.split(":", 1)
+        if p_part.isdigit():
+            p_val = int(p_part)
+            if 1 <= p_val <= 65535:
+                return _normalize_host(h_part), p_val
+
+    return _normalize_host(raw), None
+
+
+def extract_network_targets(command: str) -> list[tuple[str, int | None]]:
+    """Strictly parse command string and extract all (target, port) pairs using shlex.
+
+    Enforces:
+    - Rejection of shell metacharacters and chaining (;&|`$( )><\\n).
+    - Allowlist of permitted binaries. Unknown binary => raises ValueError.
+    - Full de-obfuscation and normalization of hosts.
+    - Explicit port extraction (nmap -p, URL ports, host:port, nc port, ssh -p).
+    - Fail-closed: any unparseable target or port raises ValueError.
+    """
+    if not command or not command.strip():
+        raise ValueError("Empty command string")
+
+    if FORBIDDEN_SHELL_CHARS.search(command):
+        raise ValueError(
+            "Command contains forbidden shell metacharacters or chaining (;&|`$( )><\\n)."
+        )
+
+    try:
+        tokens = shlex.split(command.strip(), posix=True)
+    except Exception as exc:
+        raise ValueError(f"Command could not be safely tokenized: {exc}") from exc
+
+    if not tokens:
+        raise ValueError("Empty command tokens")
+
+    raw_bin = tokens[0]
+    bin_name = os.path.basename(raw_bin).lower()
+    if bin_name.endswith(".exe"):
+        bin_name = bin_name[:-4]
+
+    if bin_name not in ALLOWED_NETWORK_BINARIES:
+        raise ValueError(f"Binary '{bin_name}' is not in trusted network allowlist.")
+
+    args = tokens[1:]
+    results: list[tuple[str, int | None]] = []
+
+    if bin_name == "nmap":
+        ports: list[int] = []
+        has_p_flag = False
+        targets: list[str] = []
+        i = 0
+        while i < len(args):
+            arg = args[i]
+            if arg in ("-p", "--port"):
+                has_p_flag = True
+                if i + 1 >= len(args):
+                    raise ValueError("nmap -p missing port argument")
+                p_spec = args[i + 1]
+                i += 2
+                if p_spec == "-":
+                    ports = list(range(1, 65536))
+                else:
+                    for chunk in p_spec.split(","):
+                        chunk = chunk.strip()
+                        if not chunk:
+                            continue
+                        if "-" in chunk:
+                            start_s, end_s = chunk.split("-", 1)
+                            if not start_s.isdigit() or not end_s.isdigit():
+                                raise ValueError(f"Malformed nmap port range: {chunk}")
+                            s_int, e_int = int(start_s), int(end_s)
+                            if s_int < 1 or e_int > 65535 or s_int > e_int:
+                                raise ValueError(f"Invalid nmap port range bounds: {chunk}")
+                            ports.extend(range(s_int, e_int + 1))
+                        elif chunk.isdigit():
+                            p_int = int(chunk)
+                            if not 1 <= p_int <= 65535:
+                                raise ValueError(f"Invalid port: {chunk}")
+                            ports.append(p_int)
+                        else:
+                            raise ValueError(f"Unparseable nmap port: {chunk}")
+                continue
+            elif arg.startswith("-p") and arg != "-p":
+                has_p_flag = True
+                p_spec = arg[2:]
+                i += 1
+                if p_spec == "-":
+                    ports = list(range(1, 65536))
+                else:
+                    for chunk in p_spec.split(","):
+                        chunk = chunk.strip()
+                        if not chunk:
+                            continue
+                        if "-" in chunk:
+                            start_s, end_s = chunk.split("-", 1)
+                            if not start_s.isdigit() or not end_s.isdigit():
+                                raise ValueError(f"Malformed nmap port range: {chunk}")
+                            s_int, e_int = int(start_s), int(end_s)
+                            ports.extend(range(s_int, e_int + 1))
+                        elif chunk.isdigit():
+                            ports.append(int(chunk))
+                        else:
+                            raise ValueError(f"Unparseable nmap port: {chunk}")
+                continue
+            elif arg == "--top-ports":
+                has_p_flag = True
+                if i + 1 >= len(args) or not args[i + 1].isdigit():
+                    raise ValueError("nmap --top-ports missing count")
+                top_count = int(args[i + 1])
+                i += 2
+                ports = list(range(1, min(top_count + 1, 65536)))
+                continue
+            elif arg.startswith("-"):
+                if arg in ("-oN", "-oX", "-oG", "-oS", "-oA", "--script", "-e", "--source-port", "-g", "--data-length"):
+                    i += 2
+                else:
+                    i += 1
+            else:
+                targets.append(arg)
+                i += 1
+
+        if not targets:
+            raise ValueError("nmap command contains no target host/network")
+
+        for tgt in targets:
+            norm_tgt = _normalize_host(tgt)
+            if has_p_flag and ports:
+                for p in ports:
+                    results.append((norm_tgt, p))
+            else:
+                results.append((norm_tgt, None))
+
+    elif bin_name in ("curl", "wget"):
+        opts_with_arg = {"-H", "--header", "-d", "--data", "-o", "--output", "-u", "--user", "-A", "--user-agent", "-X", "--request", "--connect-timeout", "-m", "--max-time"}
+        i = 0
+        while i < len(args):
+            arg = args[i]
+            if arg in opts_with_arg:
+                i += 2
+                continue
+            if arg.startswith("-"):
+                i += 1
+                continue
+            host, port = _parse_url_or_endpoint(arg)
+            results.append((host, port or 80))
+            i += 1
+
+    elif bin_name in ("nc", "ncat"):
+        positionals = []
+        i = 0
+        while i < len(args):
+            arg = args[i]
+            if arg in ("-p", "-w", "-i", "-s"):
+                i += 2
+                continue
+            if arg.startswith("-"):
+                i += 1
+                continue
+            positionals.append(arg)
+            i += 1
+        if len(positionals) < 1:
+            raise ValueError("nc/ncat missing target host")
+        host = _normalize_host(positionals[0])
+        port = None
+        if len(positionals) >= 2:
+            if not positionals[1].isdigit():
+                raise ValueError(f"Invalid nc port: {positionals[1]}")
+            port = int(positionals[1])
+        results.append((host, port))
+
+    elif bin_name == "ssh":
+        port = 22
+        positionals = []
+        i = 0
+        while i < len(args):
+            arg = args[i]
+            if arg == "-p":
+                if i + 1 >= len(args) or not args[i + 1].isdigit():
+                    raise ValueError("ssh -p missing valid port")
+                port = int(args[i + 1])
+                i += 2
+                continue
+            if arg.startswith("-"):
+                i += 1
+                continue
+            positionals.append(arg)
+            i += 1
+        if not positionals:
+            raise ValueError("ssh missing target host")
+        host = _normalize_host(positionals[0])
+        results.append((host, port))
+
+    elif bin_name == "telnet":
+        port = 23
+        positionals = []
+        for arg in args:
+            if not arg.startswith("-"):
+                positionals.append(arg)
+        if not positionals:
+            raise ValueError("telnet missing target host")
+        host = _normalize_host(positionals[0])
+        if len(positionals) >= 2 and positionals[1].isdigit():
+            port = int(positionals[1])
+        results.append((host, port))
+
+    elif bin_name in ("dig", "nslookup"):
+        server = None
+        tgt_host = None
+        for arg in args:
+            if arg.startswith("@"):
+                server = _normalize_host(arg[1:])
+            elif not arg.startswith("-"):
+                tgt_host = _normalize_host(arg)
+        if server:
+            results.append((server, 53))
+        if tgt_host:
+            results.append((tgt_host, 53))
+
+    elif bin_name == "ping":
+        tgt_host = None
+        for arg in args:
+            if not arg.startswith("-"):
+                tgt_host = _normalize_host(arg)
+                break
+        if not tgt_host:
+            raise ValueError("ping missing target host")
+        results.append((tgt_host, None))
+
+    elif bin_name in ("whatweb", "nikto", "gobuster", "nuclei"):
+        url_target = None
+        i = 0
+        while i < len(args):
+            arg = args[i]
+            if arg in ("-u", "--url", "-target", "-h", "-host") and i + 1 < len(args):
+                url_target = args[i + 1]
+                i += 2
+                continue
+            if not arg.startswith("-") and url_target is None:
+                url_target = arg
+            i += 1
+        if not url_target:
+            raise ValueError(f"{bin_name} missing target URL/host")
+        host, port = _parse_url_or_endpoint(url_target)
+        results.append((host, port or 80))
+
+    elif bin_name == "tshark":
+        host_target = None
+        for i, arg in enumerate(args):
+            if arg == "host" and i + 1 < len(args):
+                host_target = _normalize_host(args[i + 1])
+                break
+        if host_target:
+            results.append((host_target, None))
+
+    if not results:
+        raise ValueError(f"Could not extract network targets from command: {command}")
+
+    return results
 
 
 def _mask_secrets(text: str | None) -> str:
@@ -1067,38 +1410,141 @@ class UnifiedTerminalEngine:
             inferred_target = target
             is_network = binary.lower() in KaliCommandParser.NETWORK_TOOLS
 
-        # 2. Scope verification gate for active network probes
-        if is_network and inferred_target:
-            if self.scope_guard is not None:
-                authorized = False
-                try:
-                    self.scope_guard.is_target_authorized(inferred_target, "scan", require_port=False)
-                    authorized = True
-                except Exception:
-                    authorized = False
+        # 2. Binary allowlist check and scope verification gate
+        bin_clean = os.path.basename(binary).lower()
+        if bin_clean.endswith(".exe"):
+            bin_clean = bin_clean[:-4]
 
-                if not authorized:
-                    if self.audit:
-                        self.audit.log(
-                            module="terminal",
-                            event="scope_blocked",
-                            status="BLOCKED",
-                            details={"target": inferred_target, "command": cmd_str},
-                        )
-                    return ExecutionResult(
-                        command=cmd_str,
-                        args=args,
-                        execution_environment=environment,
-                        start_timestamp=start_ts,
-                        completion_timestamp=datetime.now(timezone.utc).isoformat(),
-                        duration_ms=0.0,
-                        stdout="",
-                        stderr=f"SCOPE_BLOCKED: Target '{inferred_target}' is not authorized in scope.",
-                        exit_code=126,
-                        status=ExecutionStatus.BLOCKED,
-                        error=f"SCOPE_BLOCKED: Target '{inferred_target}' is not in authorized scope.",
-                        task_id=t_id,
+        SAFE_DIAGNOSTICS = {"whoami", "uname", "pwd", "id", "date", "dir"}
+        if bin_clean not in ALLOWED_NETWORK_BINARIES and bin_clean not in SAFE_DIAGNOSTICS:
+            if self.audit:
+                self.audit.log(
+                    module="terminal",
+                    event="binary_blocked",
+                    status="BLOCKED",
+                    details={"binary": binary, "command": cmd_str},
+                )
+            return ExecutionResult(
+                command=cmd_str,
+                args=args,
+                execution_environment=environment,
+                start_timestamp=start_ts,
+                completion_timestamp=datetime.now(timezone.utc).isoformat(),
+                duration_ms=0.0,
+                stdout="",
+                stderr=f"SECURITY_ALERT: Binary '{binary}' is not permitted by REDLOOP trusted allowlist.",
+                exit_code=126,
+                status=ExecutionStatus.BLOCKED,
+                error=f"SECURITY_ALERT: Binary '{binary}' is not in trusted allowlist.",
+                task_id=t_id,
+            )
+
+        is_net_cmd = bin_clean in ALLOWED_NETWORK_BINARIES
+        if is_net_cmd:
+            try:
+                extracted_targets = extract_network_targets(cmd_str)
+            except Exception as exc:
+                if self.audit:
+                    self.audit.log(
+                        module="terminal",
+                        event="scope_blocked",
+                        status="BLOCKED",
+                        details={"command": cmd_str, "reason": str(exc)},
                     )
+                return ExecutionResult(
+                    command=cmd_str,
+                    args=args,
+                    execution_environment=environment,
+                    start_timestamp=start_ts,
+                    completion_timestamp=datetime.now(timezone.utc).isoformat(),
+                    duration_ms=0.0,
+                    stdout="",
+                    stderr=f"SCOPE_BLOCKED: Command rejected by security gate: {exc}",
+                    exit_code=126,
+                    status=ExecutionStatus.BLOCKED,
+                    error=f"SCOPE_BLOCKED: {exc}",
+                    task_id=t_id,
+                )
+
+            if self.scope_guard is not None:
+                for tgt, prt in extracted_targets:
+                    try:
+                        self.scope_guard.is_target_authorized(tgt, "scan", port=prt, require_port=True)
+                    except Exception as exc:
+                        if self.audit:
+                            self.audit.log(
+                                module="terminal",
+                                event="scope_blocked",
+                                status="BLOCKED",
+                                details={"target": tgt, "port": prt, "command": cmd_str, "reason": str(exc)},
+                            )
+                        return ExecutionResult(
+                            command=cmd_str,
+                            args=args,
+                            execution_environment=environment,
+                            start_timestamp=start_ts,
+                            completion_timestamp=datetime.now(timezone.utc).isoformat(),
+                            duration_ms=0.0,
+                            stdout="",
+                            stderr=f"SCOPE_BLOCKED: Target '{tgt}' on port {prt} is not authorized in scope: {exc}",
+                            exit_code=126,
+                            status=ExecutionStatus.BLOCKED,
+                            error=f"SCOPE_BLOCKED: Target '{tgt}' on port {prt} is not in authorized scope.",
+                            task_id=t_id,
+                        )
+
+                    is_ip = False
+                    try:
+                        ipaddress.ip_address(tgt)
+                        is_ip = True
+                    except ValueError:
+                        is_ip = False
+
+                    if not is_ip:
+                        try:
+                            addr_info = socket.getaddrinfo(tgt, None, socket.AF_UNSPEC, socket.SOCK_STREAM)
+                            resolved_ips = list({item[4][0] for item in addr_info})
+                        except Exception as e:
+                            return ExecutionResult(
+                                command=cmd_str,
+                                args=args,
+                                execution_environment=environment,
+                                start_timestamp=start_ts,
+                                completion_timestamp=datetime.now(timezone.utc).isoformat(),
+                                duration_ms=0.0,
+                                stdout="",
+                                stderr=f"SCOPE_BLOCKED: DNS resolution failed for '{tgt}': {e}",
+                                exit_code=126,
+                                status=ExecutionStatus.BLOCKED,
+                                error=f"SCOPE_BLOCKED: DNS resolution failed: {e}",
+                                task_id=t_id,
+                            )
+                        for rip in resolved_ips:
+                            try:
+                                self.scope_guard.validate_resolved_ip(tgt, rip, action="scan")
+                                self.scope_guard.is_target_authorized(rip, "scan", port=prt, require_port=True)
+                            except Exception as exc:
+                                if self.audit:
+                                    self.audit.log(
+                                        module="terminal",
+                                        event="scope_blocked",
+                                        status="BLOCKED",
+                                        details={"target": tgt, "resolved_ip": rip, "port": prt, "command": cmd_str, "reason": str(exc)},
+                                    )
+                                return ExecutionResult(
+                                    command=cmd_str,
+                                    args=args,
+                                    execution_environment=environment,
+                                    start_timestamp=start_ts,
+                                    completion_timestamp=datetime.now(timezone.utc).isoformat(),
+                                    duration_ms=0.0,
+                                    stdout="",
+                                    stderr=f"SCOPE_BLOCKED: Hostname '{tgt}' resolved to '{rip}', which is not authorized: {exc}",
+                                    exit_code=126,
+                                    status=ExecutionStatus.BLOCKED,
+                                    error=f"SCOPE_BLOCKED: Resolved IP '{rip}' not authorized.",
+                                    task_id=t_id,
+                                )
 
         # 3. Select environment adapter
         adapter = self._adapters.get(environment.lower()) or self._adapters["host"]

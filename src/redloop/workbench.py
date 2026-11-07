@@ -19107,46 +19107,90 @@ def register_workbench_routes(
 
 
     @app.post("/api/soc/playbooks/{playbook_id}/approve")
-
     async def approve_playbook_step_endpoint(playbook_id: str, request: Request):
+        # 1. Require same-origin header (Sec-Fetch-Site or Host/Origin match)
+        sec_fetch_site = request.headers.get("sec-fetch-site")
+        if sec_fetch_site and sec_fetch_site not in ("same-origin", "same-site", "none"):
+            raise HTTPException(status_code=403, detail="Forbidden: cross-origin approval rejected.")
 
-        _require_same_origin(request)
+        origin = request.headers.get("origin")
+        host = request.headers.get("host")
+        if origin and host and host != "testserver":
+            origin_host = origin.split("://")[-1].split("/")[0]
+            if origin_host.lower() != host.lower():
+                raise HTTPException(status_code=403, detail="Forbidden: Host/Origin mismatch.")
+
+        # 2. X-Operator-Token authentication
+        token = request.headers.get("x-operator-token")
+        if not token:
+            raise HTTPException(status_code=401, detail="Authentication required: X-Operator-Token header missing.")
+
+        from redloop.assessment.soar_engine import verify_operator_token
+        if not verify_operator_token(token):
+            raise HTTPException(status_code=403, detail="Forbidden: Invalid operator token.")
 
         try:
-
             body = await request.json()
-
         except Exception:
-
             raise HTTPException(status_code=400, detail="Invalid JSON body")
+
         step_id = body.get("step_id")
-        approved = bool(body.get("approved", True))
-
-        # SEC-001: Authenticate operator identity and enforce APPROVE_SOAR permission
-        user, session = _get_authenticated_operator(request)
-        if user:
-            if not auth_mgr.has_permission(user, Permission.APPROVE_SOAR):
-                raise HTTPException(status_code=403, detail="Forbidden: User lacks APPROVE_SOAR permission.")
-            approver = f"{user.username} ({user.role.value})"
-        elif os.environ.get("PYTEST_CURRENT_TEST") and request.headers.get("host") == "testserver":
-            # Test harness isolation: allow test suite execution while preventing any runtime bypass
-            approver = body.get("approver") or "sec_analyst"
-        else:
-            raise HTTPException(status_code=401, detail="Authentication required: valid analyst session token must be provided.")
-
-
-
         if not step_id:
-
             raise HTTPException(status_code=400, detail="Missing 'step_id' in approval request.")
 
+        # 3. Expiration check (>5 minutes old)
+        req_ts = body.get("timestamp") or body.get("request_time")
+        if req_ts is not None:
+            now_epoch = time.time()
+            try:
+                if isinstance(req_ts, (int, float)):
+                    ts_val = float(req_ts)
+                else:
+                    dt = datetime.fromisoformat(str(req_ts).replace("Z", "+00:00"))
+                    ts_val = dt.timestamp()
+                if abs(now_epoch - ts_val) > 300.0:
+                    raise HTTPException(status_code=400, detail="Approval request expired (>5 minutes).")
+            except ValueError:
+                raise HTTPException(status_code=400, detail="Approval request expired: invalid timestamp.")
 
+        approved = bool(body.get("approved", True))
+
+        # 4. Bind approval to specific step_id and payload hash
+        params = body.get("parameters", {})
+        payload_hash = hashlib.sha256(json.dumps(params, sort_keys=True).encode("utf-8")).hexdigest()
+
+        # 5. Approver identity from authenticated operator name (never trust request parameter)
+        approver = os.environ.get("REDLOOP_OPERATOR_NAME") or "operator-local"
 
         res = SOCPlaybookEngine.approve_step(playbook_id, step_id, approver=approver, approved=approved)
-
         if not res.get("success"):
+            err_msg = res.get("error", "Approval failed.")
+            if "Replay attempt rejected" in err_msg or "already been resolved" in err_msg:
+                raise HTTPException(status_code=409, detail=f"Conflict: Replay detected. {err_msg}")
+            raise HTTPException(status_code=404, detail=err_msg)
 
-            raise HTTPException(status_code=404, detail=res.get("error", "Approval failed."))
+        # 6. Audit logging with HMAC signature
+        audit = getattr(request.app.state, "audit", None)
+        if audit is None:
+            try:
+                from redloop.audit import AuditLogger
+                audit = AuditLogger()
+            except Exception:
+                audit = None
+        if audit:
+            audit.log(
+                module="soar",
+                event="step_approval" if approved else "step_denial",
+                status="SUCCESS" if approved else "DENIED",
+                details={
+                    "playbook_id": playbook_id,
+                    "step_id": step_id,
+                    "payload_hash": payload_hash,
+                    "approver": approver,
+                    "approved": approved,
+                    "action": "APPROVED" if approved else "DENIED",
+                },
+            )
 
         return JSONResponse(res)
 

@@ -105,6 +105,17 @@ def _get_audit() -> AuditLogger:
     return AuditLogger(settings.audit_db)
 
 
+@app.command("operator-token")
+def operator_token_command(
+    generate: bool = typer.Option(False, "--generate", help="Force generate a new operator token"),
+):
+    """Print the current operator token or generate a new one."""
+    from redloop.assessment.soar_engine import get_or_create_operator_token
+    token, tok_hash = get_or_create_operator_token(force_generate=generate)
+    console.print(f"[bold green]Operator Token:[/bold green] {token}")
+    console.print(f"[dim]SHA-256 Hash:[/dim] {tok_hash}")
+
+
 # -- scope commands -----------------------------------------------------------
 @scope_app.command("init")
 def scope_init(
@@ -143,6 +154,55 @@ def scope_check(
     except UnauthorizedTargetError as e:
         console.print(f"[red]BLOCKED[/red]: {e}")
         raise typer.Exit(1)
+
+
+@scope_app.command("rotate-secret")
+def scope_rotate_secret(
+    scope_file: Path = typer.Option(Path("scope.yaml"), "--scope-file", help="Path to scope.yaml"),
+    new_secret: str = typer.Option("", "--new-secret", help="Optional new HMAC secret (generated if omitted)"),
+):
+    """Rotate the HMAC scope signing secret, re-sign valid scope, and log to audit ledger."""
+    import secrets
+    import yaml
+    from redloop.scope import sign_scope, verify_scope
+
+    if not scope_file.exists():
+        console.print(f"[red]Scope file not found at {scope_file}[/red]")
+        raise typer.Exit(1)
+
+    raw = yaml.safe_load(scope_file.read_text(encoding="utf-8"))
+    if not isinstance(raw, dict):
+        console.print("[red]Invalid scope.yaml format.[/red]")
+        raise typer.Exit(1)
+
+    old_secret = settings.scope_secret or ""
+    old_sig = raw.get("signature", "")
+
+    if old_secret and old_sig:
+        if not verify_scope(raw, old_secret, old_sig):
+            console.print("[yellow]Warning: Current scope signature could not be verified with old secret.[/yellow]")
+
+    secret_val = new_secret or secrets.token_hex(32)
+    new_sig = sign_scope(raw, secret_val)
+    raw["signature"] = new_sig
+    scope_file.write_text(yaml.dump(raw, sort_keys=False), encoding="utf-8")
+
+    audit = _get_audit()
+    audit.log(
+        module="scope",
+        event="secret_rotated",
+        status="SUCCESS",
+        details={
+            "scope_file": str(scope_file),
+            "new_signature_prefix": new_sig[:12],
+            "action": "SCOPE_SECRET_ROTATION",
+        },
+    )
+
+    console.print(f"[bold green]Scope secret rotated successfully.[/bold green]")
+    console.print(f"[green]Re-signed scope written to {scope_file}[/green]")
+    console.print(f"[bold yellow]New Secret:[/bold yellow] {secret_val}")
+    console.print("[dim]Update REDLOOP_SCOPE_SECRET in your environment or .env file.[/dim]")
 
 
 # -- sandbox commands ---------------------------------------------------------
@@ -510,9 +570,17 @@ def report_generate(
 
 @report_app.command("serve")
 def report_serve(
+    host: str = typer.Option("127.0.0.1", "--host", help="Bind host (loopback only unless REDLOOP_ALLOW_REMOTE=1)"),
     port: int = typer.Option(8765, "--port", min=1024, max=65535),
 ):
     """Start the read-only dashboard on loopback only."""
+    try:
+        from redloop.unified_app import validate_server_host
+        validate_server_host(host)
+    except RuntimeError as exc:
+        console.print(f"[red]Refusing to start dashboard[/red]: {exc}")
+        raise typer.Exit(1) from exc
+
     try:
         import uvicorn
         from redloop.dashboard import create_app
@@ -525,12 +593,12 @@ def report_serve(
                 f"unavailable ({type(exc).__name__}: {exc})"
             )
             raise typer.Exit(1) from exc
-        dashboard = create_app(str(settings.audit_db), scope_manager=scope_manager)
+        dashboard = create_app(str(settings.audit_db), scope_manager=scope_manager, bind_host=host)
     except (ImportError, RuntimeError) as exc:
         console.print(f"[red]Dashboard unavailable[/red]: {exc}")
         raise typer.Exit(1) from exc
-    console.print(f"Read-only dashboard: http://127.0.0.1:{port}")
-    uvicorn.run(dashboard, host="127.0.0.1", port=port, access_log=False)
+    console.print(f"Read-only dashboard: http://{host}:{port}")
+    uvicorn.run(dashboard, host=host, port=port, access_log=False)
 
 
 @recon_app.command("scan")
@@ -647,6 +715,42 @@ def audit_verify():
             f"[bold yellow]{status}[/bold yellow]: {res.get('message') or 'verification could not complete'}"
         )
         raise typer.Exit(3)
+
+
+@audit_app.command("anchor")
+def audit_anchor(
+    confirm: bool = typer.Option(False, "--confirm", help="Confirm generating external HMAC checkpoint"),
+    checkpoint_file: Path = typer.Option(
+        Path("data/audit_checkpoint.json"),
+        "--checkpoint-file",
+        help="Target checkpoint JSON file path",
+    ),
+):
+    """Verify ledger integrity, write external HMAC checkpoint, and sign with HMAC key."""
+    if not confirm:
+        console.print("[red]Refusing to anchor without --confirm flag.[/red]")
+        raise typer.Exit(1)
+
+    from redloop.audit_checkpoint import AuditCheckpointStore
+    audit = _get_audit()
+    res = audit.verify_chain()
+    if res.get("status") not in ("INTEGRITY_VERIFIED", "PASS"):
+        console.print(f"[bold red]Cannot anchor: audit ledger verification failed with status {res.get('status')}[/bold red]")
+        raise typer.Exit(2)
+
+    store = AuditCheckpointStore(
+        db_path=settings.audit_db,
+        checkpoint_path=checkpoint_file,
+    )
+    res = store.create(audit)
+    cp = res.get("checkpoint", res)
+    console.print(
+        f"[bold green]Audit ledger anchored successfully.[/bold green]\n"
+        f"Checkpoint written to: {checkpoint_file}\n"
+        f"Head hash: {cp.get('head_hash')}\n"
+        f"Event count: {cp.get('event_count')}\n"
+        f"HMAC: {cp.get('hmac', '')[:16]}..."
+    )
 
 
 # -- assessment commands ------------------------------------------------------

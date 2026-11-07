@@ -206,10 +206,17 @@ class ScopeManager:
             for entry in self.scope.targets
         )
 
-    def is_authorized(self, target: str, action: str = "assess", port: int | None = None) -> bool:
+    def is_authorized(
+        self,
+        target: str,
+        action: str = "assess",
+        port: int | None = None,
+        *,
+        require_port: bool = True,
+    ) -> bool:
         """Return True if target and action are explicitly authorized under active scope."""
         try:
-            self.check(target, action, port=port, require_port=False)
+            self.check(target, action, port=port, require_port=require_port)
             return True
         except Exception:
             return False

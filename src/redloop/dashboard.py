@@ -885,6 +885,7 @@ def create_app(
     db_path: str,
     scope_manager: ScopeManager | None = None,
     assessment_store: Any = None,
+    bind_host: str = "127.0.0.1",
 ):
     try:
         from fastapi import FastAPI, Query, Request
@@ -901,12 +902,16 @@ def create_app(
             _svg_icon,
             generate_pdf_report,
             generate_pptx_report,
+            is_loopback_host,
+            validate_server_host,
         )
     except ImportError as exc:
         raise RuntimeError(
             "Dashboard dependencies are missing. Install with "
             '`pip install -e ".[dashboard]`.'
         ) from exc
+
+    validate_server_host(bind_host)
 
     def _resolve_assessment_store():
         if assessment_store is not None:

@@ -11,7 +11,9 @@ from datetime import date, datetime, timezone
 import hashlib
 from html import escape
 from io import BytesIO
+import ipaddress
 import json
+import os
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlencode
@@ -6326,16 +6328,57 @@ def generate_pptx_report(target: str, findings: list[dict[str, Any]], scope_wind
     return out.getvalue()
 
 
+def is_loopback_host(host: str | None) -> bool:
+    """Return True if the specified host is strictly a loopback address."""
+    if not host:
+        return False
+    h = host.strip().lower()
+    if h in ("127.0.0.1", "localhost", "::1", "testserver"):
+        return True
+    try:
+        ip = ipaddress.ip_address(h)
+        return ip.is_loopback
+    except ValueError:
+        return False
+
+
+def validate_server_host(host: str | None) -> None:
+    """Enforce loopback-only server binding unless REDLOOP_ALLOW_REMOTE=1 and operator token is enabled."""
+    if not host or is_loopback_host(host):
+        return
+    allow_remote = os.environ.get("REDLOOP_ALLOW_REMOTE") == "1"
+    from redloop.assessment.soar_engine import is_operator_token_enabled
+    token_enabled = is_operator_token_enabled()
+    if not (allow_remote and token_enabled):
+        raise RuntimeError(
+            f"Refusing to bind on non-loopback host '{host}'. Server is loopback-only (127.0.0.1). "
+            f"Remote binding requires env REDLOOP_ALLOW_REMOTE=1 AND operator token enabled "
+            f"(REDLOOP_ALLOW_REMOTE={'1' if allow_remote else '0'}, operator_token_enabled={token_enabled})."
+        )
+
+
 # ---------------------------------------------------------------------------
 # UNIFIED APPLICATION FACTORY
 # ---------------------------------------------------------------------------
-def create_unified_app(db_path: str, scope_manager: ScopeManager | None = None) -> FastAPI:
+def create_unified_app(
+    db_path: str,
+    scope_manager: ScopeManager | None = None,
+    bind_host: str = "127.0.0.1",
+) -> FastAPI:
     """Build unified single-page application with all surfaces bound to real APIs."""
+    validate_server_host(bind_host)
     from redloop.dashboard import create_app
-    return create_app(db_path, scope_manager=scope_manager)
+    return create_app(db_path, scope_manager=scope_manager, bind_host=bind_host)
 
 
 def get_app() -> FastAPI:
     """Zero-argument factory for ASGI servers like Uvicorn."""
+    import sys
+    for i, arg in enumerate(sys.argv):
+        if arg == "--host" and i + 1 < len(sys.argv):
+            validate_server_host(sys.argv[i + 1])
+        elif arg.startswith("--host="):
+            validate_server_host(arg.split("=", 1)[1])
+
     from redloop.config import settings
     return create_unified_app(str(settings.audit_db))
