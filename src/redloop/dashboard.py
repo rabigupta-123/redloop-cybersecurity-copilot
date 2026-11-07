@@ -91,28 +91,29 @@ _DARK_TOKENS = """
 """
 
 _LIGHT_TOKENS = """
-  /* Light blue palette. Body text always uses --fg; accents retain readable contrast. */
-  --bg: #F5F8FC;
+  /* Light "white + orange" palette. Body text always uses --fg; --accent-strong
+     is reserved for large text, icons, and UI strokes (>= 3:1 on white). */
+  --bg: #FFF8F2;
   --bg-elevated: #FFFFFF;
   --surface: #FFFFFF;
-  --surface-2: #EFF4FA;
+  --surface-2: #FFF1E6;
   --surface-elevated: #FFFFFF;
   --surface-glass: rgba(255, 255, 255, 0.84);
-  --border: #D8E2EE;
-  --border-subtle: rgba(23, 43, 77, 0.08);
-  --border-glow: rgba(37, 99, 235, 0.24);
-  --border-cyan: rgba(8, 145, 178, 0.22);
-  --border-amber-glow: rgba(37, 99, 235, 0.24);
-  --fg: #172B4D;
-  --fg-muted: #52657A;
-  --fg-subtle: #62758A;
-  --accent: #3B82F6;
-  --accent-strong: #1D4ED8;
-  --accent-soft: #EAF2FF;
-  --accent-hover: #1E40AF;
-  --accent-cyber: #0891B2;
-  --accent-cyber-hover: #0E7490;
-  --accent-blue: #1D4ED8;
+  --border: #F1E3D6;
+  --border-subtle: rgba(31, 27, 22, 0.08);
+  --border-glow: rgba(234, 88, 12, 0.28);
+  --border-cyan: rgba(234, 88, 12, 0.24);
+  --border-amber-glow: rgba(234, 88, 12, 0.28);
+  --fg: #1F1B16;
+  --fg-muted: #756A61;
+  --fg-subtle: #6F645B;
+  --accent: #F97316;
+  --accent-strong: #EA580C;
+  --accent-soft: #FFEDD5;
+  --accent-hover: #EA580C;
+  --accent-cyber: #C2410C;
+  --accent-cyber-hover: #9A3412;
+  --accent-blue: #C2410C;
   --accent-amber: #D97706;
   --accent-purple: #7E22CE;
   --accent-green: #16A34A;
@@ -129,22 +130,22 @@ _LIGHT_TOKENS = """
   --info-strong: #0369A1;
   --critical: #DC2626;
   --critical-bg: rgba(220, 38, 38, 0.10);
-  --accent-ink: #1E40AF;
-  --accent-button: #2563EB;
-  --accent-button-hover: #1D4ED8;
-  --brand: #1D4ED8;
-  --primary: #1D4ED8;
+  --accent-ink: #C2410C;
+  --accent-button: #C2410C;
+  --accent-button-hover: #9A3412;
+  --brand: #EA580C;
+  --primary: #EA580C;
   --radius: 16px;
   --radius-sm: 10px;
   --radius-md: 12px;
   --radius-lg: 16px;
   --radius-xl: 22px;
-  --shadow-sm: 0 1px 2px rgba(23, 43, 77, 0.06);
-  --shadow-md: 0 6px 20px rgba(23, 43, 77, 0.08), 0 1px 3px rgba(23, 43, 77, 0.06);
-  --shadow-lg: 0 18px 40px rgba(23, 43, 77, 0.12);
-  --shadow-glow: 0 10px 28px rgba(37, 99, 235, 0.16);
-  --bg-old: #F5F8FC;
-  --accent-old: #3B82F6;
+  --shadow-sm: 0 1px 2px rgba(31, 27, 22, 0.06);
+  --shadow-md: 0 6px 20px rgba(31, 27, 22, 0.08), 0 1px 3px rgba(31, 27, 22, 0.06);
+  --shadow-lg: 0 18px 40px rgba(31, 27, 22, 0.12);
+  --shadow-glow: 0 10px 28px rgba(234, 88, 12, 0.16);
+  --bg-old: #FFF8F2;
+  --accent-old: #F97316;
   --text-xs: 12px;
   --text-sm: 14px;
   --text-md: 16px;
@@ -163,8 +164,9 @@ HEAD_THEME_SCRIPT = (
 HEAD_THEME_CSP_HASH = base64.b64encode(hashlib.sha256(HEAD_THEME_SCRIPT.encode("utf-8")).digest()).decode("ascii")
 
 THEME_TOKENS_CSS = (
-    ':root, :root[data-theme="light"] {\n' + _LIGHT_TOKENS + "  color-scheme: light;\n}\n"
+    ":root {\n" + _DARK_TOKENS + "  color-scheme: dark;\n}\n"
     ':root[data-theme="dark"] {\n' + _DARK_TOKENS + "  color-scheme: dark;\n}\n"
+    ':root[data-theme="light"] {\n' + _LIGHT_TOKENS + "  color-scheme: light;\n}\n"
 )
 
 _SHARED_DASHBOARD_CSS = THEME_TOKENS_CSS + """

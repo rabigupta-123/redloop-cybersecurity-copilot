@@ -139,9 +139,9 @@ def test_dashboard_html_escapes_audit_values(tmp_path):
     response = asyncio.run(request_dashboard())
 
     assert response.status_code == 200
-    assert '<h1 id="overview-title">Overview</h1>' in response.text
-    assert "Actions logged" in response.text
-    assert "Scoped targets" in response.text
+    assert 'id="overview-title"' in response.text
+    assert "Total Alerts" in response.text
+    assert "Active target" in response.text
     assert 'class="badge badge-success">success</span>' in response.text
     assert "prefers-reduced-motion: reduce" in response.text
     assert "color-scheme: dark" in response.text

@@ -34,6 +34,7 @@ from typing import Any, Optional
 from urllib.parse import urlparse
 
 import httpx
+from redloop.transport import get_hardened_client
 from pydantic import BaseModel, Field
 
 from redloop.assessment.evaluation import (
@@ -957,7 +958,7 @@ class OSINTEngine:
         http_client: Optional[httpx.Client] = None,
         cache_ttl_seconds: float = 86400.0,
     ):
-        self._client = http_client or httpx.Client(
+        self._client = http_client or get_hardened_client(
             timeout=5.0,
             headers={"User-Agent": "REDLOOP-Cybersecurity-OSINT-Engine/2.0"},
             follow_redirects=True,

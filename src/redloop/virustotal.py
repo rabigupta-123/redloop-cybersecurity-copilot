@@ -32,6 +32,7 @@ from typing import Any
 from urllib.parse import urlsplit
 
 import httpx
+from redloop.transport import HardenedHTTPTransport
 
 from redloop.config import settings
 
@@ -221,7 +222,7 @@ class VirusTotalClient:
             )
         )
         self.timeout = timeout
-        self.transport = transport
+        self.transport = transport or HardenedHTTPTransport()
         self.cache_ttl = int(
             cache_ttl
             if cache_ttl is not None

@@ -1615,7 +1615,7 @@ class _ConversationStore:
                     "effort": m["effort"],
                     "elapsed_seconds": m["elapsed_seconds"],
                     "capability": m["capability"] or ("USER" if m["role"] == "user" else "GENERAL_CHAT"),
-                    "token_count": m["token_count"],
+                    "token_count": int(m["token_count"]) if (m["token_count"] is not None and str(m["token_count"]).isdigit()) else 0,
                     "audit_event_id": m["audit_event_id"],
                     "latency_ms": m["latency_ms"],
                 }
@@ -2248,7 +2248,10 @@ def register_chat_routes(
         if "response" not in result:
             result["response"] = response_text
         capability = result.get("capability") or "GENERAL_CHAT"
-        token_count = result.get("token_count") or result.get("tokens") or 0
+        try:
+            token_count = int(result.get("token_count") or result.get("tokens") or 0)
+        except Exception:
+            token_count = 0
         latency_ms = result.get("latency_ms") or 0.0
         audit_event_id = result.get("audit_event_id") or result.get("task_id") or ""
         model_used = result.get("model") or body.get("model") or "auto"
@@ -2331,7 +2334,10 @@ def register_chat_routes(
         if "response" not in result:
             result["response"] = response_text
         capability = result.get("capability") or "GENERAL_CHAT"
-        token_count = result.get("token_count") or result.get("tokens") or 0
+        try:
+            token_count = int(result.get("token_count") or result.get("tokens") or 0)
+        except Exception:
+            token_count = 0
         latency_ms = result.get("latency_ms") or 0.0
         audit_event_id = result.get("audit_event_id") or result.get("task_id") or ""
         model_used = result.get("model") or body.get("model") or "auto"
@@ -2429,7 +2435,10 @@ def register_chat_routes(
 
             response_text = result.get("markdown") or result.get("summary") or result.get("response") or ""
             capability = result.get("capability") or "GENERAL_CHAT"
-            token_count = result.get("token_count") or result.get("tokens") or 0
+            try:
+                token_count = int(result.get("token_count") or result.get("tokens") or 0)
+            except Exception:
+                token_count = 0
             latency_ms = result.get("latency_ms") or 0.0
             audit_event_id = result.get("audit_event_id") or result.get("task_id") or ""
             model_used = result.get("model") or model or "auto"

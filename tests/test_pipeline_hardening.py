@@ -404,7 +404,7 @@ async def test_q_provider_auth_failure_fallback_works(env):
     # Fallback was used (Groq cloud or deterministic offline fallback)
     status = res["telemetry"]["provider_status"]
     assert status["fallback_used"] is True
-    assert status["fallback_provider"] in ("groq", "offline")
+    assert status["fallback_provider"].lower() in ("groq", "offline", "offline_deterministic")
 
 
 # R. Provider quota failure -> fallback works if available

@@ -173,20 +173,21 @@ class ProviderKeyStore:
         if key:
             return key
 
-        # Environment variable fallback
-        env_map = {
-            "groq": "GROQ_API_KEY",
-            "openrouter": "OPENROUTER_API_KEY",
-            "nvidia_nim": "NVIDIA_API_KEY",
-            "gemini": "GEMINI_API_KEY",
-            "openai": "OPENAI_API_KEY",
-            "anthropic": "ANTHROPIC_API_KEY",
-            "deepseek": "DEEPSEEK_API_KEY",
-            "mistral": "MISTRAL_API_KEY",
-        }
-        env_var = env_map.get(provider_id.lower())
-        if env_var:
-            return os.environ.get(env_var)
+        # Environment variable fallback (only for default system operator)
+        if user_id == "default":
+            env_map = {
+                "groq": "GROQ_API_KEY",
+                "openrouter": "OPENROUTER_API_KEY",
+                "nvidia_nim": "NVIDIA_API_KEY",
+                "gemini": "GEMINI_API_KEY",
+                "openai": "OPENAI_API_KEY",
+                "anthropic": "ANTHROPIC_API_KEY",
+                "deepseek": "DEEPSEEK_API_KEY",
+                "mistral": "MISTRAL_API_KEY",
+            }
+            env_var = env_map.get(provider_id.lower())
+            if env_var:
+                return os.environ.get(env_var)
         return None
 
     def has_key(self, provider_id: str, user_id: str = "default") -> bool:

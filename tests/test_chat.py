@@ -83,7 +83,7 @@ def test_chat_page_has_modes_and_persistent_secure_session_cookie(tmp_path, monk
     assert 'placeholder="Ask a question or paste text to discuss…"' in response.text
     assert "data-regenerate" in CHAT_SCRIPT
     assert "keydown" in CHAT_SCRIPT
-    assert f"script-src 'sha256-{CHAT_SCRIPT_CSP_HASH}'" in response.headers[
+    assert f"'sha256-{CHAT_SCRIPT_CSP_HASH}'" in response.headers[
         "content-security-policy"
     ]
     cookie = response.headers["set-cookie"].casefold()

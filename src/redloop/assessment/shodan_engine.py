@@ -18,6 +18,7 @@ from datetime import datetime, timezone
 from typing import Any
 
 import httpx
+from redloop.transport import get_hardened_client
 from pydantic import BaseModel, Field
 
 from redloop.assessment.models import (
@@ -71,7 +72,7 @@ class ShodanEngine:
         if not self.is_configured():
             return {"configured": False, "error": "SHODAN_API_KEY is not set."}
         try:
-            with httpx.Client(timeout=8.0) as client:
+            with get_hardened_client(timeout=8.0) as client:
                 resp = client.get(f"{self.BASE_URL}/api-info?key={self.api_key}")
                 if resp.status_code == 200:
                     data = resp.json()
@@ -120,7 +121,7 @@ class ShodanEngine:
                     "notice": "Target is a loopback/private interface. Public internet scanners do not index private loopback addresses.",
                 }
             else:
-                with httpx.Client(timeout=12.0) as client:
+                with get_hardened_client(timeout=12.0) as client:
                     resp = client.get(f"{self.BASE_URL}/shodan/host/{target_ip}?key={self.api_key}")
                     if resp.status_code == 200:
                         raw = resp.json()

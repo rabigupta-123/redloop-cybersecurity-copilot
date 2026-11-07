@@ -26,6 +26,7 @@ from typing import Any, Iterable, Protocol
 from urllib.parse import quote
 
 import httpx
+from redloop.transport import get_hardened_client
 
 CLASSIFICATION_CONFIRMED = "CONFIRMED_PUBLIC_ASSOCIATION"
 CLASSIFICATION_STRONG = "STRONG_PUBLIC_MATCH"
@@ -541,7 +542,7 @@ class EmailFootprintEngine:
             ]
         self.adapters = list(adapters)
         self._http_factory = http_factory or (
-            lambda: httpx.Client(follow_redirects=False, trust_env=False)
+            lambda: get_hardened_client(follow_redirects=False)
         )
 
     @staticmethod

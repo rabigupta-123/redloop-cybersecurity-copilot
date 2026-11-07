@@ -2857,7 +2857,11 @@ class TaskOrchestrator:
 
     def _generate_offline_cyber_response(self, prompt: str) -> str:
         """Deterministic, grounded cybersecurity guidance when all cloud/local LLMs are offline."""
-        p_lower = prompt.lower().strip()
+        # Extract the current user message if conversation context wrapper was applied
+        target_query = prompt
+        if "\nCurrent user message:\n" in prompt:
+            target_query = prompt.split("\nCurrent user message:\n", 1)[1].strip()
+        p_lower = target_query.lower().strip()
 
         # 1. Politely decline off-topic non-security questions
         off_topic_patterns = [
@@ -2878,20 +2882,20 @@ class TaskOrchestrator:
                 )
 
         # 2. Responsible guidance for exploit questions
-        cve_match = re.search(r"\bCVE-\d{4}-\d{4,7}\b", prompt, re.IGNORECASE)
+        cve_match = re.search(r"\bCVE-\d{4}-\d{4,7}\b", target_query, re.IGNORECASE)
         is_exploit_query = bool(
             cve_match
             or any(w in p_lower for w in ("exploit for", "how to exploit", "poc for cve", "weaponized payload", "exploit payload"))
         )
         if is_exploit_query:
             cve_id = cve_match.group(0).upper() if cve_match else "Targeted Vulnerability"
-            return self._generate_responsible_exploit_guidance(prompt, cve_id)
+            return self._generate_responsible_exploit_guidance(target_query, cve_id)
 
         # 3. Knowledge base retrieval via BM25 RAG engine
         try:
             from redloop.rag_engine import get_rag_engine
             rag = get_rag_engine()
-            results = rag.search(prompt, top_k=3, min_score=0.40)
+            results = rag.search(target_query, top_k=3, min_score=0.40)
         except Exception:
             results = []
 
@@ -3238,14 +3242,16 @@ class TaskOrchestrator:
         try:
             from redloop.rag_engine import get_rag_engine
             rag = get_rag_engine()
-            results = rag.search(prompt, top_k=3, min_score=0.15)
+            results = rag.search(prompt, top_k=3, min_score=0.15) if hasattr(rag, "search") else None
+            rag_context = rag.build_rag_context(prompt, top_k=3) if hasattr(rag, "build_rag_context") else ""
             if results:
-                rag_context = rag.build_rag_context(prompt, top_k=3)
                 source_titles = [f"[{r.title}]" for r in results]
                 rag_guidance = (
                     f"Approved local knowledge base references retrieved: {', '.join(source_titles)}.\n"
                     "Cite them using 'Sources: [title]'."
                 )
+            elif rag_context:
+                rag_guidance = "Approved local knowledge base references retrieved. Cite them using 'Sources: [title]'."
             else:
                 rag_context = ""
                 rag_guidance = (

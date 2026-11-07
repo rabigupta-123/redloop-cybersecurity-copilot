@@ -27,7 +27,7 @@ def scope_document(expires_at=None):
                 "label": "test-lab",
                 "authorized_from": today.isoformat(),
                 "authorized_until": (today + timedelta(days=2)).isoformat(),
-                "allowed_actions": ["recon"],
+                "allowed_actions": ["recon", "scan"],
                 "ports": [80],
             }
         ],
@@ -122,3 +122,171 @@ def test_report_serve_refuses_to_start_without_valid_scope(monkeypatch):
 
     assert result.exit_code == 1
     assert "Refusing to start dashboard" in result.output
+
+
+def test_scope_entry_domain_matching():
+    from redloop.scope import ScopeEntry
+    today = date.today()
+    entry = ScopeEntry(
+        domain="example.com",
+        label="test-domain",
+        authorized_from=today,
+        authorized_until=today + timedelta(days=1),
+        allowed_actions=["recon", "scan"],
+    )
+    assert entry.matches("example.com")
+    assert entry.matches("sub.example.com")
+    assert entry.matches("deep.sub.example.com")
+    assert not entry.matches("notexample.com")
+    assert not entry.matches("evil.org")
+
+    cidr_entry = ScopeEntry(
+        cidr="10.0.0.0/24",
+        authorized_from=today,
+        authorized_until=today + timedelta(days=1),
+    )
+    assert not cidr_entry.matches("not-an-ip")
+    assert cidr_entry.matches("10.0.0.5")
+
+
+def test_scope_entry_validation():
+    from redloop.scope import ScopeEntry, ScopeFile
+    from pydantic import ValidationError
+    today = date.today()
+
+    with pytest.raises(ValidationError):
+        ScopeEntry(cidr="999.999.999.999/24", authorized_from=today, authorized_until=today)
+
+    with pytest.raises(ValidationError):
+        ScopeEntry(cidr="10.0.0.0/24", authorized_from=today, authorized_until=today, ports=[0])
+
+    with pytest.raises(ValidationError):
+        ScopeEntry(cidr="10.0.0.0/24", authorized_from=today, authorized_until=today, ports=[70000])
+
+    with pytest.raises(ValidationError):
+        ScopeFile(expires_at="2026-01-01T00:00:00")  # missing timezone
+
+
+def test_sign_and_verify_scope_edge_cases():
+    from redloop.scope import sign_scope, verify_scope
+    raw = scope_document()
+    with pytest.raises(ValueError, match="secret must not be empty"):
+        sign_scope(raw, "")
+
+    assert not verify_scope(raw, "", "some-sig")
+    assert not verify_scope(raw, SECRET, "")
+
+
+def test_scope_manager_edge_cases(tmp_path):
+    from redloop.scope import ScopeManager, UnauthorizedTargetError
+    # Missing file
+    with pytest.raises(FileNotFoundError):
+        ScopeManager(tmp_path / "nonexistent.yaml", SECRET)
+
+    # Non-dict YAML
+    bad_yaml = tmp_path / "bad.yaml"
+    bad_yaml.write_text("- item1\n- item2\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="mapping"):
+        ScopeManager(bad_yaml, SECRET)
+
+    # Valid scope manager
+    path = tmp_path / "scope.yaml"
+    write_signed_scope(path, scope_document())
+    sm = ScopeManager(path, SECRET)
+
+    # require() alias when port is omitted on port-restricted entry fails closed
+    with pytest.raises(UnauthorizedTargetError, match="no port was specified"):
+        sm.require("192.168.56.10", "recon")
+
+    # require_port=False allows omitting port
+    entry2 = sm.check("192.168.56.10", "recon", require_port=False)
+    assert entry2.label == "test-lab"
+
+    # With open ports scope (ports=None), require() succeeds
+    open_doc = scope_document()
+    open_doc["targets"][0]["ports"] = None
+    open_path = tmp_path / "scope_open.yaml"
+    write_signed_scope(open_path, open_doc)
+    sm_open = ScopeManager(open_path, SECRET)
+    entry_open = sm_open.require("192.168.56.10", "recon")
+    assert entry_open.label == "test-lab"
+
+    # is_target_in_scope
+    assert sm.is_target_in_scope("192.168.56.10")
+    assert not sm.is_target_in_scope("10.0.0.1")
+
+    # is_authorized
+    assert sm.is_authorized("192.168.56.10", "recon", port=80)
+    assert not sm.is_authorized("192.168.56.10", "recon", port=9999)
+    assert not sm.is_authorized("10.0.0.1", "recon")
+
+
+def test_scope_guard_coverage(tmp_path):
+    from redloop.assessment.scope_guard import AssessmentScopeGuard, ScopeBlockedError
+    from redloop.assessment.models import OperationClass
+    from redloop.scope import ScopeManager
+
+    path = tmp_path / "scope.yaml"
+    write_signed_scope(path, scope_document())
+    sm = ScopeManager(path, SECRET)
+    guard = AssessmentScopeGuard(sm)
+
+    # is_authorized without action
+    assert guard.is_authorized("192.168.56.10")
+    assert not guard.is_authorized("10.0.0.1")
+
+    # is_authorized with action and explicit port
+    entry_auth = guard.is_target_authorized("192.168.56.10", "recon", port=80)
+    assert entry_auth.label == "test-lab"
+    # Action without port on port-restricted entry returns False (fail-closed)
+    assert not guard.is_authorized("192.168.56.10", "recon")
+    assert not guard.is_authorized("192.168.56.10", "exploit")
+
+    # verify_operation
+    entry = guard.verify_operation("192.168.56.10", category="recon", port=80)
+    assert entry.label == "test-lab"
+
+    # normalize_target
+    norm_url = guard.normalize_target("http://192.168.56.10:8080/path")
+    assert norm_url["normalized"] == "192.168.56.10"
+    assert norm_url["is_ip"] is True
+
+    norm_host = guard.normalize_target("localhost")
+    assert norm_host["is_loopback"] is True
+
+    # is_target_allowed convenience
+    ok, reason = guard.is_target_allowed("192.168.56.10", ports=[80])
+    assert ok is True
+    assert reason == "AUTHORIZED"
+
+    not_ok, reason = guard.is_target_allowed("10.0.0.1")
+    assert not_ok is False
+    assert "not present in scope.yaml" in reason
+
+    # validate_resolved_ip: target resolving to private IP without loopback authorization is blocked by policy
+    with pytest.raises(ScopeBlockedError, match="Security block"):
+        guard.validate_resolved_ip("192.168.56.10", "192.168.56.10", action="recon")
+
+    # Loopback target resolving to loopback is permitted when in scope
+    today = date.today()
+    loopback_doc = scope_document()
+    loopback_doc["targets"] = [{
+        "cidr": "127.0.0.1/32",
+        "label": "loopback",
+        "authorized_from": today.isoformat(),
+        "authorized_until": (today + timedelta(days=2)).isoformat(),
+        "allowed_actions": ["recon", "scan"],
+        "ports": None,
+    }]
+    lb_path = tmp_path / "scope_lb.yaml"
+    write_signed_scope(lb_path, loopback_doc)
+    guard_lb = AssessmentScopeGuard(ScopeManager(lb_path, SECRET))
+    assert guard_lb.validate_resolved_ip("127.0.0.1", "127.0.0.1", action="recon")
+
+    # Target resolving to unauthorized IP raises ScopeBlockedError
+    with pytest.raises(ScopeBlockedError):
+        guard.validate_resolved_ip("192.168.56.10", "10.0.0.99", action="recon")
+
+    # Public hostname resolving to loopback/private raises ScopeBlockedError
+    with pytest.raises(ScopeBlockedError, match="prohibited by policy"):
+        guard.validate_resolved_ip("public-site.org", "127.0.0.1", action="recon")

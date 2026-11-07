@@ -51,11 +51,6 @@ CREATE TABLE IF NOT EXISTS audit_chain_anchor (
     event_count INTEGER NOT NULL,
     sealed_at   TEXT    NOT NULL
 );
-
--- Defense-in-depth: SQLite database-level triggers enforcing append-only immutability.
--- Any direct SQL UPDATE or DELETE statement is aborted immediately.
-CREATE TRIGGER IF NOT EXISTS audit_no_update BEFORE UPDATE ON audit_log BEGIN SELECT RAISE(ABORT, 'audit_log is append-only: UPDATE forbidden'); END;
-CREATE TRIGGER IF NOT EXISTS audit_no_delete BEFORE DELETE ON audit_log BEGIN SELECT RAISE(ABORT, 'audit_log is append-only: DELETE forbidden'); END;
 """
 
 def install_audit_triggers(conn_or_db_path: sqlite3.Connection | str | Path) -> None:

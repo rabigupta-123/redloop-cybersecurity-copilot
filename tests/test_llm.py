@@ -16,6 +16,9 @@ from redloop.router import SmartRouter, TaskComplexity
 
 def settings(**overrides):
     values = {
+        "llm_provider": "ollama",
+        "llm_model": "qwen3:8b",
+        "gemini_model": "gemini-2.0-flash",
         "openrouter_api_key": None,
         "anthropic_api_key": None,
         "groq_api_key": None,
@@ -88,8 +91,14 @@ def test_acomplete_extracts_openai_style_usage_from_dict_response(monkeypatch):
     monkeypatch.setattr("redloop.llm.litellm.acompletion", completion)
     client = LLMClient(settings())
 
-    result = asyncio.run(client.acomplete("system", "user"))
+    coro = client.acomplete("system", "user")
+    try:
+        coro.send(None)
+        result = None
+    except StopIteration as exc:
+        result = exc.value
 
+    assert result is not None
     assert result["prompt_tokens"] == 10
     assert result["completion_tokens"] == 3
     assert result["total_tokens"] == 13

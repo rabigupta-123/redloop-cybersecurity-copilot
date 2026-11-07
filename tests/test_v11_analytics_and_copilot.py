@@ -11,6 +11,8 @@ from redloop.assessment.attack_reconstruction import (
     calculate_bounded_graph_risk,
 )
 from redloop.assessment.ioc_engine import IOCRecord, IOCType, IOCState
+from redloop.unified_app import get_app
+from starlette.testclient import TestClient
 
 
 class TestMathematicalSecurityAnalytics:
@@ -117,66 +119,66 @@ class TestMathematicalSecurityAnalytics:
 
 class TestSOCDashboardSummaryAPI:
     def test_get_soc_dashboard_summary_schema(self):
-        with httpx.Client(base_url="http://127.0.0.1:8765", timeout=10.0) as client:
-            resp = client.get("/api/soc/dashboard/summary")
-            assert resp.status_code == 200
-            data = resp.json()
+        client = TestClient(get_app())
+        resp = client.get("/api/soc/dashboard/summary")
+        assert resp.status_code == 200
+        data = resp.json()
 
-            # Check Row 1 KPIs
-            assert "kpis" in data
-            k = data["kpis"]
-            assert "total_alerts" in k
-            assert "critical_high_alerts" in k
-            assert "active_incidents" in k
-            assert "active_investigations" in k
-            assert "connected_integrations" in k
-            assert "risk_posture_score" in k
-            assert 0.0 <= k["risk_posture_score"] <= 100.0
-            assert k["risk_posture_level"] in ("LOW", "MEDIUM", "HIGH", "CRITICAL")
+        # Check Row 1 KPIs
+        assert "kpis" in data
+        k = data["kpis"]
+        assert "total_alerts" in k
+        assert "critical_high_alerts" in k
+        assert "active_incidents" in k
+        assert "active_investigations" in k
+        assert "connected_integrations" in k
+        assert "risk_posture_score" in k
+        assert 0.0 <= k["risk_posture_score"] <= 100.0
+        assert k["risk_posture_level"] in ("LOW", "MEDIUM", "HIGH", "CRITICAL")
 
-            # Check Row 2 Analytics
-            assert "analytics" in data
-            a = data["analytics"]
-            assert "alert_trend" in a
-            assert isinstance(a["alert_trend"], list)
-            assert "threat_intel" in a
-            assert "risk_trend" in a
-            assert "soc_health" in a
-            health = a["soc_health"]
-            assert "mttd_status" in health
-            assert "mttr_status" in health
-            assert "sync_status" in health
-            assert health["reduction_status"] == "UNSUPPORTED"
+        # Check Row 2 Analytics
+        assert "analytics" in data
+        a = data["analytics"]
+        assert "alert_trend" in a
+        assert isinstance(a["alert_trend"], list)
+        assert "threat_intel" in a
+        assert "risk_trend" in a
+        assert "soc_health" in a
+        health = a["soc_health"]
+        assert "mttd_status" in health
+        assert "mttr_status" in health
+        assert "sync_status" in health
+        assert health["reduction_status"] == "UNSUPPORTED"
 
-            # Check Row 3 Workspace
-            assert "workspace" in data
-            w = data["workspace"]
-            assert "incidents" in w
-            assert "investigations" in w
-            assert "detections" in w
-            assert "integrations" in w
+        # Check Row 3 Workspace
+        assert "workspace" in data
+        w = data["workspace"]
+        assert "incidents" in w
+        assert "investigations" in w
+        assert "detections" in w
+        assert "integrations" in w
 
-            # Check Row 4 Activity
-            assert "activity" in data
-            act = data["activity"]
-            assert "recent_audit" in act
-            assert "evidence_status" in act
-            assert "soar_history" in act
+        # Check Row 4 Activity
+        assert "activity" in data
+        act = data["activity"]
+        assert "recent_audit" in act
+        assert "evidence_status" in act
+        assert "soar_history" in act
 
 
 class TestCopilotResponseIntegrity:
     def test_copilot_deterministic_and_audit(self):
-        with httpx.Client(base_url="http://127.0.0.1:8765", timeout=15.0) as client:
-            # 1. DNS question triggers DNS fundamentals
-            resp_dns = client.post("/api/chat", json={"message": "explain how dns works"})
-            assert resp_dns.status_code == 200
-            d_dns = resp_dns.json()
-            assert "DNS" in d_dns["response"]
-            assert d_dns.get("audit_event_id") != ""
+        client = TestClient(get_app())
+        # 1. DNS question triggers DNS fundamentals
+        resp_dns = client.post("/api/chat", json={"message": "explain how dns works"})
+        assert resp_dns.status_code == 200
+        d_dns = resp_dns.json()
+        assert "DNS" in d_dns["response"]
+        assert d_dns.get("audit_event_id") != ""
 
-            # 2. TCP question triggers TCP fundamentals
-            resp_tcp = client.post("/api/chat", json={"message": "explain tcp three-way handshake"})
-            assert resp_tcp.status_code == 200
-            d_tcp = resp_tcp.json()
-            assert "TCP" in d_tcp["response"]
-            assert d_tcp.get("audit_event_id") != ""
+        # 2. TCP question triggers TCP fundamentals
+        resp_tcp = client.post("/api/chat", json={"message": "explain tcp three-way handshake"})
+        assert resp_tcp.status_code == 200
+        d_tcp = resp_tcp.json()
+        assert "TCP" in d_tcp["response"]
+        assert d_tcp.get("audit_event_id") != ""

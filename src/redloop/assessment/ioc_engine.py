@@ -135,6 +135,11 @@ class IOCLifecycleManager:
         self._init_db()
 
     @classmethod
+    def reset_instance(cls) -> None:
+        with cls._lock:
+            cls._instance = None
+
+    @classmethod
     def get_instance(cls, db_path: Optional[Path | str] = None) -> "IOCLifecycleManager":
         with cls._lock:
             if db_path is not None:
@@ -142,11 +147,12 @@ class IOCLifecycleManager:
                 if cls._instance is None or cls._instance.db_path != p:
                     cls._instance = cls(db_path=p)
                     return cls._instance
-            if cls._instance is None:
+            if cls._instance is None or not cls._instance.db_path.parent.exists():
                 cls._instance = cls()
             return cls._instance
 
     def _get_connection(self) -> sqlite3.Connection:
+        self.db_path.parent.mkdir(parents=True, exist_ok=True)
         conn = sqlite3.connect(str(self.db_path), check_same_thread=False, timeout=10.0)
         conn.row_factory = sqlite3.Row
         return conn
