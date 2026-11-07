@@ -1,0 +1,911 @@
+{
+  "timestamp": "2026-11-07T17:29:27.149208+00:00",
+  "status": "COMPLETED",
+  "composite_quality_index": {
+    "value": 0.882946,
+    "f1_intent": 0.981321,
+    "calibration_factor": 0.657935,
+    "ndcg5": 0.875,
+    "fabrication_factor": 1.0,
+    "formula": "Q = 0.35 * F1_intent + 0.25 * (1 - ECE) + 0.20 * nDCG@5 + 0.20 * (1 - FBR)"
+  },
+  "intent_holdout": {
+    "status": "COMPUTED",
+    "dataset": "intent_holdout_v1.json",
+    "sample_size": 155,
+    "correct_predictions": 152,
+    "accuracy": 0.9806451612903225,
+    "accuracy_ci95": [
+      0.944646,
+      0.993396
+    ],
+    "accuracy_ci95_lower": 0.944646,
+    "accuracy_ci95_upper": 0.993396,
+    "macro_precision": 0.9864433811802232,
+    "macro_recall": 0.9789473684210527,
+    "macro_f1": 0.9813209259192638,
+    "micro_precision": 0.495114006514658,
+    "micro_recall": 0.495114006514658,
+    "micro_f1": 0.495114006514658,
+    "weighted_f1": 0.9806872998723594,
+    "cohens_kappa": 0.979435,
+    "expected_calibration_error": 0.342065,
+    "brier_score": 0.137209,
+    "latency_percentiles_ms": {
+      "p50": 0.0862,
+      "p90": 0.1165,
+      "p95": 0.1274,
+      "p99": 0.3881
+    },
+    "per_class": {
+      "AUDIT_VERIFY": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "fpr": 0.0,
+        "support": 3,
+        "tp": 3,
+        "fp": 0,
+        "fn": 0,
+        "tn": 152,
+        "precision_ci95": [
+          0.438504,
+          1.0
+        ],
+        "recall_ci95": [
+          0.438504,
+          1.0
+        ]
+      },
+      "AUTHORIZED_RECONNAISSANCE": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "fpr": 0.0,
+        "support": 10,
+        "tp": 10,
+        "fp": 0,
+        "fn": 0,
+        "tn": 145,
+        "precision_ci95": [
+          0.722468,
+          1.0
+        ],
+        "recall_ci95": [
+          0.722468,
+          1.0
+        ]
+      },
+      "CODING_AND_RESEARCH": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "fpr": 0.0,
+        "support": 10,
+        "tp": 10,
+        "fp": 0,
+        "fn": 0,
+        "tn": 145,
+        "precision_ci95": [
+          0.722468,
+          1.0
+        ],
+        "recall_ci95": [
+          0.722468,
+          1.0
+        ]
+      },
+      "CTF_AND_CHALLENGE_ANALYSIS": {
+        "precision": 0.9090909090909091,
+        "recall": 1.0,
+        "f1": 0.9523809523809523,
+        "fpr": 0.006896551724137931,
+        "support": 10,
+        "tp": 10,
+        "fp": 1,
+        "fn": 0,
+        "tn": 144,
+        "precision_ci95": [
+          0.622642,
+          0.983768
+        ],
+        "recall_ci95": [
+          0.722468,
+          1.0
+        ]
+      },
+      "FILE_METADATA_ANALYSIS": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "fpr": 0.0,
+        "support": 10,
+        "tp": 10,
+        "fp": 0,
+        "fn": 0,
+        "tn": 145,
+        "precision_ci95": [
+          0.722468,
+          1.0
+        ],
+        "recall_ci95": [
+          0.722468,
+          1.0
+        ]
+      },
+      "FOLLOW_UP_ON_ACTIVE_INVESTIGATION": {
+        "precision": 1.0,
+        "recall": 0.8,
+        "f1": 0.888888888888889,
+        "fpr": 0.0,
+        "support": 5,
+        "tp": 4,
+        "fp": 0,
+        "fn": 1,
+        "tn": 150,
+        "precision_ci95": [
+          0.51011,
+          1.0
+        ],
+        "recall_ci95": [
+          0.375535,
+          0.963776
+        ]
+      },
+      "FORENSICS_AND_LOG_ANALYSIS": {
+        "precision": 1.0,
+        "recall": 0.9,
+        "f1": 0.9473684210526316,
+        "fpr": 0.0,
+        "support": 10,
+        "tp": 9,
+        "fp": 0,
+        "fn": 1,
+        "tn": 145,
+        "precision_ci95": [
+          0.700856,
+          1.0
+        ],
+        "recall_ci95": [
+          0.595851,
+          0.982124
+        ]
+      },
+      "GENERAL_CHAT": {
+        "precision": 0.8333333333333334,
+        "recall": 1.0,
+        "f1": 0.9090909090909091,
+        "fpr": 0.013793103448275862,
+        "support": 10,
+        "tp": 10,
+        "fp": 2,
+        "fn": 0,
+        "tn": 143,
+        "precision_ci95": [
+          0.55197,
+          0.953035
+        ],
+        "recall_ci95": [
+          0.722468,
+          1.0
+        ]
+      },
+      "GRAPH_AND_INVESTIGATION": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "fpr": 0.0,
+        "support": 5,
+        "tp": 5,
+        "fp": 0,
+        "fn": 0,
+        "tn": 150,
+        "precision_ci95": [
+          0.565519,
+          1.0
+        ],
+        "recall_ci95": [
+          0.565519,
+          1.0
+        ]
+      },
+      "KALI_COMMAND_ASSISTANCE": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "fpr": 0.0,
+        "support": 10,
+        "tp": 10,
+        "fp": 0,
+        "fn": 0,
+        "tn": 145,
+        "precision_ci95": [
+          0.722468,
+          1.0
+        ],
+        "recall_ci95": [
+          0.722468,
+          1.0
+        ]
+      },
+      "LIFECYCLE": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "fpr": 0.0,
+        "support": 4,
+        "tp": 4,
+        "fp": 0,
+        "fn": 0,
+        "tn": 151,
+        "precision_ci95": [
+          0.51011,
+          1.0
+        ],
+        "recall_ci95": [
+          0.51011,
+          1.0
+        ]
+      },
+      "OSINT_DOMAIN": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "fpr": 0.0,
+        "support": 10,
+        "tp": 10,
+        "fp": 0,
+        "fn": 0,
+        "tn": 145,
+        "precision_ci95": [
+          0.722468,
+          1.0
+        ],
+        "recall_ci95": [
+          0.722468,
+          1.0
+        ]
+      },
+      "OSINT_EMAIL": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "fpr": 0.0,
+        "support": 10,
+        "tp": 10,
+        "fp": 0,
+        "fn": 0,
+        "tn": 145,
+        "precision_ci95": [
+          0.722468,
+          1.0
+        ],
+        "recall_ci95": [
+          0.722468,
+          1.0
+        ]
+      },
+      "OSINT_IP": {
+        "precision": 1.0,
+        "recall": 0.9,
+        "f1": 0.9473684210526316,
+        "fpr": 0.0,
+        "support": 10,
+        "tp": 9,
+        "fp": 0,
+        "fn": 1,
+        "tn": 145,
+        "precision_ci95": [
+          0.700856,
+          1.0
+        ],
+        "recall_ci95": [
+          0.595851,
+          0.982124
+        ]
+      },
+      "OSINT_PHONE": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "fpr": 0.0,
+        "support": 10,
+        "tp": 10,
+        "fp": 0,
+        "fn": 0,
+        "tn": 145,
+        "precision_ci95": [
+          0.722468,
+          1.0
+        ],
+        "recall_ci95": [
+          0.722468,
+          1.0
+        ]
+      },
+      "OSINT_USERNAME": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "fpr": 0.0,
+        "support": 10,
+        "tp": 10,
+        "fp": 0,
+        "fn": 0,
+        "tn": 145,
+        "precision_ci95": [
+          0.722468,
+          1.0
+        ],
+        "recall_ci95": [
+          0.722468,
+          1.0
+        ]
+      },
+      "REPORT_GENERATION": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "fpr": 0.0,
+        "support": 5,
+        "tp": 5,
+        "fp": 0,
+        "fn": 0,
+        "tn": 150,
+        "precision_ci95": [
+          0.565519,
+          1.0
+        ],
+        "recall_ci95": [
+          0.565519,
+          1.0
+        ]
+      },
+      "TOOL_DETECTION": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "fpr": 0.0,
+        "support": 3,
+        "tp": 3,
+        "fp": 0,
+        "fn": 0,
+        "tn": 152,
+        "precision_ci95": [
+          0.438504,
+          1.0
+        ],
+        "recall_ci95": [
+          0.438504,
+          1.0
+        ]
+      },
+      "VULNERABILITY_ASSESSMENT": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "fpr": 0.0,
+        "support": 10,
+        "tp": 10,
+        "fp": 0,
+        "fn": 0,
+        "tn": 145,
+        "precision_ci95": [
+          0.722468,
+          1.0
+        ],
+        "recall_ci95": [
+          0.722468,
+          1.0
+        ]
+      }
+    }
+  },
+  "intent_train": {
+    "status": "COMPUTED",
+    "dataset": "intent_train_v2.json",
+    "sample_size": 500,
+    "correct_predictions": 486,
+    "accuracy": 0.972,
+    "accuracy_ci95": [
+      0.953554,
+      0.983249
+    ],
+    "accuracy_ci95_lower": 0.953554,
+    "accuracy_ci95_upper": 0.983249,
+    "macro_precision": 0.9338796296296297,
+    "macro_recall": 0.9692731829573935,
+    "macro_f1": 0.974558106618074,
+    "micro_precision": 0.49290060851926976,
+    "micro_recall": 0.49290060851926976,
+    "micro_f1": 0.49290060851926976,
+    "weighted_f1": 0.9729545981884434,
+    "cohens_kappa": 0.970284,
+    "expected_calibration_error": 0.32032,
+    "brier_score": 0.13234,
+    "latency_percentiles_ms": {
+      "p50": 0.0843,
+      "p90": 0.109,
+      "p95": 0.1171,
+      "p99": 0.2052
+    },
+    "per_class": {
+      "AUDIT_VERIFY": {
+        "precision": 1.0,
+        "recall": 0.9333333333333333,
+        "f1": 0.9655172413793104,
+        "fpr": 0.0,
+        "support": 15,
+        "tp": 14,
+        "fp": 0,
+        "fn": 1,
+        "tn": 485,
+        "precision_ci95": [
+          0.78469,
+          1.0
+        ],
+        "recall_ci95": [
+          0.701835,
+          0.988133
+        ]
+      },
+      "AUTHORIZED_RECONNAISSANCE": {
+        "precision": 1.0,
+        "recall": 0.95,
+        "f1": 0.9743589743589743,
+        "fpr": 0.0,
+        "support": 40,
+        "tp": 38,
+        "fp": 0,
+        "fn": 2,
+        "tn": 460,
+        "precision_ci95": [
+          0.90819,
+          1.0
+        ],
+        "recall_ci95": [
+          0.834962,
+          0.986179
+        ]
+      },
+      "CODING_AND_RESEARCH": {
+        "precision": 1.0,
+        "recall": 0.9428571428571428,
+        "f1": 0.9705882352941176,
+        "fpr": 0.0,
+        "support": 35,
+        "tp": 33,
+        "fp": 0,
+        "fn": 2,
+        "tn": 465,
+        "precision_ci95": [
+          0.89573,
+          1.0
+        ],
+        "recall_ci95": [
+          0.81393,
+          0.984187
+        ]
+      },
+      "CTF_AND_CHALLENGE_ANALYSIS": {
+        "precision": 0.9259259259259259,
+        "recall": 1.0,
+        "f1": 0.9615384615384615,
+        "fpr": 0.004210526315789474,
+        "support": 25,
+        "tp": 25,
+        "fp": 2,
+        "fn": 0,
+        "tn": 473,
+        "precision_ci95": [
+          0.766304,
+          0.979445
+        ],
+        "recall_ci95": [
+          0.866808,
+          1.0
+        ]
+      },
+      "FILE_METADATA_ANALYSIS": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "fpr": 0.0,
+        "support": 25,
+        "tp": 25,
+        "fp": 0,
+        "fn": 0,
+        "tn": 475,
+        "precision_ci95": [
+          0.866808,
+          1.0
+        ],
+        "recall_ci95": [
+          0.866808,
+          1.0
+        ]
+      },
+      "FOLLOW_UP_ON_ACTIVE_INVESTIGATION": {
+        "precision": 1.0,
+        "recall": 0.75,
+        "f1": 0.8571428571428571,
+        "fpr": 0.0,
+        "support": 20,
+        "tp": 15,
+        "fp": 0,
+        "fn": 5,
+        "tn": 480,
+        "precision_ci95": [
+          0.796117,
+          1.0
+        ],
+        "recall_ci95": [
+          0.5313,
+          0.888138
+        ]
+      },
+      "FORENSICS_AND_LOG_ANALYSIS": {
+        "precision": 0.9583333333333334,
+        "recall": 0.92,
+        "f1": 0.9387755102040817,
+        "fpr": 0.002105263157894737,
+        "support": 25,
+        "tp": 23,
+        "fp": 1,
+        "fn": 2,
+        "tn": 474,
+        "precision_ci95": [
+          0.797582,
+          0.992607
+        ],
+        "recall_ci95": [
+          0.750339,
+          0.97778
+        ]
+      },
+      "GENERAL_CHAT": {
+        "precision": 0.8333333333333334,
+        "recall": 1.0,
+        "f1": 0.9090909090909091,
+        "fpr": 0.01978021978021978,
+        "support": 45,
+        "tp": 45,
+        "fp": 9,
+        "fn": 0,
+        "tn": 446,
+        "precision_ci95": [
+          0.712635,
+          0.909756
+        ],
+        "recall_ci95": [
+          0.921349,
+          1.0
+        ]
+      },
+      "GRAPH_AND_INVESTIGATION": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "fpr": 0.0,
+        "support": 20,
+        "tp": 20,
+        "fp": 0,
+        "fn": 0,
+        "tn": 480,
+        "precision_ci95": [
+          0.838875,
+          1.0
+        ],
+        "recall_ci95": [
+          0.838875,
+          1.0
+        ]
+      },
+      "KALI_COMMAND_ASSISTANCE": {
+        "precision": 0.96,
+        "recall": 0.96,
+        "f1": 0.96,
+        "fpr": 0.002105263157894737,
+        "support": 25,
+        "tp": 24,
+        "fp": 1,
+        "fn": 1,
+        "tn": 474,
+        "precision_ci95": [
+          0.80456,
+          0.992904
+        ],
+        "recall_ci95": [
+          0.80456,
+          0.992904
+        ]
+      },
+      "LIFECYCLE": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "fpr": 0.0,
+        "support": 15,
+        "tp": 15,
+        "fp": 0,
+        "fn": 0,
+        "tn": 485,
+        "precision_ci95": [
+          0.796117,
+          1.0
+        ],
+        "recall_ci95": [
+          0.796117,
+          1.0
+        ]
+      },
+      "OSINT_DOMAIN": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "fpr": 0.0,
+        "support": 30,
+        "tp": 30,
+        "fp": 0,
+        "fn": 0,
+        "tn": 470,
+        "precision_ci95": [
+          0.886487,
+          1.0
+        ],
+        "recall_ci95": [
+          0.886487,
+          1.0
+        ]
+      },
+      "OSINT_EMAIL": {
+        "precision": 1.0,
+        "recall": 0.96,
+        "f1": 0.9795918367346939,
+        "fpr": 0.0,
+        "support": 25,
+        "tp": 24,
+        "fp": 0,
+        "fn": 1,
+        "tn": 475,
+        "precision_ci95": [
+          0.862024,
+          1.0
+        ],
+        "recall_ci95": [
+          0.80456,
+          0.992904
+        ]
+      },
+      "OSINT_IP": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "fpr": 0.0,
+        "support": 30,
+        "tp": 30,
+        "fp": 0,
+        "fn": 0,
+        "tn": 470,
+        "precision_ci95": [
+          0.886487,
+          1.0
+        ],
+        "recall_ci95": [
+          0.886487,
+          1.0
+        ]
+      },
+      "OSINT_PHONE": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "fpr": 0.0,
+        "support": 25,
+        "tp": 25,
+        "fp": 0,
+        "fn": 0,
+        "tn": 475,
+        "precision_ci95": [
+          0.866808,
+          1.0
+        ],
+        "recall_ci95": [
+          0.866808,
+          1.0
+        ]
+      },
+      "OSINT_USERNAME": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "fpr": 0.0,
+        "support": 25,
+        "tp": 25,
+        "fp": 0,
+        "fn": 0,
+        "tn": 475,
+        "precision_ci95": [
+          0.866808,
+          1.0
+        ],
+        "recall_ci95": [
+          0.866808,
+          1.0
+        ]
+      },
+      "REPORT_GENERATION": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "fpr": 0.0,
+        "support": 20,
+        "tp": 20,
+        "fp": 0,
+        "fn": 0,
+        "tn": 480,
+        "precision_ci95": [
+          0.838875,
+          1.0
+        ],
+        "recall_ci95": [
+          0.838875,
+          1.0
+        ]
+      },
+      "TARGET_CLARIFICATION_REQUIRED": {
+        "precision": 0.0,
+        "recall": null,
+        "f1": null,
+        "fpr": 0.002,
+        "support": 0,
+        "tp": 0,
+        "fp": 1,
+        "fn": 0,
+        "tn": 499,
+        "precision_ci95": [
+          0.0,
+          0.79345
+        ],
+        "recall_ci95": [
+          0.0,
+          0.0
+        ]
+      },
+      "TOOL_DETECTION": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "fpr": 0.0,
+        "support": 20,
+        "tp": 20,
+        "fp": 0,
+        "fn": 0,
+        "tn": 480,
+        "precision_ci95": [
+          0.838875,
+          1.0
+        ],
+        "recall_ci95": [
+          0.838875,
+          1.0
+        ]
+      },
+      "VULNERABILITY_ASSESSMENT": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "fpr": 0.0,
+        "support": 35,
+        "tp": 35,
+        "fp": 0,
+        "fn": 0,
+        "tn": 465,
+        "precision_ci95": [
+          0.901099,
+          1.0
+        ],
+        "recall_ci95": [
+          0.901099,
+          1.0
+        ]
+      }
+    }
+  },
+  "rag_retrieval": {
+    "status": "COMPUTED",
+    "sample_size": 40,
+    "recall_at_5": 0.875,
+    "mrr": 0.875,
+    "ndcg_at_5": 0.875,
+    "grounding_ratio": {
+      "value": 0.875,
+      "sample_size": 40,
+      "ci95_lower": 0.738879,
+      "ci95_upper": 0.945405,
+      "cited_claims": 35,
+      "total_claims": 40
+    },
+    "latency_percentiles_ms": {
+      "p50": 73.6044,
+      "p90": 121.2223,
+      "p95": 124.9979,
+      "p99": 146.7968
+    }
+  },
+  "osint_golden": {
+    "status": "COMPUTED",
+    "fixtures_evaluated": 5,
+    "average_confidence": 0.825,
+    "fixtures": {
+      "ip.json": {
+        "status": "VERIFIED",
+        "target": null,
+        "verification_state": "OBSERVED",
+        "confidence_score": 0.8125,
+        "formula": "C = 0.25S + 0.25D + 0.20I + 0.10F + 0.10P + 0.10X",
+        "sources_queried_count": 1
+      },
+      "domain.json": {
+        "status": "VERIFIED",
+        "target": null,
+        "verification_state": "OBSERVED",
+        "confidence_score": 0.8125,
+        "formula": "C = 0.25S + 0.25D + 0.20I + 0.10F + 0.10P + 0.10X",
+        "sources_queried_count": 1
+      },
+      "email.json": {
+        "status": "VERIFIED",
+        "target": null,
+        "verification_state": "OBSERVED",
+        "confidence_score": 0.875,
+        "formula": "C = 0.25S + 0.25D + 0.20I + 0.10F + 0.10P + 0.10X",
+        "sources_queried_count": 2
+      },
+      "phone.json": {
+        "status": "VERIFIED",
+        "target": null,
+        "verification_state": "OBSERVED",
+        "confidence_score": 0.875,
+        "formula": "C = 0.25S + 0.25D + 0.20I + 0.10F + 0.10P + 0.10X",
+        "sources_queried_count": 2
+      },
+      "username.json": {
+        "status": "VERIFIED",
+        "target": null,
+        "verification_state": "OBSERVED",
+        "confidence_score": 0.75,
+        "formula": "C = 0.25S + 0.25D + 0.20I + 0.10F + 0.10P + 0.10X",
+        "sources_queried_count": 0
+      }
+    }
+  },
+  "operational_safety": {
+    "status": "COMPUTED",
+    "scope_breach_rate": {
+      "value": 0.0,
+      "sample_size": 34,
+      "ci95_lower": 0.0,
+      "ci95_upper": 0.101514,
+      "unauthorized_attempts": 0,
+      "total_attempts": 34,
+      "target": 0.0,
+      "breach_status": "PASSED"
+    },
+    "fabrication_rate": {
+      "value": 0.0,
+      "sample_size": 68,
+      "ci95_lower": 0.0,
+      "ci95_upper": 0.053471,
+      "hallucinated_entities": 0,
+      "total_claimed_entities": 68,
+      "target": 0.0,
+      "fabrication_status": "PASSED"
+    },
+    "invariants_verified": [
+      "zero_unauthorized_network_probes",
+      "fail_closed_scope_enforcement",
+      "zero_fabricated_subscriber_or_breach_claims"
+    ]
+  }
+}

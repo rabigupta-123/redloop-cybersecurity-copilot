@@ -8,7 +8,8 @@ an explicit ``NOT_APPLICABLE`` status instead of silently returning ``0.0``.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+import math
+from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any, Iterable, Mapping, Sequence
 
@@ -68,6 +69,81 @@ def calculate_accuracy_nullable(correct: int, total: int) -> float | None:
     return safe_divide(correct, total)
 
 
+def wilson_score_interval(
+    successes: int,
+    total: int,
+    z: float = 1.95996,
+) -> tuple[float, float]:
+    """Calculate the Wilson 95% score interval for a binomial proportion.
+
+    w = (p + z^2/(2n) +/- z * sqrt((p*(1-p) + z^2/(4n))/n)) / (1 + z^2/n)
+    where z = 1.95996 for 95% confidence.
+    """
+    if total <= 0:
+        return (0.0, 0.0)
+
+    p = max(0.0, min(1.0, float(successes) / float(total)))
+    n = float(total)
+    z2 = z * z
+
+    denominator = 1.0 + (z2 / n)
+    center = (p + (z2 / (2.0 * n))) / denominator
+    spread = (z * math.sqrt(max(0.0, (p * (1.0 - p) / n) + (z2 / (4.0 * n * n))))) / denominator
+
+    lower = max(0.0, min(1.0, center - spread))
+    upper = max(0.0, min(1.0, center + spread))
+    return (round(lower, 6), round(upper, 6))
+
+
+def wilson_interval_dict(
+    successes: int,
+    total: int,
+    z: float = 1.95996,
+) -> dict[str, Any]:
+    lower, upper = wilson_score_interval(successes, total, z=z)
+    val = round(float(successes) / float(total), 6) if total > 0 else 0.0
+    return {
+        "value": val,
+        "sample_size": total,
+        "ci95_lower": lower,
+        "ci95_upper": upper,
+    }
+
+
+def cohens_kappa(
+    y_true: Sequence[str],
+    y_pred: Sequence[str],
+    labels: Sequence[str] | None = None,
+) -> float | None:
+    """Calculate Cohen's kappa coefficient of agreement between two classifications."""
+    if len(y_true) != len(y_pred) or not y_true:
+        return None
+
+    n = len(y_true)
+    resolved_labels = list(labels) if labels is not None else sorted(set(y_true) | set(y_pred))
+    if not resolved_labels:
+        return None
+
+    label_to_idx = {lbl: i for i, lbl in enumerate(resolved_labels)}
+    k = len(resolved_labels)
+    matrix = [[0] * k for _ in range(k)]
+
+    for actual, pred in zip(y_true, y_pred):
+        if actual in label_to_idx and pred in label_to_idx:
+            matrix[label_to_idx[actual]][label_to_idx[pred]] += 1
+
+    p_o = sum(matrix[i][i] for i in range(k)) / float(n)
+    row_sums = [sum(matrix[i][j] for j in range(k)) for i in range(k)]
+    col_sums = [sum(matrix[i][j] for i in range(k)) for j in range(k)]
+    p_e = sum((row_sums[i] / float(n)) * (col_sums[i] / float(n)) for i in range(k))
+
+    if abs(1.0 - p_e) < 1e-12:
+        return 1.0 if abs(p_o - 1.0) < 1e-12 else 0.0
+
+    kappa = (p_o - p_e) / (1.0 - p_e)
+    return round(float(kappa), 6)
+
+
 def build_confusion_matrix(
     y_true: Sequence[str],
     y_pred: Sequence[str],
@@ -94,10 +170,15 @@ def classification_metrics(
             "status": METRIC_NOT_APPLICABLE,
             "reason": "NO_GROUND_TRUTH_SAMPLES",
             "accuracy": None,
+            "accuracy_ci95": None,
             "macro_precision": None,
             "macro_recall": None,
             "macro_f1": None,
+            "micro_precision": None,
+            "micro_recall": None,
+            "micro_f1": None,
             "weighted_f1": None,
+            "cohens_kappa": None,
             "per_class": {},
             "confusion_matrix": {"labels": [], "matrix": {}, "sample_count": 0},
         }
@@ -116,18 +197,26 @@ def classification_metrics(
         fn = sum(
             count for predicted, count in matrix.get(label, {}).items() if predicted != label
         )
+        tn = total - tp - fp - fn
         support = tp + fn
         precision = calculate_precision_nullable(tp, fp)
         recall = calculate_recall_nullable(tp, fn)
         f1 = calculate_f1_nullable(precision, recall)
+        fpr = calculate_fpr_nullable(fp, tn)
+        prec_ci = wilson_score_interval(tp, tp + fp) if (tp + fp) > 0 else (0.0, 0.0)
+        rec_ci = wilson_score_interval(tp, tp + fn) if (tp + fn) > 0 else (0.0, 0.0)
         per_class[label] = {
             "precision": precision,
             "recall": recall,
             "f1": f1,
+            "fpr": fpr,
             "support": support,
             "tp": tp,
             "fp": fp,
             "fn": fn,
+            "tn": tn,
+            "precision_ci95": prec_ci,
+            "recall_ci95": rec_ci,
         }
         if precision is not None:
             precisions.append(precision)
@@ -148,14 +237,31 @@ def classification_metrics(
         entry["support"] for entry in per_class.values() if entry["f1"] is not None
     )
     correct = sum(1 for actual, predicted in zip(y_true, y_pred) if actual == predicted)
+    accuracy = calculate_accuracy_nullable(correct, total)
+    acc_ci = wilson_score_interval(correct, total)
+
+    total_tp = sum(item["tp"] for item in per_class.values())
+    total_fp = sum(item["fp"] for item in per_class.values())
+    total_fn = sum(item["fn"] for item in per_class.values())
+    micro_precision = calculate_precision_nullable(total_tp, total_tp + total_fp)
+    micro_recall = calculate_recall_nullable(total_tp, total_tp + total_fn)
+    micro_f1 = calculate_f1_nullable(micro_precision, micro_recall)
+    kappa = cohens_kappa(y_true, y_pred, resolved)
 
     return {
         "status": "COMPUTED",
-        "accuracy": calculate_accuracy_nullable(correct, total),
+        "accuracy": accuracy,
+        "accuracy_ci95": acc_ci,
+        "accuracy_ci95_lower": acc_ci[0],
+        "accuracy_ci95_upper": acc_ci[1],
         "macro_precision": _mean(precisions),
         "macro_recall": _mean(recalls),
         "macro_f1": _mean(f1s),
+        "micro_precision": micro_precision,
+        "micro_recall": micro_recall,
+        "micro_f1": micro_f1,
         "weighted_f1": safe_divide(weighted_numerator, weighted_denominator),
+        "cohens_kappa": kappa,
         "per_class": per_class,
         "confusion_matrix": confusion,
     }
@@ -478,6 +584,212 @@ def expected_calibration_error(
     }
 
 
+def recall_at_k(
+    relevant: Sequence[Any] | set[Any],
+    retrieved: Sequence[Any],
+    k: int = 5,
+) -> float:
+    """Recall@k: fraction of relevant items retrieved in top-k."""
+    rel_set = set(relevant)
+    if not rel_set or k <= 0:
+        return 0.0
+    ret_k = set(retrieved[:k])
+    return round(len(rel_set & ret_k) / float(len(rel_set)), 6)
+
+
+def mrr(
+    relevant: Sequence[Any] | set[Any],
+    retrieved: Sequence[Any],
+) -> float:
+    """Mean Reciprocal Rank (MRR): 1 / rank of first relevant item in retrieved (1-indexed)."""
+    rel_set = set(relevant)
+    if not rel_set:
+        return 0.0
+    for rank, item in enumerate(retrieved, start=1):
+        if item in rel_set:
+            return round(1.0 / rank, 6)
+    return 0.0
+
+
+def ndcg_at_k(
+    relevant: Sequence[Any] | set[Any] | Mapping[Any, float],
+    retrieved: Sequence[Any],
+    k: int = 5,
+) -> float:
+    """Normalized Discounted Cumulative Gain at k (nDCG@k)."""
+    if k <= 0:
+        return 0.0
+    if isinstance(relevant, Mapping):
+        rel_map = dict(relevant)
+    else:
+        rel_map = {item: 1.0 for item in relevant}
+
+    if not rel_map:
+        return 0.0
+
+    dcg = 0.0
+    for i, item in enumerate(retrieved[:k], start=1):
+        rel = float(rel_map.get(item, 0.0))
+        dcg += (2.0 ** rel - 1.0) / math.log2(i + 1.0)
+
+    ideal_scores = sorted(rel_map.values(), reverse=True)[:k]
+    idcg = 0.0
+    for i, rel in enumerate(ideal_scores, start=1):
+        idcg += (2.0 ** float(rel) - 1.0) / math.log2(i + 1.0)
+
+    if idcg <= 0.0:
+        return 1.0 if dcg <= 0.0 else 0.0
+
+    return round(dcg / idcg, 6)
+
+
+def calculate_multifactor_confidence(
+    *,
+    s: float | int = 1,
+    d: float = 0.5,
+    i: float = 1.0,
+    f: float = 1.0,
+    p: float = 1.0,
+    x: float = 1.0,
+    delta_t_days: float | None = None,
+    half_life_days: float = 90.0,
+) -> dict[str, Any]:
+    """Calculate multi-factor finding confidence:
+    C = 0.25S + 0.25D + 0.20I + 0.10F + 0.10P + 0.10X
+
+    S: source corroboration count (capped at 4, /4)
+    D: deterministic verification (1 if probe verified, 0.5 heuristic, 0 unverified)
+    I: identity / entity match certainty (0..1)
+    F: freshness decay F(t) = exp(-lambda * delta_t), lambda=ln(2)/half_life_days (default 90d)
+    P: provenance completeness (present required fields / total required)
+    X: context consistency (0..1, penalties for contradictions)
+    """
+    S_factor = max(0.0, min(1.0, float(s) / 4.0))
+    D_factor = max(0.0, min(1.0, float(d)))
+    I_factor = max(0.0, min(1.0, float(i)))
+
+    if delta_t_days is not None and half_life_days > 0:
+        decay_lambda = math.log(2.0) / float(half_life_days)
+        F_factor = math.exp(-decay_lambda * max(0.0, float(delta_t_days)))
+    else:
+        F_factor = float(f)
+    F_factor = max(0.0, min(1.0, F_factor))
+
+    P_factor = max(0.0, min(1.0, float(p)))
+    X_factor = max(0.0, min(1.0, float(x)))
+
+    c_score = (
+        0.25 * S_factor
+        + 0.25 * D_factor
+        + 0.20 * I_factor
+        + 0.10 * F_factor
+        + 0.10 * P_factor
+        + 0.10 * X_factor
+    )
+    score_clamped = round(max(0.0, min(1.0, c_score)), 4)
+
+    return {
+        "score": score_clamped,
+        "formula": "C = 0.25S + 0.25D + 0.20I + 0.10F + 0.10P + 0.10X",
+        "factors": {
+            "S": round(S_factor, 4),
+            "D": round(D_factor, 4),
+            "I": round(I_factor, 4),
+            "F": round(F_factor, 4),
+            "P": round(P_factor, 4),
+            "X": round(X_factor, 4),
+        },
+        "weights": {
+            "S": 0.25,
+            "D": 0.25,
+            "I": 0.20,
+            "F": 0.10,
+            "P": 0.10,
+            "X": 0.10,
+        },
+    }
+
+
+def scope_breach_rate(unauthorized_attempts: int, total_attempts: int) -> dict[str, Any]:
+    """Scope breach rate: SBR = (unauthorized network attempts) / (total attempts) (target 0.0000)."""
+    res = wilson_interval_dict(unauthorized_attempts, total_attempts)
+    res["unauthorized_attempts"] = unauthorized_attempts
+    res["total_attempts"] = total_attempts
+    res["target"] = 0.0000
+    res["breach_status"] = "PASSED" if unauthorized_attempts == 0 else "FAILED"
+    return res
+
+
+def fabrication_rate(hallucinated_entities: int, total_claimed_entities: int) -> dict[str, Any]:
+    """Fabrication rate: FBR = (hallucinated entities) / (total claimed entities) (target 0.0000)."""
+    res = wilson_interval_dict(hallucinated_entities, total_claimed_entities)
+    res["hallucinated_entities"] = hallucinated_entities
+    res["total_claimed_entities"] = total_claimed_entities
+    res["target"] = 0.0000
+    res["fabrication_status"] = "PASSED" if hallucinated_entities == 0 else "FAILED"
+    return res
+
+
+def grounding_ratio(cited_claims: int, total_claims: int) -> dict[str, Any]:
+    """Grounding ratio: GR = (claims with valid source citation) / (total claims)."""
+    res = wilson_interval_dict(cited_claims, total_claims)
+    res["cited_claims"] = cited_claims
+    res["total_claims"] = total_claims
+    return res
+
+
+def quality_index(
+    *,
+    f1_intent: float,
+    ece: float,
+    ndcg5: float,
+    fbr: float,
+) -> dict[str, Any]:
+    """Quality index: Q = 0.35 * F1_intent + 0.25 * (1 - ECE) + 0.20 * nDCG@5 + 0.20 * (1 - FBR)."""
+    f1 = max(0.0, min(1.0, float(f1_intent)))
+    calib = max(0.0, min(1.0, 1.0 - float(ece)))
+    rank = max(0.0, min(1.0, float(ndcg5)))
+    fab = max(0.0, min(1.0, 1.0 - float(fbr)))
+
+    q = 0.35 * f1 + 0.25 * calib + 0.20 * rank + 0.20 * fab
+    q_clamped = round(max(0.0, min(1.0, q)), 6)
+    return {
+        "value": q_clamped,
+        "f1_intent": round(f1, 6),
+        "calibration_factor": round(calib, 6),
+        "ndcg5": round(rank, 6),
+        "fabrication_factor": round(fab, 6),
+        "formula": "Q = 0.35 * F1_intent + 0.25 * (1 - ECE) + 0.20 * nDCG@5 + 0.20 * (1 - FBR)",
+    }
+
+
+def percentile_latencies(
+    latencies: Sequence[float],
+    percentiles: Sequence[int] = (50, 90, 95, 99),
+) -> dict[str, float]:
+    """Compute exact percentile latencies (p50, p90, p95, p99)."""
+    if not latencies:
+        return {f"p{p}": 0.0 for p in percentiles}
+    sorted_vals = sorted(float(v) for v in latencies)
+    n = len(sorted_vals)
+    res: dict[str, float] = {}
+    for p in percentiles:
+        if n == 1:
+            res[f"p{p}"] = round(sorted_vals[0], 4)
+            continue
+        k = (p / 100.0) * (n - 1)
+        f = math.floor(k)
+        c = math.ceil(k)
+        if f == c:
+            val = sorted_vals[int(k)]
+        else:
+            d0 = sorted_vals[int(f)] * (c - k)
+            d1 = sorted_vals[int(c)] * (k - f)
+            val = d0 + d1
+        res[f"p{p}"] = round(val, 4)
+    return res
+
+
 __all__ = [
     "METRIC_NOT_APPLICABLE",
     "INSUFFICIENT_EVIDENCE",
@@ -493,6 +805,9 @@ __all__ = [
     "calculate_f1_nullable",
     "calculate_fpr_nullable",
     "calculate_accuracy_nullable",
+    "wilson_score_interval",
+    "wilson_interval_dict",
+    "cohens_kappa",
     "build_confusion_matrix",
     "classification_metrics",
     "freshness_policy",
@@ -502,6 +817,15 @@ __all__ = [
     "assess_provenance",
     "calculate_source_agreement",
     "compute_finding_confidence",
+    "calculate_multifactor_confidence",
     "calculate_brier_score",
     "expected_calibration_error",
+    "recall_at_k",
+    "mrr",
+    "ndcg_at_k",
+    "scope_breach_rate",
+    "fabrication_rate",
+    "grounding_ratio",
+    "quality_index",
+    "percentile_latencies",
 ]

@@ -392,7 +392,7 @@ class TaskOrchestrator:
         url_match = re.search(r"https?://([a-zA-Z0-9.-]+(?::\d+)?)", prompt)
         host_match = re.search(r"\b([a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*(?:\.(?:[a-zA-Z]{2,}|local|internal|corp)))\b", prompt, re.IGNORECASE)
         email_match = re.search(r"\b[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+\b", prompt)
-        phone_match = re.search(r"(?:\+|00)[1-9]\d{6,14}\b", prompt) or re.search(r"\b\+?1[-. ]?\(?\d{3}\)?[-. ]?\d{3}[-. ]?\d{4}\b", prompt)
+        phone_match = re.search(r"(?:\+|00)[1-9][0-9\s\-\(\)\.]{5,18}\d", prompt) or re.search(r"\b\+?1[-. ]?\(?\d{3}\)?[-. ]?\d{3}[-. ]?\d{4}\b", prompt)
 
         # 1. Target identification via strict 4-tier precedence:
         # Tier 1: Explicit target supplied in current user request (prompt).
@@ -521,7 +521,8 @@ class TaskOrchestrator:
             or is_pcap_pasted
             or (
                 any(w in prompt_lower for w in (
-                    "eventid 4625", "eventid 7045", "eventid 4688", "auth.log", "windows event",
+                    "eventid 4625", "eventid 7045", "eventid 4688", "eventid 4624", "eventid 1", "eventid 3",
+                    "eventid 7", "eventid 11", "auth.log", "windows event", "sysmon", "auditd",
                     "forensic triage", "analyze log", "pcap", "packet analysis", "wireshark", "memory dump"
                 ))
                 and not any(w in prompt_lower for w in (
@@ -545,7 +546,22 @@ class TaskOrchestrator:
                 "prompt": prompt,
             }
 
-        # 8. KALI_COMMAND_ASSISTANCE (Explicit Execution or Guidance)
+        # 8. CODING_AND_RESEARCH (PRIOR TO KALI ASSISTANCE AND SECURITY TOOLS)
+        is_coding = (
+            any(w in prompt_lower for w in (
+                "write a java", "write a python", "write a c program", "write a bash", "write a script",
+                "write code", "how to write a program", "sorting an array", "implement an algorithm",
+                "research the history", "research paper", "research the cryptographic", "write a program", "write function",
+                "write a function", "write code to", "write a fuzz", "write exploit", "exploit script", "poc script", "write payload",
+                "proof of concept exploit", "generate payload", "python script", "bash script",
+                "code an exploit", "develop exploit", "write a simple", "write a port scanner"
+            ))
+            and not any(w in prompt_lower for w in ("scan this", "run assessment", "execute command:", "$ "))
+        )
+        if is_coding:
+            return {"action": "coding_and_research", "intent": "CODING_AND_RESEARCH", "target": target}
+
+        # 9. KALI_COMMAND_ASSISTANCE (Explicit Execution or Guidance)
         if prompt_lower.startswith(("run command:", "execute command:", "execute:", "run kali:", "$ ", "cmd:")):
             cmd_clean = re.sub(r"^(?:run command:|execute command:|execute:|run kali:|\$|cmd:)\s*", "", prompt, flags=re.IGNORECASE).strip()
             return {"action": "kali_execute", "intent": "KALI_COMMAND_ASSISTANCE", "target": target, "command": cmd_clean}
@@ -553,17 +569,17 @@ class TaskOrchestrator:
             return {"action": "kali_execute", "intent": "KALI_COMMAND_ASSISTANCE", "target": target, "command": prompt.strip()}
         if any(w in prompt_lower for w in (
             "failed with", "permission denied", "command not found", "explain this command",
-            "kali", "syntax", "how to use nmap", "nmap syntax", "wireshark filter", "tcpdump filter",
+            "kali", "syntax", "how to use", "nmap syntax", "wireshark filter", "tcpdump filter",
             "sqlmap tamper", "hydra command", "john the ripper", "hashcat mode", "burp error",
-            "terminal error", "debug this command", "suggest a kali command"
+            "terminal error", "debug this command", "suggest a kali", "suggest a command", "command to "
         )):
             return {"action": "kali_copilot", "intent": "KALI_COMMAND_ASSISTANCE", "target": target}
 
-        # 9. Audit Chain Verification
+        # 10. Audit Chain Verification
         if any(w in prompt_lower for w in ("verify audit", "audit chain", "verify chain", "audit integrity", "tamper check")):
             return {"action": "audit_verify", "intent": "AUDIT_VERIFY", "target": target}
 
-        # 10. Lifecycle Commands
+        # 11. Lifecycle Commands
         if any(w in prompt_lower for w in ("pause assessment", "pause scan", "pause asmt")):
             asmt_id = self._extract_id(prompt, "asmt-") or context.get("assessment_id")
             return {"action": "lifecycle_pause", "intent": "LIFECYCLE", "target": target, "assessment_id": asmt_id}
@@ -573,21 +589,6 @@ class TaskOrchestrator:
         if any(w in prompt_lower for w in ("cancel assessment", "stop assessment", "abort scan")):
             asmt_id = self._extract_id(prompt, "asmt-") or context.get("assessment_id")
             return {"action": "lifecycle_cancel", "intent": "LIFECYCLE", "target": target, "assessment_id": asmt_id}
-
-        # 11. CODING_AND_RESEARCH (PRIOR TO SECURITY TOOLS TO PREVENT ACCIDENTAL EXECUTION)
-        is_coding = (
-            any(w in prompt_lower for w in (
-                "write a java", "write a python", "write a c program", "write a bash", "write a script",
-                "write code", "how to write a program", "sorting an array", "implement an algorithm",
-                "research the history", "research paper", "write a program", "write function",
-                "write a fuzz", "write exploit", "exploit script", "poc script", "write payload",
-                "proof of concept exploit", "generate payload", "python script", "bash script",
-                "code an exploit", "develop exploit", "write a simple", "write a port scanner"
-            ))
-            and not any(w in prompt_lower for w in ("scan this", "run assessment", "execute command:", "$ "))
-        )
-        if is_coding:
-            return {"action": "coding_and_research", "intent": "CODING_AND_RESEARCH", "target": target}
 
         # 12. GENERAL_CHAT EXPLANATIONS (PRIOR TO SECURITY TOOLS, EXCLUDING SPECIFIC FINDING/EVIDENCE IDS)
         has_finding_or_evi_id = bool(
@@ -690,24 +691,24 @@ class TaskOrchestrator:
             return {"action": "osint_email", "intent": "OSINT_EMAIL", "email": target, "target": target}
 
         # B. OSINT_PHONE
-        if phone_match or any(w in prompt_lower for w in ("investigate phone", "phone intelligence", "lookup phone", "phone number")):
+        if phone_match or any(w in prompt_lower for w in ("investigate phone", "phone intelligence", "lookup phone", "phone number", "country code for phone")):
             ph = phone_match.group(0) if phone_match else target
             return {"action": "osint_phone", "intent": "OSINT_PHONE", "phone": ph, "target": ph}
 
         # C. OSINT_USERNAME
-        if any(w in prompt_lower for w in ("investigate username", "username intelligence", "search username", "lookup user", "find accounts for user")):
+        if any(w in prompt_lower for w in ("investigate username", "username intelligence", "search username", "lookup user", "find accounts for user", "search accounts for user", "accounts for user", "username footprint")):
             user_clean = re.sub(r".*?(?:username|user|accounts for)\s+([@a-zA-Z0-9_\-\.]+).*", r"\1", prompt, flags=re.IGNORECASE).strip().lstrip("@")
             return {"action": "osint_username", "intent": "OSINT_USERNAME", "username": user_clean or target, "target": user_clean or target}
 
         # D. OSINT_IP
         if not (has_scan_verb or has_assess_verb):
-            if (ip_match and (any(w in prompt_lower for w in ("investigate", "osint", "whois", "rdap", "lookup", "shodan")) or prompt_lower.startswith("investigate"))) or any(w in prompt_lower for w in ("investigate this public ip", "investigate public ip", "investigate ip", "ip intelligence", "ip footprint", "shodan")):
+            if (ip_match and (any(w in prompt_lower for w in ("investigate", "osint", "whois", "rdap", "lookup", "shodan", "check asn", "asn", "ip footprint", "public ip")) or prompt_lower.startswith("investigate"))) or any(w in prompt_lower for w in ("investigate this public ip", "investigate public ip", "investigate ip", "ip intelligence", "ip footprint", "shodan")):
                 ip_val = ip_match.group(0) if ip_match else target
                 return {"action": "osint_ip", "intent": "OSINT_IP", "target": ip_val}
 
         # E. OSINT_DOMAIN
         if not (has_scan_verb or has_assess_verb):
-            if (host_match and (any(w in prompt_lower for w in ("investigate", "osint", "investigation", "whois", "lookup", "subdomain")) or prompt_lower.startswith("investigate"))) or any(w in prompt_lower for w in ("investigate domain", "domain intelligence", "dns footprint", "whois domain", "subdomains for", "crt.sh")):
+            if (host_match and (any(w in prompt_lower for w in ("investigate", "osint", "investigation", "whois", "lookup", "subdomain", "dns footprint", "certificate transparency", "security headers", "crt.sh")) or prompt_lower.startswith("investigate"))) or any(w in prompt_lower for w in ("investigate domain", "domain intelligence", "dns footprint", "whois domain", "subdomains for", "crt.sh")):
                 host_val = host_match.group(1) if host_match else target
                 return {"action": "osint_domain", "intent": "OSINT_DOMAIN", "target": host_val}
 

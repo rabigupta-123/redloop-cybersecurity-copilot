@@ -1,0 +1,11 @@
+{
+  "established_at": "2026-11-07T17:29:27.154753+00:00",
+  "composite_quality_index": 0.882946,
+  "intent_holdout_accuracy": 0.9806451612903225,
+  "intent_holdout_accuracy_ci95_lower": 0.944646,
+  "intent_holdout_macro_f1": 0.9813209259192638,
+  "intent_holdout_cohens_kappa": 0.979435,
+  "rag_ndcg_at_5": 0.875,
+  "scope_breach_rate": 0.0,
+  "fabrication_rate": 0.0
+}

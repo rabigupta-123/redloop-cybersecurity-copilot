@@ -20195,6 +20195,25 @@ def register_workbench_routes(
         metrics = SOCMetricsEngine.get_operational_metrics()
         return JSONResponse({"success": True, "metrics": metrics})
 
+    @app.get("/api/metrics/quality")
+    def get_quality_metrics_endpoint(request: Request):
+        """Serve statistical evaluation benchmarks and quality indices for dashboard."""
+        _require_same_origin(request)
+        from pathlib import Path
+        import json
+        eval_path = Path("artifacts/eval_results.json")
+        if eval_path.exists():
+            try:
+                data = json.loads(eval_path.read_text(encoding="utf-8"))
+                return JSONResponse({"success": True, "metrics": data})
+            except Exception as exc:
+                return JSONResponse({"success": False, "error": str(exc)}, status_code=500)
+        return JSONResponse({
+            "success": True,
+            "status": "NOT_RUN",
+            "message": "Evaluation results not found. Run 'redloop eval run' to generate."
+        })
+
     # --- Operational Copilot Intelligence (soc_copilot) ---
 
     @app.post("/api/soc/copilot/op")

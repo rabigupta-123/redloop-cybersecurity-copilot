@@ -1,0 +1,3002 @@
+[
+  {
+    "id": "train-gc-001",
+    "prompt": "What is DNS and how does resolution work?",
+    "expected_intent": "GENERAL_CHAT",
+    "category": "concept"
+  },
+  {
+    "id": "train-gc-002",
+    "prompt": "Explain the difference between TCP and UDP protocols.",
+    "expected_intent": "GENERAL_CHAT",
+    "category": "concept"
+  },
+  {
+    "id": "train-gc-003",
+    "prompt": "How does TLS 1.3 improve latency compared to TLS 1.2?",
+    "expected_intent": "GENERAL_CHAT",
+    "category": "concept"
+  },
+  {
+    "id": "train-gc-004",
+    "prompt": "Tell me about the history of the Morris worm.",
+    "expected_intent": "GENERAL_CHAT",
+    "category": "concept"
+  },
+  {
+    "id": "train-gc-005",
+    "prompt": "Describe the principles of defense in depth.",
+    "expected_intent": "GENERAL_CHAT",
+    "category": "concept"
+  },
+  {
+    "id": "train-gc-006",
+    "prompt": "Explain what ARP spoofing is and how switches mitigate it.",
+    "expected_intent": "GENERAL_CHAT",
+    "category": "concept"
+  },
+  {
+    "id": "train-gc-007",
+    "prompt": "What are the core components of the OWASP Top 10?",
+    "expected_intent": "GENERAL_CHAT",
+    "category": "concept"
+  },
+  {
+    "id": "train-gc-008",
+    "prompt": "Define the zero trust security model architecture.",
+    "expected_intent": "GENERAL_CHAT",
+    "category": "concept"
+  },
+  {
+    "id": "train-gc-009",
+    "prompt": "How does public key cryptography establish trust?",
+    "expected_intent": "GENERAL_CHAT",
+    "category": "concept"
+  },
+  {
+    "id": "train-gc-010",
+    "prompt": "What is the difference between symmetric and asymmetric encryption?",
+    "expected_intent": "GENERAL_CHAT",
+    "category": "concept"
+  },
+  {
+    "id": "train-gc-011",
+    "prompt": "Explain how a buffer overflow happens in C programs.",
+    "expected_intent": "GENERAL_CHAT",
+    "category": "concept"
+  },
+  {
+    "id": "train-gc-012",
+    "prompt": "What is the role of an ASLR mitigation in operating systems?",
+    "expected_intent": "GENERAL_CHAT",
+    "category": "concept"
+  },
+  {
+    "id": "train-gc-013",
+    "prompt": "How does DEP (Data Execution Prevention) protect memory?",
+    "expected_intent": "GENERAL_CHAT",
+    "category": "concept"
+  },
+  {
+    "id": "train-gc-014",
+    "prompt": "Explain what Cross-Site Scripting (XSS) is and its types.",
+    "expected_intent": "GENERAL_CHAT",
+    "category": "concept"
+  },
+  {
+    "id": "train-gc-015",
+    "prompt": "What is SQL injection and how do parameterized queries prevent it?",
+    "expected_intent": "GENERAL_CHAT",
+    "category": "concept"
+  },
+  {
+    "id": "train-gc-016",
+    "prompt": "Describe how OAuth 2.0 authorization flows work.",
+    "expected_intent": "GENERAL_CHAT",
+    "category": "concept"
+  },
+  {
+    "id": "train-gc-017",
+    "prompt": "What is the difference between authentication and authorization?",
+    "expected_intent": "GENERAL_CHAT",
+    "category": "concept"
+  },
+  {
+    "id": "train-gc-018",
+    "prompt": "Explain the Kerberos ticketing protocol in Active Directory.",
+    "expected_intent": "GENERAL_CHAT",
+    "category": "concept"
+  },
+  {
+    "id": "train-gc-019",
+    "prompt": "How does SAML 2.0 enable federated single sign-on?",
+    "expected_intent": "GENERAL_CHAT",
+    "category": "concept"
+  },
+  {
+    "id": "train-gc-020",
+    "prompt": "What is Multi-Factor Authentication and why is SMS MFA discouraged?",
+    "expected_intent": "GENERAL_CHAT",
+    "category": "concept"
+  },
+  {
+    "id": "train-gc-021",
+    "prompt": "Explain the concept of least privilege in cloud IAM.",
+    "expected_intent": "GENERAL_CHAT",
+    "category": "concept"
+  },
+  {
+    "id": "train-gc-022",
+    "prompt": "What is a Certificate Authority and how does revocation work?",
+    "expected_intent": "GENERAL_CHAT",
+    "category": "concept"
+  },
+  {
+    "id": "train-gc-023",
+    "prompt": "Describe how BGP routing works and what BGP hijacking is.",
+    "expected_intent": "GENERAL_CHAT",
+    "category": "concept"
+  },
+  {
+    "id": "train-gc-024",
+    "prompt": "What is DNSSEC and what threats does it mitigate?",
+    "expected_intent": "GENERAL_CHAT",
+    "category": "concept"
+  },
+  {
+    "id": "train-gc-025",
+    "prompt": "Explain the difference between a vulnerability, an exploit, and a threat.",
+    "expected_intent": "GENERAL_CHAT",
+    "category": "concept"
+  },
+  {
+    "id": "train-gc-026",
+    "prompt": "What is a zero-day vulnerability?",
+    "expected_intent": "GENERAL_CHAT",
+    "category": "concept"
+  },
+  {
+    "id": "train-gc-027",
+    "prompt": "How do firewalls track state in stateful packet inspection?",
+    "expected_intent": "GENERAL_CHAT",
+    "category": "concept"
+  },
+  {
+    "id": "train-gc-028",
+    "prompt": "Explain the purpose of an Intrusion Detection System (IDS).",
+    "expected_intent": "GENERAL_CHAT",
+    "category": "concept"
+  },
+  {
+    "id": "train-gc-029",
+    "prompt": "What is the difference between network segmentation and microsegmentation?",
+    "expected_intent": "GENERAL_CHAT",
+    "category": "concept"
+  },
+  {
+    "id": "train-gc-030",
+    "prompt": "How does DKIM provide email authenticity?",
+    "expected_intent": "GENERAL_CHAT",
+    "category": "concept"
+  },
+  {
+    "id": "train-gc-031",
+    "prompt": "Explain DMARC policies and how they protect domain reputation.",
+    "expected_intent": "GENERAL_CHAT",
+    "category": "concept"
+  },
+  {
+    "id": "train-gc-032",
+    "prompt": "What is SPF (Sender Policy Framework) and how is it published in DNS?",
+    "expected_intent": "GENERAL_CHAT",
+    "category": "concept"
+  },
+  {
+    "id": "train-gc-033",
+    "prompt": "Describe how honeypots are used in deception technology.",
+    "expected_intent": "GENERAL_CHAT",
+    "category": "concept"
+  },
+  {
+    "id": "train-gc-034",
+    "prompt": "What is threat modeling and how does STRIDE categorize threats?",
+    "expected_intent": "GENERAL_CHAT",
+    "category": "concept"
+  },
+  {
+    "id": "train-gc-035",
+    "prompt": "Explain the Cyber Kill Chain model developed by Lockheed Martin.",
+    "expected_intent": "GENERAL_CHAT",
+    "category": "concept"
+  },
+  {
+    "id": "train-gc-036",
+    "prompt": "What is the MITRE ATT&CK framework and how is it structured?",
+    "expected_intent": "GENERAL_CHAT",
+    "category": "concept"
+  },
+  {
+    "id": "train-gc-037",
+    "prompt": "Describe the incident response process according to NIST SP 800-61.",
+    "expected_intent": "GENERAL_CHAT",
+    "category": "concept"
+  },
+  {
+    "id": "train-gc-038",
+    "prompt": "What is the difference between endpoint detection and antivirus?",
+    "expected_intent": "GENERAL_CHAT",
+    "category": "concept"
+  },
+  {
+    "id": "train-gc-039",
+    "prompt": "How does memory forensics uncover injected code?",
+    "expected_intent": "GENERAL_CHAT",
+    "category": "concept"
+  },
+  {
+    "id": "train-gc-040",
+    "prompt": "Explain the concept of Forward Secrecy in TLS key exchange.",
+    "expected_intent": "GENERAL_CHAT",
+    "category": "concept"
+  },
+  {
+    "id": "train-gc-041",
+    "prompt": "What are the security implications of server-side template injection?",
+    "expected_intent": "GENERAL_CHAT",
+    "category": "concept"
+  },
+  {
+    "id": "train-gc-042",
+    "prompt": "Explain how Clickjacking attacks work and how X-Frame-Options helps.",
+    "expected_intent": "GENERAL_CHAT",
+    "category": "concept"
+  },
+  {
+    "id": "train-gc-043",
+    "prompt": "What is CORS and why is Access-Control-Allow-Origin wildcard dangerous?",
+    "expected_intent": "GENERAL_CHAT",
+    "category": "concept"
+  },
+  {
+    "id": "train-gc-044",
+    "prompt": "Describe how a Distributed Denial of Service (DDoS) SYN flood works.",
+    "expected_intent": "GENERAL_CHAT",
+    "category": "concept"
+  },
+  {
+    "id": "train-gc-045",
+    "prompt": "What is the difference between black box and white box penetration testing?",
+    "expected_intent": "GENERAL_CHAT",
+    "category": "concept"
+  },
+  {
+    "id": "train-cr-001",
+    "prompt": "Write a Python script to parse a CSV file and output unique IP addresses.",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding"
+  },
+  {
+    "id": "train-cr-002",
+    "prompt": "Write a bash script to monitor disk usage and send an alert.",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding"
+  },
+  {
+    "id": "train-cr-003",
+    "prompt": "Implement an algorithm for binary search in Python.",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding"
+  },
+  {
+    "id": "train-cr-004",
+    "prompt": "Write code to compute the SHA-256 hash of a string in Python.",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding"
+  },
+  {
+    "id": "train-cr-005",
+    "prompt": "Write a Python script to validate email syntax using regex.",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding"
+  },
+  {
+    "id": "train-cr-006",
+    "prompt": "How to write a program that reads a configuration JSON safely?",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding"
+  },
+  {
+    "id": "train-cr-007",
+    "prompt": "Write a function in Python to convert hex strings to byte arrays.",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding"
+  },
+  {
+    "id": "train-cr-008",
+    "prompt": "Implement an algorithm for sorting an array of vulnerability severities.",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding"
+  },
+  {
+    "id": "train-cr-009",
+    "prompt": "Write a Python script to test HTTP status codes of a list of URLs.",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding"
+  },
+  {
+    "id": "train-cr-010",
+    "prompt": "Write a simple Python client using urllib.request.",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding"
+  },
+  {
+    "id": "train-cr-011",
+    "prompt": "Research paper on differential privacy techniques in machine learning.",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding"
+  },
+  {
+    "id": "train-cr-012",
+    "prompt": "Research the history of RSA cryptography algorithms.",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding"
+  },
+  {
+    "id": "train-cr-013",
+    "prompt": "Write a Python script to generate random secure passwords.",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding"
+  },
+  {
+    "id": "train-cr-014",
+    "prompt": "Write code to parse Syslog RFC 5424 formatted messages.",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding"
+  },
+  {
+    "id": "train-cr-015",
+    "prompt": "Write a bash script to backup a directory and compress with tar.",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding"
+  },
+  {
+    "id": "train-cr-016",
+    "prompt": "Write a Python script to check if an SSL certificate is expired.",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding"
+  },
+  {
+    "id": "train-cr-017",
+    "prompt": "Implement an algorithm to detect cycles in a directed graph.",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding"
+  },
+  {
+    "id": "train-cr-018",
+    "prompt": "Write a function to extract domain names from a list of URLs in Python.",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding"
+  },
+  {
+    "id": "train-cr-019",
+    "prompt": "Write code to sanitize user inputs before rendering in HTML.",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding"
+  },
+  {
+    "id": "train-cr-020",
+    "prompt": "Write a Python script to read PCAP packet headers with scapy.",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding"
+  },
+  {
+    "id": "train-cr-021",
+    "prompt": "Write a simple port scanner in Python using socket library.",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding"
+  },
+  {
+    "id": "train-cr-022",
+    "prompt": "Write a bash script to find all files modified in the last 24 hours.",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding"
+  },
+  {
+    "id": "train-cr-023",
+    "prompt": "Write a Python function to encode and decode base64 strings.",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding"
+  },
+  {
+    "id": "train-cr-024",
+    "prompt": "Write code to implement a token bucket rate limiter in Python.",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding"
+  },
+  {
+    "id": "train-cr-025",
+    "prompt": "Write a Python script to verify an HMAC-SHA256 signature.",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding"
+  },
+  {
+    "id": "train-cr-026",
+    "prompt": "Write a Python script to extract URLs from a markdown file.",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding"
+  },
+  {
+    "id": "train-cr-027",
+    "prompt": "Implement an algorithm for Levenshtein distance between strings.",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding"
+  },
+  {
+    "id": "train-cr-028",
+    "prompt": "Write a bash script to rotate log files when size exceeds 10MB.",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding"
+  },
+  {
+    "id": "train-cr-029",
+    "prompt": "Write a Python program to ping multiple hosts sequentially.",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding"
+  },
+  {
+    "id": "train-cr-030",
+    "prompt": "Write code to parse JWT tokens and decode header and payload.",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding"
+  },
+  {
+    "id": "train-cr-031",
+    "prompt": "Write a Python script to merge two sorted dictionaries.",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding"
+  },
+  {
+    "id": "train-cr-032",
+    "prompt": "Write a bash script to list listening TCP sockets with netstat.",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding"
+  },
+  {
+    "id": "train-cr-033",
+    "prompt": "Write code to demonstrate secure password hashing with bcrypt in Python.",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding"
+  },
+  {
+    "id": "train-cr-034",
+    "prompt": "Write a Python script to calculate subnet CIDR network and broadcast IPs.",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding"
+  },
+  {
+    "id": "train-cr-035",
+    "prompt": "Write a function to format ISO timestamps into UTC strings in Python.",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding"
+  },
+  {
+    "id": "train-rec-001",
+    "prompt": "Scan ports on 127.0.0.1",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE",
+    "category": "recon"
+  },
+  {
+    "id": "train-rec-002",
+    "prompt": "Run nmap scan on target 127.0.0.1",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE",
+    "category": "recon"
+  },
+  {
+    "id": "train-rec-003",
+    "prompt": "Probe open ports on 127.0.0.1:8080",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE",
+    "category": "recon"
+  },
+  {
+    "id": "train-rec-004",
+    "prompt": "Enumerate ports on local host 127.0.0.1",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE",
+    "category": "recon"
+  },
+  {
+    "id": "train-rec-005",
+    "prompt": "Scan this authorized lab target 127.0.0.1",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE",
+    "category": "recon"
+  },
+  {
+    "id": "train-rec-006",
+    "prompt": "Run nikto scan on http://127.0.0.1:8080",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE",
+    "category": "recon"
+  },
+  {
+    "id": "train-rec-007",
+    "prompt": "Execute gobuster dir on http://127.0.0.1:8080 with wordlist",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE",
+    "category": "recon"
+  },
+  {
+    "id": "train-rec-008",
+    "prompt": "Check tls configuration on 127.0.0.1:8443",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE",
+    "category": "recon"
+  },
+  {
+    "id": "train-rec-009",
+    "prompt": "Run ssl scan on https://127.0.0.1:443",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE",
+    "category": "recon"
+  },
+  {
+    "id": "train-rec-010",
+    "prompt": "Check certificate scan on 127.0.0.1:443",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE",
+    "category": "recon"
+  },
+  {
+    "id": "train-rec-011",
+    "prompt": "Web scan on http://127.0.0.1:8080",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE",
+    "category": "recon"
+  },
+  {
+    "id": "train-rec-012",
+    "prompt": "Crawl target http://127.0.0.1:8000 for links",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE",
+    "category": "recon"
+  },
+  {
+    "id": "train-rec-013",
+    "prompt": "Check web headers on http://127.0.0.1:8080",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE",
+    "category": "recon"
+  },
+  {
+    "id": "train-rec-014",
+    "prompt": "API scan on http://127.0.0.1:8000/api",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE",
+    "category": "recon"
+  },
+  {
+    "id": "train-rec-015",
+    "prompt": "GraphQL scan on http://127.0.0.1:8000/graphql",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE",
+    "category": "recon"
+  },
+  {
+    "id": "train-rec-016",
+    "prompt": "OpenAPI scan on http://127.0.0.1:8000/openapi.json",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE",
+    "category": "recon"
+  },
+  {
+    "id": "train-rec-017",
+    "prompt": "Swagger scan on http://127.0.0.1:8000/swagger.json",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE",
+    "category": "recon"
+  },
+  {
+    "id": "train-rec-018",
+    "prompt": "DNS scan on local nameserver 127.0.0.1",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE",
+    "category": "recon"
+  },
+  {
+    "id": "train-rec-019",
+    "prompt": "Query nameserver on 127.0.0.1 for SOA record",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE",
+    "category": "recon"
+  },
+  {
+    "id": "train-rec-020",
+    "prompt": "Check open ports on 127.0.0.1 for tcp services",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE",
+    "category": "recon"
+  },
+  {
+    "id": "train-rec-021",
+    "prompt": "Nmap top-100 ports scan against 127.0.0.1",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE",
+    "category": "recon"
+  },
+  {
+    "id": "train-rec-022",
+    "prompt": "Perform nmap service version scan on 127.0.0.1:8080",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE",
+    "category": "recon"
+  },
+  {
+    "id": "train-rec-023",
+    "prompt": "Scan authorized host 127.0.0.1 with nmap",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE",
+    "category": "recon"
+  },
+  {
+    "id": "train-rec-024",
+    "prompt": "Spider web application at http://127.0.0.1:5000",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE",
+    "category": "recon"
+  },
+  {
+    "id": "train-rec-025",
+    "prompt": "Nikto web server scan against 127.0.0.1:8080",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE",
+    "category": "recon"
+  },
+  {
+    "id": "train-rec-026",
+    "prompt": "Gobuster directory brute-force on 127.0.0.1:8000",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE",
+    "category": "recon"
+  },
+  {
+    "id": "train-rec-027",
+    "prompt": "Check TLS cipher suites on 127.0.0.1:443",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE",
+    "category": "recon"
+  },
+  {
+    "id": "train-rec-028",
+    "prompt": "Enumerate open ports on 127.0.0.1 between 8000 and 9000",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE",
+    "category": "recon"
+  },
+  {
+    "id": "train-rec-029",
+    "prompt": "Scan 127.0.0.1 for listening HTTP services",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE",
+    "category": "recon"
+  },
+  {
+    "id": "train-rec-030",
+    "prompt": "Probe 127.0.0.1:22 for SSH banner",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE",
+    "category": "recon"
+  },
+  {
+    "id": "train-rec-031",
+    "prompt": "Check web headers and security cookies on http://127.0.0.1:3000",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE",
+    "category": "recon"
+  },
+  {
+    "id": "train-rec-032",
+    "prompt": "Run API endpoint discovery scan on http://127.0.0.1:8080/v1",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE",
+    "category": "recon"
+  },
+  {
+    "id": "train-rec-033",
+    "prompt": "Perform TLS handshake probe on 127.0.0.1:8443",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE",
+    "category": "recon"
+  },
+  {
+    "id": "train-rec-034",
+    "prompt": "Scan ports 80, 443, 8080 on 127.0.0.1",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE",
+    "category": "recon"
+  },
+  {
+    "id": "train-rec-035",
+    "prompt": "Scan 127.0.0.1 using nmap default scripts",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE",
+    "category": "recon"
+  },
+  {
+    "id": "train-rec-036",
+    "prompt": "Run nmap stealth SYN scan on authorized target 127.0.0.1",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE",
+    "category": "recon"
+  },
+  {
+    "id": "train-rec-037",
+    "prompt": "Check open ports on 127.0.0.1:9000",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE",
+    "category": "recon"
+  },
+  {
+    "id": "train-rec-038",
+    "prompt": "Crawl web endpoints on http://127.0.0.1:8888",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE",
+    "category": "recon"
+  },
+  {
+    "id": "train-rec-039",
+    "prompt": "Scan authorized target 127.0.0.1 with nikto",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE",
+    "category": "recon"
+  },
+  {
+    "id": "train-rec-040",
+    "prompt": "Run gobuster on http://127.0.0.1:8080/admin",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE",
+    "category": "recon"
+  },
+  {
+    "id": "train-va-001",
+    "prompt": "Run vulnerability scan on target 127.0.0.1",
+    "expected_intent": "VULNERABILITY_ASSESSMENT",
+    "category": "assessment"
+  },
+  {
+    "id": "train-va-002",
+    "prompt": "Perform comprehensive security assessment on 127.0.0.1:8080",
+    "expected_intent": "VULNERABILITY_ASSESSMENT",
+    "category": "assessment"
+  },
+  {
+    "id": "train-va-003",
+    "prompt": "Assess security posture of 127.0.0.1",
+    "expected_intent": "VULNERABILITY_ASSESSMENT",
+    "category": "assessment"
+  },
+  {
+    "id": "train-va-004",
+    "prompt": "Execute full assessment on local environment 127.0.0.1",
+    "expected_intent": "VULNERABILITY_ASSESSMENT",
+    "category": "assessment"
+  },
+  {
+    "id": "train-va-005",
+    "prompt": "Run quick security assessment on 127.0.0.1:8000",
+    "expected_intent": "VULNERABILITY_ASSESSMENT",
+    "category": "assessment"
+  },
+  {
+    "id": "train-va-006",
+    "prompt": "Perform deep security assessment on 127.0.0.1",
+    "expected_intent": "VULNERABILITY_ASSESSMENT",
+    "category": "assessment"
+  },
+  {
+    "id": "train-va-007",
+    "prompt": "Comprehensive vulnerability assessment for 127.0.0.1",
+    "expected_intent": "VULNERABILITY_ASSESSMENT",
+    "category": "assessment"
+  },
+  {
+    "id": "train-va-008",
+    "prompt": "Evaluate security vulnerabilities on target 127.0.0.1",
+    "expected_intent": "VULNERABILITY_ASSESSMENT",
+    "category": "assessment"
+  },
+  {
+    "id": "train-va-009",
+    "prompt": "Run assessment on 127.0.0.1:8080",
+    "expected_intent": "VULNERABILITY_ASSESSMENT",
+    "category": "assessment"
+  },
+  {
+    "id": "train-va-010",
+    "prompt": "Full scan and security audit of 127.0.0.1",
+    "expected_intent": "VULNERABILITY_ASSESSMENT",
+    "category": "assessment"
+  },
+  {
+    "id": "train-va-011",
+    "prompt": "Fast vulnerability scan on http://127.0.0.1:3000",
+    "expected_intent": "VULNERABILITY_ASSESSMENT",
+    "category": "assessment"
+  },
+  {
+    "id": "train-va-012",
+    "prompt": "Perform deep assessment on authorized host 127.0.0.1",
+    "expected_intent": "VULNERABILITY_ASSESSMENT",
+    "category": "assessment"
+  },
+  {
+    "id": "train-va-013",
+    "prompt": "Assess target 127.0.0.1 for missing security patches",
+    "expected_intent": "VULNERABILITY_ASSESSMENT",
+    "category": "assessment"
+  },
+  {
+    "id": "train-va-014",
+    "prompt": "Comprehensive scan on 127.0.0.1:8443",
+    "expected_intent": "VULNERABILITY_ASSESSMENT",
+    "category": "assessment"
+  },
+  {
+    "id": "train-va-015",
+    "prompt": "Run full assessment on web application at 127.0.0.1:8080",
+    "expected_intent": "VULNERABILITY_ASSESSMENT",
+    "category": "assessment"
+  },
+  {
+    "id": "train-va-016",
+    "prompt": "Execute security audit on target 127.0.0.1",
+    "expected_intent": "VULNERABILITY_ASSESSMENT",
+    "category": "assessment"
+  },
+  {
+    "id": "train-va-017",
+    "prompt": "Assess potential misconfigurations on 127.0.0.1",
+    "expected_intent": "VULNERABILITY_ASSESSMENT",
+    "category": "assessment"
+  },
+  {
+    "id": "train-va-018",
+    "prompt": "Run comprehensive assessment on 127.0.0.1",
+    "expected_intent": "VULNERABILITY_ASSESSMENT",
+    "category": "assessment"
+  },
+  {
+    "id": "train-va-019",
+    "prompt": "Quick assessment on local lab host 127.0.0.1",
+    "expected_intent": "VULNERABILITY_ASSESSMENT",
+    "category": "assessment"
+  },
+  {
+    "id": "train-va-020",
+    "prompt": "Deep scan on authorized server 127.0.0.1",
+    "expected_intent": "VULNERABILITY_ASSESSMENT",
+    "category": "assessment"
+  },
+  {
+    "id": "train-va-021",
+    "prompt": "Evaluate security weaknesses on 127.0.0.1:8080",
+    "expected_intent": "VULNERABILITY_ASSESSMENT",
+    "category": "assessment"
+  },
+  {
+    "id": "train-va-022",
+    "prompt": "Perform security assessment on http://127.0.0.1:5000",
+    "expected_intent": "VULNERABILITY_ASSESSMENT",
+    "category": "assessment"
+  },
+  {
+    "id": "train-va-023",
+    "prompt": "Run assessment pipeline on 127.0.0.1",
+    "expected_intent": "VULNERABILITY_ASSESSMENT",
+    "category": "assessment"
+  },
+  {
+    "id": "train-va-024",
+    "prompt": "Conduct vulnerability assessment on 127.0.0.1",
+    "expected_intent": "VULNERABILITY_ASSESSMENT",
+    "category": "assessment"
+  },
+  {
+    "id": "train-va-025",
+    "prompt": "Full assessment of target 127.0.0.1 with evidence logging",
+    "expected_intent": "VULNERABILITY_ASSESSMENT",
+    "category": "assessment"
+  },
+  {
+    "id": "train-va-026",
+    "prompt": "Comprehensive assessment on local target 127.0.0.1",
+    "expected_intent": "VULNERABILITY_ASSESSMENT",
+    "category": "assessment"
+  },
+  {
+    "id": "train-va-027",
+    "prompt": "Assess security compliance on 127.0.0.1",
+    "expected_intent": "VULNERABILITY_ASSESSMENT",
+    "category": "assessment"
+  },
+  {
+    "id": "train-va-028",
+    "prompt": "Run vulnerability assessment with high depth on 127.0.0.1",
+    "expected_intent": "VULNERABILITY_ASSESSMENT",
+    "category": "assessment"
+  },
+  {
+    "id": "train-va-029",
+    "prompt": "Perform assessment on 127.0.0.1:8000",
+    "expected_intent": "VULNERABILITY_ASSESSMENT",
+    "category": "assessment"
+  },
+  {
+    "id": "train-va-030",
+    "prompt": "Execute vulnerability assessment on 127.0.0.1",
+    "expected_intent": "VULNERABILITY_ASSESSMENT",
+    "category": "assessment"
+  },
+  {
+    "id": "train-va-031",
+    "prompt": "Security assessment of 127.0.0.1:9090",
+    "expected_intent": "VULNERABILITY_ASSESSMENT",
+    "category": "assessment"
+  },
+  {
+    "id": "train-va-032",
+    "prompt": "Deep assessment of web service on 127.0.0.1:8080",
+    "expected_intent": "VULNERABILITY_ASSESSMENT",
+    "category": "assessment"
+  },
+  {
+    "id": "train-va-033",
+    "prompt": "Run standard security assessment on 127.0.0.1",
+    "expected_intent": "VULNERABILITY_ASSESSMENT",
+    "category": "assessment"
+  },
+  {
+    "id": "train-va-034",
+    "prompt": "Assess security posture of local host 127.0.0.1",
+    "expected_intent": "VULNERABILITY_ASSESSMENT",
+    "category": "assessment"
+  },
+  {
+    "id": "train-va-035",
+    "prompt": "Vulnerability assessment for target 127.0.0.1",
+    "expected_intent": "VULNERABILITY_ASSESSMENT",
+    "category": "assessment"
+  },
+  {
+    "id": "train-oip-001",
+    "prompt": "Investigate IP 8.8.8.8",
+    "expected_intent": "OSINT_IP",
+    "category": "osint"
+  },
+  {
+    "id": "train-oip-002",
+    "prompt": "Investigate public IP 1.1.1.1",
+    "expected_intent": "OSINT_IP",
+    "category": "osint"
+  },
+  {
+    "id": "train-oip-003",
+    "prompt": "Lookup RDAP and WHOIS for IP 9.9.9.9",
+    "expected_intent": "OSINT_IP",
+    "category": "osint"
+  },
+  {
+    "id": "train-oip-004",
+    "prompt": "Investigate IP footprint of 208.67.222.222",
+    "expected_intent": "OSINT_IP",
+    "category": "osint"
+  },
+  {
+    "id": "train-oip-005",
+    "prompt": "Shodan intelligence query for IP 4.4.4.4",
+    "expected_intent": "OSINT_IP",
+    "category": "osint"
+  },
+  {
+    "id": "train-oip-006",
+    "prompt": "Investigate this public IP 140.82.121.4",
+    "expected_intent": "OSINT_IP",
+    "category": "osint"
+  },
+  {
+    "id": "train-oip-007",
+    "prompt": "Check ASN and geolocation for IP 151.101.1.69",
+    "expected_intent": "OSINT_IP",
+    "category": "osint"
+  },
+  {
+    "id": "train-oip-008",
+    "prompt": "Investigate IP 104.244.42.1",
+    "expected_intent": "OSINT_IP",
+    "category": "osint"
+  },
+  {
+    "id": "train-oip-009",
+    "prompt": "OSINT lookup on IP 199.232.69.194",
+    "expected_intent": "OSINT_IP",
+    "category": "osint"
+  },
+  {
+    "id": "train-oip-010",
+    "prompt": "Investigate IP address 185.199.108.153",
+    "expected_intent": "OSINT_IP",
+    "category": "osint"
+  },
+  {
+    "id": "train-oip-011",
+    "prompt": "Whois lookup for IP 52.84.12.1",
+    "expected_intent": "OSINT_IP",
+    "category": "osint"
+  },
+  {
+    "id": "train-oip-012",
+    "prompt": "Investigate public IP 13.107.42.14",
+    "expected_intent": "OSINT_IP",
+    "category": "osint"
+  },
+  {
+    "id": "train-oip-013",
+    "prompt": "Query Shodan InternetDB for IP 172.217.16.206",
+    "expected_intent": "OSINT_IP",
+    "category": "osint"
+  },
+  {
+    "id": "train-oip-014",
+    "prompt": "Investigate IP 76.76.21.21",
+    "expected_intent": "OSINT_IP",
+    "category": "osint"
+  },
+  {
+    "id": "train-oip-015",
+    "prompt": "Lookup IP intelligence for 192.0.2.1",
+    "expected_intent": "OSINT_IP",
+    "category": "osint"
+  },
+  {
+    "id": "train-oip-016",
+    "prompt": "Investigate public IP 104.16.132.229",
+    "expected_intent": "OSINT_IP",
+    "category": "osint"
+  },
+  {
+    "id": "train-oip-017",
+    "prompt": "Investigate IP 198.51.100.42",
+    "expected_intent": "OSINT_IP",
+    "category": "osint"
+  },
+  {
+    "id": "train-oip-018",
+    "prompt": "IP footprint analysis for 203.0.113.19",
+    "expected_intent": "OSINT_IP",
+    "category": "osint"
+  },
+  {
+    "id": "train-oip-019",
+    "prompt": "Whois information for IP 142.250.190.46",
+    "expected_intent": "OSINT_IP",
+    "category": "osint"
+  },
+  {
+    "id": "train-oip-020",
+    "prompt": "Investigate IP 17.253.144.10",
+    "expected_intent": "OSINT_IP",
+    "category": "osint"
+  },
+  {
+    "id": "train-oip-021",
+    "prompt": "Investigate public IP 20.112.52.29",
+    "expected_intent": "OSINT_IP",
+    "category": "osint"
+  },
+  {
+    "id": "train-oip-022",
+    "prompt": "Shodan ports and tags for IP 65.55.44.100",
+    "expected_intent": "OSINT_IP",
+    "category": "osint"
+  },
+  {
+    "id": "train-oip-023",
+    "prompt": "Investigate IP 185.60.216.35",
+    "expected_intent": "OSINT_IP",
+    "category": "osint"
+  },
+  {
+    "id": "train-oip-024",
+    "prompt": "Lookup ASN and routing prefix for IP 193.0.14.129",
+    "expected_intent": "OSINT_IP",
+    "category": "osint"
+  },
+  {
+    "id": "train-oip-025",
+    "prompt": "Investigate IP footprint of 128.232.0.20",
+    "expected_intent": "OSINT_IP",
+    "category": "osint"
+  },
+  {
+    "id": "train-oip-026",
+    "prompt": "Investigate public IP 130.89.148.14",
+    "expected_intent": "OSINT_IP",
+    "category": "osint"
+  },
+  {
+    "id": "train-oip-027",
+    "prompt": "Check reputation and WHOIS for IP 194.109.6.92",
+    "expected_intent": "OSINT_IP",
+    "category": "osint"
+  },
+  {
+    "id": "train-oip-028",
+    "prompt": "Investigate IP 80.249.208.1",
+    "expected_intent": "OSINT_IP",
+    "category": "osint"
+  },
+  {
+    "id": "train-oip-029",
+    "prompt": "Investigate public IP 64.233.160.1",
+    "expected_intent": "OSINT_IP",
+    "category": "osint"
+  },
+  {
+    "id": "train-oip-030",
+    "prompt": "Lookup IP 216.58.214.206",
+    "expected_intent": "OSINT_IP",
+    "category": "osint"
+  },
+  {
+    "id": "train-odom-001",
+    "prompt": "Investigate domain example.com",
+    "expected_intent": "OSINT_DOMAIN",
+    "category": "osint"
+  },
+  {
+    "id": "train-odom-002",
+    "prompt": "Lookup WHOIS and RDAP for domain github.com",
+    "expected_intent": "OSINT_DOMAIN",
+    "category": "osint"
+  },
+  {
+    "id": "train-odom-003",
+    "prompt": "Investigate domain footprint of cloudflare.com",
+    "expected_intent": "OSINT_DOMAIN",
+    "category": "osint"
+  },
+  {
+    "id": "train-odom-004",
+    "prompt": "Enumerate subdomains for domain target.corp with crt.sh",
+    "expected_intent": "OSINT_DOMAIN",
+    "category": "osint"
+  },
+  {
+    "id": "train-odom-005",
+    "prompt": "Investigate domain microsoft.com",
+    "expected_intent": "OSINT_DOMAIN",
+    "category": "osint"
+  },
+  {
+    "id": "train-odom-006",
+    "prompt": "DNS footprint and MX records for domain python.org",
+    "expected_intent": "OSINT_DOMAIN",
+    "category": "osint"
+  },
+  {
+    "id": "train-odom-007",
+    "prompt": "Investigate domain stackoverflow.com",
+    "expected_intent": "OSINT_DOMAIN",
+    "category": "osint"
+  },
+  {
+    "id": "train-odom-008",
+    "prompt": "Check certificate transparency logs for domain fastly.com",
+    "expected_intent": "OSINT_DOMAIN",
+    "category": "osint"
+  },
+  {
+    "id": "train-odom-009",
+    "prompt": "Investigate domain wikipedia.org",
+    "expected_intent": "OSINT_DOMAIN",
+    "category": "osint"
+  },
+  {
+    "id": "train-odom-010",
+    "prompt": "Whois domain lookup for mozilla.org",
+    "expected_intent": "OSINT_DOMAIN",
+    "category": "osint"
+  },
+  {
+    "id": "train-odom-011",
+    "prompt": "Investigate domain intelligence for apache.org",
+    "expected_intent": "OSINT_DOMAIN",
+    "category": "osint"
+  },
+  {
+    "id": "train-odom-012",
+    "prompt": "Investigate domain gitlab.com",
+    "expected_intent": "OSINT_DOMAIN",
+    "category": "osint"
+  },
+  {
+    "id": "train-odom-013",
+    "prompt": "Lookup DNS records and CAA policy for domain debian.org",
+    "expected_intent": "OSINT_DOMAIN",
+    "category": "osint"
+  },
+  {
+    "id": "train-odom-014",
+    "prompt": "Investigate domain kernel.org",
+    "expected_intent": "OSINT_DOMAIN",
+    "category": "osint"
+  },
+  {
+    "id": "train-odom-015",
+    "prompt": "Domain intelligence report for ubuntu.com",
+    "expected_intent": "OSINT_DOMAIN",
+    "category": "osint"
+  },
+  {
+    "id": "train-odom-016",
+    "prompt": "Investigate domain archlinux.org",
+    "expected_intent": "OSINT_DOMAIN",
+    "category": "osint"
+  },
+  {
+    "id": "train-odom-017",
+    "prompt": "Subdomains for domain internal.local using certificates",
+    "expected_intent": "OSINT_DOMAIN",
+    "category": "osint"
+  },
+  {
+    "id": "train-odom-018",
+    "prompt": "Investigate domain cve.org",
+    "expected_intent": "OSINT_DOMAIN",
+    "category": "osint"
+  },
+  {
+    "id": "train-odom-019",
+    "prompt": "Check security headers and DNS for domain eff.org",
+    "expected_intent": "OSINT_DOMAIN",
+    "category": "osint"
+  },
+  {
+    "id": "train-odom-020",
+    "prompt": "Investigate domain letsexcrypt.org",
+    "expected_intent": "OSINT_DOMAIN",
+    "category": "osint"
+  },
+  {
+    "id": "train-odom-021",
+    "prompt": "Investigate domain ietf.org",
+    "expected_intent": "OSINT_DOMAIN",
+    "category": "osint"
+  },
+  {
+    "id": "train-odom-022",
+    "prompt": "Lookup RDAP registrar information for domain icann.org",
+    "expected_intent": "OSINT_DOMAIN",
+    "category": "osint"
+  },
+  {
+    "id": "train-odom-023",
+    "prompt": "Investigate domain mitre.org",
+    "expected_intent": "OSINT_DOMAIN",
+    "category": "osint"
+  },
+  {
+    "id": "train-odom-024",
+    "prompt": "Investigate domain nist.gov",
+    "expected_intent": "OSINT_DOMAIN",
+    "category": "osint"
+  },
+  {
+    "id": "train-odom-025",
+    "prompt": "Whois domain check for openssl.org",
+    "expected_intent": "OSINT_DOMAIN",
+    "category": "osint"
+  },
+  {
+    "id": "train-odom-026",
+    "prompt": "Investigate domain rust-lang.org",
+    "expected_intent": "OSINT_DOMAIN",
+    "category": "osint"
+  },
+  {
+    "id": "train-odom-027",
+    "prompt": "DNS footprint investigation for domain docker.com",
+    "expected_intent": "OSINT_DOMAIN",
+    "category": "osint"
+  },
+  {
+    "id": "train-odom-028",
+    "prompt": "Investigate domain golang.org",
+    "expected_intent": "OSINT_DOMAIN",
+    "category": "osint"
+  },
+  {
+    "id": "train-odom-029",
+    "prompt": "Lookup subdomains for domain redis.io",
+    "expected_intent": "OSINT_DOMAIN",
+    "category": "osint"
+  },
+  {
+    "id": "train-odom-030",
+    "prompt": "Investigate domain postman.com",
+    "expected_intent": "OSINT_DOMAIN",
+    "category": "osint"
+  },
+  {
+    "id": "train-oem-001",
+    "prompt": "Investigate email security@example.com",
+    "expected_intent": "OSINT_EMAIL",
+    "category": "osint"
+  },
+  {
+    "id": "train-oem-002",
+    "prompt": "Check breach status for email admin@corp.org",
+    "expected_intent": "OSINT_EMAIL",
+    "category": "osint"
+  },
+  {
+    "id": "train-oem-003",
+    "prompt": "Investigate email contact@domain.com",
+    "expected_intent": "OSINT_EMAIL",
+    "category": "osint"
+  },
+  {
+    "id": "train-oem-004",
+    "prompt": "Email intelligence lookup for user@company.net",
+    "expected_intent": "OSINT_EMAIL",
+    "category": "osint"
+  },
+  {
+    "id": "train-oem-005",
+    "prompt": "Verify email deliverability and MX for test@example.org",
+    "expected_intent": "OSINT_EMAIL",
+    "category": "osint"
+  },
+  {
+    "id": "train-oem-006",
+    "prompt": "Investigate email analyst@defense.gov",
+    "expected_intent": "OSINT_EMAIL",
+    "category": "osint"
+  },
+  {
+    "id": "train-oem-007",
+    "prompt": "Breach search for email founder@startup.io",
+    "expected_intent": "OSINT_EMAIL",
+    "category": "osint"
+  },
+  {
+    "id": "train-oem-008",
+    "prompt": "Investigate email devops@infrastructure.internal",
+    "expected_intent": "OSINT_EMAIL",
+    "category": "osint"
+  },
+  {
+    "id": "train-oem-009",
+    "prompt": "Check disposable email status for temp123@mailinator.com",
+    "expected_intent": "OSINT_EMAIL",
+    "category": "osint"
+  },
+  {
+    "id": "train-oem-010",
+    "prompt": "Investigate email hr@enterprise.com",
+    "expected_intent": "OSINT_EMAIL",
+    "category": "osint"
+  },
+  {
+    "id": "train-oem-011",
+    "prompt": "Email breach query for info@service.com",
+    "expected_intent": "OSINT_EMAIL",
+    "category": "osint"
+  },
+  {
+    "id": "train-oem-012",
+    "prompt": "Investigate email support@technology.com",
+    "expected_intent": "OSINT_EMAIL",
+    "category": "osint"
+  },
+  {
+    "id": "train-oem-013",
+    "prompt": "Lookup Gravatar and breach records for operator@cyber.org",
+    "expected_intent": "OSINT_EMAIL",
+    "category": "osint"
+  },
+  {
+    "id": "train-oem-014",
+    "prompt": "Investigate email webmaster@university.edu",
+    "expected_intent": "OSINT_EMAIL",
+    "category": "osint"
+  },
+  {
+    "id": "train-oem-015",
+    "prompt": "Check MX records and SPF for email billing@retail.com",
+    "expected_intent": "OSINT_EMAIL",
+    "category": "osint"
+  },
+  {
+    "id": "train-oem-016",
+    "prompt": "Investigate email sales@vendor.biz",
+    "expected_intent": "OSINT_EMAIL",
+    "category": "osint"
+  },
+  {
+    "id": "train-oem-017",
+    "prompt": "Email intelligence check on researcher@institute.org",
+    "expected_intent": "OSINT_EMAIL",
+    "category": "osint"
+  },
+  {
+    "id": "train-oem-018",
+    "prompt": "Investigate email postmaster@relay.net",
+    "expected_intent": "OSINT_EMAIL",
+    "category": "osint"
+  },
+  {
+    "id": "train-oem-019",
+    "prompt": "Check disposable domain for spam@guerrillamail.com",
+    "expected_intent": "OSINT_EMAIL",
+    "category": "osint"
+  },
+  {
+    "id": "train-oem-020",
+    "prompt": "Investigate email audit@compliance.com",
+    "expected_intent": "OSINT_EMAIL",
+    "category": "osint"
+  },
+  {
+    "id": "train-oem-021",
+    "prompt": "Verify syntax and domain MX for ops@cloud.io",
+    "expected_intent": "OSINT_EMAIL",
+    "category": "osint"
+  },
+  {
+    "id": "train-oem-022",
+    "prompt": "Investigate email security-alert@partner.com",
+    "expected_intent": "OSINT_EMAIL",
+    "category": "osint"
+  },
+  {
+    "id": "train-oem-023",
+    "prompt": "Email footprint lookup for employee@holding.co",
+    "expected_intent": "OSINT_EMAIL",
+    "category": "osint"
+  },
+  {
+    "id": "train-oem-024",
+    "prompt": "Investigate email feedback@app.dev",
+    "expected_intent": "OSINT_EMAIL",
+    "category": "osint"
+  },
+  {
+    "id": "train-oem-025",
+    "prompt": "Check email breach exposure for engineer@techcorp.com",
+    "expected_intent": "OSINT_EMAIL",
+    "category": "osint"
+  },
+  {
+    "id": "train-oph-001",
+    "prompt": "Investigate phone +14155552671",
+    "expected_intent": "OSINT_PHONE",
+    "category": "osint"
+  },
+  {
+    "id": "train-oph-002",
+    "prompt": "Lookup phone number +1-202-555-0182",
+    "expected_intent": "OSINT_PHONE",
+    "category": "osint"
+  },
+  {
+    "id": "train-oph-003",
+    "prompt": "Phone intelligence on +44 20 7946 0991",
+    "expected_intent": "OSINT_PHONE",
+    "category": "osint"
+  },
+  {
+    "id": "train-oph-004",
+    "prompt": "Investigate phone +33142685500",
+    "expected_intent": "OSINT_PHONE",
+    "category": "osint"
+  },
+  {
+    "id": "train-oph-005",
+    "prompt": "Lookup phone +49 30 22732152",
+    "expected_intent": "OSINT_PHONE",
+    "category": "osint"
+  },
+  {
+    "id": "train-oph-006",
+    "prompt": "Investigate phone number +81 3 3581 0101",
+    "expected_intent": "OSINT_PHONE",
+    "category": "osint"
+  },
+  {
+    "id": "train-oph-007",
+    "prompt": "Phone intelligence lookup for +1 (555) 234-5678",
+    "expected_intent": "OSINT_PHONE",
+    "category": "osint"
+  },
+  {
+    "id": "train-oph-008",
+    "prompt": "Investigate phone +61 2 6277 7111",
+    "expected_intent": "OSINT_PHONE",
+    "category": "osint"
+  },
+  {
+    "id": "train-oph-009",
+    "prompt": "Lookup carrier prefix metadata for phone +1-800-555-0199",
+    "expected_intent": "OSINT_PHONE",
+    "category": "osint"
+  },
+  {
+    "id": "train-oph-010",
+    "prompt": "Investigate phone +86 10 6512 8888",
+    "expected_intent": "OSINT_PHONE",
+    "category": "osint"
+  },
+  {
+    "id": "train-oph-011",
+    "prompt": "Phone intelligence query for +91 11 2301 2112",
+    "expected_intent": "OSINT_PHONE",
+    "category": "osint"
+  },
+  {
+    "id": "train-oph-012",
+    "prompt": "Investigate phone +41 22 767 6111",
+    "expected_intent": "OSINT_PHONE",
+    "category": "osint"
+  },
+  {
+    "id": "train-oph-013",
+    "prompt": "Lookup phone number +31 70 302 4242",
+    "expected_intent": "OSINT_PHONE",
+    "category": "osint"
+  },
+  {
+    "id": "train-oph-014",
+    "prompt": "Investigate phone +34 91 395 5000",
+    "expected_intent": "OSINT_PHONE",
+    "category": "osint"
+  },
+  {
+    "id": "train-oph-015",
+    "prompt": "Phone intelligence for number +55 61 3411 1221",
+    "expected_intent": "OSINT_PHONE",
+    "category": "osint"
+  },
+  {
+    "id": "train-oph-016",
+    "prompt": "Investigate phone +82 2 730 5800",
+    "expected_intent": "OSINT_PHONE",
+    "category": "osint"
+  },
+  {
+    "id": "train-oph-017",
+    "prompt": "Lookup country code and region for phone +1-212-555-0144",
+    "expected_intent": "OSINT_PHONE",
+    "category": "osint"
+  },
+  {
+    "id": "train-oph-018",
+    "prompt": "Investigate phone +46 8 786 4000",
+    "expected_intent": "OSINT_PHONE",
+    "category": "osint"
+  },
+  {
+    "id": "train-oph-019",
+    "prompt": "Phone intelligence check on +7 495 625 3581",
+    "expected_intent": "OSINT_PHONE",
+    "category": "osint"
+  },
+  {
+    "id": "train-oph-020",
+    "prompt": "Investigate phone +27 12 392 1000",
+    "expected_intent": "OSINT_PHONE",
+    "category": "osint"
+  },
+  {
+    "id": "train-oph-021",
+    "prompt": "Lookup phone +39 06 67601",
+    "expected_intent": "OSINT_PHONE",
+    "category": "osint"
+  },
+  {
+    "id": "train-oph-022",
+    "prompt": "Investigate phone number +353 1 618 3000",
+    "expected_intent": "OSINT_PHONE",
+    "category": "osint"
+  },
+  {
+    "id": "train-oph-023",
+    "prompt": "Phone intelligence on +47 22 24 90 90",
+    "expected_intent": "OSINT_PHONE",
+    "category": "osint"
+  },
+  {
+    "id": "train-oph-024",
+    "prompt": "Investigate phone +65 6775 6666",
+    "expected_intent": "OSINT_PHONE",
+    "category": "osint"
+  },
+  {
+    "id": "train-oph-025",
+    "prompt": "Lookup carrier metadata for phone +1-312-555-0198",
+    "expected_intent": "OSINT_PHONE",
+    "category": "osint"
+  },
+  {
+    "id": "train-ous-001",
+    "prompt": "Investigate username johndoe",
+    "expected_intent": "OSINT_USERNAME",
+    "category": "osint"
+  },
+  {
+    "id": "train-ous-002",
+    "prompt": "Search username alice_sec across public platforms",
+    "expected_intent": "OSINT_USERNAME",
+    "category": "osint"
+  },
+  {
+    "id": "train-ous-003",
+    "prompt": "Find accounts for user bobsmith99",
+    "expected_intent": "OSINT_USERNAME",
+    "category": "osint"
+  },
+  {
+    "id": "train-ous-004",
+    "prompt": "Lookup user cyber_analyst on GitHub and Twitter",
+    "expected_intent": "OSINT_USERNAME",
+    "category": "osint"
+  },
+  {
+    "id": "train-ous-005",
+    "prompt": "Investigate username redteam_operator",
+    "expected_intent": "OSINT_USERNAME",
+    "category": "osint"
+  },
+  {
+    "id": "train-ous-006",
+    "prompt": "Search accounts for user shadowsniper",
+    "expected_intent": "OSINT_USERNAME",
+    "category": "osint"
+  },
+  {
+    "id": "train-ous-007",
+    "prompt": "Username intelligence for target handle nullbyte",
+    "expected_intent": "OSINT_USERNAME",
+    "category": "osint"
+  },
+  {
+    "id": "train-ous-008",
+    "prompt": "Investigate username tech_guru_2026",
+    "expected_intent": "OSINT_USERNAME",
+    "category": "osint"
+  },
+  {
+    "id": "train-ous-009",
+    "prompt": "Lookup user infosec_researcher on public platforms",
+    "expected_intent": "OSINT_USERNAME",
+    "category": "osint"
+  },
+  {
+    "id": "train-ous-010",
+    "prompt": "Find accounts for user byte_wizard",
+    "expected_intent": "OSINT_USERNAME",
+    "category": "osint"
+  },
+  {
+    "id": "train-ous-011",
+    "prompt": "Investigate username security_ninja",
+    "expected_intent": "OSINT_USERNAME",
+    "category": "osint"
+  },
+  {
+    "id": "train-ous-012",
+    "prompt": "Search username zero_cool across developer sites",
+    "expected_intent": "OSINT_USERNAME",
+    "category": "osint"
+  },
+  {
+    "id": "train-ous-013",
+    "prompt": "Username intelligence lookup for hacker_one_user",
+    "expected_intent": "OSINT_USERNAME",
+    "category": "osint"
+  },
+  {
+    "id": "train-ous-014",
+    "prompt": "Investigate username data_detective",
+    "expected_intent": "OSINT_USERNAME",
+    "category": "osint"
+  },
+  {
+    "id": "train-ous-015",
+    "prompt": "Find accounts for user code_breaker_42",
+    "expected_intent": "OSINT_USERNAME",
+    "category": "osint"
+  },
+  {
+    "id": "train-ous-016",
+    "prompt": "Investigate username kernel_panic",
+    "expected_intent": "OSINT_USERNAME",
+    "category": "osint"
+  },
+  {
+    "id": "train-ous-017",
+    "prompt": "Lookup user cyber_guardian on forums and social media",
+    "expected_intent": "OSINT_USERNAME",
+    "category": "osint"
+  },
+  {
+    "id": "train-ous-018",
+    "prompt": "Investigate username root_access",
+    "expected_intent": "OSINT_USERNAME",
+    "category": "osint"
+  },
+  {
+    "id": "train-ous-019",
+    "prompt": "Search accounts for user net_runner",
+    "expected_intent": "OSINT_USERNAME",
+    "category": "osint"
+  },
+  {
+    "id": "train-ous-020",
+    "prompt": "Username footprint investigation for quantum_sec",
+    "expected_intent": "OSINT_USERNAME",
+    "category": "osint"
+  },
+  {
+    "id": "train-ous-021",
+    "prompt": "Investigate username packet_sniffer",
+    "expected_intent": "OSINT_USERNAME",
+    "category": "osint"
+  },
+  {
+    "id": "train-ous-022",
+    "prompt": "Find accounts for user crypto_analyst",
+    "expected_intent": "OSINT_USERNAME",
+    "category": "osint"
+  },
+  {
+    "id": "train-ous-023",
+    "prompt": "Lookup user stealth_recon on target platforms",
+    "expected_intent": "OSINT_USERNAME",
+    "category": "osint"
+  },
+  {
+    "id": "train-ous-024",
+    "prompt": "Investigate username fuzzing_expert",
+    "expected_intent": "OSINT_USERNAME",
+    "category": "osint"
+  },
+  {
+    "id": "train-ous-025",
+    "prompt": "Search username threat_hunter_x",
+    "expected_intent": "OSINT_USERNAME",
+    "category": "osint"
+  },
+  {
+    "id": "train-ctf-001",
+    "prompt": "Solve this ctf challenge and identify the real flag",
+    "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS",
+    "category": "ctf"
+  },
+  {
+    "id": "train-ctf-002",
+    "prompt": "Decode base64 string SGVsbG8gV29ybGQ=",
+    "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS",
+    "category": "ctf"
+  },
+  {
+    "id": "train-ctf-003",
+    "prompt": "Decode rot13 ciphertext synt{guvf_vf_n_synt}",
+    "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS",
+    "category": "ctf"
+  },
+  {
+    "id": "train-ctf-004",
+    "prompt": "Identify hash 5d41402abc4b2a76b9719d911017c592",
+    "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS",
+    "category": "ctf"
+  },
+  {
+    "id": "train-ctf-005",
+    "prompt": "Decode hex string 666c61677b6374665f746573747d",
+    "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS",
+    "category": "ctf"
+  },
+  {
+    "id": "train-ctf-006",
+    "prompt": "CTF challenge analysis for binary reversal prompt",
+    "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS",
+    "category": "ctf"
+  },
+  {
+    "id": "train-ctf-007",
+    "prompt": "Find the flag in this obfuscated string",
+    "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS",
+    "category": "ctf"
+  },
+  {
+    "id": "train-ctf-008",
+    "prompt": "Decode JWT token eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e30.t-IDcSemACt8x4iTMCda8Yhe3iZaWbvV5XKSTbuAn0M",
+    "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS",
+    "category": "ctf"
+  },
+  {
+    "id": "train-ctf-009",
+    "prompt": "Identify hash algorithm for $6$rounds=5000$usesomesalt$qF35ntBPd2E88250QxLqQXN80rJ3BIghGYG88C83Pgn",
+    "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS",
+    "category": "ctf"
+  },
+  {
+    "id": "train-ctf-010",
+    "prompt": "Decode base32 ciphertext JBSWY3DPEBLW64TMMQ======",
+    "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS",
+    "category": "ctf"
+  },
+  {
+    "id": "train-ctf-011",
+    "prompt": "Solve this ctf cryptography challenge with XOR key",
+    "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS",
+    "category": "ctf"
+  },
+  {
+    "id": "train-ctf-012",
+    "prompt": "Identify the real flag from these candidates flag{real} and flag{decoy}",
+    "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS",
+    "category": "ctf"
+  },
+  {
+    "id": "train-ctf-013",
+    "prompt": "Reconstruct flag from fragmented parts",
+    "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS",
+    "category": "ctf"
+  },
+  {
+    "id": "train-ctf-014",
+    "prompt": "Decode XOR ciphertext with single byte key 0x42",
+    "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS",
+    "category": "ctf"
+  },
+  {
+    "id": "train-ctf-015",
+    "prompt": "Identify hash 098f6bcd4621d373cade4e832627b4f6",
+    "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS",
+    "category": "ctf"
+  },
+  {
+    "id": "train-ctf-016",
+    "prompt": "CTF challenge solve Caesar cipher shift of 3",
+    "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS",
+    "category": "ctf"
+  },
+  {
+    "id": "train-ctf-017",
+    "prompt": "Decode base85 encoded data string",
+    "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS",
+    "category": "ctf"
+  },
+  {
+    "id": "train-ctf-018",
+    "prompt": "Identify hash $2a$12$R9h/cIPz0gi.URNNXRkh2OPST9/PgBkqquzi.Ss7KIUgO2t0jWMUW",
+    "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS",
+    "category": "ctf"
+  },
+  {
+    "id": "train-ctf-019",
+    "prompt": "Find the flag hidden in hexadecimal representation",
+    "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS",
+    "category": "ctf"
+  },
+  {
+    "id": "train-ctf-020",
+    "prompt": "Decode url-encoded payload %3Cscript%3Ealert(1)%3C%2Fscript%3E",
+    "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS",
+    "category": "ctf"
+  },
+  {
+    "id": "train-ctf-021",
+    "prompt": "Solve this ctf stego challenge hint",
+    "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS",
+    "category": "ctf"
+  },
+  {
+    "id": "train-ctf-022",
+    "prompt": "Identify hash e99a18c428cb38d5f260853678922e03",
+    "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS",
+    "category": "ctf"
+  },
+  {
+    "id": "train-ctf-023",
+    "prompt": "Decode binary string 01100110 01101100 01100001 01100111",
+    "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS",
+    "category": "ctf"
+  },
+  {
+    "id": "train-ctf-024",
+    "prompt": "CTF challenge parse multi-layer base64 encoding",
+    "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS",
+    "category": "ctf"
+  },
+  {
+    "id": "train-ctf-025",
+    "prompt": "Decode rot47 ciphertext and find the flag",
+    "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS",
+    "category": "ctf"
+  },
+  {
+    "id": "train-file-001",
+    "prompt": "Extract metadata from sample.pdf",
+    "expected_intent": "FILE_METADATA_ANALYSIS",
+    "category": "file"
+  },
+  {
+    "id": "train-file-002",
+    "prompt": "Analyze file exif data for image.jpg",
+    "expected_intent": "FILE_METADATA_ANALYSIS",
+    "category": "file"
+  },
+  {
+    "id": "train-file-003",
+    "prompt": "Inspect image metadata for evidence photo",
+    "expected_intent": "FILE_METADATA_ANALYSIS",
+    "category": "file"
+  },
+  {
+    "id": "train-file-004",
+    "prompt": "Extract sha256 of file suspicious_installer.exe",
+    "expected_intent": "FILE_METADATA_ANALYSIS",
+    "category": "file"
+  },
+  {
+    "id": "train-file-005",
+    "prompt": "Analyze file headers for document.docx",
+    "expected_intent": "FILE_METADATA_ANALYSIS",
+    "category": "file"
+  },
+  {
+    "id": "train-file-006",
+    "prompt": "Extract file metadata and camera information",
+    "expected_intent": "FILE_METADATA_ANALYSIS",
+    "category": "file"
+  },
+  {
+    "id": "train-file-007",
+    "prompt": "Inspect image exif tags and GPS coordinates",
+    "expected_intent": "FILE_METADATA_ANALYSIS",
+    "category": "file"
+  },
+  {
+    "id": "train-file-008",
+    "prompt": "File signature check for unknown_dump.bin",
+    "expected_intent": "FILE_METADATA_ANALYSIS",
+    "category": "file"
+  },
+  {
+    "id": "train-file-009",
+    "prompt": "Extract metadata from invoice.pdf",
+    "expected_intent": "FILE_METADATA_ANALYSIS",
+    "category": "file"
+  },
+  {
+    "id": "train-file-010",
+    "prompt": "Analyze file properties and creation timestamp",
+    "expected_intent": "FILE_METADATA_ANALYSIS",
+    "category": "file"
+  },
+  {
+    "id": "train-file-011",
+    "prompt": "Inspect image metadata for author name and software",
+    "expected_intent": "FILE_METADATA_ANALYSIS",
+    "category": "file"
+  },
+  {
+    "id": "train-file-012",
+    "prompt": "Compute sha256 of file firmware.bin",
+    "expected_intent": "FILE_METADATA_ANALYSIS",
+    "category": "file"
+  },
+  {
+    "id": "train-file-013",
+    "prompt": "Analyze file structure of sample archive",
+    "expected_intent": "FILE_METADATA_ANALYSIS",
+    "category": "file"
+  },
+  {
+    "id": "train-file-014",
+    "prompt": "Extract metadata from presentation.pptx",
+    "expected_intent": "FILE_METADATA_ANALYSIS",
+    "category": "file"
+  },
+  {
+    "id": "train-file-015",
+    "prompt": "Inspect image exif metadata for editing history",
+    "expected_intent": "FILE_METADATA_ANALYSIS",
+    "category": "file"
+  },
+  {
+    "id": "train-file-016",
+    "prompt": "File signature analysis to detect file extension mismatch",
+    "expected_intent": "FILE_METADATA_ANALYSIS",
+    "category": "file"
+  },
+  {
+    "id": "train-file-017",
+    "prompt": "Extract metadata from suspicious spreadsheet.xlsx",
+    "expected_intent": "FILE_METADATA_ANALYSIS",
+    "category": "file"
+  },
+  {
+    "id": "train-file-018",
+    "prompt": "Analyze file hash and magic bytes",
+    "expected_intent": "FILE_METADATA_ANALYSIS",
+    "category": "file"
+  },
+  {
+    "id": "train-file-019",
+    "prompt": "Inspect image for hidden EXIF geolocation",
+    "expected_intent": "FILE_METADATA_ANALYSIS",
+    "category": "file"
+  },
+  {
+    "id": "train-file-020",
+    "prompt": "Compute sha256 of file test_artifact.raw",
+    "expected_intent": "FILE_METADATA_ANALYSIS",
+    "category": "file"
+  },
+  {
+    "id": "train-file-021",
+    "prompt": "Extract metadata from legal_contract.pdf",
+    "expected_intent": "FILE_METADATA_ANALYSIS",
+    "category": "file"
+  },
+  {
+    "id": "train-file-022",
+    "prompt": "Analyze file properties for forensic evidence",
+    "expected_intent": "FILE_METADATA_ANALYSIS",
+    "category": "file"
+  },
+  {
+    "id": "train-file-023",
+    "prompt": "Inspect image metadata to check DPI and color space",
+    "expected_intent": "FILE_METADATA_ANALYSIS",
+    "category": "file"
+  },
+  {
+    "id": "train-file-024",
+    "prompt": "File signature verification for corrupted zip file",
+    "expected_intent": "FILE_METADATA_ANALYSIS",
+    "category": "file"
+  },
+  {
+    "id": "train-file-025",
+    "prompt": "Extract metadata and creator info from report.pdf",
+    "expected_intent": "FILE_METADATA_ANALYSIS",
+    "category": "file"
+  },
+  {
+    "id": "train-forensics-001",
+    "prompt": "Analyze auth.log lines for brute force SSH attempts",
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS",
+    "category": "forensics"
+  },
+  {
+    "id": "train-forensics-002",
+    "prompt": "Forensic triage of Windows EventID 4625 logon failures",
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS",
+    "category": "forensics"
+  },
+  {
+    "id": "train-forensics-003",
+    "prompt": "PCAP packet analysis for suspicious DNS queries",
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS",
+    "category": "forensics"
+  },
+  {
+    "id": "train-forensics-004",
+    "prompt": "Analyze Sysmon EventID 1 process creation log",
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS",
+    "category": "forensics"
+  },
+  {
+    "id": "train-forensics-005",
+    "prompt": "Forensic triage of EventID 7045 new service installed",
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS",
+    "category": "forensics"
+  },
+  {
+    "id": "train-forensics-006",
+    "prompt": "Analyze log entries from Apache access.log",
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS",
+    "category": "forensics"
+  },
+  {
+    "id": "train-forensics-007",
+    "prompt": "Wireshark packet analysis summary of TCP SYN flood",
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS",
+    "category": "forensics"
+  },
+  {
+    "id": "train-forensics-008",
+    "prompt": "Forensics triage of memory dump artifact",
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS",
+    "category": "forensics"
+  },
+  {
+    "id": "train-forensics-009",
+    "prompt": "Analyze auth.log for sudo command execution",
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS",
+    "category": "forensics"
+  },
+  {
+    "id": "train-forensics-010",
+    "prompt": "EventID 4688 new process execution triage",
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS",
+    "category": "forensics"
+  },
+  {
+    "id": "train-forensics-011",
+    "prompt": "Analyze Windows event log for privilege escalation",
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS",
+    "category": "forensics"
+  },
+  {
+    "id": "train-forensics-012",
+    "prompt": "PCAP analysis for plaintext credentials in HTTP traffic",
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS",
+    "category": "forensics"
+  },
+  {
+    "id": "train-forensics-013",
+    "prompt": "Forensics log analysis of auditd events",
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS",
+    "category": "forensics"
+  },
+  {
+    "id": "train-forensics-014",
+    "prompt": "Analyze Sysmon EventID 3 network connection log",
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS",
+    "category": "forensics"
+  },
+  {
+    "id": "train-forensics-015",
+    "prompt": "EventID 4624 successful logon analysis",
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS",
+    "category": "forensics"
+  },
+  {
+    "id": "train-forensics-016",
+    "prompt": "Analyze auth.log for invalid user login attempts",
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS",
+    "category": "forensics"
+  },
+  {
+    "id": "train-forensics-017",
+    "prompt": "PCAP stream analysis for beaconing interval detection",
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS",
+    "category": "forensics"
+  },
+  {
+    "id": "train-forensics-018",
+    "prompt": "Forensics triage of firewall drop logs",
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS",
+    "category": "forensics"
+  },
+  {
+    "id": "train-forensics-019",
+    "prompt": "Analyze Sysmon EventID 11 file creation in system32",
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS",
+    "category": "forensics"
+  },
+  {
+    "id": "train-forensics-020",
+    "prompt": "EventID 7045 malicious service analysis",
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS",
+    "category": "forensics"
+  },
+  {
+    "id": "train-forensics-021",
+    "prompt": "Forensic triage of suspicious PowerShell command log",
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS",
+    "category": "forensics"
+  },
+  {
+    "id": "train-forensics-022",
+    "prompt": "Analyze log files for web application attack patterns",
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS",
+    "category": "forensics"
+  },
+  {
+    "id": "train-forensics-023",
+    "prompt": "PCAP packet capture triage for ARP spoofing indicators",
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS",
+    "category": "forensics"
+  },
+  {
+    "id": "train-forensics-024",
+    "prompt": "Analyze Sysmon EventID 7 image load of unsigned DLL",
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS",
+    "category": "forensics"
+  },
+  {
+    "id": "train-forensics-025",
+    "prompt": "Forensic analysis of Linux secure log for PAM failures",
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS",
+    "category": "forensics"
+  },
+  {
+    "id": "train-kali-001",
+    "prompt": "How to use nmap to scan top 100 ports with service version?",
+    "expected_intent": "KALI_COMMAND_ASSISTANCE",
+    "category": "kali"
+  },
+  {
+    "id": "train-kali-002",
+    "prompt": "Suggest a kali command to brute force SSH with hydra",
+    "expected_intent": "KALI_COMMAND_ASSISTANCE",
+    "category": "kali"
+  },
+  {
+    "id": "train-kali-003",
+    "prompt": "Syntax for sqlmap tamper scripts against MySQL",
+    "expected_intent": "KALI_COMMAND_ASSISTANCE",
+    "category": "kali"
+  },
+  {
+    "id": "train-kali-004",
+    "prompt": "How to use wireshark filter for DNS query responses?",
+    "expected_intent": "KALI_COMMAND_ASSISTANCE",
+    "category": "kali"
+  },
+  {
+    "id": "train-kali-005",
+    "prompt": "Terminal error permission denied when running nmap",
+    "expected_intent": "KALI_COMMAND_ASSISTANCE",
+    "category": "kali"
+  },
+  {
+    "id": "train-kali-006",
+    "prompt": "Kali command failed with return code 127 command not found",
+    "expected_intent": "KALI_COMMAND_ASSISTANCE",
+    "category": "kali"
+  },
+  {
+    "id": "train-kali-007",
+    "prompt": "Explain this command: nmap -sS -T4 -p- 127.0.0.1",
+    "expected_intent": "KALI_COMMAND_ASSISTANCE",
+    "category": "kali"
+  },
+  {
+    "id": "train-kali-008",
+    "prompt": "Suggest a tcpdump filter to capture HTTP POST requests",
+    "expected_intent": "KALI_COMMAND_ASSISTANCE",
+    "category": "kali"
+  },
+  {
+    "id": "train-kali-009",
+    "prompt": "How to use john the ripper to crack an /etc/shadow file?",
+    "expected_intent": "KALI_COMMAND_ASSISTANCE",
+    "category": "kali"
+  },
+  {
+    "id": "train-kali-010",
+    "prompt": "Hashcat mode number for NTLMv2 hashes",
+    "expected_intent": "KALI_COMMAND_ASSISTANCE",
+    "category": "kali"
+  },
+  {
+    "id": "train-kali-011",
+    "prompt": "Debug this command syntax for gobuster dir",
+    "expected_intent": "KALI_COMMAND_ASSISTANCE",
+    "category": "kali"
+  },
+  {
+    "id": "train-kali-012",
+    "prompt": "How to use nikto with a proxy flag?",
+    "expected_intent": "KALI_COMMAND_ASSISTANCE",
+    "category": "kali"
+  },
+  {
+    "id": "train-kali-013",
+    "prompt": "Kali command to extract strings from a binary",
+    "expected_intent": "KALI_COMMAND_ASSISTANCE",
+    "category": "kali"
+  },
+  {
+    "id": "train-kali-014",
+    "prompt": "Syntax for tshark to export SSL certificates from PCAP",
+    "expected_intent": "KALI_COMMAND_ASSISTANCE",
+    "category": "kali"
+  },
+  {
+    "id": "train-kali-015",
+    "prompt": "Explain this command: tcpdump -nn -s0 -w capture.pcap",
+    "expected_intent": "KALI_COMMAND_ASSISTANCE",
+    "category": "kali"
+  },
+  {
+    "id": "train-kali-016",
+    "prompt": "Suggest a kali command to perform DNS zone transfer with dig",
+    "expected_intent": "KALI_COMMAND_ASSISTANCE",
+    "category": "kali"
+  },
+  {
+    "id": "train-kali-017",
+    "prompt": "How to use hydra for HTTP POST form login cracking?",
+    "expected_intent": "KALI_COMMAND_ASSISTANCE",
+    "category": "kali"
+  },
+  {
+    "id": "train-kali-018",
+    "prompt": "Command not found when executing impacket tools in Kali",
+    "expected_intent": "KALI_COMMAND_ASSISTANCE",
+    "category": "kali"
+  },
+  {
+    "id": "train-kali-019",
+    "prompt": "How to use wfuzz for parameter fuzzing?",
+    "expected_intent": "KALI_COMMAND_ASSISTANCE",
+    "category": "kali"
+  },
+  {
+    "id": "train-kali-020",
+    "prompt": "Explain this command: ffuf -w wordlist.txt -u http://127.0.0.1/FUZZ",
+    "expected_intent": "KALI_COMMAND_ASSISTANCE",
+    "category": "kali"
+  },
+  {
+    "id": "train-kali-021",
+    "prompt": "Suggest a kali command to generate an SSH key pair",
+    "expected_intent": "KALI_COMMAND_ASSISTANCE",
+    "category": "kali"
+  },
+  {
+    "id": "train-kali-022",
+    "prompt": "How to use hashcat with a dictionary and rule file?",
+    "expected_intent": "KALI_COMMAND_ASSISTANCE",
+    "category": "kali"
+  },
+  {
+    "id": "train-kali-023",
+    "prompt": "Debug this command error: burp suite proxy certificate rejected",
+    "expected_intent": "KALI_COMMAND_ASSISTANCE",
+    "category": "kali"
+  },
+  {
+    "id": "train-kali-024",
+    "prompt": "Syntax for nmap NSE script vulnerability scan",
+    "expected_intent": "KALI_COMMAND_ASSISTANCE",
+    "category": "kali"
+  },
+  {
+    "id": "train-kali-025",
+    "prompt": "How to use curl to send custom authorization headers in Kali?",
+    "expected_intent": "KALI_COMMAND_ASSISTANCE",
+    "category": "kali"
+  },
+  {
+    "id": "train-graph-001",
+    "prompt": "Show investigation graph for current findings",
+    "expected_intent": "GRAPH_AND_INVESTIGATION",
+    "category": "graph"
+  },
+  {
+    "id": "train-graph-002",
+    "prompt": "Display cytoscape relationship graph of assets and vulnerabilities",
+    "expected_intent": "GRAPH_AND_INVESTIGATION",
+    "category": "graph"
+  },
+  {
+    "id": "train-graph-003",
+    "prompt": "Show entity graph of discovered infrastructure",
+    "expected_intent": "GRAPH_AND_INVESTIGATION",
+    "category": "graph"
+  },
+  {
+    "id": "train-graph-004",
+    "prompt": "Open relationship graph to visualize attack paths",
+    "expected_intent": "GRAPH_AND_INVESTIGATION",
+    "category": "graph"
+  },
+  {
+    "id": "train-graph-005",
+    "prompt": "Show graph of connected IOCs and endpoints",
+    "expected_intent": "GRAPH_AND_INVESTIGATION",
+    "category": "graph"
+  },
+  {
+    "id": "train-graph-006",
+    "prompt": "Display investigation graph with active pivots",
+    "expected_intent": "GRAPH_AND_INVESTIGATION",
+    "category": "graph"
+  },
+  {
+    "id": "train-graph-007",
+    "prompt": "Show entity graph for target infrastructure",
+    "expected_intent": "GRAPH_AND_INVESTIGATION",
+    "category": "graph"
+  },
+  {
+    "id": "train-graph-008",
+    "prompt": "Replay investigation graph state",
+    "expected_intent": "GRAPH_AND_INVESTIGATION",
+    "category": "graph"
+  },
+  {
+    "id": "train-graph-009",
+    "prompt": "Verify remediation on investigation graph nodes",
+    "expected_intent": "GRAPH_AND_INVESTIGATION",
+    "category": "graph"
+  },
+  {
+    "id": "train-graph-010",
+    "prompt": "Show graph visualization of findings",
+    "expected_intent": "GRAPH_AND_INVESTIGATION",
+    "category": "graph"
+  },
+  {
+    "id": "train-graph-011",
+    "prompt": "Display cytoscape attack surface graph",
+    "expected_intent": "GRAPH_AND_INVESTIGATION",
+    "category": "graph"
+  },
+  {
+    "id": "train-graph-012",
+    "prompt": "Show investigation graph and related evidence links",
+    "expected_intent": "GRAPH_AND_INVESTIGATION",
+    "category": "graph"
+  },
+  {
+    "id": "train-graph-013",
+    "prompt": "Open entity graph to inspect asset connections",
+    "expected_intent": "GRAPH_AND_INVESTIGATION",
+    "category": "graph"
+  },
+  {
+    "id": "train-graph-014",
+    "prompt": "Display relationship graph for host 127.0.0.1",
+    "expected_intent": "GRAPH_AND_INVESTIGATION",
+    "category": "graph"
+  },
+  {
+    "id": "train-graph-015",
+    "prompt": "Show graph representation of compromised credentials",
+    "expected_intent": "GRAPH_AND_INVESTIGATION",
+    "category": "graph"
+  },
+  {
+    "id": "train-graph-016",
+    "prompt": "Replay investigation event sequence in graph",
+    "expected_intent": "GRAPH_AND_INVESTIGATION",
+    "category": "graph"
+  },
+  {
+    "id": "train-graph-017",
+    "prompt": "Show investigation graph for active engagement",
+    "expected_intent": "GRAPH_AND_INVESTIGATION",
+    "category": "graph"
+  },
+  {
+    "id": "train-graph-018",
+    "prompt": "Display entity graph with critical risk paths",
+    "expected_intent": "GRAPH_AND_INVESTIGATION",
+    "category": "graph"
+  },
+  {
+    "id": "train-graph-019",
+    "prompt": "Show cytoscape graph of network neighbors",
+    "expected_intent": "GRAPH_AND_INVESTIGATION",
+    "category": "graph"
+  },
+  {
+    "id": "train-graph-020",
+    "prompt": "Verify remediation status on entity graph",
+    "expected_intent": "GRAPH_AND_INVESTIGATION",
+    "category": "graph"
+  },
+  {
+    "id": "train-fu-001",
+    "prompt": "Summarize the findings from our previous investigation",
+    "expected_intent": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "category": "investigation"
+  },
+  {
+    "id": "train-fu-002",
+    "prompt": "What did we find in our previous investigation?",
+    "expected_intent": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "category": "investigation"
+  },
+  {
+    "id": "train-fu-003",
+    "prompt": "Recap previous findings from last scan",
+    "expected_intent": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "category": "investigation"
+  },
+  {
+    "id": "train-fu-004",
+    "prompt": "Active investigation summary of identified issues",
+    "expected_intent": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "category": "investigation"
+  },
+  {
+    "id": "train-fu-005",
+    "prompt": "Summarize our previous investigation results",
+    "expected_intent": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "category": "investigation"
+  },
+  {
+    "id": "train-fu-006",
+    "prompt": "Explain finding find-8821 in detail",
+    "expected_intent": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "category": "investigation"
+  },
+  {
+    "id": "train-fu-007",
+    "prompt": "What does evidence evi-1044 indicate?",
+    "expected_intent": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "category": "investigation"
+  },
+  {
+    "id": "train-fu-008",
+    "prompt": "Explain attack surface for asset node-77",
+    "expected_intent": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "category": "investigation"
+  },
+  {
+    "id": "train-fu-009",
+    "prompt": "Summarize the findings from our prior investigation",
+    "expected_intent": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "category": "investigation"
+  },
+  {
+    "id": "train-fu-010",
+    "prompt": "What were the key takeaways from our last investigation?",
+    "expected_intent": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "category": "investigation"
+  },
+  {
+    "id": "train-fu-011",
+    "prompt": "Explain finding find-0192 and suggested mitigations",
+    "expected_intent": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "category": "investigation"
+  },
+  {
+    "id": "train-fu-012",
+    "prompt": "Detail evidence evi-5512 chain of custody",
+    "expected_intent": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "category": "investigation"
+  },
+  {
+    "id": "train-fu-013",
+    "prompt": "Recap previous investigation open action items",
+    "expected_intent": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "category": "investigation"
+  },
+  {
+    "id": "train-fu-014",
+    "prompt": "Summarize findings from active investigation inv-4412",
+    "expected_intent": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "category": "investigation"
+  },
+  {
+    "id": "train-fu-015",
+    "prompt": "What did we find during the earlier assessment?",
+    "expected_intent": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "category": "investigation"
+  },
+  {
+    "id": "train-fu-016",
+    "prompt": "Explain finding find-3301 severity rationale",
+    "expected_intent": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "category": "investigation"
+  },
+  {
+    "id": "train-fu-017",
+    "prompt": "Review evidence evi-9011 collected during recon",
+    "expected_intent": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "category": "investigation"
+  },
+  {
+    "id": "train-fu-018",
+    "prompt": "Summary of findings from our previous assessment session",
+    "expected_intent": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "category": "investigation"
+  },
+  {
+    "id": "train-fu-019",
+    "prompt": "Explain attack surface node-42 risk factor",
+    "expected_intent": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "category": "investigation"
+  },
+  {
+    "id": "train-fu-020",
+    "prompt": "Recap findings from our previous investigation",
+    "expected_intent": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "category": "investigation"
+  },
+  {
+    "id": "train-rep-001",
+    "prompt": "Generate executive report for assessment asmt-101",
+    "expected_intent": "REPORT_GENERATION",
+    "category": "reporting"
+  },
+  {
+    "id": "train-rep-002",
+    "prompt": "Export technical report in markdown format",
+    "expected_intent": "REPORT_GENERATION",
+    "category": "reporting"
+  },
+  {
+    "id": "train-rep-003",
+    "prompt": "Create markdown report summarizing all critical findings",
+    "expected_intent": "REPORT_GENERATION",
+    "category": "reporting"
+  },
+  {
+    "id": "train-rep-004",
+    "prompt": "Download report for current assessment",
+    "expected_intent": "REPORT_GENERATION",
+    "category": "reporting"
+  },
+  {
+    "id": "train-rep-005",
+    "prompt": "Generate report with technical vulnerability details",
+    "expected_intent": "REPORT_GENERATION",
+    "category": "reporting"
+  },
+  {
+    "id": "train-rep-006",
+    "prompt": "Export report as markdown for compliance review",
+    "expected_intent": "REPORT_GENERATION",
+    "category": "reporting"
+  },
+  {
+    "id": "train-rep-007",
+    "prompt": "Generate executive report with risk scoring",
+    "expected_intent": "REPORT_GENERATION",
+    "category": "reporting"
+  },
+  {
+    "id": "train-rep-008",
+    "prompt": "Create report for stakeholders covering remediation roadmap",
+    "expected_intent": "REPORT_GENERATION",
+    "category": "reporting"
+  },
+  {
+    "id": "train-rep-009",
+    "prompt": "Download report of assessment findings",
+    "expected_intent": "REPORT_GENERATION",
+    "category": "reporting"
+  },
+  {
+    "id": "train-rep-010",
+    "prompt": "Generate technical report for development team",
+    "expected_intent": "REPORT_GENERATION",
+    "category": "reporting"
+  },
+  {
+    "id": "train-rep-011",
+    "prompt": "Export report with full evidence appendices",
+    "expected_intent": "REPORT_GENERATION",
+    "category": "reporting"
+  },
+  {
+    "id": "train-rep-012",
+    "prompt": "Create markdown report for executive leadership",
+    "expected_intent": "REPORT_GENERATION",
+    "category": "reporting"
+  },
+  {
+    "id": "train-rep-013",
+    "prompt": "Generate report for completed assessment asmt-202",
+    "expected_intent": "REPORT_GENERATION",
+    "category": "reporting"
+  },
+  {
+    "id": "train-rep-014",
+    "prompt": "Download report in markdown format",
+    "expected_intent": "REPORT_GENERATION",
+    "category": "reporting"
+  },
+  {
+    "id": "train-rep-015",
+    "prompt": "Export technical report with CVSS breakdown",
+    "expected_intent": "REPORT_GENERATION",
+    "category": "reporting"
+  },
+  {
+    "id": "train-rep-016",
+    "prompt": "Generate executive report for Q4 security assessment",
+    "expected_intent": "REPORT_GENERATION",
+    "category": "reporting"
+  },
+  {
+    "id": "train-rep-017",
+    "prompt": "Create report documenting scope and methodology",
+    "expected_intent": "REPORT_GENERATION",
+    "category": "reporting"
+  },
+  {
+    "id": "train-rep-018",
+    "prompt": "Download report summarizing host posture",
+    "expected_intent": "REPORT_GENERATION",
+    "category": "reporting"
+  },
+  {
+    "id": "train-rep-019",
+    "prompt": "Generate report with MITRE ATT&CK mappings",
+    "expected_intent": "REPORT_GENERATION",
+    "category": "reporting"
+  },
+  {
+    "id": "train-rep-020",
+    "prompt": "Export report covering prioritized remediations",
+    "expected_intent": "REPORT_GENERATION",
+    "category": "reporting"
+  },
+  {
+    "id": "train-td-001",
+    "prompt": "Check if nmap is installed on the system",
+    "expected_intent": "TOOL_DETECTION",
+    "category": "tools"
+  },
+  {
+    "id": "train-td-002",
+    "prompt": "Is python installed and available?",
+    "expected_intent": "TOOL_DETECTION",
+    "category": "tools"
+  },
+  {
+    "id": "train-td-003",
+    "prompt": "Check whether tools are installed in PATH",
+    "expected_intent": "TOOL_DETECTION",
+    "category": "tools"
+  },
+  {
+    "id": "train-td-004",
+    "prompt": "Check if curl is installed on this host",
+    "expected_intent": "TOOL_DETECTION",
+    "category": "tools"
+  },
+  {
+    "id": "train-td-005",
+    "prompt": "Which tools are installed for security assessment?",
+    "expected_intent": "TOOL_DETECTION",
+    "category": "tools"
+  },
+  {
+    "id": "train-td-006",
+    "prompt": "What tools are installed in the local environment?",
+    "expected_intent": "TOOL_DETECTION",
+    "category": "tools"
+  },
+  {
+    "id": "train-td-007",
+    "prompt": "List installed tools and versions",
+    "expected_intent": "TOOL_DETECTION",
+    "category": "tools"
+  },
+  {
+    "id": "train-td-008",
+    "prompt": "Tool capability detection for recon utilities",
+    "expected_intent": "TOOL_DETECTION",
+    "category": "tools"
+  },
+  {
+    "id": "train-td-009",
+    "prompt": "Detect installed tools on current system",
+    "expected_intent": "TOOL_DETECTION",
+    "category": "tools"
+  },
+  {
+    "id": "train-td-010",
+    "prompt": "Is docker installed and running?",
+    "expected_intent": "TOOL_DETECTION",
+    "category": "tools"
+  },
+  {
+    "id": "train-td-011",
+    "prompt": "Check if nikto is available",
+    "expected_intent": "TOOL_DETECTION",
+    "category": "tools"
+  },
+  {
+    "id": "train-td-012",
+    "prompt": "Check whether gobuster is installed",
+    "expected_intent": "TOOL_DETECTION",
+    "category": "tools"
+  },
+  {
+    "id": "train-td-013",
+    "prompt": "Is tshark installed for packet inspection?",
+    "expected_intent": "TOOL_DETECTION",
+    "category": "tools"
+  },
+  {
+    "id": "train-td-014",
+    "prompt": "Check if nuclei tool is installed",
+    "expected_intent": "TOOL_DETECTION",
+    "category": "tools"
+  },
+  {
+    "id": "train-td-015",
+    "prompt": "List installed tools available to redloop",
+    "expected_intent": "TOOL_DETECTION",
+    "category": "tools"
+  },
+  {
+    "id": "train-td-016",
+    "prompt": "Check whether nmap and curl are detected",
+    "expected_intent": "TOOL_DETECTION",
+    "category": "tools"
+  },
+  {
+    "id": "train-td-017",
+    "prompt": "Is whatweb installed on this machine?",
+    "expected_intent": "TOOL_DETECTION",
+    "category": "tools"
+  },
+  {
+    "id": "train-td-018",
+    "prompt": "Detect tools for static file analysis",
+    "expected_intent": "TOOL_DETECTION",
+    "category": "tools"
+  },
+  {
+    "id": "train-td-019",
+    "prompt": "Check installed tools for network assessment",
+    "expected_intent": "TOOL_DETECTION",
+    "category": "tools"
+  },
+  {
+    "id": "train-td-020",
+    "prompt": "Is wget installed and executable?",
+    "expected_intent": "TOOL_DETECTION",
+    "category": "tools"
+  },
+  {
+    "id": "train-audit-001",
+    "prompt": "Verify audit chain integrity",
+    "expected_intent": "AUDIT_VERIFY",
+    "category": "audit"
+  },
+  {
+    "id": "train-audit-002",
+    "prompt": "Audit chain validation and tamper check",
+    "expected_intent": "AUDIT_VERIFY",
+    "category": "audit"
+  },
+  {
+    "id": "train-audit-003",
+    "prompt": "Verify chain of cryptographic ledger hashes",
+    "expected_intent": "AUDIT_VERIFY",
+    "category": "audit"
+  },
+  {
+    "id": "train-audit-004",
+    "prompt": "Check audit integrity across all events",
+    "expected_intent": "AUDIT_VERIFY",
+    "category": "audit"
+  },
+  {
+    "id": "train-audit-005",
+    "prompt": "Verify audit log integrity from genesis checkpoint",
+    "expected_intent": "AUDIT_VERIFY",
+    "category": "audit"
+  },
+  {
+    "id": "train-audit-006",
+    "prompt": "Run tamper check on audit ledger",
+    "expected_intent": "AUDIT_VERIFY",
+    "category": "audit"
+  },
+  {
+    "id": "train-audit-007",
+    "prompt": "Verify audit trail HMAC consistency",
+    "expected_intent": "AUDIT_VERIFY",
+    "category": "audit"
+  },
+  {
+    "id": "train-audit-008",
+    "prompt": "Audit chain verify against local anchors",
+    "expected_intent": "AUDIT_VERIFY",
+    "category": "audit"
+  },
+  {
+    "id": "train-audit-009",
+    "prompt": "Check if audit log has been modified or tampered",
+    "expected_intent": "AUDIT_VERIFY",
+    "category": "audit"
+  },
+  {
+    "id": "train-audit-010",
+    "prompt": "Verify chain sequence for compliance audit",
+    "expected_intent": "AUDIT_VERIFY",
+    "category": "audit"
+  },
+  {
+    "id": "train-audit-011",
+    "prompt": "Run audit integrity check on database records",
+    "expected_intent": "AUDIT_VERIFY",
+    "category": "audit"
+  },
+  {
+    "id": "train-audit-012",
+    "prompt": "Verify audit chain signatures",
+    "expected_intent": "AUDIT_VERIFY",
+    "category": "audit"
+  },
+  {
+    "id": "train-audit-013",
+    "prompt": "Tamper check on security ledger events",
+    "expected_intent": "AUDIT_VERIFY",
+    "category": "audit"
+  },
+  {
+    "id": "train-audit-014",
+    "prompt": "Verify audit log consistency",
+    "expected_intent": "AUDIT_VERIFY",
+    "category": "audit"
+  },
+  {
+    "id": "train-audit-015",
+    "prompt": "Check audit chain validity",
+    "expected_intent": "AUDIT_VERIFY",
+    "category": "audit"
+  },
+  {
+    "id": "train-life-001",
+    "prompt": "Pause assessment asmt-101",
+    "expected_intent": "LIFECYCLE",
+    "category": "lifecycle"
+  },
+  {
+    "id": "train-life-002",
+    "prompt": "Resume assessment asmt-101",
+    "expected_intent": "LIFECYCLE",
+    "category": "lifecycle"
+  },
+  {
+    "id": "train-life-003",
+    "prompt": "Cancel assessment asmt-101",
+    "expected_intent": "LIFECYCLE",
+    "category": "lifecycle"
+  },
+  {
+    "id": "train-life-004",
+    "prompt": "Pause scan currently running on 127.0.0.1",
+    "expected_intent": "LIFECYCLE",
+    "category": "lifecycle"
+  },
+  {
+    "id": "train-life-005",
+    "prompt": "Resume scan on local target",
+    "expected_intent": "LIFECYCLE",
+    "category": "lifecycle"
+  },
+  {
+    "id": "train-life-006",
+    "prompt": "Stop assessment immediately",
+    "expected_intent": "LIFECYCLE",
+    "category": "lifecycle"
+  },
+  {
+    "id": "train-life-007",
+    "prompt": "Abort scan on asmt-992",
+    "expected_intent": "LIFECYCLE",
+    "category": "lifecycle"
+  },
+  {
+    "id": "train-life-008",
+    "prompt": "Continue assessment asmt-554",
+    "expected_intent": "LIFECYCLE",
+    "category": "lifecycle"
+  },
+  {
+    "id": "train-life-009",
+    "prompt": "Pause asmt-303 execution",
+    "expected_intent": "LIFECYCLE",
+    "category": "lifecycle"
+  },
+  {
+    "id": "train-life-010",
+    "prompt": "Cancel assessment for lab host",
+    "expected_intent": "LIFECYCLE",
+    "category": "lifecycle"
+  },
+  {
+    "id": "train-life-011",
+    "prompt": "Stop assessment and finalize logs",
+    "expected_intent": "LIFECYCLE",
+    "category": "lifecycle"
+  },
+  {
+    "id": "train-life-012",
+    "prompt": "Pause assessment until operator approves",
+    "expected_intent": "LIFECYCLE",
+    "category": "lifecycle"
+  },
+  {
+    "id": "train-life-013",
+    "prompt": "Resume assessment after review",
+    "expected_intent": "LIFECYCLE",
+    "category": "lifecycle"
+  },
+  {
+    "id": "train-life-014",
+    "prompt": "Abort scan execution on target",
+    "expected_intent": "LIFECYCLE",
+    "category": "lifecycle"
+  },
+  {
+    "id": "train-life-015",
+    "prompt": "Cancel assessment asmt-771",
+    "expected_intent": "LIFECYCLE",
+    "category": "lifecycle"
+  }
+]

@@ -1,0 +1,569 @@
+[
+  {
+    "id": "chat-001",
+    "question": "What is the difference between SAML 2.0 and OAuth 2.0/OIDC?",
+    "category": "auth",
+    "expected_key_facts": [
+      "SAML 2.0 uses XML tokens for federated enterprise SSO",
+      "OAuth 2.0 is an authorization framework using access tokens",
+      "OIDC builds on OAuth 2.0 using JSON Web Tokens (JWT) for authentication",
+      "SAML is XML-heavy and enterprise-centric; OIDC is JSON/REST-friendly and mobile/API-centric"
+    ],
+    "forbidden_hallucinations": [
+      "OAuth 2.0 replaces SSL",
+      "SAML uses binary protobuf tokens",
+      "OIDC cannot issue ID tokens"
+    ]
+  },
+  {
+    "id": "chat-002",
+    "question": "Explain how Server-Side Request Forgery (SSRF) works and key defenses.",
+    "category": "web",
+    "expected_key_facts": [
+      "Attacker induces server-side application to make HTTP requests to an unintended destination",
+      "Targets often include cloud metadata endpoints (169.254.169.254) or loopback services",
+      "Defenses include strict URL allowlisting, blocking RFC 1918 / loopback ranges",
+      "DNS rebinding defense via resolving hostname and pinning destination IP before connection",
+      "Disabling HTTP redirects or re-validating every redirect target"
+    ],
+    "forbidden_hallucinations": [
+      "SSRF only affects client browsers",
+      "WAF alone completely prevents SSRF without application validation"
+    ]
+  },
+  {
+    "id": "chat-003",
+    "question": "How does Kerberoasting work in Active Directory and how can defenders mitigate it?",
+    "category": "active_directory",
+    "expected_key_facts": [
+      "Requests TGS tickets for Service Principal Names (SPNs) associated with user accounts",
+      "Tickets are encrypted with the service account password hash (NTLM/RC4 or AES)",
+      "Attacker extracts the ticket from memory and cracks it offline",
+      "Mitigations include using Group Managed Service Accounts (gMSA)",
+      "Using strong (>25 character) passwords for SPN accounts and disabling RC4 (enforcing AES)"
+    ],
+    "forbidden_hallucinations": [
+      "Kerberoasting requires Domain Admin privileges to execute",
+      "Kerberoasting exploits unpatched SMB vulnerabilities"
+    ]
+  },
+  {
+    "id": "chat-004",
+    "question": "Explain the difference between Stored, Reflected, and DOM-based XSS.",
+    "category": "web",
+    "expected_key_facts": [
+      "Stored XSS is permanently stored in the database and served to victims",
+      "Reflected XSS reflects immediate user input from request into response",
+      "DOM-based XSS executes entirely on client side when client scripts process untrusted sources to sinks",
+      "Primary mitigations: Context-aware output encoding, Content Security Policy (CSP), sanitization"
+    ],
+    "forbidden_hallucinations": [
+      "DOM XSS requires server-side database storage",
+      "HTTPS encrypts payload and prevents XSS execution"
+    ]
+  },
+  {
+    "id": "chat-005",
+    "question": "What is an IDOR vulnerability and how should access control be designed?",
+    "category": "web",
+    "expected_key_facts": [
+      "Insecure Direct Object Reference occurs when an application exposes a reference to internal objects without authorization checks",
+      "Attacker alters parameter (e.g. /api/user/123 to /api/user/124) to access unauthorized records",
+      "Defense requires server-side authorization check per object request validating session user permissions",
+      "Indirect reference maps or unpredictable GUIDs add defense in depth but do not replace authorization"
+    ],
+    "forbidden_hallucinations": [
+      "Using UUIDs completely prevents IDOR without permission checks",
+      "IDOR is a client-side JavaScript bug"
+    ]
+  },
+  {
+    "id": "chat-006",
+    "question": "How does DNS rebinding bypass intranet protections?",
+    "category": "network",
+    "expected_key_facts": [
+      "Attacker controls authoritative nameserver",
+      "Returns short TTL (e.g. 1s)",
+      "First IP is public attacker server, subsequent resolution is 127.0.0.1 or 192.168.x.x",
+      "Bypasses same-origin policy",
+      "Defense: validate Host header, resolve and pin IP before fetch"
+    ],
+    "forbidden_hallucinations": [
+      "This vulnerability cannot be exploited in practice",
+      "Disabling encryption resolves the vulnerability"
+    ]
+  },
+  {
+    "id": "chat-007",
+    "question": "What is an XML External Entity (XXE) injection and how to disable it?",
+    "category": "web",
+    "expected_key_facts": [
+      "Exploits weakly configured XML parsers processing DTD external entity declarations",
+      "Allows file retrieval (/etc/passwd), SSRF, or DoS",
+      "Defense: completely disable DTDs (disallow-doctype-decl) and external entity resolution in XML parser configuration"
+    ],
+    "forbidden_hallucinations": [
+      "This vulnerability cannot be exploited in practice",
+      "Disabling encryption resolves the vulnerability"
+    ]
+  },
+  {
+    "id": "chat-008",
+    "question": "Explain the difference between symmetric and asymmetric cryptography.",
+    "category": "crypto",
+    "expected_key_facts": [
+      "Symmetric uses same secret key for encryption and decryption (e.g. AES)",
+      "Asymmetric uses key pair: public key for encryption/verification, private key for decryption/signing (e.g. RSA, ECC)",
+      "Symmetric is computationally faster, used for bulk data encryption; asymmetric solves key distribution"
+    ],
+    "forbidden_hallucinations": [
+      "This vulnerability cannot be exploited in practice",
+      "Disabling encryption resolves the vulnerability"
+    ]
+  },
+  {
+    "id": "chat-009",
+    "question": "How does ASLR protect against binary buffer overflows?",
+    "category": "binary",
+    "expected_key_facts": [
+      "Address Space Layout Randomization randomizes memory positions of key data areas (stack, heap, libraries)",
+      "Prevents attacker from reliably jumping to fixed exploit addresses in memory",
+      "Combined with DEP/NX and stack canaries for robust mitigation"
+    ],
+    "forbidden_hallucinations": [
+      "This vulnerability cannot be exploited in practice",
+      "Disabling encryption resolves the vulnerability"
+    ]
+  },
+  {
+    "id": "chat-010",
+    "question": "What is Clickjacking and how does Frame-Ancestors CSP mitigate it?",
+    "category": "web",
+    "expected_key_facts": [
+      "Attacker overlays transparent iframe of vulnerable site over deceptive UI",
+      "Tricks user into clicking hidden buttons (e.g. Delete Account)",
+      "Mitigation: CSP frame-ancestors directive or X-Frame-Options: DENY / SAMEORIGIN"
+    ],
+    "forbidden_hallucinations": [
+      "This vulnerability cannot be exploited in practice",
+      "Disabling encryption resolves the vulnerability"
+    ]
+  },
+  {
+    "id": "chat-011",
+    "question": "Explain Cross-Site Request Forgery (CSRF) and modern defenses.",
+    "category": "web",
+    "expected_key_facts": [
+      "Tricks authenticated victim browser into submitting unauthorized requests to target application",
+      "Defenses: SameSite cookies (Lax/Strict), cryptographically strong anti-CSRF tokens in headers/POST body, custom request headers"
+    ],
+    "forbidden_hallucinations": [
+      "This vulnerability cannot be exploited in practice",
+      "Disabling encryption resolves the vulnerability"
+    ]
+  },
+  {
+    "id": "chat-012",
+    "question": "What are the key differences between NTLM and Kerberos?",
+    "category": "auth",
+    "expected_key_facts": [
+      "NTLM uses challenge-response with NTLM hash; susceptible to pass-the-hash and relay attacks",
+      "Kerberos uses third-party KDC ticket-granting architecture with mutual authentication and timestamps",
+      "Kerberos is more secure and supports modern encryption (AES)"
+    ],
+    "forbidden_hallucinations": [
+      "This vulnerability cannot be exploited in practice",
+      "Disabling encryption resolves the vulnerability"
+    ]
+  },
+  {
+    "id": "chat-013",
+    "question": "How does an attacker perform ARP cache poisoning on a local switch?",
+    "category": "network",
+    "expected_key_facts": [
+      "Sends unsolicited ARP reply packets associating attacker MAC with legitimate IP (default gateway)",
+      "Causes local traffic to be routed through attacker machine (Man-in-the-Middle)",
+      "Switch defense: Dynamic ARP Inspection (DAI) coupled with DHCP snooping"
+    ],
+    "forbidden_hallucinations": [
+      "This vulnerability cannot be exploited in practice",
+      "Disabling encryption resolves the vulnerability"
+    ]
+  },
+  {
+    "id": "chat-014",
+    "question": "What is a Golden Ticket attack in Active Directory?",
+    "category": "active_directory",
+    "expected_key_facts": [
+      "Attacker compromises the KRBTGT account NTLM hash or AES key",
+      "Forges Kerberos Ticket Granting Tickets (TGT) granting arbitrary domain permissions",
+      "Persists even if user passwords are changed; requires resetting KRBTGT password twice"
+    ],
+    "forbidden_hallucinations": [
+      "This vulnerability cannot be exploited in practice",
+      "Disabling encryption resolves the vulnerability"
+    ]
+  },
+  {
+    "id": "chat-015",
+    "question": "Explain the role of SPF, DKIM, and DMARC in email security.",
+    "category": "email",
+    "expected_key_facts": [
+      "SPF specifies authorized sending IP addresses in DNS TXT record",
+      "DKIM signs email headers and body with private key; verified with public key in DNS",
+      "DMARC specifies policy (none, quarantine, reject) when SPF/DKIM fail and enables reporting"
+    ],
+    "forbidden_hallucinations": [
+      "This vulnerability cannot be exploited in practice",
+      "Disabling encryption resolves the vulnerability"
+    ]
+  },
+  {
+    "id": "chat-016",
+    "question": "How does SQL injection occur in ORM frameworks?",
+    "category": "web",
+    "expected_key_facts": [
+      "Raw SQL queries, raw WHERE clauses, or string concatenation inside ORM query builders",
+      "ORM parameter binding protects standard queries, but raw fragments bypass escaping",
+      "Defense: always use parameterized placeholders even with ORMs"
+    ],
+    "forbidden_hallucinations": [
+      "This vulnerability cannot be exploited in practice",
+      "Disabling encryption resolves the vulnerability"
+    ]
+  },
+  {
+    "id": "chat-017",
+    "question": "What is BGP route hijacking and how does RPKI prevent it?",
+    "category": "network",
+    "expected_key_facts": [
+      "Autonomous System announces IP prefixes it does not own, redirecting internet traffic",
+      "RPKI uses Route Origin Authorizations (ROAs) signed by cryptographic certificates",
+      "Routers validate Route Origin Validation (ROV) to drop invalid announcements"
+    ],
+    "forbidden_hallucinations": [
+      "This vulnerability cannot be exploited in practice",
+      "Disabling encryption resolves the vulnerability"
+    ]
+  },
+  {
+    "id": "chat-018",
+    "question": "Explain the concept of forward secrecy in key exchange protocols.",
+    "category": "crypto",
+    "expected_key_facts": [
+      "Compromise of long-term private keys does not compromise past session keys",
+      "Ephemeral Diffie-Hellman (DHE, ECDHE) generates temporary key pairs per session",
+      "Enforced in TLS 1.3; TLS 1.2 RSA key transport lacks forward secrecy"
+    ],
+    "forbidden_hallucinations": [
+      "This vulnerability cannot be exploited in practice",
+      "Disabling encryption resolves the vulnerability"
+    ]
+  },
+  {
+    "id": "chat-019",
+    "question": "What is a Time-of-Check to Time-of-Use (TOCTOU) race condition?",
+    "category": "security",
+    "expected_key_facts": [
+      "State of a resource changes between the moment it is verified and the moment it is accessed",
+      "Example: symlink race where attacker replaces file between check and write",
+      "Defense: atomic filesystem operations (e.g. open with O_CREAT | O_EXCL, file descriptors)"
+    ],
+    "forbidden_hallucinations": [
+      "This vulnerability cannot be exploited in practice",
+      "Disabling encryption resolves the vulnerability"
+    ]
+  },
+  {
+    "id": "chat-020",
+    "question": "How does memory dump triage identify process injection?",
+    "category": "forensics",
+    "expected_key_facts": [
+      "Looking for memory pages with Execute-Read-Write (PAGE_EXECUTE_READWRITE) permissions",
+      "Unbacked executable memory sections (not mapped to disk file)",
+      "Hollowed processes, injected thread entry points, and mismatched PE headers in memory"
+    ],
+    "forbidden_hallucinations": [
+      "This vulnerability cannot be exploited in practice",
+      "Disabling encryption resolves the vulnerability"
+    ]
+  },
+  {
+    "id": "chat-021",
+    "question": "What is a living-off-the-land binary (LOLBIN) in Windows attacks?",
+    "category": "defense",
+    "expected_key_facts": [
+      "Legitimate signed operating system binaries abused by attackers (e.g. certutil, bitsadmin, mshta, powershell)",
+      "Bypasses application allowlisting and blends with normal administrative traffic",
+      "Defense: application control (AppLocker/WDAC) blocking known LOLBIN abuse, behavioral detection"
+    ],
+    "forbidden_hallucinations": [
+      "This vulnerability cannot be exploited in practice",
+      "Disabling encryption resolves the vulnerability"
+    ]
+  },
+  {
+    "id": "chat-022",
+    "question": "Explain the difference between signature-based and behavioral detection.",
+    "category": "detection",
+    "expected_key_facts": [
+      "Signature-based matches known patterns (hashes, byte strings, static rules) - fast, zero false positives for known, blind to zero-days",
+      "Behavioral analyzes runtime activity (process spawning, memory injection, anomalous network) - catches novel threats, higher false positive risk"
+    ],
+    "forbidden_hallucinations": [
+      "This vulnerability cannot be exploited in practice",
+      "Disabling encryption resolves the vulnerability"
+    ]
+  },
+  {
+    "id": "chat-023",
+    "question": "What is the MITRE ATT&CK framework and how is it used in SOCs?",
+    "category": "soc",
+    "expected_key_facts": [
+      "Curated knowledge base of adversary tactics, techniques, and procedures (TTPs) based on real-world observations",
+      "Used for detection engineering, threat hunting, gap analysis, and purple teaming",
+      "Tactics represent adversary goals; techniques represent how they achieve them"
+    ],
+    "forbidden_hallucinations": [
+      "This vulnerability cannot be exploited in practice",
+      "Disabling encryption resolves the vulnerability"
+    ]
+  },
+  {
+    "id": "chat-024",
+    "question": "How does DNS over HTTPS (DoH) impact enterprise network visibility?",
+    "category": "network",
+    "expected_key_facts": [
+      "Encrypts DNS queries inside HTTPS (port 443) to external recursive resolvers",
+      "Prevents local network inspection, DNS sinkholing, and internal domain resolution",
+      "Enterprises manage DoH via enterprise policies, blocking public DoH IPs, or internal DoH endpoints"
+    ],
+    "forbidden_hallucinations": [
+      "This vulnerability cannot be exploited in practice",
+      "Disabling encryption resolves the vulnerability"
+    ]
+  },
+  {
+    "id": "chat-025",
+    "question": "What is a DCSync attack and what permissions allow it in Active Directory?",
+    "category": "active_directory",
+    "expected_key_facts": [
+      "Simulates a Domain Controller to request account password data via Directory Replication Service (DRS) protocol",
+      "Requires Replicating Directory Changes and Replicating Directory Changes All permissions",
+      "Defense: restrict and audit accounts holding replication rights, monitor DRS replication traffic from non-DC IPs"
+    ],
+    "forbidden_hallucinations": [
+      "This vulnerability cannot be exploited in practice",
+      "Disabling encryption resolves the vulnerability"
+    ]
+  },
+  {
+    "id": "chat-026",
+    "question": "Explain the concept of zero trust architecture according to NIST SP 800-207.",
+    "category": "architecture",
+    "expected_key_facts": [
+      "Never trust, always verify: assumes breach and treats internal network as hostile",
+      "Continuous authentication, authorization, and posture assessment per request",
+      "Microsegmentation, least privilege access, dynamic policy decision point (PDP)"
+    ],
+    "forbidden_hallucinations": [
+      "This vulnerability cannot be exploited in practice",
+      "Disabling encryption resolves the vulnerability"
+    ]
+  },
+  {
+    "id": "chat-027",
+    "question": "What is the difference between an IDS and an IPS?",
+    "category": "network",
+    "expected_key_facts": [
+      "IDS (Intrusion Detection System) passively monitors network traffic and alerts on suspicious events (out of band)",
+      "IPS (Intrusion Prevention System) sits inline in the network traffic path and actively drops malicious packets"
+    ],
+    "forbidden_hallucinations": [
+      "This vulnerability cannot be exploited in practice",
+      "Disabling encryption resolves the vulnerability"
+    ]
+  },
+  {
+    "id": "chat-028",
+    "question": "How does cross-site scripting lead to session hijacking?",
+    "category": "web",
+    "expected_key_facts": [
+      "Attacker executes JavaScript in victim's browser context to read document.cookie",
+      "Exfiltrates un-flagged session cookies to attacker server",
+      "Defense: set HttpOnly flag on session cookies, use short-lived tokens and token binding"
+    ],
+    "forbidden_hallucinations": [
+      "This vulnerability cannot be exploited in practice",
+      "Disabling encryption resolves the vulnerability"
+    ]
+  },
+  {
+    "id": "chat-029",
+    "question": "What is an insecure deserialization vulnerability and why is it dangerous?",
+    "category": "web",
+    "expected_key_facts": [
+      "Application reconstructs objects from untrusted byte streams without validation",
+      "Attacker crafts serialized payloads utilizing gadget chains to achieve Remote Code Execution (RCE)",
+      "Defense: avoid deserializing untrusted data, use pure data formats like JSON/Protobuf, lookahead object validation"
+    ],
+    "forbidden_hallucinations": [
+      "This vulnerability cannot be exploited in practice",
+      "Disabling encryption resolves the vulnerability"
+    ]
+  },
+  {
+    "id": "chat-030",
+    "question": "Explain how Pass-the-Hash works in Windows environments.",
+    "category": "active_directory",
+    "expected_key_facts": [
+      "Attacker uses NTLM hash directly without cracking password to authenticate via NTLM protocol",
+      "NTLM accepts hash as proof of identity during challenge-response",
+      "Mitigations: disable NTLM, restrict local administrator accounts, enable Remote Credential Guard, LSA protection"
+    ],
+    "forbidden_hallucinations": [
+      "This vulnerability cannot be exploited in practice",
+      "Disabling encryption resolves the vulnerability"
+    ]
+  },
+  {
+    "id": "chat-031",
+    "question": "What is the difference between CVSS Base, Temporal, and Environmental scores?",
+    "category": "vulnerability",
+    "expected_key_facts": [
+      "Base score represents intrinsic vulnerability qualities that are constant over time and user environments",
+      "Temporal score reflects factors that change over time (exploit maturity, remediation level)",
+      "Environmental score customizes score based on organization's specific deployment and mitigations"
+    ],
+    "forbidden_hallucinations": [
+      "This vulnerability cannot be exploited in practice",
+      "Disabling encryption resolves the vulnerability"
+    ]
+  },
+  {
+    "id": "chat-032",
+    "question": "How does Certificate Transparency (CT) prevent fraudulent SSL certificates?",
+    "category": "crypto",
+    "expected_key_facts": [
+      "Public, append-only, cryptographically verifiable Merkle tree logs of all issued certificates",
+      "Browsers require Signed Certificate Timestamps (SCTs) before trusting certificates",
+      "Domain owners monitor CT logs for unauthorized certificates issued for their domains"
+    ],
+    "forbidden_hallucinations": [
+      "This vulnerability cannot be exploited in practice",
+      "Disabling encryption resolves the vulnerability"
+    ]
+  },
+  {
+    "id": "chat-033",
+    "question": "What is the difference between SAST, DAST, and IAST in application security?",
+    "category": "appsec",
+    "expected_key_facts": [
+      "SAST analyzes source code or bytecode statically without running application (white box)",
+      "DAST tests running application from the outside by sending payloads (black box)",
+      "IAST monitors application runtime from inside using sensors/instrumentation (hybrid)"
+    ],
+    "forbidden_hallucinations": [
+      "This vulnerability cannot be exploited in practice",
+      "Disabling encryption resolves the vulnerability"
+    ]
+  },
+  {
+    "id": "chat-034",
+    "question": "Explain how an attacker conducts a padding oracle attack on CBC mode.",
+    "category": "crypto",
+    "expected_key_facts": [
+      "Exploits cryptographic systems that leak information about whether decrypted ciphertext padding is valid",
+      "Attacker iteratively modifies ciphertext blocks and tests server error responses to decrypt plaintext byte-by-byte",
+      "Defense: use authenticated encryption (AEAD like AES-GCM) instead of CBC mode"
+    ],
+    "forbidden_hallucinations": [
+      "This vulnerability cannot be exploited in practice",
+      "Disabling encryption resolves the vulnerability"
+    ]
+  },
+  {
+    "id": "chat-035",
+    "question": "What are the primary indicators of compromise (IOCs) for ransomware execution?",
+    "category": "incident_response",
+    "expected_key_facts": [
+      "Mass file renaming with new extensions, creation of ransom note text/html files",
+      "Volume Shadow Copy deletion commands (vssadmin delete shadows)",
+      "Disabling recovery mode (bcdedit), stopping security and backup services, high disk write I/O"
+    ],
+    "forbidden_hallucinations": [
+      "This vulnerability cannot be exploited in practice",
+      "Disabling encryption resolves the vulnerability"
+    ]
+  },
+  {
+    "id": "chat-036",
+    "question": "How does DPAPI protect user credentials on Windows?",
+    "category": "windows",
+    "expected_key_facts": [
+      "Data Protection API encrypts credentials using keys derived from user's login password and master key",
+      "Protected master keys stored in %APPDATA%\\Microsoft\\Protect",
+      "Compromised user password or LSASS memory access allows decrypting DPAPI blobs"
+    ],
+    "forbidden_hallucinations": [
+      "This vulnerability cannot be exploited in practice",
+      "Disabling encryption resolves the vulnerability"
+    ]
+  },
+  {
+    "id": "chat-037",
+    "question": "What is the security risk of wildcard subdomains with dangling DNS records?",
+    "category": "cloud",
+    "expected_key_facts": [
+      "Subdomain takeover: DNS points to a cloud service (e.g. S3, Azure, GitHub Pages) that has been deprovisioned",
+      "Attacker registers the claimed name on the cloud provider and hosts malicious content under legitimate domain",
+      "Defense: remove DNS records before deprovisioning cloud assets, continuous attack surface monitoring"
+    ],
+    "forbidden_hallucinations": [
+      "This vulnerability cannot be exploited in practice",
+      "Disabling encryption resolves the vulnerability"
+    ]
+  },
+  {
+    "id": "chat-038",
+    "question": "Explain how an attacker uses BloodHound to find Active Directory attack paths.",
+    "category": "active_directory",
+    "expected_key_facts": [
+      "Collects graph data (users, groups, computers, ACLs, sessions) using SharpHound / BloodHound collector",
+      "Uses Neo4j graph theory to find shortest paths from unprivileged user to Domain Admin",
+      "Defenses: Tiered administration model, minimizing Domain Admin memberships, auditing ACL delegations"
+    ],
+    "forbidden_hallucinations": [
+      "This vulnerability cannot be exploited in practice",
+      "Disabling encryption resolves the vulnerability"
+    ]
+  },
+  {
+    "id": "chat-039",
+    "question": "What is the purpose of Content Security Policy (CSP) and why is 'unsafe-inline' bad?",
+    "category": "web",
+    "expected_key_facts": [
+      "HTTP response header that restricts resources (scripts, images, stylesheets) the browser can load",
+      "'unsafe-inline' allows execution of inline scripts and event handlers, neutralizing XSS protection",
+      "Defense: use cryptographic nonces or SHA-256 hashes for legitimate inline scripts"
+    ],
+    "forbidden_hallucinations": [
+      "This vulnerability cannot be exploited in practice",
+      "Disabling encryption resolves the vulnerability"
+    ]
+  },
+  {
+    "id": "chat-040",
+    "question": "How does memory corruption like Use-After-Free (UAF) enable code execution?",
+    "category": "binary",
+    "expected_key_facts": [
+      "Memory is freed but pointer is not nulled; application later dereferences the dangling pointer",
+      "Attacker reclaims the freed chunk with controlled data (e.g. forged vtable pointer)",
+      "When application calls virtual function on dangling pointer, execution diverts to attacker-controlled address"
+    ],
+    "forbidden_hallucinations": [
+      "This vulnerability cannot be exploited in practice",
+      "Disabling encryption resolves the vulnerability"
+    ]
+  }
+]

@@ -1,0 +1,750 @@
+[
+  {
+    "id": "scen-001",
+    "scenario_name": "Automated Security Evaluation Scenario 1",
+    "prompt": "Assess security posture of 127.0.0.1:8001 and verify open services.",
+    "allowed_tools": [
+      "nikto",
+      "web_check"
+    ],
+    "target": "127.0.0.1:8001",
+    "expected_plan": [
+      "resolve_target_and_scope",
+      "execute_bounded_tool_probe",
+      "corroborate_evidence",
+      "record_audit_events"
+    ],
+    "expected_evidence": [
+      "evi-scen-001-01",
+      "evi-scen-001-02"
+    ],
+    "max_steps": 6,
+    "timeout_seconds": 60
+  },
+  {
+    "id": "scen-002",
+    "scenario_name": "Automated Security Evaluation Scenario 2",
+    "prompt": "Assess security posture of 127.0.0.1 and verify open services.",
+    "allowed_tools": [
+      "dns_engine",
+      "osint_ip"
+    ],
+    "target": "127.0.0.1",
+    "expected_plan": [
+      "resolve_target_and_scope",
+      "execute_bounded_tool_probe",
+      "corroborate_evidence",
+      "record_audit_events"
+    ],
+    "expected_evidence": [
+      "evi-scen-002-01",
+      "evi-scen-002-02"
+    ],
+    "max_steps": 6,
+    "timeout_seconds": 60
+  },
+  {
+    "id": "scen-003",
+    "scenario_name": "Automated Security Evaluation Scenario 3",
+    "prompt": "Assess security posture of 127.0.0.1:8003 and verify open services.",
+    "allowed_tools": [
+      "nmap",
+      "curl"
+    ],
+    "target": "127.0.0.1:8003",
+    "expected_plan": [
+      "resolve_target_and_scope",
+      "execute_bounded_tool_probe",
+      "corroborate_evidence",
+      "record_audit_events"
+    ],
+    "expected_evidence": [
+      "evi-scen-003-01",
+      "evi-scen-003-02"
+    ],
+    "max_steps": 6,
+    "timeout_seconds": 60
+  },
+  {
+    "id": "scen-004",
+    "scenario_name": "Automated Security Evaluation Scenario 4",
+    "prompt": "Assess security posture of 127.0.0.1 and verify open services.",
+    "allowed_tools": [
+      "nikto",
+      "web_check"
+    ],
+    "target": "127.0.0.1",
+    "expected_plan": [
+      "resolve_target_and_scope",
+      "execute_bounded_tool_probe",
+      "corroborate_evidence",
+      "record_audit_events"
+    ],
+    "expected_evidence": [
+      "evi-scen-004-01",
+      "evi-scen-004-02"
+    ],
+    "max_steps": 6,
+    "timeout_seconds": 60
+  },
+  {
+    "id": "scen-005",
+    "scenario_name": "Automated Security Evaluation Scenario 5",
+    "prompt": "Assess security posture of 127.0.0.1:8005 and verify open services.",
+    "allowed_tools": [
+      "dns_engine",
+      "osint_ip"
+    ],
+    "target": "127.0.0.1:8005",
+    "expected_plan": [
+      "resolve_target_and_scope",
+      "execute_bounded_tool_probe",
+      "corroborate_evidence",
+      "record_audit_events"
+    ],
+    "expected_evidence": [
+      "evi-scen-005-01",
+      "evi-scen-005-02"
+    ],
+    "max_steps": 6,
+    "timeout_seconds": 60
+  },
+  {
+    "id": "scen-006",
+    "scenario_name": "Automated Security Evaluation Scenario 6",
+    "prompt": "Assess security posture of 127.0.0.1 and verify open services.",
+    "allowed_tools": [
+      "nmap",
+      "curl"
+    ],
+    "target": "127.0.0.1",
+    "expected_plan": [
+      "resolve_target_and_scope",
+      "execute_bounded_tool_probe",
+      "corroborate_evidence",
+      "record_audit_events"
+    ],
+    "expected_evidence": [
+      "evi-scen-006-01",
+      "evi-scen-006-02"
+    ],
+    "max_steps": 6,
+    "timeout_seconds": 60
+  },
+  {
+    "id": "scen-007",
+    "scenario_name": "Automated Security Evaluation Scenario 7",
+    "prompt": "Assess security posture of 127.0.0.1:8007 and verify open services.",
+    "allowed_tools": [
+      "nikto",
+      "web_check"
+    ],
+    "target": "127.0.0.1:8007",
+    "expected_plan": [
+      "resolve_target_and_scope",
+      "execute_bounded_tool_probe",
+      "corroborate_evidence",
+      "record_audit_events"
+    ],
+    "expected_evidence": [
+      "evi-scen-007-01",
+      "evi-scen-007-02"
+    ],
+    "max_steps": 6,
+    "timeout_seconds": 60
+  },
+  {
+    "id": "scen-008",
+    "scenario_name": "Automated Security Evaluation Scenario 8",
+    "prompt": "Assess security posture of 127.0.0.1 and verify open services.",
+    "allowed_tools": [
+      "dns_engine",
+      "osint_ip"
+    ],
+    "target": "127.0.0.1",
+    "expected_plan": [
+      "resolve_target_and_scope",
+      "execute_bounded_tool_probe",
+      "corroborate_evidence",
+      "record_audit_events"
+    ],
+    "expected_evidence": [
+      "evi-scen-008-01",
+      "evi-scen-008-02"
+    ],
+    "max_steps": 6,
+    "timeout_seconds": 60
+  },
+  {
+    "id": "scen-009",
+    "scenario_name": "Automated Security Evaluation Scenario 9",
+    "prompt": "Assess security posture of 127.0.0.1:8009 and verify open services.",
+    "allowed_tools": [
+      "nmap",
+      "curl"
+    ],
+    "target": "127.0.0.1:8009",
+    "expected_plan": [
+      "resolve_target_and_scope",
+      "execute_bounded_tool_probe",
+      "corroborate_evidence",
+      "record_audit_events"
+    ],
+    "expected_evidence": [
+      "evi-scen-009-01",
+      "evi-scen-009-02"
+    ],
+    "max_steps": 6,
+    "timeout_seconds": 60
+  },
+  {
+    "id": "scen-010",
+    "scenario_name": "Automated Security Evaluation Scenario 10",
+    "prompt": "Assess security posture of 127.0.0.1 and verify open services.",
+    "allowed_tools": [
+      "nikto",
+      "web_check"
+    ],
+    "target": "127.0.0.1",
+    "expected_plan": [
+      "resolve_target_and_scope",
+      "execute_bounded_tool_probe",
+      "corroborate_evidence",
+      "record_audit_events"
+    ],
+    "expected_evidence": [
+      "evi-scen-010-01",
+      "evi-scen-010-02"
+    ],
+    "max_steps": 6,
+    "timeout_seconds": 60
+  },
+  {
+    "id": "scen-011",
+    "scenario_name": "Automated Security Evaluation Scenario 11",
+    "prompt": "Assess security posture of 127.0.0.1:8011 and verify open services.",
+    "allowed_tools": [
+      "dns_engine",
+      "osint_ip"
+    ],
+    "target": "127.0.0.1:8011",
+    "expected_plan": [
+      "resolve_target_and_scope",
+      "execute_bounded_tool_probe",
+      "corroborate_evidence",
+      "record_audit_events"
+    ],
+    "expected_evidence": [
+      "evi-scen-011-01",
+      "evi-scen-011-02"
+    ],
+    "max_steps": 6,
+    "timeout_seconds": 60
+  },
+  {
+    "id": "scen-012",
+    "scenario_name": "Automated Security Evaluation Scenario 12",
+    "prompt": "Assess security posture of 127.0.0.1 and verify open services.",
+    "allowed_tools": [
+      "nmap",
+      "curl"
+    ],
+    "target": "127.0.0.1",
+    "expected_plan": [
+      "resolve_target_and_scope",
+      "execute_bounded_tool_probe",
+      "corroborate_evidence",
+      "record_audit_events"
+    ],
+    "expected_evidence": [
+      "evi-scen-012-01",
+      "evi-scen-012-02"
+    ],
+    "max_steps": 6,
+    "timeout_seconds": 60
+  },
+  {
+    "id": "scen-013",
+    "scenario_name": "Automated Security Evaluation Scenario 13",
+    "prompt": "Assess security posture of 127.0.0.1:8013 and verify open services.",
+    "allowed_tools": [
+      "nikto",
+      "web_check"
+    ],
+    "target": "127.0.0.1:8013",
+    "expected_plan": [
+      "resolve_target_and_scope",
+      "execute_bounded_tool_probe",
+      "corroborate_evidence",
+      "record_audit_events"
+    ],
+    "expected_evidence": [
+      "evi-scen-013-01",
+      "evi-scen-013-02"
+    ],
+    "max_steps": 6,
+    "timeout_seconds": 60
+  },
+  {
+    "id": "scen-014",
+    "scenario_name": "Automated Security Evaluation Scenario 14",
+    "prompt": "Assess security posture of 127.0.0.1 and verify open services.",
+    "allowed_tools": [
+      "dns_engine",
+      "osint_ip"
+    ],
+    "target": "127.0.0.1",
+    "expected_plan": [
+      "resolve_target_and_scope",
+      "execute_bounded_tool_probe",
+      "corroborate_evidence",
+      "record_audit_events"
+    ],
+    "expected_evidence": [
+      "evi-scen-014-01",
+      "evi-scen-014-02"
+    ],
+    "max_steps": 6,
+    "timeout_seconds": 60
+  },
+  {
+    "id": "scen-015",
+    "scenario_name": "Automated Security Evaluation Scenario 15",
+    "prompt": "Assess security posture of 127.0.0.1:8015 and verify open services.",
+    "allowed_tools": [
+      "nmap",
+      "curl"
+    ],
+    "target": "127.0.0.1:8015",
+    "expected_plan": [
+      "resolve_target_and_scope",
+      "execute_bounded_tool_probe",
+      "corroborate_evidence",
+      "record_audit_events"
+    ],
+    "expected_evidence": [
+      "evi-scen-015-01",
+      "evi-scen-015-02"
+    ],
+    "max_steps": 6,
+    "timeout_seconds": 60
+  },
+  {
+    "id": "scen-016",
+    "scenario_name": "Automated Security Evaluation Scenario 16",
+    "prompt": "Assess security posture of 127.0.0.1 and verify open services.",
+    "allowed_tools": [
+      "nikto",
+      "web_check"
+    ],
+    "target": "127.0.0.1",
+    "expected_plan": [
+      "resolve_target_and_scope",
+      "execute_bounded_tool_probe",
+      "corroborate_evidence",
+      "record_audit_events"
+    ],
+    "expected_evidence": [
+      "evi-scen-016-01",
+      "evi-scen-016-02"
+    ],
+    "max_steps": 6,
+    "timeout_seconds": 60
+  },
+  {
+    "id": "scen-017",
+    "scenario_name": "Automated Security Evaluation Scenario 17",
+    "prompt": "Assess security posture of 127.0.0.1:8017 and verify open services.",
+    "allowed_tools": [
+      "dns_engine",
+      "osint_ip"
+    ],
+    "target": "127.0.0.1:8017",
+    "expected_plan": [
+      "resolve_target_and_scope",
+      "execute_bounded_tool_probe",
+      "corroborate_evidence",
+      "record_audit_events"
+    ],
+    "expected_evidence": [
+      "evi-scen-017-01",
+      "evi-scen-017-02"
+    ],
+    "max_steps": 6,
+    "timeout_seconds": 60
+  },
+  {
+    "id": "scen-018",
+    "scenario_name": "Automated Security Evaluation Scenario 18",
+    "prompt": "Assess security posture of 127.0.0.1 and verify open services.",
+    "allowed_tools": [
+      "nmap",
+      "curl"
+    ],
+    "target": "127.0.0.1",
+    "expected_plan": [
+      "resolve_target_and_scope",
+      "execute_bounded_tool_probe",
+      "corroborate_evidence",
+      "record_audit_events"
+    ],
+    "expected_evidence": [
+      "evi-scen-018-01",
+      "evi-scen-018-02"
+    ],
+    "max_steps": 6,
+    "timeout_seconds": 60
+  },
+  {
+    "id": "scen-019",
+    "scenario_name": "Automated Security Evaluation Scenario 19",
+    "prompt": "Assess security posture of 127.0.0.1:8019 and verify open services.",
+    "allowed_tools": [
+      "nikto",
+      "web_check"
+    ],
+    "target": "127.0.0.1:8019",
+    "expected_plan": [
+      "resolve_target_and_scope",
+      "execute_bounded_tool_probe",
+      "corroborate_evidence",
+      "record_audit_events"
+    ],
+    "expected_evidence": [
+      "evi-scen-019-01",
+      "evi-scen-019-02"
+    ],
+    "max_steps": 6,
+    "timeout_seconds": 60
+  },
+  {
+    "id": "scen-020",
+    "scenario_name": "Automated Security Evaluation Scenario 20",
+    "prompt": "Assess security posture of 127.0.0.1 and verify open services.",
+    "allowed_tools": [
+      "dns_engine",
+      "osint_ip"
+    ],
+    "target": "127.0.0.1",
+    "expected_plan": [
+      "resolve_target_and_scope",
+      "execute_bounded_tool_probe",
+      "corroborate_evidence",
+      "record_audit_events"
+    ],
+    "expected_evidence": [
+      "evi-scen-020-01",
+      "evi-scen-020-02"
+    ],
+    "max_steps": 6,
+    "timeout_seconds": 60
+  },
+  {
+    "id": "scen-021",
+    "scenario_name": "Automated Security Evaluation Scenario 21",
+    "prompt": "Assess security posture of 127.0.0.1:8021 and verify open services.",
+    "allowed_tools": [
+      "nmap",
+      "curl"
+    ],
+    "target": "127.0.0.1:8021",
+    "expected_plan": [
+      "resolve_target_and_scope",
+      "execute_bounded_tool_probe",
+      "corroborate_evidence",
+      "record_audit_events"
+    ],
+    "expected_evidence": [
+      "evi-scen-021-01",
+      "evi-scen-021-02"
+    ],
+    "max_steps": 6,
+    "timeout_seconds": 60
+  },
+  {
+    "id": "scen-022",
+    "scenario_name": "Automated Security Evaluation Scenario 22",
+    "prompt": "Assess security posture of 127.0.0.1 and verify open services.",
+    "allowed_tools": [
+      "nikto",
+      "web_check"
+    ],
+    "target": "127.0.0.1",
+    "expected_plan": [
+      "resolve_target_and_scope",
+      "execute_bounded_tool_probe",
+      "corroborate_evidence",
+      "record_audit_events"
+    ],
+    "expected_evidence": [
+      "evi-scen-022-01",
+      "evi-scen-022-02"
+    ],
+    "max_steps": 6,
+    "timeout_seconds": 60
+  },
+  {
+    "id": "scen-023",
+    "scenario_name": "Automated Security Evaluation Scenario 23",
+    "prompt": "Assess security posture of 127.0.0.1:8023 and verify open services.",
+    "allowed_tools": [
+      "dns_engine",
+      "osint_ip"
+    ],
+    "target": "127.0.0.1:8023",
+    "expected_plan": [
+      "resolve_target_and_scope",
+      "execute_bounded_tool_probe",
+      "corroborate_evidence",
+      "record_audit_events"
+    ],
+    "expected_evidence": [
+      "evi-scen-023-01",
+      "evi-scen-023-02"
+    ],
+    "max_steps": 6,
+    "timeout_seconds": 60
+  },
+  {
+    "id": "scen-024",
+    "scenario_name": "Automated Security Evaluation Scenario 24",
+    "prompt": "Assess security posture of 127.0.0.1 and verify open services.",
+    "allowed_tools": [
+      "nmap",
+      "curl"
+    ],
+    "target": "127.0.0.1",
+    "expected_plan": [
+      "resolve_target_and_scope",
+      "execute_bounded_tool_probe",
+      "corroborate_evidence",
+      "record_audit_events"
+    ],
+    "expected_evidence": [
+      "evi-scen-024-01",
+      "evi-scen-024-02"
+    ],
+    "max_steps": 6,
+    "timeout_seconds": 60
+  },
+  {
+    "id": "scen-025",
+    "scenario_name": "Automated Security Evaluation Scenario 25",
+    "prompt": "Assess security posture of 127.0.0.1:8025 and verify open services.",
+    "allowed_tools": [
+      "nikto",
+      "web_check"
+    ],
+    "target": "127.0.0.1:8025",
+    "expected_plan": [
+      "resolve_target_and_scope",
+      "execute_bounded_tool_probe",
+      "corroborate_evidence",
+      "record_audit_events"
+    ],
+    "expected_evidence": [
+      "evi-scen-025-01",
+      "evi-scen-025-02"
+    ],
+    "max_steps": 6,
+    "timeout_seconds": 60
+  },
+  {
+    "id": "scen-026",
+    "scenario_name": "Automated Security Evaluation Scenario 26",
+    "prompt": "Assess security posture of 127.0.0.1 and verify open services.",
+    "allowed_tools": [
+      "dns_engine",
+      "osint_ip"
+    ],
+    "target": "127.0.0.1",
+    "expected_plan": [
+      "resolve_target_and_scope",
+      "execute_bounded_tool_probe",
+      "corroborate_evidence",
+      "record_audit_events"
+    ],
+    "expected_evidence": [
+      "evi-scen-026-01",
+      "evi-scen-026-02"
+    ],
+    "max_steps": 6,
+    "timeout_seconds": 60
+  },
+  {
+    "id": "scen-027",
+    "scenario_name": "Automated Security Evaluation Scenario 27",
+    "prompt": "Assess security posture of 127.0.0.1:8027 and verify open services.",
+    "allowed_tools": [
+      "nmap",
+      "curl"
+    ],
+    "target": "127.0.0.1:8027",
+    "expected_plan": [
+      "resolve_target_and_scope",
+      "execute_bounded_tool_probe",
+      "corroborate_evidence",
+      "record_audit_events"
+    ],
+    "expected_evidence": [
+      "evi-scen-027-01",
+      "evi-scen-027-02"
+    ],
+    "max_steps": 6,
+    "timeout_seconds": 60
+  },
+  {
+    "id": "scen-028",
+    "scenario_name": "Automated Security Evaluation Scenario 28",
+    "prompt": "Assess security posture of 127.0.0.1 and verify open services.",
+    "allowed_tools": [
+      "nikto",
+      "web_check"
+    ],
+    "target": "127.0.0.1",
+    "expected_plan": [
+      "resolve_target_and_scope",
+      "execute_bounded_tool_probe",
+      "corroborate_evidence",
+      "record_audit_events"
+    ],
+    "expected_evidence": [
+      "evi-scen-028-01",
+      "evi-scen-028-02"
+    ],
+    "max_steps": 6,
+    "timeout_seconds": 60
+  },
+  {
+    "id": "scen-029",
+    "scenario_name": "Automated Security Evaluation Scenario 29",
+    "prompt": "Assess security posture of 127.0.0.1:8029 and verify open services.",
+    "allowed_tools": [
+      "dns_engine",
+      "osint_ip"
+    ],
+    "target": "127.0.0.1:8029",
+    "expected_plan": [
+      "resolve_target_and_scope",
+      "execute_bounded_tool_probe",
+      "corroborate_evidence",
+      "record_audit_events"
+    ],
+    "expected_evidence": [
+      "evi-scen-029-01",
+      "evi-scen-029-02"
+    ],
+    "max_steps": 6,
+    "timeout_seconds": 60
+  },
+  {
+    "id": "scen-030",
+    "scenario_name": "Automated Security Evaluation Scenario 30",
+    "prompt": "Assess security posture of 127.0.0.1 and verify open services.",
+    "allowed_tools": [
+      "nmap",
+      "curl"
+    ],
+    "target": "127.0.0.1",
+    "expected_plan": [
+      "resolve_target_and_scope",
+      "execute_bounded_tool_probe",
+      "corroborate_evidence",
+      "record_audit_events"
+    ],
+    "expected_evidence": [
+      "evi-scen-030-01",
+      "evi-scen-030-02"
+    ],
+    "max_steps": 6,
+    "timeout_seconds": 60
+  },
+  {
+    "id": "scen-031",
+    "scenario_name": "Automated Security Evaluation Scenario 31",
+    "prompt": "Assess security posture of 127.0.0.1:8031 and verify open services.",
+    "allowed_tools": [
+      "nikto",
+      "web_check"
+    ],
+    "target": "127.0.0.1:8031",
+    "expected_plan": [
+      "resolve_target_and_scope",
+      "execute_bounded_tool_probe",
+      "corroborate_evidence",
+      "record_audit_events"
+    ],
+    "expected_evidence": [
+      "evi-scen-031-01",
+      "evi-scen-031-02"
+    ],
+    "max_steps": 6,
+    "timeout_seconds": 60
+  },
+  {
+    "id": "scen-032",
+    "scenario_name": "Automated Security Evaluation Scenario 32",
+    "prompt": "Assess security posture of 127.0.0.1 and verify open services.",
+    "allowed_tools": [
+      "dns_engine",
+      "osint_ip"
+    ],
+    "target": "127.0.0.1",
+    "expected_plan": [
+      "resolve_target_and_scope",
+      "execute_bounded_tool_probe",
+      "corroborate_evidence",
+      "record_audit_events"
+    ],
+    "expected_evidence": [
+      "evi-scen-032-01",
+      "evi-scen-032-02"
+    ],
+    "max_steps": 6,
+    "timeout_seconds": 60
+  },
+  {
+    "id": "scen-033",
+    "scenario_name": "Automated Security Evaluation Scenario 33",
+    "prompt": "Assess security posture of 127.0.0.1:8033 and verify open services.",
+    "allowed_tools": [
+      "nmap",
+      "curl"
+    ],
+    "target": "127.0.0.1:8033",
+    "expected_plan": [
+      "resolve_target_and_scope",
+      "execute_bounded_tool_probe",
+      "corroborate_evidence",
+      "record_audit_events"
+    ],
+    "expected_evidence": [
+      "evi-scen-033-01",
+      "evi-scen-033-02"
+    ],
+    "max_steps": 6,
+    "timeout_seconds": 60
+  },
+  {
+    "id": "scen-034",
+    "scenario_name": "Automated Security Evaluation Scenario 34",
+    "prompt": "Assess security posture of 127.0.0.1 and verify open services.",
+    "allowed_tools": [
+      "nikto",
+      "web_check"
+    ],
+    "target": "127.0.0.1",
+    "expected_plan": [
+      "resolve_target_and_scope",
+      "execute_bounded_tool_probe",
+      "corroborate_evidence",
+      "record_audit_events"
+    ],
+    "expected_evidence": [
+      "evi-scen-034-01",
+      "evi-scen-034-02"
+    ],
+    "max_steps": 6,
+    "timeout_seconds": 60
+  }
+]

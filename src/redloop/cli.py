@@ -71,6 +71,7 @@ host_app = typer.Typer(name="host", help="Host security assessment")
 target_app = typer.Typer(name="target", help="Target discovery and technology fingerprinting")
 container_app = typer.Typer(name="container", help="Container and Dockerfile security assessment")
 file_app = typer.Typer(name="file", help="Static file and malware triage")
+eval_app = typer.Typer(name="eval", help="Evaluation and statistical benchmarking")
 
 app.add_typer(scope_app)
 app.add_typer(sandbox_app)
@@ -94,6 +95,7 @@ app.add_typer(host_app)
 app.add_typer(target_app)
 app.add_typer(container_app)
 app.add_typer(file_app)
+app.add_typer(eval_app)
 
 
 def _get_scope_manager() -> ScopeManager:
@@ -114,6 +116,21 @@ def operator_token_command(
     token, tok_hash = get_or_create_operator_token(force_generate=generate)
     console.print(f"[bold green]Operator Token:[/bold green] {token}")
     console.print(f"[dim]SHA-256 Hash:[/dim] {tok_hash}")
+
+
+@eval_app.command("run")
+def eval_run_command(
+    save_baseline: bool = typer.Option(False, "--save-baseline", help="Save current run as ratchet baseline"),
+):
+    """Run full evaluation suite and generate artifacts/eval_results.json."""
+    from scripts.run_evals import run_all_evaluations
+    results = run_all_evaluations(save_baseline=save_baseline)
+    console.print("[bold green]Evaluation Completed Successfully![/bold green]")
+    console.print(f"Composite Quality Index (Q): {results['composite_quality_index']['value']:.4f}")
+    console.print(f"Intent Holdout Accuracy:     {results['intent_holdout']['accuracy']:.2%}")
+    console.print(f"RAG nDCG@5:                  {results['rag_retrieval']['ndcg_at_5']:.4f}")
+    console.print(f"Scope Breach Rate (SBR):     {results['operational_safety']['scope_breach_rate']['value']:.4f}")
+    console.print(f"Fabrication Rate (FBR):      {results['operational_safety']['fabrication_rate']['value']:.4f}")
 
 
 # -- scope commands -----------------------------------------------------------

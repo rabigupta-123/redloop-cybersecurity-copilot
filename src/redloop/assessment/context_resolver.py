@@ -83,8 +83,16 @@ class TargetResolver:
         if t.lower() in ("localhost", "127.0.0.1"):
             return ("domain" if t.lower() == "localhost" else "ip"), t.lower()
 
-        # 5. Exclude file names from domains
-        if any(t.lower().endswith(ext) for ext in cls.FILE_EXTENSIONS):
+        # Check Phone
+        if re.fullmatch(r"(?:\+|00)[0-9\s\-\(\)\.]{7,22}", t) or re.fullmatch(r"\+?1?[-. ]?\(?\d{3}\)?[-. ]?\d{3}[-. ]?\d{4}", t):
+            return "phone", t
+
+        # Check Username
+        if re.fullmatch(r"[a-zA-Z0-9_\-\.]{2,32}", t) and not cls.DOMAIN_PATTERN.fullmatch(t):
+            return "username", t
+
+        # 5. Exclude file names from domains, except known domain TLDs
+        if any(t.lower().endswith(ext) for ext in cls.FILE_EXTENSIONS) and not t.lower().endswith(".sh"):
             return "unknown", t
 
         # 6. Domain Check
@@ -139,6 +147,11 @@ class TargetResolver:
         loc_match = re.search(r"\b(localhost|127\.0\.0\.1)\b", prompt, re.IGNORECASE)
         if loc_match:
             return "127.0.0.1", "ip"
+
+        # Check for Phone Number
+        phone_cand = re.search(r"(?:\+|00)[1-9][0-9\s\-\(\)\.]{5,18}\d", prompt) or re.search(r"\b\+?1[-. ]?\(?\d{3}\)?[-. ]?\d{3}[-. ]?\d{4}\b", prompt)
+        if phone_cand and any(w in prompt.lower() for w in ("phone", "number", "carrier", "country code", "lookup phone")):
+            return phone_cand.group(0).strip(), "phone"
 
         # Check for Domain
         for m in cls.DOMAIN_PATTERN.finditer(prompt):
@@ -243,6 +256,14 @@ class TargetResolver:
         if action == "osint_email":
             if target_type != "email":
                 return False, f"Target type mismatch: Email intelligence requires a valid email address (e.g. user@example.com), but received {target_type} target '{target}'. IP addresses and domains cannot be queried as email accounts."
+            return True, None
+
+        if action == "osint_phone":
+            if target_type not in ("phone", "unknown"):
+                return False, f"Target type mismatch: Phone intelligence requires a phone number, but received {target_type} target '{target}'."
+            return True, None
+
+        if action == "osint_username":
             return True, None
 
         if action in ("tool_ports", "tool_nmap"):
