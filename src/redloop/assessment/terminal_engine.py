@@ -333,6 +333,16 @@ class HostExecutionAdapter(BaseExecutionAdapter):
         elif is_nt and bin_lower == "printf":
             exe_path = sys.executable
             cmd_tokens = [exe_path, "-c", "import sys; fmt = sys.argv[1] if len(sys.argv) > 1 else ''; vals = tuple(sys.argv[2:]); sys.stdout.write(fmt % vals if vals else fmt)"] + args
+        elif is_nt and bin_lower in ("ss", "netstat"):
+            netstat_exe = shutil.which("netstat")
+            if netstat_exe:
+                exe_path = netstat_exe
+                cmd_tokens = [netstat_exe, "-ano"]
+        elif is_nt and bin_lower in ("ifconfig", "ipconfig"):
+            ipc_exe = shutil.which("ipconfig")
+            if ipc_exe:
+                exe_path = ipc_exe
+                cmd_tokens = [ipc_exe]
         elif bin_lower in ("python", "python3"):
             exe_path = sys.executable
             cmd_tokens = [exe_path] + args
@@ -615,6 +625,7 @@ class WSLExecutionAdapter(BaseExecutionAdapter):
             end_ts = datetime.now(timezone.utc).isoformat()
             out_text, out_trunc = _safe_decode(raw_out or b"")
             err_text, err_trunc = _safe_decode(raw_err or b"")
+            out_hash = hashlib.sha256((raw_out or b"") + (raw_err or b"")).hexdigest()
 
             if cancelled:
                 return ExecutionResult(
@@ -634,6 +645,7 @@ class WSLExecutionAdapter(BaseExecutionAdapter):
                     error="Execution cancelled by user.",
                     task_id=task_id,
                     truncated=out_trunc or err_trunc,
+                    output_hash=out_hash,
                 )
 
             if timed_out:
@@ -654,6 +666,7 @@ class WSLExecutionAdapter(BaseExecutionAdapter):
                     error=f"WSL execution timed out after {timeout_seconds}s.",
                     task_id=task_id,
                     truncated=out_trunc or err_trunc,
+                    output_hash=out_hash,
                 )
 
             return ExecutionResult(
@@ -671,9 +684,11 @@ class WSLExecutionAdapter(BaseExecutionAdapter):
                 status=ExecutionStatus.SUCCESS if proc.returncode == 0 else ExecutionStatus.ERROR,
                 task_id=task_id,
                 truncated=out_trunc or err_trunc,
+                output_hash=out_hash,
             )
         except Exception as exc:
             duration_ms = (time.time() - t0) * 1000
+            err_str = str(exc)
             return ExecutionResult(
                 command=full_cmd_str,
                 args=args,
@@ -684,11 +699,12 @@ class WSLExecutionAdapter(BaseExecutionAdapter):
                 completion_timestamp=datetime.now(timezone.utc).isoformat(),
                 duration_ms=duration_ms,
                 stdout="",
-                stderr=str(exc),
+                stderr=err_str,
                 exit_code=1,
                 status=ExecutionStatus.ERROR,
                 error=f"WSL execution error: {exc}",
                 task_id=task_id,
+                output_hash=hashlib.sha256(err_str.encode("utf-8")).hexdigest(),
             )
 
 
@@ -736,6 +752,7 @@ class KaliExecutionAdapter(BaseExecutionAdapter):
             )
 
         if not avail:
+            err_msg = reason or "Kali Linux is not installed or registered."
             return ExecutionResult(
                 command=full_cmd_str,
                 args=args,
@@ -746,11 +763,12 @@ class KaliExecutionAdapter(BaseExecutionAdapter):
                 completion_timestamp=datetime.now(timezone.utc).isoformat(),
                 duration_ms=0.0,
                 stdout="",
-                stderr=reason or "Kali Linux is not installed or registered.",
+                stderr=err_msg,
                 exit_code=127,
                 status=ExecutionStatus.ENVIRONMENT_UNAVAILABLE,
                 error=reason,
                 task_id=task_id,
+                output_hash=hashlib.sha256(err_msg.encode("utf-8")).hexdigest(),
             )
 
         kali_info = EnvironmentDetector.detect_kali()
@@ -874,6 +892,7 @@ class DockerExecutionAdapter(BaseExecutionAdapter):
             end_ts = datetime.now(timezone.utc).isoformat()
             out_text, out_trunc = _safe_decode(raw_out or b"")
             err_text, err_trunc = _safe_decode(raw_err or b"")
+            out_hash = hashlib.sha256((raw_out or b"") + (raw_err or b"")).hexdigest()
 
             if cancelled:
                 return ExecutionResult(
@@ -893,6 +912,7 @@ class DockerExecutionAdapter(BaseExecutionAdapter):
                     error="Execution cancelled by user.",
                     task_id=task_id,
                     truncated=out_trunc or err_trunc,
+                    output_hash=out_hash,
                 )
 
             if timed_out:
@@ -913,6 +933,7 @@ class DockerExecutionAdapter(BaseExecutionAdapter):
                     error=f"Docker container execution timed out after {timeout_seconds}s.",
                     task_id=task_id,
                     truncated=out_trunc or err_trunc,
+                    output_hash=out_hash,
                 )
 
             return ExecutionResult(
@@ -930,9 +951,11 @@ class DockerExecutionAdapter(BaseExecutionAdapter):
                 status=ExecutionStatus.SUCCESS if proc.returncode == 0 else ExecutionStatus.ERROR,
                 task_id=task_id,
                 truncated=out_trunc or err_trunc,
+                output_hash=out_hash,
             )
         except Exception as exc:
             duration_ms = (time.time() - t0) * 1000
+            err_str = str(exc)
             return ExecutionResult(
                 command=full_cmd_str,
                 args=args,
@@ -943,11 +966,12 @@ class DockerExecutionAdapter(BaseExecutionAdapter):
                 completion_timestamp=datetime.now(timezone.utc).isoformat(),
                 duration_ms=duration_ms,
                 stdout="",
-                stderr=str(exc),
+                stderr=err_str,
                 exit_code=1,
                 status=ExecutionStatus.ERROR,
                 error=f"Docker execution error: {exc}",
                 task_id=task_id,
+                output_hash=hashlib.sha256(err_str.encode("utf-8")).hexdigest(),
             )
 
 
@@ -1048,7 +1072,7 @@ class UnifiedTerminalEngine:
             if self.scope_guard is not None:
                 authorized = False
                 try:
-                    self.scope_guard.is_target_authorized(inferred_target, "scan")
+                    self.scope_guard.is_target_authorized(inferred_target, "scan", require_port=False)
                     authorized = True
                 except Exception:
                     authorized = False
