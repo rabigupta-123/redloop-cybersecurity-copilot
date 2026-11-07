@@ -97,6 +97,22 @@ class FeedbackLesson:
         return asdict(self)
 
 
+STOP_WORDS = {
+    "a", "about", "above", "after", "again", "against", "all", "am", "an", "and", "any", "are", "aren't",
+    "as", "at", "be", "because", "been", "before", "being", "below", "between", "both", "but", "by", "can",
+    "can't", "cannot", "could", "couldn't", "did", "didn't", "do", "does", "doesn't", "doing", "don't", "down",
+    "during", "each", "few", "for", "from", "further", "had", "hadn't", "has", "hasn't", "have", "haven't",
+    "having", "he", "her", "here", "hers", "herself", "him", "himself", "his", "how", "i", "if", "in", "into",
+    "is", "isn't", "it", "its", "itself", "let's", "me", "more", "most", "mustn't", "my", "myself", "no", "nor",
+    "not", "of", "off", "on", "once", "only", "or", "other", "ought", "our", "ours", "ourselves", "out", "over",
+    "own", "same", "shan't", "she", "should", "shouldn't", "so", "some", "such", "than", "that", "the", "their",
+    "theirs", "them", "themselves", "then", "there", "these", "they", "this", "those", "through", "to", "too",
+    "under", "until", "up", "very", "was", "wasn't", "we", "were", "weren't", "what", "when", "where", "which",
+    "while", "who", "whom", "why", "with", "won't", "would", "wouldn't", "you", "your", "yours", "yourself",
+    "yourselves", "tell", "give", "explain", "describe", "show", "know"
+}
+
+
 class RAGEngine:
     """Cybersecurity Knowledge Base & Experience-Driven Feedback Store."""
 
@@ -113,6 +129,60 @@ class RAGEngine:
         self._load_index()
         self._load_lessons()
         self._ensure_bootstrap_playbooks()
+        self._index_seed_directory()
+
+    def _index_seed_directory(self) -> None:
+        """Scan and index all seed topic markdown files."""
+        seed_candidates = [
+            self.base_dir / "seed",
+            Path("data/knowledge/seed"),
+        ]
+        seed_dir = None
+        for cand in seed_candidates:
+            if cand.exists() and cand.is_dir():
+                seed_dir = cand
+                break
+        if not seed_dir:
+            return
+
+        existing_sources = {c.source for c in self.chunks}
+        indexed_new = False
+        for md_file in sorted(seed_dir.glob("*.md")):
+            src_uri = f"seed://{md_file.name}"
+            if src_uri in existing_sources:
+                continue
+            try:
+                raw_text = md_file.read_text(encoding="utf-8")
+                title = md_file.stem.replace("_", " ").title()
+                category = "cybersecurity_knowledge"
+                source_label = src_uri
+                clean_body = raw_text
+
+                if raw_text.startswith("---"):
+                    parts = raw_text.split("---", 2)
+                    if len(parts) >= 3:
+                        fm_str = parts[1]
+                        clean_body = parts[2].strip()
+                        for line in fm_str.splitlines():
+                            if line.startswith("title:"):
+                                title = line.split(":", 1)[1].strip().strip('"').strip("'")
+                            elif line.startswith("source:"):
+                                source_label = line.split(":", 1)[1].strip().strip('"').strip("'")
+
+                self.ingest_text(
+                    title=title,
+                    text=clean_body,
+                    category=category,
+                    source=source_label,
+                    chunk_size_words=200,
+                    chunk_overlap_words=30,
+                )
+                indexed_new = True
+            except Exception as e:
+                logger.error("Failed to index seed file %s: %s", md_file, e)
+
+        if indexed_new:
+            self._save_index()
 
     def _load_index(self) -> None:
         if self.index_file.exists():
@@ -232,7 +302,10 @@ class RAGEngine:
 
     def search(self, query: str, top_k: int = 3, min_score: float = 0.05) -> list[SearchResult]:
         """Perform TF-IDF / BM25 term matching across ingested knowledge chunks."""
-        q_tokens = [w.lower() for w in re.findall(r"\w+", query) if len(w) > 2]
+        raw_tokens = [w.lower() for w in re.findall(r"[a-zA-Z0-9_-]+", query) if len(w) >= 2]
+        q_tokens = [t for t in raw_tokens if t not in STOP_WORDS]
+        if not q_tokens:
+            q_tokens = raw_tokens
         if not q_tokens or not self.chunks:
             return []
 
@@ -257,18 +330,21 @@ class RAGEngine:
             score = 0.0
             doc_len = c.word_count
 
+            matched_terms = 0
             for qt in q_tokens:
                 term_freq = len(re.findall(rf"\b{re.escape(qt)}\b", c_text_lower))
                 if qt in c_title_lower:
                     term_freq += 3  # Boost title matches
 
                 if term_freq > 0:
+                    matched_terms += 1
                     doc_freq = df.get(qt, 1)
                     idf = math.log((num_docs - doc_freq + 0.5) / (doc_freq + 0.5) + 1.0)
                     tf_component = (term_freq * (k1 + 1)) / (term_freq + k1 * (1 - b + b * (doc_len / avg_dl)))
                     score += idf * tf_component
 
-            if score >= min_score:
+            coverage = matched_terms / max(1, len(q_tokens))
+            if score >= min_score and (coverage >= 0.40 or matched_terms >= 2 or len(q_tokens) == 1):
                 scores.append((c, score))
 
         scores.sort(key=lambda x: x[1], reverse=True)

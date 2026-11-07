@@ -103,7 +103,7 @@ class AdvancedForensicsEngine:
         return ForensicsReport(
             analysis_type="windows_log_triage",
             target_or_file="Windows Security Log Stream",
-            summary=f"Detected {failed_logons} failed logons, {successful_logons} successful logons, {len(services_created)} new services.",
+            summary=f"Identified Windows security events: {failed_logons} failed logons (Event 4625), {successful_logons} successful logons (Event 4624), {len(services_created)} new services (Event 7045).",
             details={
                 "failed_logon_count": failed_logons,
                 "successful_logon_count": successful_logons,
@@ -164,6 +164,103 @@ class AdvancedForensicsEngine:
                 "targeted_users": list(user_accounts_targeted),
                 "sudo_commands": sudo_invocations[:10],
                 "attacker_ip_addresses": list(attacker_ips),
+            },
+            indicators=indicators,
+            risk_level=risk,
+        )
+
+    # =========================================================================
+    # 2.5 PCAP PACKET SUMMARY ANALYSIS
+    # =========================================================================
+    @classmethod
+    def analyze_pcap_summary(cls, pcap_text: str) -> ForensicsReport:
+        """Parse tcpdump, tshark, or Wireshark packet summaries."""
+        packet_count = 0
+        src_ips = set()
+        dst_ips = set()
+        dst_ports = set()
+        protocols = set()
+        syn_count = 0
+        ack_count = 0
+        rst_count = 0
+
+        for line in pcap_text.splitlines():
+            line_str = line.strip()
+            if not line_str:
+                continue
+            packet_count += 1
+            line_upper = line_str.upper()
+            if "TCP" in line_upper or "FLAGS [" in line_upper:
+                protocols.add("TCP")
+            if "UDP" in line_upper:
+                protocols.add("UDP")
+            if "ICMP" in line_upper:
+                protocols.add("ICMP")
+            if "DNS" in line_upper or ".53:" in line_str:
+                protocols.add("DNS")
+            if "ARP" in line_upper:
+                protocols.add("ARP")
+
+            if "Flags [S]" in line_str or "Flags [S.]" in line_str:
+                syn_count += 1
+            if "Flags [.]" in line_str or "Flags [P.]" in line_str:
+                ack_count += 1
+            if "Flags [R" in line_str:
+                rst_count += 1
+
+            # Extract IP addresses
+            ip_matches = re.findall(r"\b(?:\d{1,3}\.){3}\d{1,3}\b", line_str)
+            if len(ip_matches) >= 2:
+                src_ips.add(ip_matches[0])
+                dst_ips.add(ip_matches[1])
+            elif len(ip_matches) == 1:
+                src_ips.add(ip_matches[0])
+
+            # Extract destination ports
+            port_match = re.search(r">\s*(?:[\d\.]+)\.(\d+):", line_str) or re.search(r"Dst Port:\s*(\d+)", line_str)
+            if port_match:
+                dst_ports.add(int(port_match.group(1)))
+
+        # Detection heuristics
+        is_port_scan = len(dst_ports) >= 5 and syn_count >= 5
+        is_syn_flood = syn_count > 20 and ack_count == 0
+
+        risk = "INFORMATIONAL"
+        if is_syn_flood or (is_port_scan and len(dst_ports) > 20):
+            risk = "CRITICAL"
+        elif is_port_scan or rst_count > 10:
+            risk = "HIGH"
+        elif packet_count > 0:
+            risk = "MEDIUM"
+
+        indicators = [IOCItem("ipv4", ip, "Packet Source IP", "T1071 (Application Layer Protocol)") for ip in src_ips]
+        for ip in dst_ips:
+            indicators.append(IOCItem("ipv4", ip, "Packet Destination IP", "T1071 (Application Layer Protocol)"))
+
+        summary = (
+            f"Analyzed {packet_count} packet frames across protocols {sorted(list(protocols)) or ['TCP/IP']}. "
+            f"Observed {len(src_ips)} source IPs, {len(dst_ips)} destination IPs, and {len(dst_ports)} unique destination ports."
+        )
+        if is_port_scan:
+            summary += " ALERT: Network port scanning activity detected (MITRE T1046)."
+        if is_syn_flood:
+            summary += " ALERT: Potential SYN Flood Denial-of-Service detected (MITRE T1498)."
+
+        return ForensicsReport(
+            analysis_type="pcap_summary_triage",
+            target_or_file="PCAP/Packet Stream",
+            summary=summary,
+            details={
+                "packet_count": packet_count,
+                "protocols": sorted(list(protocols)),
+                "source_ips": sorted(list(src_ips)),
+                "destination_ips": sorted(list(dst_ips)),
+                "destination_ports": sorted(list(dst_ports))[:20],
+                "syn_packets": syn_count,
+                "ack_packets": ack_count,
+                "rst_packets": rst_count,
+                "is_port_scan_detected": is_port_scan,
+                "is_syn_flood_detected": is_syn_flood,
             },
             indicators=indicators,
             risk_level=risk,
@@ -354,13 +451,34 @@ class AdvancedForensicsEngine:
                 entropy -= p_i * math.log2(p_i)
         return round(entropy, 4)
 
-    def triage_log(self, log_type: str, raw_content: str) -> Dict[str, Any]:
-        """Triage Windows, Linux, or Email log text and produce structured findings."""
+    def triage_log(self, arg1: str, arg2: str | None = None, log_type: str | None = None) -> Dict[str, Any]:
+        """Triage Windows, Linux, PCAP, or Email log text and produce structured findings."""
+        # Normalize arguments whether passed as (log_type, raw_content) or (raw_content, log_type=...)
+        if log_type is not None:
+            actual_type = log_type
+            raw_content = arg1
+        elif arg2 is not None:
+            # Check if arg1 is log_type
+            if arg1 in ("windows_event", "sysmon", "linux_auth", "pcap", "email"):
+                actual_type = arg1
+                raw_content = arg2
+            else:
+                actual_type = arg2
+                raw_content = arg1
+        else:
+            raw_content = arg1
+            actual_type = "windows_event"
+
+        actual_type = actual_type.lower()
         findings: List[Dict[str, Any]] = []
 
-        if log_type == "windows_event":
+        if actual_type == "pcap":
+            pcap_rep = self.analyze_pcap_summary(raw_content)
+            return pcap_rep.to_dict()
+
+        if actual_type in ("windows_event", "sysmon"):
             # Check XML EventID or text
-            event_id_m = re.search(r"<EventID>(\d+)</EventID>", raw_content) or re.search(r"\bEvent ID:\s*(\d+)\b", raw_content) or re.search(r"\b(4625|4624|7045|4688)\b", raw_content)
+            event_id_m = re.search(r"<EventID>(\d+)</EventID>", raw_content) or re.search(r"\bEvent ID:\s*(\d+)\b", raw_content) or re.search(r"\b(4625|4624|7045|4688|1|3|7|11)\b", raw_content)
             user_m = re.search(r'TargetUserName">([^<]+)<', raw_content) or re.search(r"Account Name:\s*([^\r\n]+)", raw_content)
             ip_m = re.search(r'IpAddress">([^<]+)<', raw_content) or re.search(r"Source Network Address:\s*([\d\.]+)", raw_content)
 
@@ -370,16 +488,16 @@ class AdvancedForensicsEngine:
 
             findings.append({
                 "event_id": ev_id,
-                "severity": "CRITICAL" if ev_id == 4625 else "HIGH",
+                "severity": "CRITICAL" if ev_id == 4625 else ("HIGH" if ev_id in (7045, 1) else "MEDIUM"),
                 "target_user": target_user,
                 "source_ip": src_ip,
                 "mitre_technique": "T1110 (Brute Force)" if ev_id == 4625 else "T1059 (Command Execution)",
                 "description": f"Windows Security Event {ev_id} for target user {target_user} from {src_ip}.",
             })
             summary = f"Identified Windows security event ID {ev_id} targeting account '{target_user}'."
-            risk_level = "CRITICAL" if ev_id == 4625 else "HIGH"
+            risk_level = "CRITICAL" if ev_id == 4625 else ("HIGH" if ev_id in (7045, 1) else "MEDIUM")
 
-        elif log_type == "linux_auth":
+        elif actual_type == "linux_auth":
             report = self.analyze_linux_auth_log(raw_content)
             for line in raw_content.splitlines():
                 if "Failed password" in line or "Invalid user" in line:
@@ -393,11 +511,11 @@ class AdvancedForensicsEngine:
             risk_level = report.risk_level
 
         else:
-            summary = f"Processed generic {log_type} log stream."
+            summary = f"Processed generic {actual_type} log stream."
             risk_level = "INFORMATIONAL"
 
         return {
-            "log_type": log_type,
+            "log_type": actual_type,
             "findings": findings,
             "summary": summary,
             "risk_level": risk_level,
@@ -414,4 +532,7 @@ def get_advanced_forensics_engine() -> AdvancedForensicsEngine:
     if _advanced_forensics_instance is None:
         _advanced_forensics_instance = AdvancedForensicsEngine()
     return _advanced_forensics_instance
+
+
+get_forensics_advanced_engine = get_advanced_forensics_engine
 
