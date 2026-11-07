@@ -973,23 +973,71 @@ class AutonomousAgentOrchestrator:
             f"**Task ID:** `{task.task_id}` | **Target:** `{tgt}` ({ttype}) | **Status:** `{status}`",
             f"**Execution Timestamp:** `{task.start_time}` to `{task.end_time or 'Present'}`",
             "",
-            "## 1. Executive Summary",
+            "<Investigation Plan>",
+            "## 1. Executive Summary & Investigation Plan",
             f"Autonomous assessment targeting `{tgt}` completed with operational status `{status}`.",
             f"Executed {len(completed_steps)} of {len(task.steps)} planned security stages.",
+            f"- **Target:** `{tgt}` ({ttype})",
+            f"- **Operating Mode:** `{task.task_type}`",
+            f"- **Scope Status:** {'Authorized' if not task.requires_approval or task.approval_granted else 'Restricted'}",
+            f"- **Planned Tool Chain:** {', '.join([f'`{s.tool_id}`' for s in task.steps]) if task.steps else 'None'}",
+            "</Investigation Plan>",
             "",
-            "## 2. Tool Selection & Execution Transparency",
-            "| Step | Tool | Environment | Status | Duration | Evidence ID |",
-            "| :--- | :--- | :--- | :--- | :--- | :--- |",
+            "<Execution Timeline>",
+            "## 2. Execution Timeline & Tool Selection (Tool Selection & Execution Transparency)",
+            "| Step | Action | Status | Elapsed | Output Hash |",
+            "| :--- | :--- | :--- | :--- | :--- |",
         ]
 
         for s in task.steps:
+            ev_snippet = (s.evidence_id or "—")[:12]
             lines.append(
-                f"| {s.name} | `{s.tool_id}` | `{s.environment}` | `{s.status.value}` | {s.duration_ms:.1f}ms | `{s.evidence_id or '—'}` |"
+                f"| `{s.step_id}` | {s.name} | `{s.status.value}` | {s.duration_ms:.1f}ms | `{ev_snippet}` |"
             )
 
         lines.extend([
+            "</Execution Timeline>",
             "",
-            "## 3. Discovered Security Findings",
+            "<Tool Execution Cards>",
+            "## 3. Tool Execution Cards",
+        ])
+
+        for s in task.steps:
+            rationale = task.tool_rationales.get(s.tool_id, f"Execution of {s.tool_id} for {s.required_capability}.")
+            lines.append(f"### Tool: `{s.tool_id}` ({s.environment})")
+            lines.append(f"- **Purpose:** {rationale}")
+            lines.append(f"- **Capability:** `{s.required_capability}`")
+            lines.append(f"- **Command:** `{s.tool_id} {' '.join(s.command_args)}`")
+            lines.append(f"- **Status:** `{s.status.value}` (Exit Code: {s.exit_code})")
+            lines.append("")
+
+        lines.extend([
+            "</Tool Execution Cards>",
+            "",
+            "<REDLOOP Terminal>",
+            "## 4. REDLOOP Terminal Output",
+        ])
+
+        for s in task.steps:
+            lines.append(f"#### [{s.step_id}] `{s.tool_id} {' '.join(s.command_args)}`")
+            lines.append(f"- **Duration:** {s.duration_ms:.1f}ms | **Exit Code:** {s.exit_code} | **Evidence ID:** `{s.evidence_id or 'none'}`")
+            if s.stdout.strip():
+                lines.append("```bash")
+                lines.append(s.stdout.strip())
+                lines.append("```")
+            elif s.stderr.strip():
+                lines.append("```bash")
+                lines.append(f"[STDERR] {s.stderr.strip()}")
+                lines.append("```")
+            else:
+                lines.append("*(No terminal output recorded)*")
+            lines.append("")
+
+        lines.extend([
+            "</REDLOOP Terminal>",
+            "",
+            "<Discovered Security Findings & Attack Surface>",
+            "## 5. Discovered Security Findings & Attack Surface",
         ])
 
         if task.findings:
@@ -1001,11 +1049,19 @@ class AutonomousAgentOrchestrator:
             lines.append("No active vulnerabilities or security exceptions discovered during verified steps.")
 
         lines.extend([
+            "</Discovered Security Findings & Attack Surface>",
             "",
-            "## 4. Assessment Intelligence & Quality Metrics",
+            "<Final Analysis & Recommendations>",
+            "## 6. Assessment Intelligence & Quality Metrics",
             f"- **Evidence Completeness:** {task.metrics.get('completeness', {}).get('percentage', 'N/A')}",
             f"- **Confidence Score:** {task.metrics.get('confidence', {}).get('score', 'N/A')} ({task.metrics.get('confidence', {}).get('confidence_level', 'N/A')})",
             f"- **Operational Priority:** {task.metrics.get('risk_priority', {}).get('operational_priority', 'P5_INFORMATIONAL')}",
+            "",
+            "## 7. Actionable Recommendations",
+            f"1. Continuous monitoring: verify and audit services listening on target `{tgt}`.",
+            "2. Access control: enforce least-privilege firewall rules for all exposed TCP/UDP sockets.",
+            "3. Cryptographic hygiene: ensure all web interfaces enforce TLS 1.3 and modern cipher suites.",
+            "</Final Analysis & Recommendations>",
             "",
             "---",
             "*Report cryptographically grounded in local execution ledger. Generated deterministically by REDLOOP Phase 3.*",

@@ -204,6 +204,7 @@ class TargetResolver:
         NO_TARGET_ACTIONS = {
             "general_chat",
             "coding_and_research",
+            "tool_detection",
             "audit_verify",
             "ctf_analysis",
             "ctf_codec",

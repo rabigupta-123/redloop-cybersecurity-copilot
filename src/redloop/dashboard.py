@@ -933,6 +933,11 @@ def create_app(
     register_chat_routes(app, db_path, scope_manager=scope_manager)
     register_workbench_routes(app, db_path, scope_manager)
 
+    @app.get("/health")
+    @app.get("/api/health")
+    def health_check():
+        return {"status": "ok", "service": "REDLOOP Unified Cybersecurity Platform", "version": "1.0.0"}
+
     @app.middleware("http")
     async def security_headers(request, call_next):
         response = await call_next(request)

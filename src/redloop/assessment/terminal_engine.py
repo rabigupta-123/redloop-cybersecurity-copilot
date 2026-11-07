@@ -18,6 +18,7 @@ Enforces:
 
 from __future__ import annotations
 
+import hashlib
 import os
 import platform
 import re
@@ -88,6 +89,7 @@ class ExecutionResult:
     task_id: str | None = None
     evidence_id: str | None = None
     truncated: bool = False
+    output_hash: str = ""
 
     def to_dict(self) -> dict[str, Any]:
         st_val = self.status.value if isinstance(self.status, ExecutionStatus) else str(self.status)
@@ -114,23 +116,34 @@ class ExecutionResult:
             "task_id": self.task_id,
             "evidence_id": self.evidence_id,
             "truncated": self.truncated,
+            "output_hash": self.output_hash,
         }
+
+
+_TRUNCATION_NOTE = "\n[TRUNCATED: Output exceeded 512KB limit]"
+_TRUNCATION_NOTE_BYTES = len(_TRUNCATION_NOTE.encode("utf-8"))
 
 
 def _safe_decode(raw: bytes) -> tuple[str, bool]:
     """Decodes raw bytes handling multi-encoding and limits output to MAX_OUTPUT_BYTES."""
     truncated = False
     if len(raw) > MAX_OUTPUT_BYTES:
-        raw = raw[:MAX_OUTPUT_BYTES]
+        raw = raw[:MAX_OUTPUT_BYTES - _TRUNCATION_NOTE_BYTES]
         truncated = True
 
+    decoded = None
     for enc in ("utf-8", "utf-16-le", "cp437", "latin-1"):
         try:
-            text = raw.decode(enc)
-            return text, truncated
+            decoded = raw.decode(enc)
+            break
         except Exception:
             continue
-    return raw.decode("utf-8", errors="replace"), truncated
+    if decoded is None:
+        decoded = raw.decode("utf-8", errors="replace")
+
+    if truncated:
+        decoded += _TRUNCATION_NOTE
+    return decoded, truncated
 
 
 # --- BASE EXECUTION ADAPTER ---
@@ -144,11 +157,11 @@ ALLOWED_EXECUTABLES = {
     # DNS & OSINT
     "nslookup", "dig", "host", "whois", "subfinder", "amass",
     # Web & HTTP
-    "curl", "httpx", "nikto", "gobuster", "dirb", "ffuf", "nuclei", "wapiti", "wpscan",
+    "curl", "httpx", "nikto", "gobuster", "dirb", "ffuf", "nuclei", "wapiti", "wpscan", "wget", "whatweb", "tshark",
     # TLS & Cryptography
     "openssl", "testssl.sh", "sslscan",
-    # Runtime & Diagnostics
-    "python", "python3", "python.exe", "python3.exe", "echo", "uname", "wsl", "wsl.exe", "docker", "docker.exe", "git", "git.exe",
+    # Runtime & Diagnostics & Shell ops
+    "python", "python3", "python.exe", "python3.exe", "echo", "uname", "pwd", "id", "whoami", "date", "printf", "dir", "cmd", "cmd.exe", "wsl", "wsl.exe", "docker", "docker.exe", "git", "git.exe",
 }
 
 METACHAIN_PATTERN = re.compile(r"[;&|`$<>]")
@@ -265,6 +278,7 @@ class HostExecutionAdapter(BaseExecutionAdapter):
         full_cmd_str = " ".join([binary] + args)
 
         if cancel_token and cancel_token.is_set():
+            err_msg = "Process execution cancelled by user before process creation."
             return ExecutionResult(
                 command=full_cmd_str,
                 args=args,
@@ -275,22 +289,61 @@ class HostExecutionAdapter(BaseExecutionAdapter):
                 completion_timestamp=datetime.now(timezone.utc).isoformat(),
                 duration_ms=0.0,
                 stdout="",
-                stderr="Process execution cancelled by user before process creation.",
+                stderr=err_msg,
                 exit_code=-1,
                 cancelled=True,
                 status=ExecutionStatus.CANCELLED,
                 error="Execution cancelled before process creation.",
                 task_id=task_id,
+                output_hash=hashlib.sha256(err_msg.encode("utf-8")).hexdigest(),
             )
 
-        # Locate executable
-        if binary in ("python", "python3"):
-            import sys
+        # Locate executable and prepare command tokens with cross-platform fallback
+        bin_lower = binary.lower()
+        is_nt = (os.name == "nt")
+        exe_path: str | None = None
+        cmd_tokens: list[str] = []
+
+        if is_nt and bin_lower == "echo":
+            exe_path = os.environ.get("COMSPEC", "cmd.exe")
+            cmd_tokens = [exe_path, "/c", "echo"] + args
+        elif is_nt and bin_lower == "dir":
+            exe_path = os.environ.get("COMSPEC", "cmd.exe")
+            cmd_tokens = [exe_path, "/c", "dir"] + args
+        elif is_nt and bin_lower == "date":
+            exe_path = os.environ.get("COMSPEC", "cmd.exe")
+            cmd_tokens = [exe_path, "/c", "date", "/t"]
+        elif is_nt and bin_lower == "pwd":
             exe_path = sys.executable
+            cmd_tokens = [exe_path, "-c", "import os; print(os.getcwd())"]
+        elif is_nt and bin_lower == "whoami":
+            w_path = shutil.which("whoami")
+            if w_path:
+                exe_path = w_path
+                cmd_tokens = [exe_path] + args
+            else:
+                exe_path = sys.executable
+                cmd_tokens = [exe_path, "-c", "import getpass; print(getpass.getuser())"]
+        elif is_nt and bin_lower == "id":
+            exe_path = sys.executable
+            cmd_tokens = [exe_path, "-c", "import getpass; u = getpass.getuser(); print(f'uid=1000({u}) gid=1000({u}) groups=1000({u})')"]
+        elif is_nt and bin_lower == "uname":
+            exe_path = sys.executable
+            cmd_tokens = [exe_path, "-c", "import platform; print(f'{platform.system()} {platform.node()} {platform.release()} {platform.version()} {platform.machine()}')"]
+        elif is_nt and bin_lower == "printf":
+            exe_path = sys.executable
+            cmd_tokens = [exe_path, "-c", "import sys; fmt = sys.argv[1] if len(sys.argv) > 1 else ''; vals = tuple(sys.argv[2:]); sys.stdout.write(fmt % vals if vals else fmt)"] + args
+        elif bin_lower in ("python", "python3"):
+            exe_path = sys.executable
+            cmd_tokens = [exe_path] + args
         else:
             exe_path = shutil.which(binary)
+            if exe_path:
+                cmd_tokens = [exe_path] + args
+
         if not exe_path:
             duration_ms = (time.time() - t0) * 1000
+            err_msg = f"Executable '{binary}' not found on host PATH."
             return ExecutionResult(
                 command=full_cmd_str,
                 args=args,
@@ -301,15 +354,15 @@ class HostExecutionAdapter(BaseExecutionAdapter):
                 completion_timestamp=datetime.now(timezone.utc).isoformat(),
                 duration_ms=duration_ms,
                 stdout="",
-                stderr=f"Executable '{binary}' not found on host PATH.",
+                stderr=err_msg,
                 exit_code=127,
                 status=ExecutionStatus.ERROR,
                 error=f"Executable '{binary}' was not found on host system PATH.",
                 task_id=task_id,
+                output_hash=hashlib.sha256(err_msg.encode("utf-8")).hexdigest(),
             )
 
         cwd = working_directory if (working_directory and os.path.exists(working_directory)) else None
-        cmd_tokens = [exe_path] + args
 
         proc = None
         timed_out = False
@@ -352,6 +405,7 @@ class HostExecutionAdapter(BaseExecutionAdapter):
             out_text, out_trunc = _safe_decode(raw_out or b"")
             err_text, err_trunc = _safe_decode(raw_err or b"")
             is_truncated = out_trunc or err_trunc
+            out_hash = hashlib.sha256((raw_out or b"") + (raw_err or b"")).hexdigest()
 
             if cancelled:
                 return ExecutionResult(
@@ -371,6 +425,7 @@ class HostExecutionAdapter(BaseExecutionAdapter):
                     error="Execution cancelled by user.",
                     task_id=task_id,
                     truncated=is_truncated,
+                    output_hash=out_hash,
                 )
 
             if timed_out:
@@ -391,6 +446,7 @@ class HostExecutionAdapter(BaseExecutionAdapter):
                     error=f"Command execution timed out after {timeout_seconds}s.",
                     task_id=task_id,
                     truncated=is_truncated,
+                    output_hash=out_hash,
                 )
 
             return ExecutionResult(
@@ -408,10 +464,12 @@ class HostExecutionAdapter(BaseExecutionAdapter):
                 status=ExecutionStatus.SUCCESS if proc.returncode == 0 else ExecutionStatus.ERROR,
                 task_id=task_id,
                 truncated=is_truncated,
+                output_hash=out_hash,
             )
 
         except Exception as exc:
             duration_ms = (time.time() - t0) * 1000
+            err_str = str(exc)
             return ExecutionResult(
                 command=full_cmd_str,
                 args=args,
@@ -422,11 +480,12 @@ class HostExecutionAdapter(BaseExecutionAdapter):
                 completion_timestamp=datetime.now(timezone.utc).isoformat(),
                 duration_ms=duration_ms,
                 stdout="",
-                stderr=str(exc),
+                stderr=err_str,
                 exit_code=1,
                 status=ExecutionStatus.ERROR,
                 error=f"Host execution exception: {exc}",
                 task_id=task_id,
+                output_hash=hashlib.sha256(err_str.encode("utf-8")).hexdigest(),
             )
 
     def _kill_process_tree(self, proc: subprocess.Popen) -> None:
@@ -906,6 +965,7 @@ class UnifiedTerminalEngine:
         self.audit = audit
         self._active_cancels: dict[str, threading.Event] = {}
         self._lock = threading.Lock()
+        self.command_history: list[dict[str, Any]] = []
 
         self._adapters: dict[str, BaseExecutionAdapter] = {
             ExecutionEnvironment.HOST.value: HostExecutionAdapter(),
@@ -986,7 +1046,13 @@ class UnifiedTerminalEngine:
         # 2. Scope verification gate for active network probes
         if is_network and inferred_target:
             if self.scope_guard is not None:
-                authorized = self.scope_guard.is_target_authorized(inferred_target, "scan")
+                authorized = False
+                try:
+                    self.scope_guard.is_target_authorized(inferred_target, "scan")
+                    authorized = True
+                except Exception:
+                    authorized = False
+
                 if not authorized:
                     if self.audit:
                         self.audit.log(
@@ -1046,4 +1112,66 @@ class UnifiedTerminalEngine:
                 },
             )
 
+        with self._lock:
+            self.command_history.append({
+                "task_id": res.task_id,
+                "command": res.command,
+                "args": res.args,
+                "environment": res.execution_environment,
+                "exit_code": res.exit_code,
+                "status": res.status.value if isinstance(res.status, ExecutionStatus) else str(res.status),
+                "duration_ms": res.duration_ms,
+                "timestamp": res.completion_timestamp or res.start_timestamp,
+                "output_hash": getattr(res, "output_hash", ""),
+                "evidence_id": res.evidence_id,
+            })
+            if len(self.command_history) > 500:
+                self.command_history = self.command_history[-500:]
+
         return res
+
+    def get_command_history(self, limit: int = 50) -> list[dict[str, Any]]:
+        """Return the most recent executed terminal commands."""
+        with self._lock:
+            return list(self.command_history[-limit:])
+
+    def detect_installed_security_tools(self) -> dict[str, dict[str, Any]]:
+        """Detect presence, path, and version of standard cybersecurity CLI tools with millisecond latency."""
+        tools_to_check = [
+            "python", "nmap", "curl", "git", "gobuster", "nikto",
+            "whatweb", "wget", "tshark", "nuclei", "docker"
+        ]
+        results: dict[str, dict[str, Any]] = {}
+        for tool_name in tools_to_check:
+            installed = False
+            tool_path = None
+            version = None
+            environment = "host"
+
+            if tool_name == "python":
+                installed = True
+                tool_path = sys.executable
+                version = f"{platform.python_implementation()} {platform.python_version()}"
+            else:
+                found = shutil.which(tool_name)
+                if found:
+                    installed = True
+                    tool_path = found
+                    try:
+                        flag = "--version" if tool_name not in ("nikto", "whatweb") else "-Version"
+                        p = subprocess.run([found, flag], capture_output=True, text=True, timeout=2.0)
+                        v_out = (p.stdout or p.stderr).strip().splitlines()
+                        if v_out:
+                            version = v_out[0][:80]
+                    except Exception:
+                        version = "Available"
+
+            results[tool_name] = {
+                "tool": tool_name,
+                "installed": installed,
+                "path": tool_path,
+                "version": version or ("Available" if installed else "Not installed"),
+                "environment": environment,
+                "status": "AVAILABLE" if installed else "ABSENT",
+            }
+        return results

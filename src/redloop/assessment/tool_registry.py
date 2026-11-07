@@ -44,6 +44,11 @@ class ToolDefinition:
     audit_module: str = "tool"
     input_schema: dict[str, Any] = field(default_factory=dict)
     output_schema: dict[str, Any] = field(default_factory=dict)
+    capabilities: list[str] = field(default_factory=list)
+    when_to_use: str = ""
+    limitations: str = ""
+    dependencies: list[str] = field(default_factory=list)
+    is_installed: bool = True
 
     def validate_authorization(
         self,
@@ -78,6 +83,11 @@ class ToolDefinition:
             "max_retries": self.max_retries,
             "evidence_produced": self.evidence_produced,
             "audit_module": self.audit_module,
+            "capabilities": self.capabilities,
+            "when_to_use": self.when_to_use,
+            "limitations": self.limitations,
+            "dependencies": self.dependencies,
+            "is_installed": self.is_installed,
         }
 
 
@@ -95,6 +105,18 @@ class ToolRegistry:
         return self._tools.get(name)
 
     def list_tools(self) -> list[ToolDefinition]:
+        try:
+            from redloop.assessment.terminal_engine import UnifiedTerminalEngine
+            engine = UnifiedTerminalEngine()
+            detected = engine.detect_installed_security_tools()
+            for tool in self._tools.values():
+                tname = tool.name.lower()
+                if tname in detected:
+                    tool.is_installed = detected[tname].get("installed", False)
+                elif tool.execution_class == ExecutionClass.LOCAL_ONLY:
+                    tool.is_installed = True
+        except Exception:
+            pass
         return list(self._tools.values())
 
     def _register_default_tools(self) -> None:

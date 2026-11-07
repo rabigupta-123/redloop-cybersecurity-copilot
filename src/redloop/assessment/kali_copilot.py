@@ -213,7 +213,7 @@ class KaliCommandParser:
         "uname", "id", "whoami", "uptime", "hostname", "which", "whereis", "file",
         "strings", "cat", "grep", "awk", "sed", "stat", "date", "ps", "top",
         "sha256sum", "md5sum", "sha1sum", "head", "tail", "wc", "ls", "pwd",
-        "ss", "ip", "netstat", "route", "ifconfig",
+        "ss", "ip", "netstat", "route", "ifconfig", "echo", "printf", "dir",
     }
 
     @classmethod

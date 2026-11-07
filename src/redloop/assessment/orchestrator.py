@@ -404,6 +404,21 @@ class TaskOrchestrator:
         resolved_target, target_type, resolution_source = TargetResolver.resolve_target(prompt, context)
         target = resolved_target or ""
 
+        # 0. TOOL_DETECTION & CAPABILITY PROBING
+        if any(w in prompt_lower for w in (
+            "is nmap installed", "is python installed", "check if nmap", "check whether nmap",
+            "is curl installed", "check installed tools", "detected tools", "detect installed tools",
+            "which tools are installed", "what tools are installed", "list installed tools", "tool capability detection",
+            "check whether tools are installed", "detect tools"
+        )) or (("installed" in prompt_lower or "available" in prompt_lower) and any(t in prompt_lower for t in ("nmap", "nikto", "gobuster", "curl", "python", "docker", "tshark", "nuclei", "whatweb", "wget"))):
+            return {
+                "action": "tool_detection",
+                "intent": "TOOL_DETECTION",
+                "target": target,
+                "target_type": target_type,
+                "confidence": 0.95,
+            }
+
         # 1. FOLLOW_UP_ON_ACTIVE_INVESTIGATION
         if any(w in prompt_lower for w in (
             "previous investigation", "last investigation", "prior investigation",
@@ -846,6 +861,10 @@ class TaskOrchestrator:
                 "request_context": req_ctx.to_dict(),
                 "telemetry": {"latency_ms": round((time.monotonic() - start_time) * 1000, 2)},
             }
+
+        # Handle Security Tool Detection & Installation Probing
+        if action == "tool_detection":
+            return self._handle_tool_detection(task, start_time)
 
         # Handle General Chat / Pure Explanations
         if action == "general_chat":
@@ -3314,6 +3333,52 @@ class TaskOrchestrator:
                 "token_usage_reported": result.get("token_usage_reported", False),
                 "provider_status": provider_status,
             },
+        }
+
+    def _handle_tool_detection(self, task: Task, start_time: float) -> dict[str, Any]:
+        """Probes and returns verified installation, version, and binary path for all security tools."""
+        task.status = "COMPLETED"
+        task.capability = "terminal.tool_detection"
+        from redloop.assessment.terminal_engine import UnifiedTerminalEngine
+        engine = UnifiedTerminalEngine()
+        tools_dict = engine.detect_installed_security_tools()
+
+        lines = [
+            "### 🛠️ REDLOOP Security Tool Capability & Installation Detection",
+            "",
+            "Truthful capability detection performed across host operating system and execution runtimes.",
+            "",
+            "| Tool | Status | Binary Path | Version | Environment |",
+            "| :--- | :--- | :--- | :--- | :--- |",
+        ]
+        installed_count = 0
+        for name, info in tools_dict.items():
+            status_icon = "✅ AVAILABLE" if info["installed"] else "❌ ABSENT"
+            if info["installed"]:
+                installed_count += 1
+            path_str = f"`{info['path']}`" if info.get("path") else "—"
+            ver_str = str(info.get("version", "—"))[:40]
+            lines.append(f"| **{name}** | {status_icon} | {path_str} | {ver_str} | `{info['environment']}` |")
+
+        lines.extend([
+            "",
+            f"**Summary:** {installed_count} of {len(tools_dict)} tools detected and available.",
+            "",
+            "> **Safety Note:** REDLOOP strictly verifies binaries from the host PATH or WSL container.",
+            "> Tools marked `ABSENT` will engage capability-equivalent fallbacks or request installation.",
+        ])
+
+        task.response_text = "\n".join(lines)
+        task.completed_at = utc_now().isoformat()
+        self.task_store.save(task)
+
+        latency = round((time.monotonic() - start_time) * 1000, 2)
+        return {
+            "response": task.response_text,
+            "task": task.to_dict(),
+            "assessment_id": None,
+            "conversation_id": task.conversation_id,
+            "telemetry": {"latency_ms": latency},
         }
 
     async def _handle_general_chat(

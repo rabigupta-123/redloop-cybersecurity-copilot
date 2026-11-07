@@ -15388,225 +15388,60 @@ def register_workbench_routes(
 
 
     @app.get("/api/agent/tasks")
-
-
-
-    def list_agent_tasks(limit: int = 50):
-
-
-
+    async def list_agent_tasks(limit: int = 50):
         from redloop.assessment.agent_orchestrator import AgentTaskStore
-
-
-
         store = AgentTaskStore.get_instance()
-
-
-
         return JSONResponse({"tasks": [t.to_dict() for t in store.list_all(limit=limit)]})
 
-
-
-
-
-
-
     @app.post("/api/agent/tasks")
-
-
-
-    def create_agent_task_endpoint(payload: dict[str, Any], request: Request):
-
-
-
+    async def create_agent_task_endpoint(payload: dict[str, Any], request: Request):
         _require_same_origin(request)
-
-
-
         prompt = payload.get("prompt") or ""
-
-
-
         target = payload.get("target")
-
-
-
         environment = payload.get("environment") or "host"
-
-
-
         auto_approve = bool(payload.get("auto_approve", False))
 
-
-
-
-
-
-
         guard = AssessmentScopeGuard(scope_manager, audit) if scope_manager else None
-
-
-
         from redloop.assessment.agent_orchestrator import AutonomousAgentOrchestrator
-
-
-
         orchestrator = AutonomousAgentOrchestrator(scope_manager=scope_manager, scope_guard=guard, audit=audit)
-
-
-
         task = orchestrator.create_and_run_task(
-
-
-
             prompt=prompt,
-
-
-
             target=target,
-
-
-
             environment=environment,
-
-
-
             auto_approve=auto_approve,
-
-
-
         )
-
-
-
         status_code = 403 if task.task_status.value == "BLOCKED" else 200
-
-
-
         return JSONResponse(task.to_dict(), status_code=status_code)
 
-
-
-
-
-
-
     @app.get("/api/agent/tasks/{task_id}")
-
-
-
-    def get_agent_task_details(task_id: str):
-
-
-
+    async def get_agent_task_details(task_id: str):
         from redloop.assessment.agent_orchestrator import AgentTaskStore
-
-
-
         task = AgentTaskStore.get_instance().get(task_id)
-
-
-
         if not task:
-
-
-
             raise HTTPException(status_code=404, detail=f"Agent task '{task_id}' not found")
-
-
-
         return JSONResponse(task.to_dict())
 
-
-
-
-
-
-
     @app.get("/api/agent/tasks/{task_id}/steps")
-
-
-
-    def get_agent_task_steps(task_id: str):
-
-
-
+    async def get_agent_task_steps(task_id: str):
         from redloop.assessment.agent_orchestrator import AgentTaskStore
-
-
-
         task = AgentTaskStore.get_instance().get(task_id)
-
-
-
         if not task:
-
-
-
             raise HTTPException(status_code=404, detail=f"Agent task '{task_id}' not found")
-
-
-
         return JSONResponse({"task_id": task_id, "steps": [s.to_dict() for s in task.steps]})
 
-
-
-
-
-
-
     @app.post("/api/agent/tasks/{task_id}/cancel")
-
-
-
-    def cancel_agent_task_endpoint(task_id: str, request: Request):
-
-
-
+    async def cancel_agent_task_endpoint(task_id: str, request: Request):
         _require_same_origin(request)
-
-
-
         guard = AssessmentScopeGuard(scope_manager, audit) if scope_manager else None
-
-
-
         from redloop.assessment.agent_orchestrator import AutonomousAgentOrchestrator
-
-
-
         orchestrator = AutonomousAgentOrchestrator(scope_manager=scope_manager, scope_guard=guard, audit=audit)
-
-
-
         cancelled = orchestrator.cancel_task(task_id)
-
-
-
         return JSONResponse({"success": cancelled, "task_id": task_id, "status": "CANCELLED" if cancelled else "NOT_FOUND"})
 
-
-
-
-
-
-
     @app.post("/api/agent/tasks/{task_id}/approve")
-
-
-
-    def approve_agent_task_endpoint(task_id: str, request: Request):
-
-
-
+    async def approve_agent_task_endpoint(task_id: str, request: Request):
         _require_same_origin(request)
-
-
-
         guard = AssessmentScopeGuard(scope_manager, audit) if scope_manager else None
-
-
-
         from redloop.assessment.agent_orchestrator import AutonomousAgentOrchestrator
 
 
