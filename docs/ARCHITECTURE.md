@@ -129,7 +129,7 @@ Held-out dataset immutability is strictly enforced (`tests/fixtures/eval/intent_
 
 ## 5. Component Inventory
 
-Total inspected modules: **128**
+Total inspected modules: **139**
 
 | Module | Purpose / Docstring | Public API | Tests | Coverage |
 | :--- | :--- | :--- | :--- | :--- |
@@ -260,13 +260,24 @@ Total inspected modules: **128**
 | `src/redloop/unified_app.py` | Unified RedLoop Single-Page Application Console. | `generate_pdf_report, generate_pptx_report, is_loopback_host, validate_server_host, create_unified_app, get_app` | `tests/integration/ or suite` | 94.6% |
 | `src/redloop/virustotal.py` | VirusTotal API v3 client for RedLoop. | `VirusTotalResult, VirusTotalClient, get_virustotal_client` | `tests/test_virustotal.py` | 82.3% |
 | `src/redloop/webapp.py` | Non-invasive HTTP metadata inspection restricted to explicitly scoped loopback. | `WebAppCheckError, UnsafeWebTargetError, WebAppRequestError, WebAppFinding, WebAppReport, WebAppChecker` | `tests/test_webapp.py` | 91.4% |
-| `src/redloop/workbench.py` | Operational Red/Blue/Purple workbench and deep cybersecurity command center. | `WebCheckRequest, PortScanRequest, TLSCheckRequest, ExploitSimulateRequest, ShodanQueryRequest, CyberCodecRequest...` | `tests/test_workbench.py` | 49.3% |
+| `src/redloop/workbench/__init__.py` | Workbench package exposing modular routers and legacy registration facade. | `register_workbench_routers` | `tests/integration/ or suite` | N/A |
+| `src/redloop/workbench/legacy_workbench.py` | Operational Red/Blue/Purple workbench and deep cybersecurity command center. | `WebCheckRequest, PortScanRequest, TLSCheckRequest, ExploitSimulateRequest, ShodanQueryRequest, CyberCodecRequest...` | `tests/integration/ or suite` | N/A |
+| `src/redloop/workbench/router_assets.py` | Assets, Findings, and Evidence Router. | `assets_summary` | `tests/integration/ or suite` | N/A |
+| `src/redloop/workbench/router_copilot.py` | Copilot, Chat, and Terminal Execution Router. | `copilot_status` | `tests/integration/ or suite` | N/A |
+| `src/redloop/workbench/router_ctf.py` | CTF & Challenge Operations Router. | `decode_ctf_payload` | `tests/integration/ or suite` | N/A |
+| `src/redloop/workbench/router_diagnostics.py` | Diagnostics, Health, and Audit Verification Router. | `workbench_health` | `tests/integration/ or suite` | N/A |
+| `src/redloop/workbench/router_integrations.py` | Integrations, SIEM, and EDR Router. | `integrations_status` | `tests/integration/ or suite` | N/A |
+| `src/redloop/workbench/router_investigations.py` | Investigations & Attack Reconstruction Router. | `list_workbench_investigations, get_workbench_investigation` | `tests/integration/ or suite` | N/A |
+| `src/redloop/workbench/router_reporting.py` | Reporting & Quality Metrics Router. | `reports_summary` | `tests/integration/ or suite` | N/A |
+| `src/redloop/workbench/router_soc.py` | SOC Operations, Incidents, and Playbooks Router. | `soc_metrics_overview` | `tests/integration/ or suite` | N/A |
+| `src/redloop/workbench/shared.py` | Shared utilities, state, and security helpers for workbench routers. | `is_loopback_request, require_same_origin, get_active_operator_token, get_operator_identity` | `tests/integration/ or suite` | N/A |
+| `src/redloop/workbench.py` | Backwards-compatible facade for redloop.workbench package. | `` | `tests/test_workbench.py` | 49.3% |
 
 ---
 
 ## 6. Route Inventory (REST & WebSocket Endpoints)
 
-Total declared endpoints: **232**
+Total declared endpoints: **241**
 
 | Method | Path | Handler | Auth Requirements | Audit Trail |
 | :--- | :--- | :--- | :--- | :--- |
@@ -477,14 +488,23 @@ Total declared endpoints: **232**
 | `GET` | `/api/tools/matrix` | `get_tool_capability_matrix` | Loopback Only | None |
 | `POST` | `/api/tools/plan` | `plan_tools_endpoint` | Loopback Only | None |
 | `GET` | `/api/tools/status` | `get_tools_status` | Loopback Only | None |
+| `GET` | `/api/workbench/assets/summary` | `assets_summary` | Loopback Only | None |
 | `POST` | `/api/workbench/blue/file-triage` | `scoped_file_triage` | Loopback Only | None |
 | `POST` | `/api/workbench/copilot/chat` | `workbench_chat_message` | Loopback Only | HMAC Audit Ledger |
+| `GET` | `/api/workbench/copilot/status` | `copilot_status` | Loopback Only | None |
+| `POST` | `/api/workbench/ctf/decode` | `decode_ctf_payload` | Loopback Only | None |
+| `GET` | `/api/workbench/diagnostics/health` | `workbench_health` | Loopback Only | None |
+| `GET` | `/api/workbench/integrations/status` | `integrations_status` | Loopback Only | None |
+| `GET` | `/api/workbench/investigations` | `list_workbench_investigations` | Loopback Only | HMAC Audit Ledger |
+| `GET` | `/api/workbench/investigations/{investigation_id}` | `get_workbench_investigation` | Loopback Only | HMAC Audit Ledger |
 | `POST` | `/api/workbench/osint/shodan` | `run_shodan_query` | Loopback Only | None |
 | `GET` | `/api/workbench/purple/summary` | `purple_activity_summary` | Loopback Only | None |
 | `POST` | `/api/workbench/red/exploit-simulate` | `run_exploit_simulation` | Loopback Only | None |
 | `POST` | `/api/workbench/red/port-scan` | `scoped_port_scan` | Loopback Only | None |
 | `POST` | `/api/workbench/red/tls-check` | `scoped_tls_check` | Loopback Only | None |
 | `POST` | `/api/workbench/red/web-check` | `scoped_web_check` | Loopback Only | None |
+| `GET` | `/api/workbench/reports/summary` | `reports_summary` | Loopback Only | None |
+| `GET` | `/api/workbench/soc/metrics` | `soc_metrics_overview` | Loopback Only | None |
 | `GET` | `/api/workbench/task-graphs` | `list_workbench_task_graphs` | Loopback Only | None |
 | `GET` | `/api/workbench/task-graphs/{graph_id}` | `get_workbench_task_graph` | Loopback Only | None |
 | `GET` | `/api/workbench/tasks` | `list_workbench_tasks` | Loopback Only | None |
