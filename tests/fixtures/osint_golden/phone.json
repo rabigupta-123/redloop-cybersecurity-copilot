@@ -1,0 +1,281 @@
+{
+  "indicator": "+14155552671",
+  "query_type": "phone",
+  "normalized_value": "+14155552671",
+  "actual_finding": "Phone +14155552671 parsed as E.164 standard. Region: San Francisco, CA (US/CA). Carrier: UNKNOWN (prefix metadata) [PREFIX_METADATA]. Live HLR: PROVIDER_NOT_CONFIGURED.",
+  "status": "OBSERVED",
+  "findings": [
+    {
+      "property": "e164_format",
+      "value": "+14155552671",
+      "is_valid_number": true,
+      "is_possible_number": true,
+      "country_calling_code": "+1",
+      "iso_country": "US/CA",
+      "geographic_region": "San Francisco, CA",
+      "carrier_identity": "UNKNOWN (prefix metadata)",
+      "carrier_attribution_type": "PREFIX_METADATA",
+      "live_hlr_status": "PROVIDER_NOT_CONFIGURED (live carrier lookup requires commercial HLR/SS7 provider)",
+      "line_type": "FIXED_LINE_OR_MOBILE",
+      "subscriber_assignment": "UNVERIFIED_LOCALLY",
+      "status": "PRESENT",
+      "verification_state": "OBSERVED",
+      "source": "ITU_E164_LOCAL_PARSER",
+      "method": "E164_NUMBERING_PLAN_PARSE",
+      "confidence": 0.92
+    }
+  ],
+  "sources_queried": [
+    "ITU_E164_LOCAL_PARSER",
+    "phonenumbers"
+  ],
+  "sources_skipped": [
+    "TWILIO_LOOKUP: PROVIDER_NOT_CONFIGURED",
+    "NUMVERIFY: PROVIDER_NOT_CONFIGURED",
+    "HLR_LOOKUP: PROVIDER_NOT_CONFIGURED"
+  ],
+  "SC": 2,
+  "confidence_formula": "C = 0.25*(S=0.95) + 0.25*(D=0.95) + 0.20*(I=0.50) + 0.10*(F=1.00) + 0.10*(P=1.00) + 0.10*(X=0.85) = 0.86",
+  "PC": 1.0,
+  "source_or_provider": "redloop_osint_engine",
+  "collection_method": "ITU_E164_LOCAL_ENGINE",
+  "observation_timestamp": "2026-11-07T16:27:57.589979+00:00",
+  "evidence_id": "evi-osint-c763d0d04b",
+  "evidence_hash": "cc44e2e63ef8a2d0632c1347486229fbf99fb8761f7e03d12d44cda2824af3f8",
+  "evidence_hash_version": "sha256-canonical-v2",
+  "evidence_integrity_valid": true,
+  "evidence_integrity_status": "INTEGRITY_VERIFIED",
+  "confidence": 0.86,
+  "confidence_label": "HIGH",
+  "confidence_method": "C = 0.25S + 0.25D + 0.20I + 0.10F + 0.10P + 0.10X",
+  "confidence_factors": {
+    "source_reliability": 0.95,
+    "direct_observation": 0.95,
+    "independent_corroboration": 0.5,
+    "freshness": 1.0,
+    "parser_validation": 1.0,
+    "cross_source_consistency": 0.85
+  },
+  "confidence_type": "HEURISTIC",
+  "confidence_evidence": {
+    "status": "SINGLE_SOURCE",
+    "label": "HEURISTIC_CONFIDENCE",
+    "calibration_status": "NOT_CALIBRATED",
+    "score": 0.776,
+    "factors": {
+      "source_reliability": 0.92,
+      "source_agreement": 0.0,
+      "evidence_integrity": 1.0,
+      "freshness": 1.0,
+      "provenance_completeness": 1.0
+    },
+    "weights": {
+      "source_reliability": 0.3,
+      "source_agreement": 0.2,
+      "evidence_integrity": 0.2,
+      "freshness": 0.15,
+      "provenance_completeness": 0.15
+    },
+    "normalized_weights": {
+      "source_reliability": 0.3,
+      "source_agreement": 0.2,
+      "evidence_integrity": 0.2,
+      "freshness": 0.15,
+      "provenance_completeness": 0.15
+    },
+    "available_weight": 1.0,
+    "details": {
+      "source_agreement_status": "SINGLE_SOURCE",
+      "legacy_confidence": 0.86,
+      "evidence_integrity_status": "INTEGRITY_VERIFIED"
+    }
+  },
+  "confidence_evidence_score": 0.776,
+  "confidence_methodology": "HEURISTIC_CONFIDENCE",
+  "source_agreement": {
+    "status": "SINGLE_SOURCE",
+    "score": null,
+    "independent_sources": 1
+  },
+  "not_applicable_factors": [],
+  "provenance_completeness": 1.0,
+  "provenance": {
+    "source": {
+      "value": "redloop_osint_engine",
+      "status": "PRESENT"
+    },
+    "timestamp": {
+      "value": "2026-11-07T16:27:57.589979+00:00",
+      "status": "PRESENT"
+    },
+    "method": {
+      "value": "ITU_E164_LOCAL_ENGINE",
+      "status": "PRESENT"
+    },
+    "evidence": {
+      "value": "evi-osint-c763d0d04b",
+      "sha256": "cc44e2e63ef8a2d0632c1347486229fbf99fb8761f7e03d12d44cda2824af3f8",
+      "status": "PRESENT"
+    },
+    "confidence": {
+      "value": 0.86,
+      "label": "HIGH",
+      "method": "C = 0.25S + 0.25D + 0.20I + 0.10F + 0.10P + 0.10X",
+      "factors": {
+        "source_reliability": 0.95,
+        "direct_observation": 0.95,
+        "independent_corroboration": 0.5,
+        "freshness": 1.0,
+        "parser_validation": 1.0,
+        "cross_source_consistency": 0.85
+      },
+      "status": "PRESENT"
+    }
+  },
+  "field_provenance": {
+    "source": {
+      "status": "PRESENT",
+      "value": "redloop_osint_engine",
+      "source": null,
+      "method": null,
+      "reason": null
+    },
+    "timestamp": {
+      "status": "PRESENT",
+      "value": "2026-11-07T16:27:57.589979+00:00",
+      "source": null,
+      "method": null,
+      "reason": null
+    },
+    "method": {
+      "status": "PRESENT",
+      "value": "ITU_E164_LOCAL_ENGINE",
+      "source": null,
+      "method": null,
+      "reason": null
+    },
+    "evidence": {
+      "status": "PRESENT",
+      "value": "evi-osint-c763d0d04b",
+      "source": null,
+      "method": null,
+      "reason": null
+    },
+    "confidence": {
+      "status": "PRESENT",
+      "value": 0.86,
+      "source": null,
+      "method": null,
+      "reason": null
+    },
+    "e164_format": {
+      "status": "PRESENT",
+      "value": "+14155552671",
+      "source": "ITU_E164_LOCAL_PARSER",
+      "method": "E164_NUMBERING_PLAN_PARSE",
+      "reason": "PRESENT"
+    }
+  },
+  "provenance_policy": {
+    "query_type": "phone",
+    "required_fields": [
+      "source",
+      "timestamp",
+      "method",
+      "evidence",
+      "confidence",
+      "e164_format"
+    ],
+    "applicable_fields": [
+      "source",
+      "timestamp",
+      "method",
+      "evidence",
+      "confidence",
+      "e164_format"
+    ],
+    "present_fields": [
+      "source",
+      "timestamp",
+      "method",
+      "evidence",
+      "confidence",
+      "e164_format"
+    ],
+    "missing_fields": [],
+    "not_applicable_fields": [],
+    "score": 1.0,
+    "status": "COMPLETE"
+  },
+  "rate_limit_state": "NORMAL",
+  "cached": false,
+  "cache_status": "LIVE",
+  "cache_state": "LIVE",
+  "cache_fallback_reason": null,
+  "cached_at": null,
+  "cache_age_seconds": null,
+  "cache_ttl_seconds": null,
+  "cache_expires_at": null,
+  "freshness": {
+    "observed_at": "2026-11-07T16:27:57.589979+00:00",
+    "age_seconds": 0.0,
+    "ttl_seconds": null,
+    "state": "FRESH",
+    "decay": {
+      "status": "FRESH",
+      "score": 1.0,
+      "decay_fraction": 0.0,
+      "half_life_seconds": 2592000.0,
+      "observation_type": "phone",
+      "age_seconds": 0.001
+    },
+    "score": 1.0,
+    "half_life_seconds": 2592000.0,
+    "observation_type": "phone"
+  },
+  "freshness_decay": {
+    "status": "FRESH",
+    "score": 1.0,
+    "decay_fraction": 0.0,
+    "half_life_seconds": 2592000.0,
+    "observation_type": "phone",
+    "age_seconds": 0.001
+  },
+  "limitations": [
+    "Local parsing confirms numbering plan formatting and region code only; does NOT verify subscriber identity, active assignment, or live carrier.",
+    "Subscriber identities, precise geolocation, and private account associations are not accessible via public OSINT.",
+    "Carrier attribution is derived from prefix metadata only. Live HLR lookup requires commercial SS7/HLR provider."
+  ],
+  "provider_status": {
+    "ITU_E164_LOCAL_PARSER": "OBSERVED",
+    "PHONENUMBERS": "PARSED",
+    "TWILIO_LOOKUP": "PROVIDER_NOT_CONFIGURED",
+    "NUMVERIFY": "PROVIDER_NOT_CONFIGURED",
+    "LIVE_HLR": "PROVIDER_NOT_CONFIGURED"
+  },
+  "related_entities": [
+    {
+      "type": "country",
+      "value": "US/CA",
+      "relation": "NUMBERING_PLAN",
+      "source": "ITU_E164_LOCAL_PARSER",
+      "method": "E164_NUMBERING_PLAN_PARSE",
+      "confidence": 0.92,
+      "verification_state": "OBSERVED",
+      "verified": true,
+      "evidence_reference": "evi-osint-c763d0d04b",
+      "timestamp": "2026-11-07T16:27:57.589979+00:00"
+    }
+  ],
+  "verification_state": "OBSERVED",
+  "classification": null,
+  "reverse_dns": null,
+  "registry": null,
+  "registry_status": "NOT_APPLICABLE",
+  "network": null,
+  "network_status": "NOT_APPLICABLE",
+  "asn": null,
+  "asn_status": "NOT_APPLICABLE",
+  "geo": null,
+  "geo_status": "NOT_APPLICABLE"
+}

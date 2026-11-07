@@ -50,5 +50,8 @@ data/*
 !data/knowledge/
 data/knowledge/*
 !data/knowledge/seed/
+!data/osint/
+data/osint/*
+!data/osint/platforms.json
 test_tmp_audit*
 claude-proxy.yaml

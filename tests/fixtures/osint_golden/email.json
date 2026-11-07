@@ -1,0 +1,332 @@
+{
+  "indicator": "security@example.com",
+  "query_type": "email",
+  "normalized_value": "security@example.com",
+  "actual_finding": "Email security@example.com syntax validated successfully. Domain: example.com. HIBP: PROVIDER_NOT_CONFIGURED (breach status UNKNOWN).",
+  "status": "OBSERVED",
+  "findings": [
+    {
+      "property": "syntax_validation",
+      "rfc5322_valid": true,
+      "username": "security",
+      "domain": "example.com",
+      "status": "PRESENT",
+      "verification_state": "OBSERVED",
+      "source": "RFC5322_SYNTAX_PARSER",
+      "method": "EMAIL_SYNTAX_PARSE",
+      "confidence": 0.99
+    },
+    {
+      "property": "disposable_email_domain",
+      "is_disposable": false,
+      "domain": "example.com",
+      "status": "PRESENT",
+      "verification_state": "OBSERVED",
+      "source": "DISPOSABLE_DOMAINS_CATALOG",
+      "method": "OFFLINE_HASH_SET_LOOKUP",
+      "confidence": 0.99
+    },
+    {
+      "property": "breach_exposure",
+      "count": "NOT_CHECKED",
+      "status": "NOT_CHECKED",
+      "verification_state": "PROVIDER_NOT_CONFIGURED",
+      "source": "HIBP",
+      "method": "REST_API_BREACH_CHECK",
+      "details": "HIBP_API_KEY not configured in environment; breach lookup not performed."
+    },
+    {
+      "property": "mailbox_existence",
+      "status": "UNVERIFIED",
+      "note": "Domain MX configuration indicates mail server readiness, NOT individual mailbox existence or deliverability."
+    }
+  ],
+  "sources_queried": [
+    "RFC5322_SYNTAX_PARSER",
+    "DISPOSABLE_DOMAINS_CATALOG"
+  ],
+  "sources_skipped": [
+    "DNS_MX: All nameservers failed to answ",
+    "DOMAIN_DNS: [Errno 11001] getaddrinfo fail",
+    "Gravatar: [Errno 11001] getaddrinfo fail",
+    "HIBP: PROVIDER_NOT_CONFIGURED"
+  ],
+  "SC": 2,
+  "confidence_formula": "C = 0.25*(S=0.95) + 0.25*(D=0.95) + 0.20*(I=0.40) + 0.10*(F=1.00) + 0.10*(P=1.00) + 0.10*(X=0.85) = 0.84",
+  "PC": 0.7778,
+  "source_or_provider": "redloop_osint_engine",
+  "collection_method": "SYNTAX_DNS_PASSIVE",
+  "observation_timestamp": "2026-11-07T16:27:56.679080+00:00",
+  "evidence_id": "evi-osint-bd7b8fa28e",
+  "evidence_hash": "5dc48dc8bd92e482c00a4a7aa53558bbe478cbbf412f17d3ee6318afbc9a50af",
+  "evidence_hash_version": "sha256-canonical-v2",
+  "evidence_integrity_valid": true,
+  "evidence_integrity_status": "INTEGRITY_VERIFIED",
+  "confidence": 0.84,
+  "confidence_label": "HIGH",
+  "confidence_method": "C = 0.25S + 0.25D + 0.20I + 0.10F + 0.10P + 0.10X",
+  "confidence_factors": {
+    "source_reliability": 0.95,
+    "direct_observation": 0.95,
+    "independent_corroboration": 0.4,
+    "freshness": 1.0,
+    "parser_validation": 1.0,
+    "cross_source_consistency": 0.85
+  },
+  "confidence_type": "HEURISTIC",
+  "confidence_evidence": {
+    "status": "HEURISTIC_CONFIDENCE",
+    "label": "HEURISTIC_CONFIDENCE",
+    "calibration_status": "NOT_CALIBRATED",
+    "score": 0.8637,
+    "factors": {
+      "source_reliability": 0.99,
+      "source_agreement": 0.5,
+      "evidence_integrity": 1.0,
+      "freshness": 1.0,
+      "provenance_completeness": 0.7778
+    },
+    "weights": {
+      "source_reliability": 0.3,
+      "source_agreement": 0.2,
+      "evidence_integrity": 0.2,
+      "freshness": 0.15,
+      "provenance_completeness": 0.15
+    },
+    "normalized_weights": {
+      "source_reliability": 0.3,
+      "source_agreement": 0.2,
+      "evidence_integrity": 0.2,
+      "freshness": 0.15,
+      "provenance_completeness": 0.15
+    },
+    "available_weight": 1.0,
+    "details": {
+      "source_agreement_status": "CORROBORATED",
+      "legacy_confidence": 0.84,
+      "evidence_integrity_status": "INTEGRITY_VERIFIED"
+    }
+  },
+  "confidence_evidence_score": 0.8637,
+  "confidence_methodology": "HEURISTIC_CONFIDENCE",
+  "source_agreement": {
+    "status": "CORROBORATED",
+    "score": 0.5,
+    "independent_sources": 3
+  },
+  "not_applicable_factors": [],
+  "provenance_completeness": 0.7778,
+  "provenance": {
+    "source": {
+      "value": "redloop_osint_engine",
+      "status": "PRESENT"
+    },
+    "timestamp": {
+      "value": "2026-11-07T16:27:56.679080+00:00",
+      "status": "PRESENT"
+    },
+    "method": {
+      "value": "SYNTAX_DNS_PASSIVE",
+      "status": "PRESENT"
+    },
+    "evidence": {
+      "value": "evi-osint-bd7b8fa28e",
+      "sha256": "5dc48dc8bd92e482c00a4a7aa53558bbe478cbbf412f17d3ee6318afbc9a50af",
+      "status": "PRESENT"
+    },
+    "confidence": {
+      "value": 0.84,
+      "label": "HIGH",
+      "method": "C = 0.25S + 0.25D + 0.20I + 0.10F + 0.10P + 0.10X",
+      "factors": {
+        "source_reliability": 0.95,
+        "direct_observation": 0.95,
+        "independent_corroboration": 0.4,
+        "freshness": 1.0,
+        "parser_validation": 1.0,
+        "cross_source_consistency": 0.85
+      },
+      "status": "PRESENT"
+    }
+  },
+  "field_provenance": {
+    "source": {
+      "status": "PRESENT",
+      "value": "redloop_osint_engine",
+      "source": null,
+      "method": null,
+      "reason": null
+    },
+    "timestamp": {
+      "status": "PRESENT",
+      "value": "2026-11-07T16:27:56.679080+00:00",
+      "source": null,
+      "method": null,
+      "reason": null
+    },
+    "method": {
+      "status": "PRESENT",
+      "value": "SYNTAX_DNS_PASSIVE",
+      "source": null,
+      "method": null,
+      "reason": null
+    },
+    "evidence": {
+      "status": "PRESENT",
+      "value": "evi-osint-bd7b8fa28e",
+      "source": null,
+      "method": null,
+      "reason": null
+    },
+    "confidence": {
+      "status": "PRESENT",
+      "value": 0.84,
+      "source": null,
+      "method": null,
+      "reason": null
+    },
+    "syntax_validation": {
+      "status": "PRESENT",
+      "value": null,
+      "source": "RFC5322_SYNTAX_PARSER",
+      "method": "EMAIL_SYNTAX_PARSE",
+      "reason": "PRESENT"
+    },
+    "disposable_email_domain": {
+      "status": "PRESENT",
+      "value": null,
+      "source": "DISPOSABLE_DOMAINS_CATALOG",
+      "method": "OFFLINE_HASH_SET_LOOKUP",
+      "reason": "PRESENT"
+    },
+    "breach_exposure": {
+      "status": "MISSING",
+      "value": null,
+      "source": "HIBP",
+      "method": "REST_API_BREACH_CHECK",
+      "reason": "NOT_CHECKED"
+    },
+    "mailbox_existence": {
+      "status": "MISSING",
+      "value": null,
+      "source": null,
+      "method": null,
+      "reason": "UNVERIFIED"
+    }
+  },
+  "provenance_policy": {
+    "query_type": "email",
+    "required_fields": [
+      "source",
+      "timestamp",
+      "method",
+      "evidence",
+      "confidence",
+      "syntax_validation",
+      "mailbox_existence"
+    ],
+    "applicable_fields": [
+      "source",
+      "timestamp",
+      "method",
+      "evidence",
+      "confidence",
+      "syntax_validation",
+      "mailbox_existence"
+    ],
+    "present_fields": [
+      "source",
+      "timestamp",
+      "method",
+      "evidence",
+      "confidence",
+      "syntax_validation"
+    ],
+    "missing_fields": [
+      "mailbox_existence"
+    ],
+    "not_applicable_fields": [],
+    "score": 0.8571,
+    "status": "INCOMPLETE"
+  },
+  "rate_limit_state": "NORMAL",
+  "cached": false,
+  "cache_status": "LIVE",
+  "cache_state": "LIVE",
+  "cache_fallback_reason": null,
+  "cached_at": null,
+  "cache_age_seconds": null,
+  "cache_ttl_seconds": null,
+  "cache_expires_at": null,
+  "freshness": {
+    "observed_at": "2026-11-07T16:27:56.679080+00:00",
+    "age_seconds": 0.0,
+    "ttl_seconds": null,
+    "state": "FRESH",
+    "decay": {
+      "status": "FRESH",
+      "score": 1.0,
+      "decay_fraction": 0.0,
+      "half_life_seconds": 604800.0,
+      "observation_type": "email",
+      "age_seconds": 0.0
+    },
+    "score": 1.0,
+    "half_life_seconds": 604800.0,
+    "observation_type": "email"
+  },
+  "freshness_decay": {
+    "status": "FRESH",
+    "score": 1.0,
+    "decay_fraction": 0.0,
+    "half_life_seconds": 604800.0,
+    "observation_type": "email",
+    "age_seconds": 0.0
+  },
+  "limitations": [
+    "HIBP_API_KEY not configured in environment. Public breach search skipped (count is UNKNOWN/NOT_CHECKED, NEVER assumed safe or 0).",
+    "A valid domain or MX record confirms only that a mail routing host is defined, NOT that the specific mailbox exists."
+  ],
+  "provider_status": {
+    "DNS_MX": "UNRESOLVED",
+    "DOMAIN_DNS": "UNRESOLVED",
+    "HIBP": "PROVIDER_NOT_CONFIGURED"
+  },
+  "related_entities": [
+    {
+      "type": "domain",
+      "value": "example.com",
+      "relation": "BELONGS_TO_DOMAIN",
+      "source": "RFC5322_SYNTAX_PARSER",
+      "method": "EMAIL_SYNTAX_PARSE",
+      "confidence": 0.99,
+      "verification_state": "INFERRED",
+      "verified": false,
+      "evidence_reference": "evi-osint-bd7b8fa28e",
+      "timestamp": "2026-11-07T16:27:56.679080+00:00"
+    },
+    {
+      "type": "username",
+      "value": "security",
+      "relation": "LOCAL_USER",
+      "source": "RFC5322_SYNTAX_PARSER",
+      "method": "EMAIL_SYNTAX_PARSE",
+      "confidence": 0.99,
+      "verification_state": "INFERRED",
+      "verified": false,
+      "evidence_reference": "evi-osint-bd7b8fa28e",
+      "timestamp": "2026-11-07T16:27:56.679080+00:00"
+    }
+  ],
+  "verification_state": "OBSERVED",
+  "classification": null,
+  "reverse_dns": null,
+  "registry": null,
+  "registry_status": "NOT_APPLICABLE",
+  "network": null,
+  "network_status": "NOT_APPLICABLE",
+  "asn": null,
+  "asn_status": "NOT_APPLICABLE",
+  "geo": null,
+  "geo_status": "NOT_APPLICABLE"
+}

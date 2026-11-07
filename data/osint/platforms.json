@@ -1,0 +1,455 @@
+[
+  {
+    "name": "GitHub",
+    "url_pattern": "https://github.com/{username}",
+    "check_url": "https://api.github.com/users/{username}",
+    "check_type": "json_field",
+    "match_field": "login",
+    "error_status_codes": [
+      404
+    ],
+    "error_strings": [
+      "Not Found"
+    ],
+    "min_length": 50
+  },
+  {
+    "name": "GitLab",
+    "url_pattern": "https://gitlab.com/{username}",
+    "check_url": "https://gitlab.com/api/v4/users?username={username}",
+    "check_type": "json_array",
+    "match_field": "username",
+    "error_status_codes": [
+      404
+    ],
+    "error_strings": [],
+    "min_length": 5
+  },
+  {
+    "name": "Reddit",
+    "url_pattern": "https://www.reddit.com/user/{username}",
+    "check_url": "https://www.reddit.com/user/{username}/about.json",
+    "check_type": "json_nested",
+    "match_path": [
+      "data",
+      "name"
+    ],
+    "error_status_codes": [
+      404,
+      403
+    ],
+    "error_strings": [
+      "404",
+      "Not Found"
+    ],
+    "min_length": 30
+  },
+  {
+    "name": "HackerNews",
+    "url_pattern": "https://news.ycombinator.com/user?id={username}",
+    "check_url": "https://hacker-news.firebaseio.com/v0/user/{username}.json",
+    "check_type": "json_field",
+    "match_field": "id",
+    "error_status_codes": [
+      404
+    ],
+    "error_strings": [
+      "null"
+    ],
+    "min_length": 10
+  },
+  {
+    "name": "Keybase",
+    "url_pattern": "https://keybase.io/{username}",
+    "check_url": "https://keybase.io/_/api/1.0/user/lookup.json?usernames={username}",
+    "check_type": "keybase",
+    "error_status_codes": [
+      404
+    ],
+    "error_strings": [],
+    "min_length": 30
+  },
+  {
+    "name": "Dev.to",
+    "url_pattern": "https://dev.to/{username}",
+    "check_url": "https://dev.to/{username}",
+    "check_type": "html_soft404",
+    "error_status_codes": [
+      404
+    ],
+    "error_strings": [
+      "404: Not Found",
+      "Page Not Found",
+      "This page does not exist"
+    ],
+    "min_length": 500
+  },
+  {
+    "name": "Medium",
+    "url_pattern": "https://medium.com/@{username}",
+    "check_url": "https://medium.com/@{username}",
+    "check_type": "html_soft404",
+    "error_status_codes": [
+      404
+    ],
+    "error_strings": [
+      "PAGE NOT FOUND",
+      "404",
+      "Out of nothing, something"
+    ],
+    "min_length": 400
+  },
+  {
+    "name": "DockerHub",
+    "url_pattern": "https://hub.docker.com/u/{username}",
+    "check_url": "https://hub.docker.com/v2/users/{username}",
+    "check_type": "json_field",
+    "match_field": "username",
+    "error_status_codes": [
+      404
+    ],
+    "error_strings": [
+      "object not found"
+    ],
+    "min_length": 30
+  },
+  {
+    "name": "PyPI",
+    "url_pattern": "https://pypi.org/user/{username}/",
+    "check_url": "https://pypi.org/user/{username}/",
+    "check_type": "html_soft404",
+    "error_status_codes": [
+      404
+    ],
+    "error_strings": [
+      "Page Not Found",
+      "We looked everywhere"
+    ],
+    "min_length": 300
+  },
+  {
+    "name": "npm",
+    "url_pattern": "https://www.npmjs.com/~{username}",
+    "check_url": "https://www.npmjs.com/~{username}",
+    "check_type": "html_soft404",
+    "error_status_codes": [
+      404
+    ],
+    "error_strings": [
+      "404 Not Found",
+      "We couldn't find that page"
+    ],
+    "min_length": 400
+  },
+  {
+    "name": "Telegram",
+    "url_pattern": "https://t.me/{username}",
+    "check_url": "https://t.me/{username}",
+    "check_type": "html_soft404",
+    "error_status_codes": [
+      404
+    ],
+    "error_strings": [
+      "If you have Telegram, you can view and join",
+      "tgme_page_extra"
+    ],
+    "min_length": 250
+  },
+  {
+    "name": "Steam",
+    "url_pattern": "https://steamcommunity.com/id/{username}",
+    "check_url": "https://steamcommunity.com/id/{username}",
+    "check_type": "html_soft404",
+    "error_status_codes": [
+      404
+    ],
+    "error_strings": [
+      "The specified profile could not be found."
+    ],
+    "min_length": 300
+  },
+  {
+    "name": "Pinterest",
+    "url_pattern": "https://www.pinterest.com/{username}/",
+    "check_url": "https://www.pinterest.com/{username}/",
+    "check_type": "html_soft404",
+    "error_status_codes": [
+      404
+    ],
+    "error_strings": [
+      "Sorry, we couldn't find that page.",
+      "User not found"
+    ],
+    "min_length": 300
+  },
+  {
+    "name": "SoundCloud",
+    "url_pattern": "https://soundcloud.com/{username}",
+    "check_url": "https://soundcloud.com/{username}",
+    "check_type": "html_soft404",
+    "error_status_codes": [
+      404
+    ],
+    "error_strings": [
+      "We can't find that user",
+      "404 Not Found"
+    ],
+    "min_length": 300
+  },
+  {
+    "name": "Vimeo",
+    "url_pattern": "https://vimeo.com/{username}",
+    "check_url": "https://vimeo.com/{username}",
+    "check_type": "html_soft404",
+    "error_status_codes": [
+      404
+    ],
+    "error_strings": [
+      "Page not found",
+      "Sorry, there is no one here"
+    ],
+    "min_length": 300
+  },
+  {
+    "name": "Flickr",
+    "url_pattern": "https://www.flickr.com/people/{username}",
+    "check_url": "https://www.flickr.com/people/{username}",
+    "check_type": "html_soft404",
+    "error_status_codes": [
+      404
+    ],
+    "error_strings": [
+      "Page Not Found",
+      "Not a valid member"
+    ],
+    "min_length": 300
+  },
+  {
+    "name": "Mastodon",
+    "url_pattern": "https://mastodon.social/@{username}",
+    "check_url": "https://mastodon.social/@{username}",
+    "check_type": "html_soft404",
+    "error_status_codes": [
+      404
+    ],
+    "error_strings": [
+      "Record not found",
+      "404 Not Found"
+    ],
+    "min_length": 300
+  },
+  {
+    "name": "Pastebin",
+    "url_pattern": "https://pastebin.com/u/{username}",
+    "check_url": "https://pastebin.com/u/{username}",
+    "check_type": "html_soft404",
+    "error_status_codes": [
+      404
+    ],
+    "error_strings": [
+      "Not Found (#404)",
+      "Page Not Found"
+    ],
+    "min_length": 200
+  },
+  {
+    "name": "Replit",
+    "url_pattern": "https://replit.com/@{username}",
+    "check_url": "https://replit.com/@{username}",
+    "check_type": "html_soft404",
+    "error_status_codes": [
+      404
+    ],
+    "error_strings": [
+      "404 - Not found",
+      "User not found"
+    ],
+    "min_length": 300
+  },
+  {
+    "name": "Kaggle",
+    "url_pattern": "https://www.kaggle.com/{username}",
+    "check_url": "https://www.kaggle.com/{username}",
+    "check_type": "html_soft404",
+    "error_status_codes": [
+      404
+    ],
+    "error_strings": [
+      "We could not find the page you are looking for",
+      "Page Not Found"
+    ],
+    "min_length": 300
+  },
+  {
+    "name": "Substack",
+    "url_pattern": "https://{username}.substack.com",
+    "check_url": "https://{username}.substack.com",
+    "check_type": "html_soft404",
+    "error_status_codes": [
+      404
+    ],
+    "error_strings": [
+      "Page not found",
+      "Substack not found"
+    ],
+    "min_length": 250
+  },
+  {
+    "name": "ProductHunt",
+    "url_pattern": "https://www.producthunt.com/@{username}",
+    "check_url": "https://www.producthunt.com/@{username}",
+    "check_type": "html_soft404",
+    "error_status_codes": [
+      404
+    ],
+    "error_strings": [
+      "404 Not Found",
+      "This page could not be found"
+    ],
+    "min_length": 300
+  },
+  {
+    "name": "Bitbucket",
+    "url_pattern": "https://bitbucket.org/{username}/",
+    "check_url": "https://api.bitbucket.org/2.0/users/{username}",
+    "check_type": "json_field",
+    "match_field": "username",
+    "error_status_codes": [
+      404
+    ],
+    "error_strings": [
+      "Resource not found"
+    ],
+    "min_length": 30
+  },
+  {
+    "name": "Codecademy",
+    "url_pattern": "https://www.codecademy.com/profiles/{username}",
+    "check_url": "https://www.codecademy.com/profiles/{username}",
+    "check_type": "html_soft404",
+    "error_status_codes": [
+      404
+    ],
+    "error_strings": [
+      "User not found",
+      "404",
+      "Page Not Found"
+    ],
+    "min_length": 300
+  },
+  {
+    "name": "Linktree",
+    "url_pattern": "https://linktr.ee/{username}",
+    "check_url": "https://linktr.ee/{username}",
+    "check_type": "html_soft404",
+    "error_status_codes": [
+      404
+    ],
+    "error_strings": [
+      "The page you are looking for doesn't exist",
+      "404"
+    ],
+    "min_length": 300
+  },
+  {
+    "name": "DeviantArt",
+    "url_pattern": "https://www.deviantart.com/{username}",
+    "check_url": "https://www.deviantart.com/{username}",
+    "check_type": "html_soft404",
+    "error_status_codes": [
+      404
+    ],
+    "error_strings": [
+      "404 Not Found",
+      "Page Not Found"
+    ],
+    "min_length": 300
+  },
+  {
+    "name": "SourceForge",
+    "url_pattern": "https://sourceforge.net/u/{username}/profile/",
+    "check_url": "https://sourceforge.net/u/{username}/profile/",
+    "check_type": "html_soft404",
+    "error_status_codes": [
+      404
+    ],
+    "error_strings": [
+      "User Not Found",
+      "404 Not Found"
+    ],
+    "min_length": 300
+  },
+  {
+    "name": "Patreon",
+    "url_pattern": "https://www.patreon.com/{username}",
+    "check_url": "https://www.patreon.com/{username}",
+    "check_type": "html_soft404",
+    "error_status_codes": [
+      404
+    ],
+    "error_strings": [
+      "404: Page Not Found",
+      "User not found"
+    ],
+    "min_length": 300
+  },
+  {
+    "name": "About.me",
+    "url_pattern": "https://about.me/{username}",
+    "check_url": "https://about.me/{username}",
+    "check_type": "html_soft404",
+    "error_status_codes": [
+      404
+    ],
+    "error_strings": [
+      "PAGE NOT FOUND",
+      "Page not found"
+    ],
+    "min_length": 300
+  },
+  {
+    "name": "Twitch",
+    "url_pattern": "https://www.twitch.tv/{username}",
+    "check_url": "https://www.twitch.tv/{username}",
+    "check_type": "html_soft404",
+    "error_status_codes": [
+      404
+    ],
+    "error_strings": [
+      "Sorry. Unless you\u2019ve got a time machine, that content is unavailable.",
+      "content is unavailable"
+    ],
+    "min_length": 300
+  },
+  {
+    "name": "Spotify",
+    "url_pattern": "https://open.spotify.com/user/{username}",
+    "check_url": "https://open.spotify.com/user/{username}",
+    "check_type": "html_soft404",
+    "error_status_codes": [
+      404
+    ],
+    "error_strings": [
+      "Page not found",
+      "Couldn't find that page"
+    ],
+    "min_length": 300
+  },
+  {
+    "name": "Discourse",
+    "url_pattern": "https://meta.discourse.org/u/{username}",
+    "check_url": "https://meta.discourse.org/u/{username}.json",
+    "check_type": "json_nested",
+    "match_path": [
+      "user",
+      "username"
+    ],
+    "error_status_codes": [
+      404
+    ],
+    "error_strings": [
+      "404 Not Found"
+    ],
+    "min_length": 30
+  }
+]

@@ -203,15 +203,37 @@ def _registry_from_url(url: str) -> Optional[str]:
 
 
 class OSINTVerificationState(str, Enum):
-    VERIFIED = "VERIFIED"
     OBSERVED = "OBSERVED"
+    CORROBORATED = "CORROBORATED"
     INFERRED = "INFERRED"
-    UNKNOWN = "UNKNOWN"
-    NOT_FOUND_IN_CHECKED_SOURCES = "NOT_FOUND_IN_CHECKED_SOURCES"
+    UNVERIFIED = "UNVERIFIED"
+    NOT_CHECKED = "NOT_CHECKED"
     PROVIDER_NOT_CONFIGURED = "PROVIDER_NOT_CONFIGURED"
     RATE_LIMITED = "RATE_LIMITED"
     FAILED = "FAILED"
-    OFFLINE_MODE = "OFFLINE_MODE"
+
+    # Backward-compatible aliases
+    VERIFIED = "CORROBORATED"
+    UNKNOWN = "UNVERIFIED"
+    UNVERIFIED_LOCALLY = "UNVERIFIED"
+    NOT_FOUND_IN_CHECKED_SOURCES = "OBSERVED"
+    OFFLINE_MODE = "NOT_CHECKED"
+
+    def __hash__(self) -> int:
+        return hash(self.value)
+
+    def __eq__(self, other: Any) -> bool:
+        if super().__eq__(other):
+            return True
+        if isinstance(other, str):
+            aliases = {
+                "CORROBORATED": {"VERIFIED"},
+                "UNVERIFIED": {"UNKNOWN", "UNVERIFIED_LOCALLY"},
+                "OBSERVED": {"NOT_FOUND_IN_CHECKED_SOURCES"},
+                "NOT_CHECKED": {"OFFLINE_MODE"},
+            }
+            return other in aliases.get(self.value, set())
+        return False
 
 
 class OSINTResult(BaseModel):
@@ -221,6 +243,11 @@ class OSINTResult(BaseModel):
     actual_finding: str
     status: OSINTVerificationState = OSINTVerificationState.OBSERVED
     findings: list[dict[str, Any]] = Field(default_factory=list)
+    sources_queried: list[str] = Field(default_factory=list)
+    sources_skipped: list[str] = Field(default_factory=list)
+    SC: int = 0
+    confidence_formula: str = ""
+    PC: float = 0.0
     source_or_provider: str = "redloop_osint_engine"
     collection_method: str = "PASSIVE_TELEMETRY"
     observation_timestamp: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
@@ -595,6 +622,17 @@ class OSINTResult(BaseModel):
         self.provenance = self._build_provenance()
         self.field_provenance = self._build_field_provenance()
         self.provenance_completeness = self._compute_provenance_completeness()
+        self.PC = self.provenance_completeness
+        if not self.SC:
+            self.SC = len(self.sources_queried)
+        if not self.confidence_formula:
+            s = float(self.confidence_factors.get("source_reliability", self.confidence_factors.get("S", self.confidence)))
+            d = float(self.confidence_factors.get("direct_observation", self.confidence_factors.get("D", self.confidence)))
+            i = float(self.confidence_factors.get("independent_corroboration", self.confidence_factors.get("I", 0.5)))
+            f = float(self.confidence_factors.get("freshness", self.confidence_factors.get("F", 1.0)))
+            p = float(self.confidence_factors.get("parser_validation", self.confidence_factors.get("P", 1.0)))
+            x = float(self.confidence_factors.get("cross_source_consistency", self.confidence_factors.get("X", 0.8)))
+            self.confidence_formula = f"C = 0.25*(S={s:.2f}) + 0.25*(D={d:.2f}) + 0.20*(I={i:.2f}) + 0.10*(F={f:.2f}) + 0.10*(P={p:.2f}) + 0.10*(X={x:.2f}) = {self.confidence:.2f}"
         if self.confidence_type not in {"HEURISTIC", "EXACT"}:
             self.confidence_type = "HEURISTIC"
         if not self.freshness:
@@ -631,22 +669,54 @@ class OSINTResult(BaseModel):
 
 
 class OSINTCache:
-    """Thread-safe TTL cache with a bounded stale-while-degraded window.
+    """Thread-safe TTL cache with SQLite backing and a bounded stale-while-degraded window.
 
     A stale entry may only be served when a fresh lookup fails; it is always
     labeled STALE and carries the reason, never presented as live data.
+    Default TTL is 24 hours (86,400s).
     """
 
     _UNCACHEABLE = {
         OSINTVerificationState.FAILED,
-        OSINTVerificationState.OFFLINE_MODE,
+        OSINTVerificationState.NOT_CHECKED,
+        "FAILED",
+        "NOT_CHECKED",
+        "OFFLINE_MODE",
     }
 
-    def __init__(self, default_ttl_seconds: float = 300.0, stale_ttl_seconds: float = 3600.0):
+    def __init__(
+        self,
+        default_ttl_seconds: float = 86400.0,
+        stale_ttl_seconds: float = 172800.0,
+        db_path: Optional[str] = None,
+    ):
         self._cache: dict[str, tuple[float, float, float, OSINTResult]] = {}
         self._ttl = max(0.0, float(default_ttl_seconds))
         self._stale_ttl = max(self._ttl, float(stale_ttl_seconds))
         self._lock = threading.RLock()
+        self._db_path = db_path or os.environ.get("REDLOOP_OSINT_CACHE_DB", "data/osint_cache.sqlite")
+        self._init_sqlite()
+
+    def _init_sqlite(self) -> None:
+        try:
+            p = Path(self._db_path)
+            p.parent.mkdir(parents=True, exist_ok=True)
+            import sqlite3
+            with sqlite3.connect(self._db_path, timeout=5.0) as conn:
+                conn.execute(
+                    """
+                    CREATE TABLE IF NOT EXISTS osint_cache (
+                        cache_key TEXT PRIMARY KEY,
+                        result_json TEXT NOT NULL,
+                        created_at REAL NOT NULL,
+                        expires_at REAL NOT NULL,
+                        stale_until REAL NOT NULL
+                    )
+                    """
+                )
+                conn.commit()
+        except Exception as e:
+            logger.debug("Could not initialize OSINT SQLite cache: %s", e)
 
     def _annotate(
         self,
@@ -703,16 +773,36 @@ class OSINTCache:
         now = time.time()
         with self._lock:
             entry = self._cache.get(key)
-            if not entry:
-                return None
-            created_at, expires_at, stale_until, result = entry
-            if now >= expires_at:
-                if now >= stale_until:
-                    del self._cache[key]
-                return None
-            if result.status in self._UNCACHEABLE:
-                del self._cache[key]
-                return None
+        if not entry:
+            try:
+                import sqlite3
+                with sqlite3.connect(self._db_path, timeout=5.0) as conn:
+                    cursor = conn.cursor()
+                    cursor.execute(
+                        "SELECT result_json, created_at, expires_at, stale_until FROM osint_cache WHERE cache_key = ?",
+                        (key,),
+                    )
+                    row = cursor.fetchone()
+                    if row:
+                        res_json, c_at, exp_at, st_at = row
+                        res_obj = OSINTResult.model_validate_json(res_json)
+                        with self._lock:
+                            self._cache[key] = (c_at, exp_at, st_at, res_obj)
+                        entry = (c_at, exp_at, st_at, res_obj)
+            except Exception as e:
+                logger.debug("Failed reading OSINT SQLite cache: %s", e)
+        if not entry:
+            return None
+        created_at, expires_at, stale_until, result = entry
+        if now >= expires_at:
+            if now >= stale_until:
+                with self._lock:
+                    self._cache.pop(key, None)
+            return None
+        if result.status in self._UNCACHEABLE:
+            with self._lock:
+                self._cache.pop(key, None)
+            return None
         return self._annotate(result, created_at, expires_at, stale_until, now, "CACHED")
 
     def get_stale(self, key: str) -> Optional[OSINTResult]:
@@ -720,17 +810,17 @@ class OSINTCache:
         now = time.time()
         with self._lock:
             entry = self._cache.get(key)
-            if not entry:
-                return None
-            created_at, expires_at, stale_until, result = entry
-            if now < expires_at:
-                return None
-            if now >= stale_until:
-                del self._cache[key]
-                return None
-            if result.status in self._UNCACHEABLE:
-                del self._cache[key]
-                return None
+        if not entry:
+            return None
+        created_at, expires_at, stale_until, result = entry
+        if now < expires_at:
+            return None
+        if now >= stale_until:
+            del self._cache[key]
+            return None
+        if result.status in self._UNCACHEABLE:
+            del self._cache[key]
+            return None
         return self._annotate(
             result,
             created_at,
@@ -752,11 +842,32 @@ class OSINTCache:
                 now + self._stale_ttl,
                 result.model_copy(deep=True),
             )
+        try:
+            import sqlite3
+            with sqlite3.connect(self._db_path, timeout=5.0) as conn:
+                conn.execute(
+                    """
+                    INSERT OR REPLACE INTO osint_cache
+                    (cache_key, result_json, created_at, expires_at, stale_until)
+                    VALUES (?, ?, ?, ?, ?)
+                    """,
+                    (key, result.model_dump_json(), now, now + self._ttl, now + self._stale_ttl),
+                )
+                conn.commit()
+        except Exception as e:
+            logger.debug("Failed writing to OSINT SQLite cache: %s", e)
         return True
 
     def clear(self) -> None:
         with self._lock:
             self._cache.clear()
+        try:
+            import sqlite3
+            with sqlite3.connect(self._db_path, timeout=5.0) as conn:
+                conn.execute("DELETE FROM osint_cache")
+                conn.commit()
+        except Exception:
+            pass
 
 
 def request_with_backoff(
@@ -786,6 +897,31 @@ def request_with_backoff(
 
 
 # Standard ITU-T Country Code mappings for local telephone validation
+
+DISPOSABLE_EMAIL_DOMAINS = frozenset(
+    {
+        "mailinator.com",
+        "tempmail.com",
+        "guerrillamail.com",
+        "10minutemail.com",
+        "throwawaymail.com",
+        "yopmail.com",
+        "sharklasers.com",
+        "trashmail.com",
+        "dispostable.com",
+        "getairmail.com",
+        "burnermail.io",
+        "maildrop.cc",
+        "temp-mail.org",
+        "fakeinbox.com",
+        "inboxkitten.com",
+        "crazymailing.com",
+        "nada.ltd",
+        "getnada.com",
+        "mohmal.com",
+    }
+)
+
 ITU_CALLING_CODES = {
     "1": {"country": "US/CA", "region": "North America"},
     "44": {"country": "GB", "region": "United Kingdom"},
@@ -819,7 +955,7 @@ class OSINTEngine:
     def __init__(
         self,
         http_client: Optional[httpx.Client] = None,
-        cache_ttl_seconds: float = 300.0,
+        cache_ttl_seconds: float = 86400.0,
     ):
         self._client = http_client or httpx.Client(
             timeout=5.0,
@@ -827,7 +963,17 @@ class OSINTEngine:
             follow_redirects=True,
         )
         self._cache = OSINTCache(default_ttl_seconds=cache_ttl_seconds)
+        self._platforms_catalog: list[dict[str, Any]] = []
+        catalog_path = Path("data/osint/platforms.json")
+        if catalog_path.exists():
+            try:
+                self._platforms_catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+            except Exception as e:
+                logger.debug("Failed loading platforms.json: %s", e)
 
+    # =========================================================================
+    # 1. IP INTELLIGENCE
+    # =========================================================================
     # =========================================================================
     # 1. IP INTELLIGENCE
     # =========================================================================
@@ -843,6 +989,7 @@ class OSINTEngine:
                 status=OSINTVerificationState.FAILED,
                 confidence=0.0,
                 limitations=["Empty input: supply an IPv4 or IPv6 literal."],
+                sources_skipped=["INPUT_VALIDATION: EMPTY_STRING"],
             )
         try:
             ip_obj = ipaddress.ip_address(raw_ip)
@@ -855,13 +1002,11 @@ class OSINTEngine:
                 status=OSINTVerificationState.FAILED,
                 confidence=0.0,
                 limitations=["Supplied string is not a valid IPv4 or IPv6 literal."],
+                sources_skipped=["INPUT_VALIDATION: INVALID_IP_FORMAT"],
             )
 
         norm_ip = str(ip_obj)
         offline = is_offline_mode()
-        # OFFLINE_MODE must never be satisfied from a cache populated while
-        # online: that would silently perform the external disclosure the
-        # operator asked to suppress.
         cached_result = None if offline else self._cache.get(f"ip:{norm_ip}")
         if cached_result:
             return cached_result
@@ -870,9 +1015,11 @@ class OSINTEngine:
         related: list[dict[str, Any]] = []
         limitations: list[str] = []
         prov_status: dict[str, str] = {}
+        sources_queried: list[str] = ["python-ipaddress"]
+        sources_skipped: list[str] = []
         rate_state = "NORMAL"
 
-        # 1. IP Classification (local, deterministic, single canonical enum)
+        # 1. IP Classification (local, deterministic)
         classification = classify_ip_address(ip_obj)
         is_public = classification == "GLOBAL_PUBLIC"
         special_subtype = None
@@ -891,8 +1038,6 @@ class OSINTEngine:
                 "special_scope": special_subtype,
                 "is_limited_broadcast": str(ip_obj) == "255.255.255.255",
                 "is_ipv6_unique_local": isinstance(ip_obj, ipaddress.IPv6Address) and ip_obj in ipaddress.ip_network("fc00::/7"),
-                # Legacy alias retained for API compatibility; `classification`
-                # is the canonical field and always one of IP_CLASSIFICATIONS.
                 "scope": classification,
                 "version": ip_obj.version,
                 "is_private": ip_obj.is_private,
@@ -908,12 +1053,8 @@ class OSINTEngine:
             }
         )
 
-        # 2. Reverse DNS. Only public addresses are queried; local OS resolvers
-        # can return the machine's own hostname for loopback/private addresses,
-        # which is not PTR intelligence.
-        if is_public:
-            reverse_dns = self._lookup_reverse_dns(ip_obj)
-        else:
+        # 2. Reverse DNS & External telemetry
+        if not is_public:
             reverse_dns = {
                 "hostname": None,
                 "hostnames": [],
@@ -924,47 +1065,62 @@ class OSINTEngine:
                 "confidence": 0.0,
                 "verification_state": "NOT_APPLICABLE",
             }
-        hostname = reverse_dns.get("hostname")
-        findings.append({"property": "reverse_dns", **reverse_dns})
-        if hostname:
-            related.append(
-                {
-                    "type": "domain",
-                    "value": hostname,
-                    "relation": "PTR_CANDIDATE",
-                    "verified": reverse_dns.get("source") == "DNS_PTR_QUERY",
-                    "source": reverse_dns.get("source"),
-                    "method": reverse_dns.get("method"),
-                    "confidence": reverse_dns.get("confidence", 0.0),
-                    "verification_state": reverse_dns.get("verification_state"),
-                }
-            )
-
-        # 3. Registry / network / ASN / geolocation are separate observations.
-        org = None
-        country = None
-        registry: Optional[str] = None
-        registry_status = "NOT_APPLICABLE"
-        network: Optional[dict[str, Any]] = None
-        network_status = "NOT_APPLICABLE"
-        asn: Optional[str] = None
-        asn_status = "NOT_APPLICABLE"
-
-        if not is_public:
             limitations.append(
                 f"IP {norm_ip} is {classification}; external registry, ASN, and geolocation enrichment are not applicable."
             )
+            sources_skipped.extend([
+                "RDAP: NOT_APPLICABLE",
+                "Shodan: NOT_APPLICABLE",
+                "VirusTotal: NOT_APPLICABLE",
+            ])
+            org = None
+            country = None
+            registry = None
+            registry_status = "NOT_APPLICABLE"
+            network = None
+            network_status = "NOT_APPLICABLE"
+            asn = None
+            asn_status = "NOT_APPLICABLE"
+            geo_status = "NOT_APPLICABLE"
         elif offline:
+            reverse_dns = {
+                "hostname": None,
+                "hostnames": [],
+                "status": "NOT_QUERIED",
+                "reason": "Offline mode enforced: external PTR queries suppressed.",
+                "source": None,
+                "method": None,
+                "confidence": 0.0,
+                "verification_state": "NOT_CHECKED",
+            }
             prov_status["OFFLINE_MODE"] = "ENFORCED"
+            registry = None
             registry_status = "NOT_QUERIED"
+            network = None
             network_status = "NOT_QUERIED"
+            asn = None
             asn_status = "NOT_QUERIED"
             geo_status = "NOT_QUERIED"
             limitations.append(
                 "Strict OFFLINE_MODE active: external RDAP registry, ASN, geolocation, and threat-intelligence queries were suppressed."
             )
+            sources_skipped.extend([
+                "DNS_PTR: SKIPPED_OFFLINE",
+                "RDAP: SKIPPED_OFFLINE",
+                "Shodan: SKIPPED_OFFLINE",
+                "VirusTotal: SKIPPED_OFFLINE",
+                "AbuseIPDB: SKIPPED_OFFLINE",
+            ])
         else:
-            # Public RDAP registry lookup with backoff and rate-limit handling.
+            reverse_dns = self._lookup_reverse_dns(ip_obj)
+            if reverse_dns.get("hostname"):
+                sources_queried.append("DNS_PTR")
+
+            # RDAP registry lookup
+            org = None
+            country = None
+            registry = None
+            network = None
             rdap_resp, status_desc = request_with_backoff(
                 self._client, f"https://rdap.arin.net/registry/ip/{norm_ip}"
             )
@@ -973,6 +1129,7 @@ class OSINTEngine:
                 registry_status = "RATE_LIMITED"
                 network_status = "RATE_LIMITED"
                 rate_state = "RATE_LIMITED"
+                sources_skipped.append("RDAP: RATE_LIMITED")
                 limitations.append("External RDAP service returned HTTP 429 Too Many Requests (rate limited).")
             elif rdap_resp and rdap_resp.status_code == 200:
                 try:
@@ -980,6 +1137,7 @@ class OSINTEngine:
                     registry = _registry_from_url(str(rdap_resp.url)) or "ARIN"
                     registry_status = "VERIFIED"
                     prov_status["RDAP_ARIN"] = "ONLINE_VERIFIED"
+                    sources_queried.append(f"RDAP/{registry}")
 
                     network_name = rdap_data.get("name")
                     handle = rdap_data.get("handle")
@@ -1008,7 +1166,7 @@ class OSINTEngine:
                                 "source": f"RDAP/{registry}",
                                 "method": "HTTPS_GET_RDAP",
                                 "confidence": 0.95,
-                                "verification_state": OSINTVerificationState.VERIFIED.value,
+                                "verification_state": OSINTVerificationState.CORROBORATED.value,
                             }
                         )
                         related.append(
@@ -1020,7 +1178,7 @@ class OSINTEngine:
                                 "source": f"RDAP/{registry}",
                                 "method": "HTTPS_GET_RDAP",
                                 "confidence": 0.95,
-                                "verification_state": OSINTVerificationState.VERIFIED.value,
+                                "verification_state": OSINTVerificationState.CORROBORATED.value,
                             }
                         )
                     if country:
@@ -1031,7 +1189,7 @@ class OSINTEngine:
                                 "source": f"RDAP/{registry}",
                                 "method": "HTTPS_GET_RDAP",
                                 "confidence": 0.95,
-                                "verification_state": OSINTVerificationState.VERIFIED.value,
+                                "verification_state": OSINTVerificationState.CORROBORATED.value,
                             }
                         )
                     if org:
@@ -1042,7 +1200,7 @@ class OSINTEngine:
                                 "source": f"RDAP/{registry}",
                                 "method": "HTTPS_GET_RDAP",
                                 "confidence": 0.9,
-                                "verification_state": OSINTVerificationState.VERIFIED.value,
+                                "verification_state": OSINTVerificationState.CORROBORATED.value,
                             }
                         )
                         related.append(
@@ -1054,21 +1212,24 @@ class OSINTEngine:
                                 "source": f"RDAP/{registry}",
                                 "method": "HTTPS_GET_RDAP",
                                 "confidence": 0.9,
-                                "verification_state": OSINTVerificationState.VERIFIED.value,
+                                "verification_state": OSINTVerificationState.CORROBORATED.value,
                             }
                         )
                 except Exception:
                     prov_status["RDAP_ARIN"] = "PARSE_ERROR"
                     registry_status = "PARSE_ERROR"
                     network_status = "PARSE_ERROR"
+                    sources_skipped.append("RDAP: PARSE_ERROR")
             else:
                 prov_status["RDAP_ARIN"] = status_desc
                 registry_status = "UNAVAILABLE"
                 network_status = "UNAVAILABLE"
+                sources_skipped.append(f"RDAP: {status_desc}")
                 limitations.append("External RDAP service unreachable; registry and network fields are unavailable, not inferred.")
 
-            # Differentiate between RDAP network handles and true BGP ASN.
-            # Query Team Cymru DNS TXT lookup ({reversed_ip}.origin.asn.cymru.com) when available.
+            # Team Cymru BGP origin lookup
+            asn = None
+            asn_status = "NOT_QUERIED"
             cymru_asn = None
             try:
                 import dns.resolver
@@ -1091,6 +1252,7 @@ class OSINTEngine:
             if cymru_asn:
                 asn = cymru_asn
                 asn_status = "RESOLVED_TEAM_CYMRU_BGP"
+                sources_queried.append("Team_Cymru_BGP")
                 findings.append(
                     {
                         "property": "asn",
@@ -1106,6 +1268,7 @@ class OSINTEngine:
                 )
             else:
                 asn_status = "NOT_QUERIED_NO_ASN_PROVIDER"
+                sources_skipped.append("Team_Cymru_BGP: NO_RECORD_OR_UNAVAILABLE")
                 findings.append(
                     {
                         "property": "asn",
@@ -1118,6 +1281,7 @@ class OSINTEngine:
                         "verification_state": OSINTVerificationState.PROVIDER_NOT_CONFIGURED.value,
                     }
                 )
+
             geo_status = "NOT_QUERIED_NO_GEOLOCATION_PROVIDER"
             findings.append(
                 {
@@ -1132,10 +1296,87 @@ class OSINTEngine:
                 }
             )
 
-            # Threat intelligence lookup (separate from registry ownership).
+            # Shodan InternetDB lookup (free, no API key required)
+            try:
+                shodan_resp = self._client.get(f"https://internetdb.shodan.io/{norm_ip}", timeout=3.0)
+                if shodan_resp.status_code == 200:
+                    s_data = shodan_resp.json()
+                    findings.append({
+                        "property": "shodan_internetdb",
+                        "ports": s_data.get("ports", []),
+                        "cpes": s_data.get("cpes", []),
+                        "tags": s_data.get("tags", []),
+                        "vulns": s_data.get("vulns", []),
+                        "hostnames": s_data.get("hostnames", []),
+                        "source": "Shodan_InternetDB",
+                        "method": "REST_API_INTERNETDB",
+                        "confidence": 0.90,
+                        "status": "PRESENT",
+                        "verification_state": OSINTVerificationState.OBSERVED.value,
+                    })
+                    prov_status["SHODAN_INTERNETDB"] = "OBSERVED"
+                    sources_queried.append("Shodan_InternetDB")
+                elif shodan_resp.status_code == 404:
+                    prov_status["SHODAN_INTERNETDB"] = "NOT_FOUND_IN_CHECKED_SOURCES"
+                    sources_queried.append("Shodan_InternetDB")
+                elif shodan_resp.status_code == 429:
+                    prov_status["SHODAN_INTERNETDB"] = "RATE_LIMITED"
+                    sources_skipped.append("Shodan: RATE_LIMITED")
+                else:
+                    prov_status["SHODAN_INTERNETDB"] = f"HTTP_{shodan_resp.status_code}"
+                    sources_skipped.append(f"Shodan: HTTP_{shodan_resp.status_code}")
+            except Exception as e:
+                prov_status["SHODAN_INTERNETDB"] = f"ERROR ({str(e)[:25]})"
+                sources_skipped.append("Shodan: UNAVAILABLE")
+
+            # VirusTotal reputation lookup
+            vt_api_key = os.environ.get("VT_API_KEY")
+            if vt_api_key:
+                try:
+                    vt_resp = self._client.get(
+                        f"https://www.virustotal.com/api/v3/ip_addresses/{norm_ip}",
+                        headers={"x-apikey": vt_api_key},
+                        timeout=3.5,
+                    )
+                    if vt_resp.status_code == 200:
+                        vt_attr = vt_resp.json().get("data", {}).get("attributes", {})
+                        vt_stats = vt_attr.get("last_analysis_stats", {})
+                        mal = int(vt_stats.get("malicious", 0))
+                        findings.append({
+                            "property": "virustotal_reputation",
+                            "malicious_votes": mal,
+                            "stats": vt_stats,
+                            "source": "VirusTotal",
+                            "method": "REST_API_V3",
+                            "confidence": 0.95,
+                            "status": "PRESENT",
+                            "verification_state": OSINTVerificationState.CORROBORATED.value if mal == 0 else OSINTVerificationState.OBSERVED.value,
+                        })
+                        prov_status["VIRUSTOTAL"] = "VERIFIED"
+                        sources_queried.append("VirusTotal")
+                    elif vt_resp.status_code == 429:
+                        prov_status["VIRUSTOTAL"] = "RATE_LIMITED"
+                        sources_skipped.append("VirusTotal: RATE_LIMITED")
+                    else:
+                        prov_status["VIRUSTOTAL"] = f"HTTP_{vt_resp.status_code}"
+                        sources_skipped.append(f"VirusTotal: HTTP_{vt_resp.status_code}")
+                except Exception as e:
+                    prov_status["VIRUSTOTAL"] = f"ERROR ({str(e)[:25]})"
+                    sources_skipped.append("VirusTotal: UNAVAILABLE")
+            else:
+                prov_status["VIRUSTOTAL"] = "PROVIDER_NOT_CONFIGURED"
+                sources_skipped.append("VirusTotal: PROVIDER_NOT_CONFIGURED")
+                findings.append({
+                    "property": "virustotal_reputation",
+                    "status": "NOT_CHECKED",
+                    "verification_state": OSINTVerificationState.PROVIDER_NOT_CONFIGURED.value,
+                    "source": "VirusTotal",
+                    "details": "VT_API_KEY not configured in environment; VirusTotal reputation query skipped.",
+                })
+
+            # AbuseIPDB reputation lookup
             try:
                 from redloop.threat_intel import get_threat_intel_engine
-
                 ti = get_threat_intel_engine()
                 rep = ti.check_ip_reputation(norm_ip)
                 rep_data = getattr(rep, "data", {}) or {}
@@ -1143,7 +1384,7 @@ class OSINTEngine:
                 score = int(rep_data.get("abuseConfidenceScore", 0) or 0)
                 reports_count = int(rep_data.get("totalReports", 0) or 0)
                 rep_state = (
-                    OSINTVerificationState.VERIFIED.value
+                    OSINTVerificationState.CORROBORATED.value
                     if rep_verified
                     else OSINTVerificationState.PROVIDER_NOT_CONFIGURED.value
                     if rep_data.get("status") == "API_KEY_REQUIRED"
@@ -1163,27 +1404,47 @@ class OSINTEngine:
                         "verification_state": rep_state,
                     }
                 )
-                prov_status["ABUSEIPDB"] = "VERIFIED" if rep_verified else rep_data.get("status", "UNAVAILABLE")
-                if not rep_verified:
+                if rep_verified:
+                    prov_status["ABUSEIPDB"] = "VERIFIED"
+                    sources_queried.append("AbuseIPDB")
+                else:
+                    prov_status["ABUSEIPDB"] = rep_data.get("status", "UNAVAILABLE")
+                    sources_skipped.append(f"AbuseIPDB: {rep_data.get('status', 'UNAVAILABLE')}")
                     limitations.append(
                         "AbuseIPDB reputation is unavailable; absence of a score is not evidence that the host is benign."
                     )
             except Exception as exc:
                 prov_status["ABUSEIPDB"] = f"UNAVAILABLE ({str(exc)[:30]})"
+                sources_skipped.append(f"AbuseIPDB: {str(exc)[:30]}")
                 limitations.append("AbuseIPDB reputation lookup failed; no reputation conclusion is reported.")
 
-        if not offline and not is_public:
-            geo_status = "NOT_APPLICABLE"
-            asn_status = "NOT_APPLICABLE"
-
-        # 4. Summary and transparent confidence.
-        summary_text = f"IP {norm_ip} classified as {classification} (IPv{ip_obj.version})."
-        if offline:
-            summary_text = "Offline Mode Enforced. " + summary_text
+        hostname = reverse_dns.get("hostname")
+        findings.append({"property": "reverse_dns", **reverse_dns})
         if hostname:
-            summary_text += f" Reverse DNS PTR candidate: {hostname}."
-        if network:
-            summary_text += f" Registry network: {network.get('name') or network.get('handle')} ({registry})."
+            related.append(
+                {
+                    "type": "domain",
+                    "value": hostname,
+                    "relation": "PTR_CANDIDATE",
+                    "verified": reverse_dns.get("source") == "DNS_PTR_QUERY",
+                    "source": reverse_dns.get("source"),
+                    "method": reverse_dns.get("method"),
+                    "confidence": reverse_dns.get("confidence", 0.0),
+                    "verification_state": reverse_dns.get("verification_state"),
+                }
+            )
+
+        # 3. Summary & Transparent Confidence
+        if not is_public:
+            summary_text = f"IP {norm_ip} classified as {classification} (IPv{ip_obj.version}). Local/private IP: external reputation not applicable; local telemetry only."
+        elif offline:
+            summary_text = f"Offline Mode Enforced. IP {norm_ip} classified as {classification} (IPv{ip_obj.version})."
+        else:
+            summary_text = f"IP {norm_ip} classified as {classification} (IPv{ip_obj.version})."
+            if hostname:
+                summary_text += f" Reverse DNS PTR candidate: {hostname}."
+            if network:
+                summary_text += f" Registry network: {network.get('name') or network.get('handle')} ({registry})."
 
         if is_public and not offline:
             registry_verified = registry_status == "VERIFIED"
@@ -1210,9 +1471,6 @@ class OSINTEngine:
 
         not_applicable: list[str] = []
         if not (is_public and not offline):
-            # No external source exists to corroborate a non-routable or
-            # offline observation; scoring it as zero would understate what was
-            # actually checked. Exclude it and renormalize the remaining weights.
             not_applicable.append("independent_corroboration")
         computed_conf = calculate_confidence(
             **factors, not_applicable_factors=set(not_applicable)
@@ -1223,13 +1481,11 @@ class OSINTEngine:
         limitations.append(
             "A successful IP resolution or absence of abuse reports does not prove a host is safe or benign."
         )
-        if is_public and geo_status.startswith("NOT_QUERIED"):
-            limitations.append("No geolocation coordinates were queried or reported; do not infer physical location.")
 
         final_status = (
             OSINTVerificationState.RATE_LIMITED
             if rate_state == "RATE_LIMITED"
-            else OSINTVerificationState.OFFLINE_MODE
+            else OSINTVerificationState.NOT_CHECKED
             if offline
             else OSINTVerificationState.OBSERVED
         )
@@ -1241,6 +1497,8 @@ class OSINTEngine:
             actual_finding=summary_text,
             status=final_status,
             findings=findings,
+            sources_queried=sources_queried,
+            sources_skipped=sources_skipped,
             collection_method=(
                 "LOCAL_CLASSIFICATION_RDAP_DNS_PTR"
                 if is_public and not offline
@@ -1267,29 +1525,8 @@ class OSINTEngine:
             cache_status="LIVE",
         )
 
-        degraded = is_public and not offline and (
-            final_status == OSINTVerificationState.RATE_LIMITED
-            or registry_status in {"UNAVAILABLE", "RATE_LIMITED", "PARSE_ERROR", "FAILED"}
-            or network_status in {"UNAVAILABLE", "RATE_LIMITED", "PARSE_ERROR", "FAILED"}
-        )
-        if degraded:
-            stale = self._cache.get_stale(f"ip:{norm_ip}")
-            if stale is not None:
-                stale.cache_fallback_reason = (
-                    f"Live enrichment failed ({registry_status or final_status.value}); "
-                    "serving the last successful cached observation. Classify it as STALE, not live."
-                )
-                stale.limitations = list(stale.limitations) + [
-                    "This result was served from cache after a failed live lookup; re-verify before acting on it."
-                ]
-                stale.freshness = OSINTResult._build_freshness(
-                    stale.observation_timestamp,
-                    age_seconds=float(stale.cache_age_seconds or 0.0),
-                    ttl_seconds=stale.cache_ttl_seconds,
-                )
-                return stale
-
-        self._cache.set(f"ip:{norm_ip}", res)
+        if not offline and res.status not in self._cache._UNCACHEABLE:
+            self._cache.set(f"ip:{norm_ip}", res)
         return res
 
     def _lookup_reverse_dns(self, ip_obj: ipaddress._BaseAddress) -> dict[str, Any]:
@@ -1308,55 +1545,29 @@ class OSINTEngine:
                 return {
                     "hostname": hostnames[0],
                     "hostnames": hostnames,
-                    "status": "OBSERVED",
+                    "status": "RESOLVED",
                     "reason": None,
                     "source": "DNS_PTR_QUERY",
                     "method": "DNS_PTR_LOOKUP",
-                    "confidence": 0.9,
+                    "confidence": 0.95,
                     "verification_state": OSINTVerificationState.OBSERVED.value,
                 }
             return {
                 "hostname": None,
                 "hostnames": [],
                 "status": "NOT_FOUND_IN_CHECKED_SOURCES",
-                "reason": "No PTR record returned.",
+                "reason": "DNS PTR lookup returned no hostnames.",
                 "source": "DNS_PTR_QUERY",
                 "method": "DNS_PTR_LOOKUP",
-                "confidence": 0.8,
-                "verification_state": OSINTVerificationState.NOT_FOUND_IN_CHECKED_SOURCES.value,
+                "confidence": 0.9,
+                "verification_state": OSINTVerificationState.OBSERVED.value,
             }
-        except ImportError:
-            # Optional dependency unavailable: use the OS resolver but label it
-            # honestly as local resolution, which may include a hosts-file entry.
-            try:
-                resolved_host, _, _ = socket.gethostbyaddr(str(ip_obj))
-            except (socket.herror, socket.gaierror, OSError):
-                return {
-                    "hostname": None,
-                    "hostnames": [],
-                    "status": "NOT_FOUND_IN_CHECKED_SOURCES",
-                    "reason": "No reverse name returned by the local OS resolver.",
-                    "source": "LOCAL_OS_RESOLVER",
-                    "method": "SOCKET_GETHOSTBYADDR",
-                    "confidence": 0.5,
-                    "verification_state": OSINTVerificationState.UNVERIFIED_LOCALLY.value,
-                }
-            return {
-                "hostname": resolved_host,
-                "hostnames": [resolved_host],
-                "status": "OBSERVED_LOCALLY",
-                "reason": "Resolved through the local OS resolver; may reflect a hosts file rather than authoritative PTR.",
-                "source": "LOCAL_OS_RESOLVER",
-                "method": "SOCKET_GETHOSTBYADDR",
-                "confidence": 0.35,
-                "verification_state": OSINTVerificationState.UNVERIFIED_LOCALLY.value,
-            }
-        except Exception:
+        except Exception as e:
             return {
                 "hostname": None,
                 "hostnames": [],
                 "status": "FAILED",
-                "reason": "Reverse DNS lookup failed.",
+                "reason": f"Reverse DNS lookup failed: {e}",
                 "source": "DNS_PTR_QUERY",
                 "method": "DNS_PTR_LOOKUP",
                 "confidence": 0.0,
@@ -1367,9 +1578,8 @@ class OSINTEngine:
     # 2. DOMAIN & INFRASTRUCTURE INTELLIGENCE
     # =========================================================================
     def investigate_domain(self, domain_str: str) -> OSINTResult:
-        """Enumerate DNS records, MX, SPF/DMARC mail policies, TLS certificates, and HTTP headers."""
+        """Enumerate DNS records, RDAP registration, subdomains via crt.sh, TLS, and HTTP security headers."""
         raw_domain = domain_str.strip().lower()
-        # Clean URL protocol/path if user provided a URL
         clean_domain = re.sub(r"^https?://", "", raw_domain)
         clean_domain = clean_domain.split("/")[0].split(":")[0]
 
@@ -1382,14 +1592,55 @@ class OSINTEngine:
                 status=OSINTVerificationState.FAILED,
                 confidence=0.0,
                 limitations=["Indicator does not conform to standard domain naming syntax."],
+                sources_skipped=["INPUT_VALIDATION: INVALID_DOMAIN_FORMAT"],
             )
+
+        offline = is_offline_mode()
+        cached_result = None if offline else self._cache.get(f"domain:{clean_domain}")
+        if cached_result:
+            return cached_result
 
         findings: list[dict[str, Any]] = []
         related: list[dict[str, Any]] = []
         limitations: list[str] = []
         prov_status: dict[str, str] = {}
+        sources_queried: list[str] = []
+        sources_skipped: list[str] = []
 
-        # 1. Independent DNS Record Queries (A, AAAA, MX, NS, TXT, CNAME, SOA)
+        if offline:
+            prov_status["OFFLINE_MODE"] = "ENFORCED"
+            sources_skipped.extend([
+                "DNS: SKIPPED_OFFLINE",
+                "RDAP: SKIPPED_OFFLINE",
+                "crt.sh: SKIPPED_OFFLINE",
+                "TLS_PROBE: SKIPPED_OFFLINE",
+                "HTTP_PROBE: SKIPPED_OFFLINE",
+            ])
+            limitations.append("Strict OFFLINE_MODE active: external DNS, RDAP, certificate transparency, and HTTP probes were suppressed.")
+            return OSINTResult(
+                indicator=domain_str,
+                query_type="domain",
+                normalized_value=clean_domain,
+                actual_finding=f"Domain {clean_domain} validated format locally. Strict OFFLINE_MODE active: network enrichment skipped.",
+                status=OSINTVerificationState.NOT_CHECKED,
+                findings=findings,
+                sources_queried=["LOCAL_DOMAIN_FORMAT_PARSER"],
+                sources_skipped=sources_skipped,
+                collection_method="OFFLINE_FORMAT_VALIDATION",
+                confidence=0.85,
+                confidence_factors={
+                    "source_reliability": 1.0,
+                    "direct_observation": 1.0,
+                    "independent_corroboration": 0.0,
+                    "freshness": 1.0,
+                    "parser_validation": 1.0,
+                    "cross_source_consistency": 0.5,
+                },
+                limitations=limitations,
+                provider_status=prov_status,
+            )
+
+        # 1. Independent DNS Record Queries (A, AAAA, MX, NS, TXT, CNAME, SOA, CAA)
         resolved_ips: list[str] = []
         dns_records: dict[str, list[str]] = {}
         spf_policy: Optional[str] = None
@@ -1401,7 +1652,7 @@ class OSINTEngine:
             resolver.timeout = 2.5
             resolver.lifetime = 2.5
 
-            for rtype in ("A", "AAAA", "MX", "NS", "TXT", "CNAME", "SOA"):
+            for rtype in ("A", "AAAA", "MX", "NS", "TXT", "CNAME", "SOA", "CAA"):
                 try:
                     answers = resolver.resolve(clean_domain, rtype)
                     vals = [str(r).strip() for r in answers]
@@ -1450,10 +1701,12 @@ class OSINTEngine:
                         break
             except Exception:
                 pass
+            sources_queried.append("DNS_RESOLVER")
+            prov_status["DNS_RESOLVER"] = "RESOLVED"
         except Exception:
-            pass
+            sources_skipped.append("DNS_RESOLVER: UNAVAILABLE")
 
-        # Fallback to socket getaddrinfo if A/AAAA were not resolved via dnspython
+        # Fallback to socket getaddrinfo if A/AAAA was empty
         if not resolved_ips:
             try:
                 addr_info = socket.getaddrinfo(clean_domain, None)
@@ -1471,11 +1724,12 @@ class OSINTEngine:
                             "verification_state": OSINTVerificationState.OBSERVED.value,
                             "verified": True,
                         })
+                sources_queried.append("SYSTEM_DNS")
             except Exception as e:
                 limitations.append(f"DNS A/AAAA resolution failed: {e}")
-                prov_status["SYSTEM_DNS"] = f"ERROR: {str(e)[:40]}"
+                sources_skipped.append(f"SYSTEM_DNS: {str(e)[:30]}")
 
-        # Always include canonical dns_records finding with structured query metadata
+        # Always include canonical dns_records finding
         findings.append({
             "property": "dns_records",
             "type": "A/AAAA",
@@ -1492,52 +1746,106 @@ class OSINTEngine:
             "verification_state": OSINTVerificationState.OBSERVED.value if resolved_ips else OSINTVerificationState.FAILED.value,
             "status": "PRESENT" if resolved_ips else "MISSING",
         })
-        prov_status["SYSTEM_DNS"] = "RESOLVED" if resolved_ips else "UNRESOLVED"
 
         # SPF & DMARC findings
-        if spf_policy:
-            findings.append({
-                "property": "spf_record",
-                "policy": spf_policy,
-                "status": "CONFIGURED",
-                "verification_state": OSINTVerificationState.OBSERVED.value,
-                "source": "DNS_RESOLVER",
-                "method": "DNS_QUERY_TXT",
-                "confidence": 0.95,
-            })
-        else:
-            findings.append({
-                "property": "spf_record",
-                "policy": "NOT_CONFIGURED",
-                "status": "MISSING",
-                "verification_state": OSINTVerificationState.NOT_FOUND_IN_CHECKED_SOURCES.value,
-                "source": "DNS_RESOLVER",
-                "method": "DNS_QUERY_TXT",
-                "confidence": 0.85,
-            })
+        findings.append({
+            "property": "spf_record",
+            "policy": spf_policy or "NOT_CONFIGURED",
+            "status": "CONFIGURED" if spf_policy else "MISSING",
+            "verification_state": OSINTVerificationState.OBSERVED.value if spf_policy else OSINTVerificationState.OBSERVED.value,
+            "source": "DNS_RESOLVER",
+            "method": "DNS_QUERY_TXT",
+            "confidence": 0.95 if spf_policy else 0.85,
+        })
+        findings.append({
+            "property": "dmarc_record",
+            "policy": dmarc_policy or "NOT_CONFIGURED",
+            "status": "CONFIGURED" if dmarc_policy else "MISSING",
+            "verification_state": OSINTVerificationState.OBSERVED.value if dmarc_policy else OSINTVerificationState.OBSERVED.value,
+            "source": "DNS_RESOLVER",
+            "method": "DNS_QUERY_TXT",
+            "confidence": 0.95 if dmarc_policy else 0.85,
+        })
 
-        if dmarc_policy:
-            findings.append({
-                "property": "dmarc_record",
-                "policy": dmarc_policy,
-                "status": "CONFIGURED",
-                "verification_state": OSINTVerificationState.OBSERVED.value,
-                "source": "DNS_RESOLVER",
-                "method": "DNS_QUERY_TXT",
-                "confidence": 0.95,
-            })
-        else:
-            findings.append({
-                "property": "dmarc_record",
-                "policy": "NOT_CONFIGURED",
-                "status": "MISSING",
-                "verification_state": OSINTVerificationState.NOT_FOUND_IN_CHECKED_SOURCES.value,
-                "source": "DNS_RESOLVER",
-                "method": "DNS_QUERY_TXT",
-                "confidence": 0.85,
-            })
+        # 2. RDAP Registrar & Expiration lookup
+        try:
+            rdap_res = self._client.get(f"https://rdap.org/domain/{clean_domain}", timeout=3.0)
+            if rdap_res.status_code == 200:
+                r_data = rdap_res.json()
+                reg_name = _rdap_org_name(r_data) or r_data.get("handle")
+                events = {ev.get("eventAction"): ev.get("eventDate") for ev in r_data.get("events", []) if isinstance(ev, dict)}
+                findings.append({
+                    "property": "domain_registration",
+                    "registrar": reg_name,
+                    "creation_date": events.get("registration"),
+                    "expiration_date": events.get("expiration"),
+                    "last_changed": events.get("last changed"),
+                    "source": "RDAP_DOMAIN",
+                    "method": "RDAP_REST",
+                    "confidence": 0.95,
+                    "status": "PRESENT",
+                    "verification_state": OSINTVerificationState.OBSERVED.value,
+                })
+                sources_queried.append("RDAP_Domain")
+                prov_status["RDAP_DOMAIN"] = "RESOLVED"
+            elif rdap_res.status_code == 429:
+                sources_skipped.append("RDAP_Domain: RATE_LIMITED")
+                prov_status["RDAP_DOMAIN"] = "RATE_LIMITED"
+            else:
+                sources_skipped.append(f"RDAP_Domain: HTTP_{rdap_res.status_code}")
+                prov_status["RDAP_DOMAIN"] = f"HTTP_{rdap_res.status_code}"
+        except Exception as e:
+            sources_skipped.append(f"RDAP_Domain: {str(e)[:30]}")
+            prov_status["RDAP_DOMAIN"] = "UNAVAILABLE"
 
-        # 2. TLS Certificate inspection
+        # 3. Subdomain discovery via Certificate Transparency (crt.sh)
+        try:
+            crt_res = self._client.get(f"https://crt.sh/?q=%25.{clean_domain}&output=json", timeout=3.0)
+            if crt_res.status_code == 200:
+                crt_data = crt_res.json()
+                subdomains = set()
+                if isinstance(crt_data, list):
+                    for entry in crt_data:
+                        name_val = entry.get("name_value", "")
+                        for sub in name_val.split("\n"):
+                            sub = sub.strip().lower()
+                            if sub.startswith("*."):
+                                sub = sub[2:]
+                            if sub and sub.endswith(f".{clean_domain}") and sub != clean_domain:
+                                subdomains.add(sub)
+                findings.append({
+                    "property": "certificate_transparency",
+                    "subdomains_count": len(subdomains),
+                    "subdomains": sorted(list(subdomains))[:25],
+                    "source": "crt.sh",
+                    "method": "CERTIFICATE_TRANSPARENCY_API",
+                    "confidence": 0.90,
+                    "status": "PRESENT",
+                    "verification_state": OSINTVerificationState.OBSERVED.value,
+                })
+                for sub in sorted(list(subdomains))[:15]:
+                    related.append({
+                        "type": "subdomain",
+                        "value": sub,
+                        "relation": "CERT_TRANSPARENCY_SUBDOMAIN",
+                        "source": "crt.sh",
+                        "method": "CERTIFICATE_TRANSPARENCY_API",
+                        "confidence": 0.90,
+                        "verification_state": OSINTVerificationState.OBSERVED.value,
+                        "verified": True,
+                    })
+                sources_queried.append("crt.sh")
+                prov_status["CRT_SH"] = "RESOLVED"
+            elif crt_res.status_code == 429:
+                sources_skipped.append("crt.sh: RATE_LIMITED")
+                prov_status["CRT_SH"] = "RATE_LIMITED"
+            else:
+                sources_skipped.append(f"crt.sh: HTTP_{crt_res.status_code}")
+        except Exception as e:
+            sources_skipped.append(f"crt.sh: {str(e)[:30]}")
+            prov_status["CRT_SH"] = "UNAVAILABLE"
+
+        # 4. TLS Certificate inspection
         cert_info: dict[str, Any] = {}
         try:
             ctx = ssl.create_default_context()
@@ -1578,10 +1886,12 @@ class OSINTEngine:
                                     "verified": True,
                                 })
                         prov_status["TLS_PROBE"] = "CERT_EXTRACTED"
+                        sources_queried.append("TLS_PROBE")
         except Exception as e:
             prov_status["TLS_PROBE"] = f"NO_TLS_OR_CLOSED ({str(e)[:30]})"
+            sources_skipped.append(f"TLS_PROBE: {str(e)[:30]}")
 
-        # 3. HTTP Security Headers
+        # 5. HTTP Security Headers
         http_headers_found: dict[str, str] = {}
         try:
             res = self._client.get(f"https://{clean_domain}", timeout=3.5)
@@ -1589,11 +1899,17 @@ class OSINTEngine:
             hsts = res.headers.get("strict-transport-security")
             csp = res.headers.get("content-security-policy")
             x_frame = res.headers.get("x-frame-options")
+            x_content = res.headers.get("x-content-type-options")
+            referrer = res.headers.get("referrer-policy")
+            permissions = res.headers.get("permissions-policy")
             http_headers_found = {
                 "server": server or "NOT_EXPOSED",
                 "hsts": "CONFIGURED" if hsts else "MISSING",
                 "csp": "CONFIGURED" if csp else "MISSING",
                 "x_frame_options": x_frame or "MISSING",
+                "x_content_type_options": x_content or "MISSING",
+                "referrer_policy": referrer or "MISSING",
+                "permissions_policy": permissions or "MISSING",
             }
             findings.append({
                 "property": "http_security_headers",
@@ -1604,8 +1920,10 @@ class OSINTEngine:
                 "verification_state": OSINTVerificationState.OBSERVED.value,
             })
             prov_status["HTTP_PROBE"] = "SUCCESS_200"
+            sources_queried.append("HTTP_PROBE")
         except Exception as e:
             prov_status["HTTP_PROBE"] = f"FAILED ({str(e)[:30]})"
+            sources_skipped.append(f"HTTP_PROBE: {str(e)[:30]}")
 
         summary = f"Domain {clean_domain} resolves to {len(resolved_ips)} IP(s) ({', '.join(resolved_ips[:3]) or 'none'})."
         if cert_info.get("issuer_org"):
@@ -1615,19 +1933,38 @@ class OSINTEngine:
 
         limitations.append("DNS resolution and TLS certificate presence confirm domain routing, NOT domain reputation, ownership legitimacy, or host safety.")
 
-        return OSINTResult(
+        factors = {
+            "source_reliability": 0.95,
+            "direct_observation": 0.95,
+            "independent_corroboration": 0.8 if len(sources_queried) >= 3 else 0.5,
+            "freshness": 1.0,
+            "parser_validation": 1.0,
+            "cross_source_consistency": 0.9,
+        }
+        computed_conf = calculate_confidence(**factors)
+
+        res = OSINTResult(
             indicator=domain_str,
             query_type="domain",
             normalized_value=clean_domain,
             actual_finding=summary,
             status=OSINTVerificationState.OBSERVED,
             findings=findings,
+            sources_queried=sources_queried,
+            sources_skipped=sources_skipped,
             collection_method="DNS_TLS_HTTP_PASSIVE",
-            confidence=0.9,
+            confidence=computed_conf if resolved_ips else 0.50,
+            confidence_factors=factors,
+            confidence_type="HEURISTIC",
             limitations=limitations,
             provider_status=prov_status,
             related_entities=related,
+            cache_status="LIVE",
         )
+
+        if not offline and res.status not in self._cache._UNCACHEABLE:
+            self._cache.set(f"domain:{clean_domain}", res)
+        return res
 
     # =========================================================================
     # 3. EMAIL INTELLIGENCE
@@ -1644,9 +1981,18 @@ class OSINTEngine:
                 status=OSINTVerificationState.FAILED,
                 confidence=0.0,
                 limitations=["Indicator does not conform to RFC 5322 email syntax standard."],
+                sources_skipped=["INPUT_VALIDATION: INVALID_EMAIL_FORMAT"],
             )
 
+        offline = is_offline_mode()
         user_part, domain_part = raw_email.split("@", 1)
+        sources_queried: list[str] = ["RFC5322_SYNTAX_PARSER", "DISPOSABLE_DOMAINS_CATALOG"]
+        sources_skipped: list[str] = []
+        limitations: list[str] = []
+        prov_status: dict[str, str] = {}
+
+        # 1. Syntax & Disposable Domain Check (Local, deterministic)
+        is_disposable = domain_part in DISPOSABLE_EMAIL_DOMAINS
         findings: list[dict[str, Any]] = [
             {
                 "property": "syntax_validation",
@@ -1658,37 +2004,99 @@ class OSINTEngine:
                 "source": "RFC5322_SYNTAX_PARSER",
                 "method": "EMAIL_SYNTAX_PARSE",
                 "confidence": 0.99,
+            },
+            {
+                "property": "disposable_email_domain",
+                "is_disposable": is_disposable,
+                "domain": domain_part,
+                "status": "PRESENT",
+                "verification_state": OSINTVerificationState.OBSERVED.value,
+                "source": "DISPOSABLE_DOMAINS_CATALOG",
+                "method": "OFFLINE_HASH_SET_LOOKUP",
+                "confidence": 0.99,
             }
         ]
-        related: list[dict[str, Any]] = []
-        limitations: list[str] = []
-        prov_status: dict[str, str] = {}
+        related: list[dict[str, Any]] = [
+            {
+                "type": "domain",
+                "value": domain_part,
+                "relation": "BELONGS_TO_DOMAIN",
+                "source": "RFC5322_SYNTAX_PARSER",
+                "method": "EMAIL_SYNTAX_PARSE",
+                "confidence": 0.99,
+                "verification_state": OSINTVerificationState.INFERRED.value,
+                "verified": False,
+            },
+            {
+                "type": "username",
+                "value": user_part,
+                "relation": "LOCAL_USER",
+                "source": "RFC5322_SYNTAX_PARSER",
+                "method": "EMAIL_SYNTAX_PARSE",
+                "confidence": 0.99,
+                "verification_state": OSINTVerificationState.INFERRED.value,
+                "verified": False,
+            }
+        ]
 
-        related.append({
-            "type": "domain",
-            "value": domain_part,
-            "relation": "BELONGS_TO_DOMAIN",
-            "source": "RFC5322_SYNTAX_PARSER",
-            "method": "EMAIL_SYNTAX_PARSE",
-            "confidence": 0.99,
-            "verification_state": OSINTVerificationState.INFERRED.value,
-            "verified": False,
-        })
-        related.append({
-            "type": "username",
-            "value": user_part,
-            "relation": "LOCAL_USER",
-            "source": "RFC5322_SYNTAX_PARSER",
-            "method": "EMAIL_SYNTAX_PARSE",
-            "confidence": 0.99,
-            "verification_state": OSINTVerificationState.INFERRED.value,
-            "verified": False,
-        })
+        if offline:
+            prov_status["OFFLINE_MODE"] = "ENFORCED"
+            sources_skipped.extend([
+                "DNS_MX: SKIPPED_OFFLINE",
+                "SPF_DMARC: SKIPPED_OFFLINE",
+                "Gravatar: SKIPPED_OFFLINE",
+                "HIBP: SKIPPED_OFFLINE",
+            ])
+            limitations.append("Strict OFFLINE_MODE active: external DNS MX, SPF/DMARC, Gravatar, and breach queries were suppressed.")
+            return OSINTResult(
+                indicator=email_str,
+                query_type="email",
+                normalized_value=raw_email,
+                actual_finding=f"Email {raw_email} syntax validated. Domain: {domain_part}. Disposable: {is_disposable}. Strict OFFLINE_MODE active: network checks skipped.",
+                status=OSINTVerificationState.NOT_CHECKED,
+                findings=findings,
+                sources_queried=sources_queried,
+                sources_skipped=sources_skipped,
+                collection_method="OFFLINE_SYNTAX_PARSE",
+                confidence=0.88,
+                confidence_factors={
+                    "source_reliability": 1.0,
+                    "direct_observation": 1.0,
+                    "independent_corroboration": 0.0,
+                    "freshness": 1.0,
+                    "parser_validation": 1.0,
+                    "cross_source_consistency": 0.5,
+                },
+                limitations=limitations,
+                provider_status=prov_status,
+                related_entities=related,
+            )
 
-        # 1. Domain Mail Exchanger (MX) Verification
-        mx_records: list[str] = []
+        # 2. Domain MX Verification with priorities
+        mx_records = []
         try:
-            # Query standard socket for domain host
+            import dns.resolver
+            mx_ans = dns.resolver.resolve(domain_part, "MX")
+            for r in mx_ans:
+                mx_records.append({"exchange": str(r.exchange).rstrip("."), "preference": int(r.preference)})
+            mx_records.sort(key=lambda x: x["preference"])
+            findings.append({
+                "property": "mx_records",
+                "records": mx_records,
+                "status": "PRESENT" if mx_records else "MISSING",
+                "verification_state": OSINTVerificationState.OBSERVED.value if mx_records else OSINTVerificationState.UNVERIFIED.value,
+                "source": "DNS_RESOLVER",
+                "method": "DNS_QUERY_MX",
+                "confidence": 0.95,
+            })
+            sources_queried.append("DNS_MX")
+            prov_status["DNS_MX"] = "RESOLVED"
+        except Exception as e:
+            sources_skipped.append(f"DNS_MX: {str(e)[:30]}")
+            prov_status["DNS_MX"] = "UNRESOLVED"
+
+        # Domain reachability fallback
+        try:
             addr = socket.gethostbyname(domain_part)
             findings.append({
                 "property": "domain_reachability",
@@ -1701,19 +2109,75 @@ class OSINTEngine:
             })
             prov_status["DOMAIN_DNS"] = "RESOLVED"
         except Exception as e:
-            findings.append({
-                "property": "domain_reachability",
-                "resolves": False,
-                "error": str(e),
-                "source": "DOMAIN_DNS",
-                "method": "GETADDRINFO",
-                "confidence": 0.8,
-                "verification_state": OSINTVerificationState.NOT_FOUND_IN_CHECKED_SOURCES.value,
-            })
-            limitations.append(f"Domain {domain_part} failed host resolution; mailbox may be non-deliverable.")
             prov_status["DOMAIN_DNS"] = "UNRESOLVED"
+            sources_skipped.append(f"DOMAIN_DNS: {str(e)[:30]}")
 
-        # 2. Email Header Analysis if provided
+        # 3. SPF and DMARC record checks
+        try:
+            import dns.resolver
+            txt_ans = dns.resolver.resolve(domain_part, "TXT")
+            spf_val = None
+            for r in txt_ans:
+                s = str(r).strip().strip('"')
+                if s.lower().startswith("v=spf1"):
+                    spf_val = s
+                    break
+            if spf_val:
+                findings.append({
+                    "property": "spf_record",
+                    "policy": spf_val,
+                    "status": "CONFIGURED",
+                    "source": "DNS_RESOLVER",
+                    "method": "DNS_QUERY_TXT",
+                    "confidence": 0.95,
+                    "verification_state": OSINTVerificationState.OBSERVED.value,
+                })
+                sources_queried.append("DNS_SPF")
+
+            dmarc_val = None
+            try:
+                d_ans = dns.resolver.resolve(f"_dmarc.{domain_part}", "TXT")
+                for r in d_ans:
+                    s = str(r).strip().strip('"')
+                    if s.lower().startswith("v=dmarc1"):
+                        dmarc_val = s
+                        break
+            except Exception:
+                pass
+            if dmarc_val:
+                findings.append({
+                    "property": "dmarc_record",
+                    "policy": dmarc_val,
+                    "status": "CONFIGURED",
+                    "source": "DNS_RESOLVER",
+                    "method": "DNS_QUERY_TXT",
+                    "confidence": 0.95,
+                    "verification_state": OSINTVerificationState.OBSERVED.value,
+                })
+                sources_queried.append("DNS_DMARC")
+        except Exception:
+            pass
+
+        # 4. Gravatar existence check
+        gravatar_hash = hashlib.md5(raw_email.encode("utf-8")).hexdigest()
+        try:
+            g_resp = self._client.get(f"https://www.gravatar.com/avatar/{gravatar_hash}?d=404", timeout=2.5)
+            exists = (g_resp.status_code == 200)
+            findings.append({
+                "property": "gravatar_profile",
+                "hash": gravatar_hash,
+                "exists": exists,
+                "status": "PRESENT" if exists else "CHECKED_NOT_FOUND",
+                "source": "Gravatar",
+                "method": "HTTP_HEAD",
+                "confidence": 0.95,
+                "verification_state": OSINTVerificationState.OBSERVED.value,
+            })
+            sources_queried.append("Gravatar")
+        except Exception as e:
+            sources_skipped.append(f"Gravatar: {str(e)[:30]}")
+
+        # 5. Raw headers analysis if supplied
         if raw_headers:
             header_findings: dict[str, Any] = {}
             for line in raw_headers.splitlines():
@@ -1725,13 +2189,14 @@ class OSINTEngine:
                     header_findings["dkim_present"] = True
             findings.append({"property": "raw_header_analysis", "details": header_findings})
 
-        # 3. Breach Exposure status (HaveIBeenPwned Truthful Check)
+        # 6. HaveIBeenPwned Truthful Check
         hibp_key = os.environ.get("HIBP_API_KEY")
         if hibp_key:
             try:
                 r = self._client.get(
                     f"https://haveibeenpwned.com/api/v3/breachedaccount/{raw_email}",
                     headers={"hibp-api-key": hibp_key},
+                    timeout=3.0,
                 )
                 if r.status_code == 200:
                     breaches = r.json()
@@ -1740,45 +2205,47 @@ class OSINTEngine:
                         "count": len(breaches),
                         "breaches": [b.get("Name") for b in breaches[:5]],
                         "status": "PRESENT",
-                        "verification_state": OSINTVerificationState.VERIFIED.value,
+                        "verification_state": OSINTVerificationState.CORROBORATED.value,
                         "source": "HIBP",
                         "method": "REST_API_BREACH_CHECK",
                     })
                     prov_status["HIBP"] = f"EXPOSED_IN_{len(breaches)}_BREACHES"
+                    sources_queried.append("HIBP")
                 elif r.status_code == 404:
                     findings.append({
                         "property": "breach_exposure",
                         "count": 0,
                         "status": "CLEAN",
-                        "verification_state": OSINTVerificationState.NOT_FOUND_IN_CHECKED_SOURCES.value,
+                        "verification_state": OSINTVerificationState.OBSERVED.value,
                         "source": "HIBP",
                         "method": "REST_API_BREACH_CHECK",
                     })
                     prov_status["HIBP"] = "NOT_FOUND_IN_CHECKED_SOURCES"
+                    sources_queried.append("HIBP")
+                elif r.status_code == 429:
+                    prov_status["HIBP"] = "RATE_LIMITED"
+                    sources_skipped.append("HIBP: RATE_LIMITED")
+                else:
+                    prov_status["HIBP"] = f"HTTP_{r.status_code}"
+                    sources_skipped.append(f"HIBP: HTTP_{r.status_code}")
             except Exception as e:
                 prov_status["HIBP"] = f"ERROR: {str(e)[:30]}"
-                findings.append({
-                    "property": "breach_exposure",
-                    "count": "UNKNOWN",
-                    "status": "ERROR",
-                    "verification_state": "ERROR",
-                    "source": "HIBP",
-                    "error": str(e),
-                })
+                sources_skipped.append(f"HIBP: {str(e)[:30]}")
         else:
             prov_status["HIBP"] = "PROVIDER_NOT_CONFIGURED"
+            sources_skipped.append("HIBP: PROVIDER_NOT_CONFIGURED")
             findings.append({
                 "property": "breach_exposure",
                 "count": "NOT_CHECKED",
                 "status": "NOT_CHECKED",
-                "verification_state": "NOT_CHECKED",
+                "verification_state": OSINTVerificationState.PROVIDER_NOT_CONFIGURED.value,
                 "source": "HIBP",
                 "method": "REST_API_BREACH_CHECK",
                 "details": "HIBP_API_KEY not configured in environment; breach lookup not performed.",
             })
-            limitations.append("HIBP_API_KEY not configured in environment. Public breach search skipped (count is UNKNOWN/NOT_CHECKED, not 0).")
+            limitations.append("HIBP_API_KEY not configured in environment. Public breach search skipped (count is UNKNOWN/NOT_CHECKED, NEVER assumed safe or 0).")
 
-        # 4. Explicit Mailbox Existence & Deliverability Status
+        # 7. Mailbox existence note
         findings.append({
             "property": "mailbox_existence",
             "status": "UNVERIFIED",
@@ -1787,8 +2254,18 @@ class OSINTEngine:
         limitations.append("A valid domain or MX record confirms only that a mail routing host is defined, NOT that the specific mailbox exists.")
 
         summary = f"Email {raw_email} syntax validated successfully. Domain: {domain_part}."
-        if prov_status.get("DOMAIN_DNS") == "RESOLVED":
-            summary += " Mail host is active and resolvable (mailbox existence unverified)."
+        if not hibp_key:
+            summary += " HIBP: PROVIDER_NOT_CONFIGURED (breach status UNKNOWN)."
+
+        factors = {
+            "source_reliability": 0.95,
+            "direct_observation": 0.95,
+            "independent_corroboration": 0.7 if len(sources_queried) >= 3 else 0.4,
+            "freshness": 1.0,
+            "parser_validation": 1.0,
+            "cross_source_consistency": 0.85,
+        }
+        computed_conf = calculate_confidence(**factors)
 
         return OSINTResult(
             indicator=email_str,
@@ -1797,8 +2274,12 @@ class OSINTEngine:
             actual_finding=summary,
             status=OSINTVerificationState.OBSERVED,
             findings=findings,
+            sources_queried=sources_queried,
+            sources_skipped=sources_skipped,
             collection_method="SYNTAX_DNS_PASSIVE",
-            confidence=0.88,
+            confidence=computed_conf,
+            confidence_factors=factors,
+            confidence_type="HEURISTIC",
             limitations=limitations,
             provider_status=prov_status,
             related_entities=related,
@@ -1808,7 +2289,7 @@ class OSINTEngine:
     # 4. USERNAME INTELLIGENCE
     # =========================================================================
     def investigate_username(self, username_str: str) -> OSINTResult:
-        """Search supported public platforms for candidate profile presence without claiming identity link."""
+        """Search supported public platforms for candidate profile presence with soft-404 detection."""
         raw_user = username_str.strip().lstrip("@")
         if not re.match(r"^[a-zA-Z0-9_\-\.]{1,40}$", raw_user):
             return OSINTResult(
@@ -1819,149 +2300,210 @@ class OSINTEngine:
                 status=OSINTVerificationState.FAILED,
                 confidence=0.0,
                 limitations=["Username must contain only alphanumeric characters, dashes, dots, or underscores."],
+                sources_skipped=["INPUT_VALIDATION: INVALID_USERNAME_CHARS"],
             )
 
-        candidate_sources = [
-            ("GitHub", f"https://api.github.com/users/{raw_user}", f"https://github.com/{raw_user}"),
-            ("Reddit", f"https://www.reddit.com/user/{raw_user}/about.json", f"https://www.reddit.com/user/{raw_user}"),
-            ("HackerNews", f"https://hacker-news.firebaseio.com/v0/user/{raw_user}.json", f"https://news.ycombinator.com/user?id={raw_user}"),
-            ("GitLab", f"https://gitlab.com/api/v4/users?username={raw_user}", f"https://gitlab.com/{raw_user}"),
-            ("Keybase", f"https://keybase.io/_/api/1.0/user/lookup.json?usernames={raw_user}", f"https://keybase.io/{raw_user}"),
-        ]
-
+        offline = is_offline_mode()
+        sources_queried: list[str] = []
+        sources_skipped: list[str] = []
         findings: list[dict[str, Any]] = []
         related: list[dict[str, Any]] = []
         prov_status: dict[str, str] = {}
         observed_profiles = 0
 
-        for platform, check_url, profile_url in candidate_sources:
-            try:
-                res = self._client.get(check_url, timeout=2.5)
-                if res.status_code == 200:
-                    matched = True
-                    if platform == "Keybase":
-                        data = res.json()
-                        them = data.get("them", [])
-                        if not them or not isinstance(them, list) or them[0] is None:
-                            matched = False
-                    elif platform == "HackerNews":
-                        data = res.json()
-                        if not data or not isinstance(data, dict) or str(data.get("id", "")).lower() != raw_user.lower():
-                            matched = False
-                    elif platform == "GitHub":
-                        data = res.json()
-                        if not isinstance(data, dict) or str(data.get("login", "")).lower() != raw_user.lower():
-                            matched = False
-                    elif platform == "Reddit":
-                        data = res.json()
-                        if not isinstance(data, dict) or "data" not in data or str(data.get("data", {}).get("name", "")).lower() != raw_user.lower():
-                            matched = False
-                    elif platform == "GitLab":
-                        data = res.json()
-                        if not isinstance(data, list) or not any(isinstance(u, dict) and str(u.get("username", "")).lower() == raw_user.lower() for u in data):
-                            matched = False
+        # Ensure platforms catalog is available
+        platforms = self._platforms_catalog
+        if not platforms:
+            catalog_path = Path("data/osint/platforms.json")
+            if catalog_path.exists():
+                try:
+                    platforms = json.loads(catalog_path.read_text(encoding="utf-8"))
+                    self._platforms_catalog = platforms
+                except Exception:
+                    platforms = []
 
-                    if matched:
-                        observed_profiles += 1
-                        prov_status[platform] = "PROFILE_OBSERVED"
+        if offline:
+            prov_status["OFFLINE_MODE"] = "ENFORCED"
+            for p in (platforms[:10] if platforms else []):
+                sources_skipped.append(f"{p.get('name', 'Platform')}: SKIPPED_OFFLINE")
+            limitations = [
+                "Strict OFFLINE_MODE active: external platform HTTP probes were suppressed.",
+                "A matching username on a public platform indicates candidate presence, not verified human identity.",
+            ]
+            return OSINTResult(
+                indicator=username_str,
+                query_type="username",
+                normalized_value=raw_user,
+                actual_finding=f"Username '{raw_user}' format validated locally. Strict OFFLINE_MODE active: platform checks skipped.",
+                status=OSINTVerificationState.NOT_CHECKED,
+                findings=findings,
+                sources_queried=["USERNAME_REGEX_VALIDATOR"],
+                sources_skipped=sources_skipped,
+                collection_method="OFFLINE_FORMAT_VALIDATION",
+                confidence=0.5,
+                confidence_factors={
+                    "source_reliability": 1.0,
+                    "direct_observation": 1.0,
+                    "independent_corroboration": 0.0,
+                    "freshness": 1.0,
+                    "parser_validation": 1.0,
+                    "cross_source_consistency": 0.5,
+                },
+                limitations=limitations,
+                provider_status=prov_status,
+            )
+
+        # Query platforms in catalog (up to 6 per scan to bound latency, deferring remainder)
+        limit = int(os.environ.get("REDLOOP_OSINT_PLATFORMS_LIMIT", "6"))
+        scan_platforms = platforms[:limit] if platforms else [
+            {"name": "GitHub", "url_pattern": "https://github.com/{username}", "check_url": "https://api.github.com/users/{username}", "check_type": "json_field", "match_field": "login", "error_status_codes": [404], "error_strings": ["Not Found"], "min_length": 50},
+            {"name": "GitLab", "url_pattern": "https://gitlab.com/{username}", "check_url": "https://gitlab.com/api/v4/users?username={username}", "check_type": "json_field", "match_field": "username", "error_status_codes": [404], "error_strings": [], "min_length": 10},
+            {"name": "Reddit", "url_pattern": "https://www.reddit.com/user/{username}", "check_url": "https://www.reddit.com/user/{username}/about.json", "check_type": "json_field", "match_field": "name", "error_status_codes": [404], "error_strings": ["not_found"], "min_length": 30},
+            {"name": "Keybase", "url_pattern": "https://keybase.io/{username}", "check_url": "https://keybase.io/_/api/1.0/user/lookup.json?usernames={username}", "check_type": "status_code", "error_status_codes": [404], "error_strings": [], "min_length": 30},
+        ]
+        for p in platforms[limit:]:
+            p_n = p.get("name")
+            if p_n:
+                sources_skipped.append(f"{p_n}: DEFERRED_BATCH")
+
+        for p in scan_platforms:
+            p_name = p.get("name", "Unknown")
+            check_url = p.get("check_url", "").format(username=raw_user)
+            profile_url = p.get("url_pattern", "").format(username=raw_user)
+            if not check_url:
+                continue
+
+            try:
+                res = self._client.get(check_url, timeout=1.5)
+                err_codes = p.get("error_status_codes", [404])
+                err_strings = p.get("error_strings", [])
+                min_len = p.get("min_length", 0)
+
+                if res.status_code in err_codes:
+                    prov_status[p_name] = "NOT_FOUND"
+                    sources_queried.append(p_name)
+                    findings.append({
+                        "platform": p_name,
+                        "profile_url": profile_url,
+                        "status": "NOT_FOUND",
+                        "http_status": res.status_code,
+                        "source": p_name,
+                        "method": "PUBLIC_HTTP_PROBE",
+                        "confidence": 0.90,
+                        "verification_state": "NO_MATCH",
+                    })
+                elif res.status_code == 429:
+                    prov_status[p_name] = "RATE_LIMITED"
+                    sources_skipped.append(f"{p_name}: RATE_LIMITED")
+                    findings.append({
+                        "platform": p_name,
+                        "profile_url": profile_url,
+                        "status": "RATE_LIMITED",
+                        "http_status": 429,
+                        "source": p_name,
+                        "method": "PUBLIC_HTTP_PROBE",
+                        "confidence": 0.0,
+                        "verification_state": "UNCHECKED",
+                    })
+                elif res.status_code == 200:
+                    # Soft-404 detection
+                    is_soft_404 = False
+                    if len(res.content) < min_len:
+                        is_soft_404 = True
+                    text_lower = res.text.lower()
+                    if any(s.lower() in text_lower for s in err_strings if s):
+                        is_soft_404 = True
+
+                    # JSON field match check if specified
+                    if not is_soft_404 and p.get("check_type") == "json_field":
+                        try:
+                            jdata = res.json()
+                            mf = p.get("match_field", "")
+                            if isinstance(jdata, dict):
+                                val = str(jdata.get(mf, "")).lower()
+                                if val != raw_user.lower():
+                                    is_soft_404 = True
+                            elif isinstance(jdata, list):
+                                matched_any = any(isinstance(u, dict) and str(u.get(mf, "")).lower() == raw_user.lower() for u in jdata)
+                                if not matched_any:
+                                    is_soft_404 = True
+                        except Exception:
+                            is_soft_404 = True
+
+                    if is_soft_404:
+                        prov_status[p_name] = "NOT_FOUND"
+                        sources_queried.append(p_name)
                         findings.append({
-                            "platform": platform,
+                            "platform": p_name,
+                            "profile_url": profile_url,
+                            "status": "NOT_FOUND",
+                            "http_status": 200,
+                            "reason": "SOFT_404_DETECTED",
+                            "source": p_name,
+                            "method": "PUBLIC_HTTP_PROBE",
+                            "confidence": 0.85,
+                            "verification_state": "NO_MATCH",
+                        })
+                    else:
+                        observed_profiles += 1
+                        prov_status[p_name] = "PROFILE_OBSERVED"
+                        sources_queried.append(p_name)
+                        findings.append({
+                            "platform": p_name,
                             "profile_url": profile_url,
                             "status": "OBSERVED",
                             "http_status": 200,
-                            "source": platform,
-                            "method": "PUBLIC_REST_API",
+                            "source": p_name,
+                            "method": "PUBLIC_HTTP_PROBE",
                             "confidence": 0.65,
                             "verification_state": "CANDIDATE_MATCH",
                         })
                         related.append({
                             "type": "profile",
                             "value": profile_url,
-                            "relation": f"ACCOUNT_ON_{platform.upper()}",
-                            "source": platform,
-                            "method": "PUBLIC_REST_API",
+                            "relation": f"ACCOUNT_ON_{p_name.upper()}",
+                            "source": p_name,
+                            "method": "PUBLIC_HTTP_PROBE",
                             "confidence": 0.65,
                             "verification_state": "CANDIDATE_MATCH",
                             "verified": True,
                         })
-                    else:
-                        prov_status[platform] = "NOT_FOUND"
-                        findings.append({
-                            "platform": platform,
-                            "profile_url": profile_url,
-                            "status": "NOT_FOUND",
-                            "http_status": 200,
-                            "source": platform,
-                            "method": "PUBLIC_REST_API",
-                            "confidence": 0.85,
-                            "verification_state": "NO_MATCH",
-                        })
-                elif res.status_code == 404:
-                    prov_status[platform] = "NOT_FOUND"
-                    findings.append({
-                        "platform": platform,
-                        "profile_url": profile_url,
-                        "status": "NOT_FOUND",
-                        "http_status": 404,
-                        "source": platform,
-                        "method": "PUBLIC_REST_API",
-                        "confidence": 0.90,
-                        "verification_state": "NO_MATCH",
-                    })
-                elif res.status_code == 429:
-                    prov_status[platform] = "RATE_LIMITED"
-                    findings.append({
-                        "platform": platform,
-                        "profile_url": profile_url,
-                        "status": "RATE_LIMITED",
-                        "http_status": 429,
-                        "source": platform,
-                        "method": "PUBLIC_REST_API",
-                        "confidence": 0.0,
-                        "verification_state": "UNCHECKED",
-                    })
                 else:
-                    prov_status[platform] = f"HTTP_{res.status_code}"
-                    findings.append({
-                        "platform": platform,
-                        "profile_url": profile_url,
-                        "status": f"HTTP_{res.status_code}",
-                        "http_status": res.status_code,
-                        "source": platform,
-                        "method": "PUBLIC_REST_API",
-                        "confidence": 0.0,
-                        "verification_state": "UNCHECKED",
-                    })
+                    prov_status[p_name] = f"HTTP_{res.status_code}"
+                    sources_skipped.append(f"{p_name}: HTTP_{res.status_code}")
             except Exception as e:
-                prov_status[platform] = f"ERROR: {str(e)[:25]}"
-                findings.append({
-                    "platform": platform,
-                    "profile_url": profile_url,
-                    "status": "ERROR",
-                    "http_status": None,
-                    "source": platform,
-                    "method": "PUBLIC_REST_API",
-                    "confidence": 0.0,
-                    "verification_state": "ERROR",
-                    "error": str(e),
-                })
+                prov_status[p_name] = f"ERROR: {str(e)[:25]}"
+                sources_skipped.append(f"{p_name}: {str(e)[:25]}")
 
-        summary = f"Username '{raw_user}' checked across {len(candidate_sources)} public platforms. Observed {observed_profiles} candidate profile(s)."
-
+        summary = f"Username '{raw_user}' checked across {len(sources_queried)} public platforms. Observed {observed_profiles} candidate profile(s)."
         limitations = [
             "A matching username on a public platform indicates candidate presence, not verified human identity.",
             "Independent correlation of cryptographic signatures, public keys, or historical timestamps is strictly required.",
         ]
+
+        factors = {
+            "source_reliability": 0.70,
+            "direct_observation": 0.80,
+            "independent_corroboration": 0.50 if observed_profiles > 1 else 0.20,
+            "freshness": 1.0,
+            "parser_validation": 1.0,
+            "cross_source_consistency": 0.60,
+        }
+        computed_conf = min(0.75, calculate_confidence(**factors))
 
         return OSINTResult(
             indicator=username_str,
             query_type="username",
             normalized_value=raw_user,
             actual_finding=summary,
-            status=OSINTVerificationState.OBSERVED if observed_profiles > 0 else OSINTVerificationState.NOT_FOUND_IN_CHECKED_SOURCES,
+            status=OSINTVerificationState.OBSERVED if observed_profiles > 0 else OSINTVerificationState.OBSERVED,
             findings=findings,
+            sources_queried=sources_queried,
+            sources_skipped=sources_skipped,
             collection_method="PUBLIC_REST_API_PASSIVE",
-            confidence=0.65 if observed_profiles > 0 else 0.5,
+            confidence=computed_conf if observed_profiles > 0 else 0.50,
+            confidence_factors=factors,
+            confidence_type="HEURISTIC",
             limitations=limitations,
             provider_status=prov_status,
             related_entities=related,
@@ -1971,7 +2513,7 @@ class OSINTEngine:
     # 5. PHONE INTELLIGENCE
     # =========================================================================
     def investigate_phone(self, phone_str: str) -> OSINTResult:
-        """Parse E.164 international format, determine ITU numbering region, and query verified lookup if configured."""
+        """Parse E.164 international format, determine ITU numbering region, and prefix-based carrier attribution."""
         clean_digits = re.sub(r"[^\d+]", "", phone_str.strip())
         if not clean_digits.startswith("+"):
             clean_digits = "+" + clean_digits
@@ -1985,31 +2527,67 @@ class OSINTEngine:
                 status=OSINTVerificationState.FAILED,
                 confidence=0.0,
                 limitations=["Phone number must conform to ITU-T E.164 standard (e.g. +14155552671)."],
+                sources_skipped=["INPUT_VALIDATION: INVALID_PHONE_FORMAT"],
             )
+
+        offline = is_offline_mode()
+        sources_queried: list[str] = ["ITU_E164_LOCAL_PARSER", "phonenumbers"]
+        sources_skipped: list[str] = [
+            "TWILIO_LOOKUP: PROVIDER_NOT_CONFIGURED",
+            "NUMVERIFY: PROVIDER_NOT_CONFIGURED",
+            "HLR_LOOKUP: PROVIDER_NOT_CONFIGURED",
+        ]
+        if offline:
+            sources_skipped.append("LIVE_HLR: SKIPPED_OFFLINE")
 
         parsed_via_phonenumbers = False
         formatted_e164 = clean_digits
         country_match = None
         region_name = "International / Unknown"
         matched_cc = None
+        is_valid_num = False
+        is_possible_num = False
+        carrier_str = "UNKNOWN (prefix metadata)"
+        line_type_str = "UNKNOWN"
+
+        TYPE_MAP = {
+            0: "FIXED_LINE",
+            1: "MOBILE",
+            2: "FIXED_LINE_OR_MOBILE",
+            3: "TOLL_FREE",
+            4: "PREMIUM_RATE",
+            5: "SHARED_COST",
+            6: "VOIP",
+            7: "PERSONAL_NUMBER",
+            8: "PAGER",
+            9: "UAN",
+            10: "VOICEMAIL",
+            11: "UNKNOWN",
+        }
 
         try:
             import phonenumbers
-            from phonenumbers import geocoder
+            from phonenumbers import carrier as phone_carrier, geocoder
             p_obj = phonenumbers.parse(clean_digits, None)
-            if phonenumbers.is_possible_number(p_obj):
+            is_possible_num = phonenumbers.is_possible_number(p_obj)
+            is_valid_num = phonenumbers.is_valid_number(p_obj)
+            if is_possible_num:
                 formatted_e164 = phonenumbers.format_number(p_obj, phonenumbers.PhoneNumberFormat.E164)
                 matched_cc = str(p_obj.country_code)
                 reg_code = phonenumbers.region_code_for_number(p_obj)
                 country_match = "US/CA" if reg_code in ("US", "CA") else reg_code
                 geo_desc = geocoder.description_for_number(p_obj, "en")
                 region_name = geo_desc or ("North America" if reg_code in ("US", "CA") else (country_match or "International / Unknown"))
+                raw_c = phone_carrier.name_for_number(p_obj, "en")
+                if raw_c:
+                    carrier_str = f"{raw_c} (prefix metadata)"
+                ntype = phonenumbers.number_type(p_obj)
+                line_type_str = TYPE_MAP.get(ntype, "UNKNOWN")
                 parsed_via_phonenumbers = True
         except Exception:
             pass
 
         if not parsed_via_phonenumbers:
-            # Check longest prefix match in ITU table
             digits_only = clean_digits[1:]
             for length in (3, 2, 1):
                 prefix = digits_only[:length]
@@ -2023,12 +2601,16 @@ class OSINTEngine:
             {
                 "property": "e164_format",
                 "value": formatted_e164,
+                "is_valid_number": is_valid_num,
+                "is_possible_number": is_possible_num,
                 "country_calling_code": f"+{matched_cc}" if matched_cc else "UNKNOWN",
                 "iso_country": country_match or "UNKNOWN",
                 "geographic_region": region_name,
+                "carrier_identity": carrier_str,
+                "carrier_attribution_type": "PREFIX_METADATA",
+                "live_hlr_status": "PROVIDER_NOT_CONFIGURED (live carrier lookup requires commercial HLR/SS7 provider)",
+                "line_type": line_type_str,
                 "subscriber_assignment": "UNVERIFIED_LOCALLY",
-                "carrier_identity": "UNVERIFIED_LOCALLY",
-                "line_activity": "UNVERIFIED_LOCALLY",
                 "status": "PRESENT",
                 "verification_state": OSINTVerificationState.OBSERVED.value,
                 "source": "ITU_E164_LOCAL_PARSER",
@@ -2053,20 +2635,22 @@ class OSINTEngine:
         limitations = [
             "Local parsing confirms numbering plan formatting and region code only; does NOT verify subscriber identity, active assignment, or live carrier.",
             "Subscriber identities, precise geolocation, and private account associations are not accessible via public OSINT.",
-            "Carrier and line-type classification require an active licensed commercial lookup provider (Twilio Lookup / NumVerify).",
+            "Carrier attribution is derived from prefix metadata only. Live HLR lookup requires commercial SS7/HLR provider.",
         ]
 
         prov_status = {
             "ITU_E164_LOCAL_PARSER": "OBSERVED",
+            "PHONENUMBERS": "PARSED" if parsed_via_phonenumbers else "FAILED",
             "TWILIO_LOOKUP": "PROVIDER_NOT_CONFIGURED",
             "NUMVERIFY": "PROVIDER_NOT_CONFIGURED",
+            "LIVE_HLR": "PROVIDER_NOT_CONFIGURED",
         }
 
         # Check for optional Twilio credentials
         has_verified_carrier = False
         twilio_sid = os.environ.get("TWILIO_ACCOUNT_SID")
         twilio_token = os.environ.get("TWILIO_AUTH_TOKEN")
-        if twilio_sid and twilio_token:
+        if twilio_sid and twilio_token and not offline:
             try:
                 r = self._client.get(
                     f"https://lookups.twilio.com/v1/PhoneNumbers/{formatted_e164}?Type=carrier",
@@ -2079,38 +2663,48 @@ class OSINTEngine:
                         "carrier_name": carrier_data.get("name"),
                         "line_type": carrier_data.get("type"),
                         "status": "PRESENT",
-                        "verification_state": OSINTVerificationState.VERIFIED.value,
+                        "verification_state": OSINTVerificationState.CORROBORATED.value,
                         "source": "TWILIO_LOOKUP",
                         "method": "REST_API",
                         "confidence": 0.95,
                     })
                     prov_status["TWILIO_LOOKUP"] = "LIVE_VERIFIED"
+                    sources_queried.append("TWILIO_LOOKUP")
                     has_verified_carrier = True
                 else:
                     prov_status["TWILIO_LOOKUP"] = f"HTTP_{r.status_code}"
             except Exception as e:
                 prov_status["TWILIO_LOOKUP"] = f"ERROR: {str(e)[:30]}"
 
-        summary = f"Phone {formatted_e164} parsed as E.164 standard. Region: {region_name} ({country_match or 'Unknown'})."
-        phone_confidence = 0.92 if has_verified_carrier else (0.85 if country_match else 0.70)
+        summary = f"Phone {formatted_e164} parsed as E.164 standard. Region: {region_name} ({country_match or 'Unknown'}). Carrier: {carrier_str} [PREFIX_METADATA]. Live HLR: PROVIDER_NOT_CONFIGURED."
+        factors = {
+            "source_reliability": 0.95,
+            "direct_observation": 0.95,
+            "independent_corroboration": 0.8 if has_verified_carrier else 0.5,
+            "freshness": 1.0,
+            "parser_validation": 1.0,
+            "cross_source_consistency": 0.85,
+        }
+        phone_confidence = calculate_confidence(**factors)
 
         return OSINTResult(
             indicator=phone_str,
             query_type="phone",
             normalized_value=formatted_e164,
             actual_finding=summary,
-            status=OSINTVerificationState.VERIFIED if has_verified_carrier else OSINTVerificationState.OBSERVED,
+            status=OSINTVerificationState.CORROBORATED if has_verified_carrier else OSINTVerificationState.OBSERVED,
             findings=findings,
+            sources_queried=sources_queried,
+            sources_skipped=sources_skipped,
             collection_method="ITU_E164_LOCAL_ENGINE",
             confidence=phone_confidence,
+            confidence_factors=factors,
+            confidence_type="HEURISTIC",
             limitations=limitations,
             provider_status=prov_status,
             related_entities=related,
         )
 
-    # =========================================================================
-    # 6. METADATA & FILE INTELLIGENCE
-    # =========================================================================
     def analyze_file_metadata(
         self,
         file_input: bytes | str | Path,

@@ -25,14 +25,36 @@ import uuid
 
 class VerificationState(str, Enum):
     OBSERVED = "OBSERVED"
-    VERIFIED = "VERIFIED"
+    CORROBORATED = "CORROBORATED"
     INFERRED = "INFERRED"
-    UNVERIFIED_LOCALLY = "UNVERIFIED_LOCALLY"
-    NOT_FOUND_IN_CHECKED_SOURCES = "NOT_FOUND_IN_CHECKED_SOURCES"
+    UNVERIFIED = "UNVERIFIED"
+    NOT_CHECKED = "NOT_CHECKED"
     PROVIDER_NOT_CONFIGURED = "PROVIDER_NOT_CONFIGURED"
     RATE_LIMITED = "RATE_LIMITED"
     FAILED = "FAILED"
-    UNKNOWN = "UNKNOWN"
+
+    # Backward-compatible aliases
+    VERIFIED = "CORROBORATED"
+    UNKNOWN = "UNVERIFIED"
+    UNVERIFIED_LOCALLY = "UNVERIFIED"
+    NOT_FOUND_IN_CHECKED_SOURCES = "OBSERVED"
+    OFFLINE_MODE = "NOT_CHECKED"
+
+    def __hash__(self) -> int:
+        return hash(self.value)
+
+    def __eq__(self, other: Any) -> bool:
+        if super().__eq__(other):
+            return True
+        if isinstance(other, str):
+            aliases = {
+                "CORROBORATED": {"VERIFIED"},
+                "UNVERIFIED": {"UNKNOWN", "UNVERIFIED_LOCALLY"},
+                "OBSERVED": {"NOT_FOUND_IN_CHECKED_SOURCES"},
+                "NOT_CHECKED": {"OFFLINE_MODE"},
+            }
+            return other in aliases.get(self.value, set())
+        return False
 
 
 class OllamaHealthState(str, Enum):
@@ -276,9 +298,10 @@ def resolve_verification_state(
 # ---------------------------------------------------------------------------
 
 def is_offline_mode() -> bool:
-    """Check if REDLOOP is configured in strict offline mode (OFFLINE_MODE=true)."""
-    val = os.environ.get("OFFLINE_MODE", "").strip().lower()
-    return val in ("1", "true", "yes", "on")
+    """Check if REDLOOP is configured in strict offline mode (REDLOOP_OFFLINE=1 or OFFLINE_MODE=true)."""
+    val1 = os.environ.get("REDLOOP_OFFLINE", "").strip().lower()
+    val2 = os.environ.get("OFFLINE_MODE", "").strip().lower()
+    return val1 in ("1", "true", "yes", "on") or val2 in ("1", "true", "yes", "on")
 
 
 def check_ollama_health(host: str = "127.0.0.1", port: int = 11434, timeout: float = 0.5) -> dict[str, Any]:

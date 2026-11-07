@@ -1,0 +1,321 @@
+{
+  "indicator": "127.0.0.1",
+  "query_type": "ip",
+  "normalized_value": "127.0.0.1",
+  "actual_finding": "IP 127.0.0.1 classified as LOOPBACK (IPv4). Local/private IP: external reputation not applicable; local telemetry only.",
+  "status": "OBSERVED",
+  "findings": [
+    {
+      "property": "classification",
+      "value": "LOOPBACK",
+      "classification": "LOOPBACK",
+      "special_scope": null,
+      "is_limited_broadcast": false,
+      "is_ipv6_unique_local": false,
+      "scope": "LOOPBACK",
+      "version": 4,
+      "is_private": true,
+      "is_loopback": true,
+      "is_link_local": false,
+      "is_multicast": false,
+      "is_reserved": false,
+      "is_global": false,
+      "source": "python-ipaddress",
+      "method": "LOCAL_DETERMINISTIC_CLASSIFICATION",
+      "confidence": 1.0,
+      "verification_state": "OBSERVED"
+    },
+    {
+      "property": "reverse_dns",
+      "hostname": null,
+      "hostnames": [],
+      "status": "NOT_QUERIED",
+      "reason": "Reverse DNS is not applicable to non-globally-routable addresses.",
+      "source": null,
+      "method": null,
+      "confidence": 0.0,
+      "verification_state": "NOT_APPLICABLE"
+    }
+  ],
+  "sources_queried": [
+    "python-ipaddress"
+  ],
+  "sources_skipped": [
+    "RDAP: NOT_APPLICABLE",
+    "Shodan: NOT_APPLICABLE",
+    "VirusTotal: NOT_APPLICABLE"
+  ],
+  "SC": 1,
+  "confidence_formula": "C = 0.25*(S=1.00) + 0.25*(D=1.00) + 0.20*(I=0.00) + 0.10*(F=1.00) + 0.10*(P=1.00) + 0.10*(X=0.30) = 0.91",
+  "PC": 1.0,
+  "source_or_provider": "redloop_osint_engine",
+  "collection_method": "LOCAL_DETERMINISTIC_CLASSIFICATION",
+  "observation_timestamp": "2026-11-07T16:25:42.439701+00:00",
+  "evidence_id": "evi-osint-6930c5fff6",
+  "evidence_hash": "12b53527dbd063d048c38c8a73f103cd5f140eba2a97f86e1db96985af662009",
+  "evidence_hash_version": "sha256-canonical-v2",
+  "evidence_integrity_valid": true,
+  "evidence_integrity_status": "INTEGRITY_VERIFIED",
+  "confidence": 0.9125,
+  "confidence_label": "HIGH",
+  "confidence_method": "C = 0.25S + 0.25D + 0.20I + 0.10F + 0.10P + 0.10X",
+  "confidence_factors": {
+    "source_reliability": 1.0,
+    "direct_observation": 1.0,
+    "independent_corroboration": 0.0,
+    "freshness": 1.0,
+    "parser_validation": 1.0,
+    "cross_source_consistency": 0.3
+  },
+  "confidence_type": "HEURISTIC",
+  "confidence_evidence": {
+    "status": "SINGLE_SOURCE",
+    "label": "HEURISTIC_CONFIDENCE",
+    "calibration_status": "NOT_CALIBRATED",
+    "score": 0.8,
+    "factors": {
+      "source_reliability": 1.0,
+      "source_agreement": 0.0,
+      "evidence_integrity": 1.0,
+      "freshness": 1.0,
+      "provenance_completeness": 1.0
+    },
+    "weights": {
+      "source_reliability": 0.3,
+      "source_agreement": 0.2,
+      "evidence_integrity": 0.2,
+      "freshness": 0.15,
+      "provenance_completeness": 0.15
+    },
+    "normalized_weights": {
+      "source_reliability": 0.3,
+      "source_agreement": 0.2,
+      "evidence_integrity": 0.2,
+      "freshness": 0.15,
+      "provenance_completeness": 0.15
+    },
+    "available_weight": 1.0,
+    "details": {
+      "source_agreement_status": "SINGLE_SOURCE",
+      "legacy_confidence": 0.9125,
+      "evidence_integrity_status": "INTEGRITY_VERIFIED"
+    }
+  },
+  "confidence_evidence_score": 0.8,
+  "confidence_methodology": "HEURISTIC_CONFIDENCE",
+  "source_agreement": {
+    "status": "SINGLE_SOURCE",
+    "score": null,
+    "independent_sources": 1
+  },
+  "not_applicable_factors": [
+    "independent_corroboration"
+  ],
+  "provenance_completeness": 1.0,
+  "provenance": {
+    "source": {
+      "value": "redloop_osint_engine",
+      "status": "PRESENT"
+    },
+    "timestamp": {
+      "value": "2026-11-07T16:25:42.439701+00:00",
+      "status": "PRESENT"
+    },
+    "method": {
+      "value": "LOCAL_DETERMINISTIC_CLASSIFICATION",
+      "status": "PRESENT"
+    },
+    "evidence": {
+      "value": "evi-osint-6930c5fff6",
+      "sha256": "12b53527dbd063d048c38c8a73f103cd5f140eba2a97f86e1db96985af662009",
+      "status": "PRESENT"
+    },
+    "confidence": {
+      "value": 0.9125,
+      "label": "HIGH",
+      "method": "C = 0.25S + 0.25D + 0.20I + 0.10F + 0.10P + 0.10X",
+      "factors": {
+        "source_reliability": 1.0,
+        "direct_observation": 1.0,
+        "independent_corroboration": 0.0,
+        "freshness": 1.0,
+        "parser_validation": 1.0,
+        "cross_source_consistency": 0.3
+      },
+      "status": "PRESENT"
+    }
+  },
+  "field_provenance": {
+    "source": {
+      "status": "PRESENT",
+      "value": "redloop_osint_engine",
+      "source": null,
+      "method": null,
+      "reason": null
+    },
+    "timestamp": {
+      "status": "PRESENT",
+      "value": "2026-11-07T16:25:42.439701+00:00",
+      "source": null,
+      "method": null,
+      "reason": null
+    },
+    "method": {
+      "status": "PRESENT",
+      "value": "LOCAL_DETERMINISTIC_CLASSIFICATION",
+      "source": null,
+      "method": null,
+      "reason": null
+    },
+    "evidence": {
+      "status": "PRESENT",
+      "value": "evi-osint-6930c5fff6",
+      "source": null,
+      "method": null,
+      "reason": null
+    },
+    "confidence": {
+      "status": "PRESENT",
+      "value": 0.9125,
+      "source": null,
+      "method": null,
+      "reason": null
+    },
+    "classification": {
+      "status": "PRESENT",
+      "value": "LOOPBACK",
+      "source": "python-ipaddress",
+      "method": "LOCAL_DETERMINISTIC_CLASSIFICATION",
+      "reason": null
+    },
+    "reverse_dns": {
+      "status": "NOT_APPLICABLE",
+      "value": null,
+      "source": null,
+      "method": null,
+      "reason": "Reverse DNS is not applicable to non-globally-routable addresses."
+    },
+    "registry": {
+      "status": "NOT_APPLICABLE",
+      "value": null,
+      "source": "RDAP",
+      "method": "LOCAL_DETERMINISTIC_CLASSIFICATION",
+      "reason": null
+    },
+    "network": {
+      "status": "NOT_APPLICABLE",
+      "value": null,
+      "source": "RDAP",
+      "method": "LOCAL_DETERMINISTIC_CLASSIFICATION",
+      "reason": null
+    },
+    "asn": {
+      "status": "NOT_APPLICABLE",
+      "value": null,
+      "source": "ASN_PROVIDER",
+      "method": "LOCAL_DETERMINISTIC_CLASSIFICATION",
+      "reason": null
+    },
+    "geo": {
+      "status": "NOT_APPLICABLE",
+      "value": null,
+      "source": "GEOLOCATION_PROVIDER",
+      "method": "LOCAL_DETERMINISTIC_CLASSIFICATION",
+      "reason": null
+    }
+  },
+  "provenance_policy": {
+    "query_type": "ip",
+    "required_fields": [
+      "source",
+      "timestamp",
+      "method",
+      "evidence",
+      "confidence",
+      "classification",
+      "reverse_dns"
+    ],
+    "applicable_fields": [
+      "source",
+      "timestamp",
+      "method",
+      "evidence",
+      "confidence",
+      "classification"
+    ],
+    "present_fields": [
+      "source",
+      "timestamp",
+      "method",
+      "evidence",
+      "confidence",
+      "classification"
+    ],
+    "missing_fields": [],
+    "not_applicable_fields": [
+      "reverse_dns"
+    ],
+    "score": 1.0,
+    "status": "COMPLETE"
+  },
+  "rate_limit_state": "NORMAL",
+  "cached": true,
+  "cache_status": "CACHED",
+  "cache_state": "CACHED_FRESH",
+  "cache_fallback_reason": null,
+  "cached_at": "2026-11-07T16:25:42.440802+00:00",
+  "cache_age_seconds": 134.171,
+  "cache_ttl_seconds": 86400.0,
+  "cache_expires_at": "2026-11-08T16:25:42.440802+00:00",
+  "freshness": {
+    "observed_at": "2026-11-07T16:25:42.439701+00:00",
+    "age_seconds": 134.171,
+    "ttl_seconds": 86400.0,
+    "state": "FRESH",
+    "score": 0.998924,
+    "half_life_seconds": 86400.0,
+    "decay": {
+      "status": "FRESH",
+      "score": 0.998924,
+      "decay_fraction": 0.001076,
+      "half_life_seconds": 86400.0,
+      "observation_type": "ip",
+      "age_seconds": 134.176
+    }
+  },
+  "freshness_decay": {
+    "status": "FRESH",
+    "score": 0.998924,
+    "decay_fraction": 0.001076,
+    "half_life_seconds": 86400.0,
+    "observation_type": "ip",
+    "age_seconds": 134.176
+  },
+  "limitations": [
+    "IP 127.0.0.1 is LOOPBACK; external registry, ASN, and geolocation enrichment are not applicable.",
+    "Confidence scores confidence in the collected observations, not the identity or physical location of a person.",
+    "A successful IP resolution or absence of abuse reports does not prove a host is safe or benign."
+  ],
+  "provider_status": {},
+  "related_entities": [],
+  "verification_state": "OBSERVED",
+  "classification": "LOOPBACK",
+  "reverse_dns": {
+    "hostname": null,
+    "hostnames": [],
+    "status": "NOT_QUERIED",
+    "reason": "Reverse DNS is not applicable to non-globally-routable addresses.",
+    "source": null,
+    "method": null,
+    "confidence": 0.0,
+    "verification_state": "NOT_APPLICABLE"
+  },
+  "registry": null,
+  "registry_status": "NOT_APPLICABLE",
+  "network": null,
+  "network_status": "NOT_APPLICABLE",
+  "asn": null,
+  "asn_status": "NOT_APPLICABLE",
+  "geo": null,
+  "geo_status": "NOT_APPLICABLE"
+}
