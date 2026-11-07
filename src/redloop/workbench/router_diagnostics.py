@@ -21,3 +21,4 @@ async def workbench_health(request: Request) -> JSONResponse:
             "scope_enforcement": "fail_closed",
         }
     })
+

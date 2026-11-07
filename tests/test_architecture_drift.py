@@ -20,3 +20,4 @@ def test_architecture_documentation_no_drift():
     assert (
         actual_content == expected_content
     ), "docs/ARCHITECTURE.md has drifted from codebase reality. Run `python scripts/gen_docs.py` to update."
+

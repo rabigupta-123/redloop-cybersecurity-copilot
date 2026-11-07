@@ -611,9 +611,11 @@ def soc_api_client(tmp_path_factory):
     db_file = str(tmp_dir / "audit.sqlite")
     from fastapi import FastAPI
     from redloop.workbench import register_workbench_routes
+    from redloop.assessment.soar_engine import get_or_create_operator_token
+    token, _ = get_or_create_operator_token()
     app = FastAPI()
     register_workbench_routes(app, db_path=db_file, scope_manager=None)
-    client = TestClient(app, base_url="http://testserver")
+    client = TestClient(app, base_url="http://testserver", headers={"X-Operator-Token": token})
     return client
 
 

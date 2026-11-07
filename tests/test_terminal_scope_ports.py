@@ -152,3 +152,4 @@ def test_dns_rebinding_rejected(tmp_path, monkeypatch):
     assert res.status == ExecutionStatus.BLOCKED
     assert res.exit_code == 126
     assert "SCOPE_BLOCKED" in res.stderr
+

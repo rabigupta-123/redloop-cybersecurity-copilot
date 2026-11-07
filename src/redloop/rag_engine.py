@@ -17,6 +17,7 @@ import math
 import os
 import re
 import time
+from collections import Counter
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
@@ -309,6 +310,9 @@ class RAGEngine:
         if not q_tokens or not self.chunks:
             return []
 
+        # Cap query tokens to unique salient terms (prevent quadratic blowup on large pastes)
+        q_tokens = list(dict.fromkeys(q_tokens))[:32]
+
         # Calculate BM25 scores
         scores: list[tuple[DocumentChunk, float]] = []
         num_docs = len(self.chunks)
@@ -316,24 +320,27 @@ class RAGEngine:
 
         # Document frequencies
         df: dict[str, int] = {}
+        chunk_word_counts = []
         for c in self.chunks:
-            c_tokens = set(re.findall(r"\w+", c.content.lower()))
+            c_text_lower = c.content.lower()
+            c_title_lower = c.title.lower()
+            counts = Counter(re.findall(r"[a-zA-Z0-9_-]+", c_text_lower))
+            title_words = set(re.findall(r"[a-zA-Z0-9_-]+", c_title_lower))
+            chunk_word_counts.append((c, counts, title_words))
             for qt in q_tokens:
-                if qt in c_tokens:
+                if qt in counts:
                     df[qt] = df.get(qt, 0) + 1
 
         k1 = 1.5
         b = 0.75
-        for c in self.chunks:
-            c_text_lower = c.content.lower()
-            c_title_lower = c.title.lower()
+        for c, counts, title_words in chunk_word_counts:
             score = 0.0
             doc_len = c.word_count
 
             matched_terms = 0
             for qt in q_tokens:
-                term_freq = len(re.findall(rf"\b{re.escape(qt)}\b", c_text_lower))
-                if qt in c_title_lower:
+                term_freq = counts.get(qt, 0)
+                if qt in title_words:
                     term_freq += 3  # Boost title matches
 
                 if term_freq > 0:

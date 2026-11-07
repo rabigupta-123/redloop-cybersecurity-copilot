@@ -6,6 +6,11 @@ from fastapi import FastAPI
 
 # Re-export all historical workbench functionality for backward compatibility
 from redloop.workbench.legacy_workbench import *
+from redloop.workbench.legacy_workbench import (
+    _HTML_TEMPLATE,
+    _WORKBENCH_SCRIPT,
+    _require_same_origin,
+)
 
 # Modular routers extracted under Phase 7.1
 from redloop.workbench.router_assets import router as router_assets

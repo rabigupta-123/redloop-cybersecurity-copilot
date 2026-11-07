@@ -17,3 +17,8 @@ This module re-exports all symbols from the redloop.workbench package to preserv
 from __future__ import annotations
 
 from redloop.workbench import *
+from redloop.workbench import (
+    _HTML_TEMPLATE,
+    _WORKBENCH_SCRIPT,
+    _require_same_origin,
+)

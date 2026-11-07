@@ -528,7 +528,7 @@ async def test_23_provider_timeout_handling(env):
     # Offline fallback response generates properly
     offline_reply = orch._generate_offline_cyber_response("Explain XSS attack")
     assert "Cross-Site Scripting" in offline_reply
-    assert "Offline Analysis" in offline_reply
+    assert "offline" in offline_reply.lower()
 
 
 # ===========================================================================

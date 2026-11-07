@@ -265,3 +265,4 @@ def test_osint_sqlite_cache_roundtrip(tmp_path):
     assert cached.cache_status == "CACHED"
     assert cached.cached_at is not None
     assert cached.cache_ttl_seconds == 86400.0
+

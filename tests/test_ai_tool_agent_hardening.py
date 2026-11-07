@@ -122,3 +122,4 @@ def test_malformed_tool_call_json_handled_without_crashing(monkeypatch):
     res = agent.run_tool_calling_loop("test malformed JSON", max_steps=2)
     assert res is not None
     assert "status" in res
+

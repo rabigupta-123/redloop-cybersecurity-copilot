@@ -333,6 +333,7 @@ def test_n_audit_tampering_detected(tmp_path: Path):
     # Deliberately tamper with row 1 details
     import sqlite3
     with sqlite3.connect(db_path) as conn:
+        conn.execute("DROP TRIGGER IF EXISTS audit_no_update")
         conn.execute("UPDATE audit_log SET details = '{\"ports\": [999]}' WHERE id = 1")
         conn.commit()
 

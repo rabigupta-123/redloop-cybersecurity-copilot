@@ -19,3 +19,4 @@ async def soc_metrics_overview(request: Request) -> JSONResponse:
         "active_cases": 0,
         "investigations_count": 0,
     })
+

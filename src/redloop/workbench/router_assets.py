@@ -18,3 +18,4 @@ async def assets_summary(request: Request) -> JSONResponse:
         "critical_vulnerabilities": 0,
         "high_vulnerabilities": 0,
     })
+

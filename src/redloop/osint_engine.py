@@ -696,14 +696,24 @@ class OSINTCache:
         self._stale_ttl = max(self._ttl, float(stale_ttl_seconds))
         self._lock = threading.RLock()
         self._db_path = db_path or os.environ.get("REDLOOP_OSINT_CACHE_DB", "data/osint_cache.sqlite")
+        self._shared_conn = None
+        if self._db_path == ":memory:":
+            import sqlite3
+            self._shared_conn = sqlite3.connect(":memory:", check_same_thread=False)
         self._init_sqlite()
+
+    def _get_conn(self):
+        import sqlite3
+        if self._shared_conn is not None:
+            return self._shared_conn
+        return sqlite3.connect(self._db_path, timeout=5.0)
 
     def _init_sqlite(self) -> None:
         try:
-            p = Path(self._db_path)
-            p.parent.mkdir(parents=True, exist_ok=True)
-            import sqlite3
-            with sqlite3.connect(self._db_path, timeout=5.0) as conn:
+            if self._db_path != ":memory:":
+                p = Path(self._db_path)
+                p.parent.mkdir(parents=True, exist_ok=True)
+            with self._get_conn() as conn:
                 conn.execute(
                     """
                     CREATE TABLE IF NOT EXISTS osint_cache (
@@ -715,7 +725,6 @@ class OSINTCache:
                     )
                     """
                 )
-                conn.commit()
         except Exception as e:
             logger.debug("Could not initialize OSINT SQLite cache: %s", e)
 
@@ -754,6 +763,11 @@ class OSINTCache:
             "half_life_seconds"
         )
         cached_res.freshness["decay"] = cached_res.freshness_decay
+        if cache_status == "STALE":
+            cached_res.limitations = list(cached_res.limitations or [])
+            stale_msg = f"Serving stale cache: fresh lookup failed ({fallback_reason or 'upstream unavailable'})."
+            if not any("cache" in item.lower() for item in cached_res.limitations):
+                cached_res.limitations.append(stale_msg)
         return cached_res
 
     def state_for(self, key: str) -> str:
@@ -776,8 +790,7 @@ class OSINTCache:
             entry = self._cache.get(key)
         if not entry:
             try:
-                import sqlite3
-                with sqlite3.connect(self._db_path, timeout=5.0) as conn:
+                with self._get_conn() as conn:
                     cursor = conn.cursor()
                     cursor.execute(
                         "SELECT result_json, created_at, expires_at, stale_until FROM osint_cache WHERE cache_key = ?",
@@ -812,15 +825,34 @@ class OSINTCache:
         with self._lock:
             entry = self._cache.get(key)
         if not entry:
+            try:
+                with self._get_conn() as conn:
+                    cursor = conn.cursor()
+                    cursor.execute(
+                        "SELECT result_json, created_at, expires_at, stale_until FROM osint_cache WHERE cache_key = ?",
+                        (key,),
+                    )
+                    row = cursor.fetchone()
+                    if row:
+                        res_json, c_at, exp_at, st_at = row
+                        res_obj = OSINTResult.model_validate_json(res_json)
+                        with self._lock:
+                            self._cache[key] = (c_at, exp_at, st_at, res_obj)
+                        entry = (c_at, exp_at, st_at, res_obj)
+            except Exception as e:
+                logger.debug("Failed reading OSINT SQLite cache for stale entry: %s", e)
+        if not entry:
             return None
         created_at, expires_at, stale_until, result = entry
         if now < expires_at:
             return None
         if now >= stale_until:
-            del self._cache[key]
+            with self._lock:
+                self._cache.pop(key, None)
             return None
         if result.status in self._UNCACHEABLE:
-            del self._cache[key]
+            with self._lock:
+                self._cache.pop(key, None)
             return None
         return self._annotate(
             result,
@@ -844,8 +876,7 @@ class OSINTCache:
                 result.model_copy(deep=True),
             )
         try:
-            import sqlite3
-            with sqlite3.connect(self._db_path, timeout=5.0) as conn:
+            with self._get_conn() as conn:
                 conn.execute(
                     """
                     INSERT OR REPLACE INTO osint_cache
@@ -854,7 +885,6 @@ class OSINTCache:
                     """,
                     (key, result.model_dump_json(), now, now + self._ttl, now + self._stale_ttl),
                 )
-                conn.commit()
         except Exception as e:
             logger.debug("Failed writing to OSINT SQLite cache: %s", e)
         return True
@@ -863,10 +893,8 @@ class OSINTCache:
         with self._lock:
             self._cache.clear()
         try:
-            import sqlite3
-            with sqlite3.connect(self._db_path, timeout=5.0) as conn:
+            with self._get_conn() as conn:
                 conn.execute("DELETE FROM osint_cache")
-                conn.commit()
         except Exception:
             pass
 
@@ -957,13 +985,14 @@ class OSINTEngine:
         self,
         http_client: Optional[httpx.Client] = None,
         cache_ttl_seconds: float = 86400.0,
+        cache_db_path: Optional[str] = None,
     ):
         self._client = http_client or get_hardened_client(
             timeout=5.0,
             headers={"User-Agent": "REDLOOP-Cybersecurity-OSINT-Engine/2.0"},
             follow_redirects=True,
         )
-        self._cache = OSINTCache(default_ttl_seconds=cache_ttl_seconds)
+        self._cache = OSINTCache(default_ttl_seconds=cache_ttl_seconds, db_path=cache_db_path)
         self._platforms_catalog: list[dict[str, Any]] = []
         catalog_path = Path("data/osint/platforms.json")
         if catalog_path.exists():
@@ -1125,6 +1154,10 @@ class OSINTEngine:
             rdap_resp, status_desc = request_with_backoff(
                 self._client, f"https://rdap.arin.net/registry/ip/{norm_ip}"
             )
+            if not (rdap_resp and rdap_resp.status_code == 200):
+                stale_cached = self._cache.get_stale(f"ip:{norm_ip}")
+                if stale_cached is not None:
+                    return stale_cached
             if status_desc == "RATE_LIMITED":
                 prov_status["RDAP_ARIN"] = "RATE_LIMITED"
                 registry_status = "RATE_LIMITED"

@@ -48,6 +48,7 @@ def test_audit_detects_tampered_event(tmp_path):
 
     # Tamper with row 2
     conn = sqlite3.connect(db)
+    conn.execute("DROP TRIGGER IF EXISTS audit_no_update")
     conn.execute("UPDATE audit_log SET target = 'attacker.com' WHERE id = 2")
     conn.commit()
     conn.close()
@@ -68,6 +69,7 @@ def test_audit_detects_deleted_event(tmp_path):
 
     # Delete row 2
     conn = sqlite3.connect(db)
+    conn.execute("DROP TRIGGER IF EXISTS audit_no_delete")
     conn.execute("DELETE FROM audit_log WHERE id = 2")
     conn.commit()
     conn.close()
@@ -87,6 +89,7 @@ def test_audit_detects_reordered_event(tmp_path):
     conn = sqlite3.connect(db)
     row1 = conn.execute("SELECT * FROM audit_log WHERE id = 1").fetchone()
     row3 = conn.execute("SELECT * FROM audit_log WHERE id = 3").fetchone()
+    conn.execute("DROP TRIGGER IF EXISTS audit_no_delete")
     conn.execute("DELETE FROM audit_log WHERE id IN (1, 3)")
     conn.execute("INSERT INTO audit_log VALUES (?,?,?,?,?,?,?,?,?,?)", (3,) + row1[1:])
     conn.execute("INSERT INTO audit_log VALUES (?,?,?,?,?,?,?,?,?,?)", (1,) + row3[1:])
@@ -106,6 +109,7 @@ def test_audit_detects_broken_link(tmp_path):
     audit.success("127.0.0.1", "probe", "tls")
 
     conn = sqlite3.connect(db)
+    conn.execute("DROP TRIGGER IF EXISTS audit_no_update")
     conn.execute("UPDATE audit_log SET prev_hash = ? WHERE id = 2", ("0" * 64,))
     conn.commit()
     conn.close()
@@ -131,6 +135,7 @@ def test_audit_anchor_detects_truncation_and_reseal(tmp_path):
     assert verified["anchor"]["status"] == "MATCH"
 
     conn = sqlite3.connect(db)
+    conn.execute("DROP TRIGGER IF EXISTS audit_no_delete")
     conn.execute("DELETE FROM audit_log WHERE id = 5")
     conn.commit()
     conn.close()

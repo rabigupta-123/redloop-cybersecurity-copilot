@@ -20,3 +20,4 @@ async def integrations_status(request: Request) -> JSONResponse:
             {"id": "elastic", "name": "Elasticsearch SIEM", "status": "AVAILABLE"},
         ]
     })
+

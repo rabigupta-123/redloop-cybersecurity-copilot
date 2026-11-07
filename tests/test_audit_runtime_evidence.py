@@ -71,6 +71,7 @@ def test_ui_never_reports_tamper_for_a_valid_chain(tmp_path):
 
     audit_row = audit.fetch(limit=1)[0]
     conn = __import__("sqlite3").connect(db)
+    conn.execute("DROP TRIGGER IF EXISTS audit_no_update")
     conn.execute("UPDATE audit_log SET target = 'attacker.example' WHERE id = ?", (audit_row["id"],))
     conn.commit()
     conn.close()

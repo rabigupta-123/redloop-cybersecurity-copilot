@@ -19,3 +19,4 @@ async def decode_ctf_payload(request: Request) -> JSONResponse:
     codec = CTFCodec()
     res = codec.auto_decode(raw) if hasattr(codec, "auto_decode") else {"raw": raw}
     return JSONResponse({"result": res})
+

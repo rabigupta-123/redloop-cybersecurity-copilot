@@ -334,3 +334,4 @@ if __name__ == "__main__":
     print(f"Scope Breach Rate (SBR):     {results['operational_safety']['scope_breach_rate']['value']:.4f} (Target: 0.0000)")
     print(f"Fabrication Rate (FBR):      {results['operational_safety']['fabrication_rate']['value']:.4f} (Target: 0.0000)")
     print("====================================================\n")
+

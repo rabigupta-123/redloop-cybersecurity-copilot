@@ -88,6 +88,10 @@ class TargetResolver:
             return "phone", t
 
         # Check Username
+        STOPWORDS = {"with", "from", "for", "the", "this", "that", "into", "onto", "scan", "check", "assess", "probe", "nmap", "and", "or", "not", "test", "host", "target", "authorized"}
+        if t.lower() in STOPWORDS:
+            return "unknown", t
+
         if re.fullmatch(r"[a-zA-Z0-9_\-\.]{2,32}", t) and not cls.DOMAIN_PATTERN.fullmatch(t):
             return "username", t
 
@@ -109,7 +113,7 @@ class TargetResolver:
 
         # Explicit key-value patterns: target: xyz, on xyz, for xyz, target=xyz
         kw_match = re.search(
-            r"(?:--target|-t|target:?|host:?|domain:?|ip:?|url:?|email:?)\s+([^\s,;]+)",
+            r"\b(?:--target\b|-t\b|target:?|host:|domain:|ip:|url:|email:)\s+([^\s,;]+)",
             prompt,
             re.IGNORECASE,
         )

@@ -17,3 +17,4 @@ async def reports_summary(request: Request) -> JSONResponse:
         "generated_reports_count": 0,
         "formats_supported": ["HTML", "PDF", "PPTX", "JSON"],
     })
+

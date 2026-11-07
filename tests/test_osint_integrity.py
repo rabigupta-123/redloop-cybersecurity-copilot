@@ -61,7 +61,11 @@ def _fake_engine(monkeypatch, responses=None, ttl=300.0) -> OSINTEngine:
         "redloop.threat_intel.get_threat_intel_engine",
         lambda: (_ for _ in ()).throw(RuntimeError("no provider configured")),
     )
-    return OSINTEngine(http_client=_FakeClient(responses or [_FakeResponse(200, _rdap_payload())]), cache_ttl_seconds=ttl)
+    return OSINTEngine(
+        http_client=_FakeClient(responses or [_FakeResponse(200, _rdap_payload())]),
+        cache_ttl_seconds=ttl,
+        cache_db_path=":memory:",
+    )
 
 
 @pytest.mark.parametrize(

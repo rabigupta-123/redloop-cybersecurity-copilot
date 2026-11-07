@@ -47,3 +47,4 @@ def get_active_operator_token(auth_mgr: Any = None) -> str | None:
 def get_operator_identity() -> str:
     """Return verified operator identity from server configuration."""
     return os.environ.get("REDLOOP_OPERATOR_NAME", "local-sec-operator")
+

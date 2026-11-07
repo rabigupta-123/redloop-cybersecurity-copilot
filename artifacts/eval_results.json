@@ -1,11 +1,11 @@
 {
-  "timestamp": "2026-11-07T17:29:27.149208+00:00",
+  "timestamp": "2026-11-07T22:23:25.226292+00:00",
   "status": "COMPLETED",
   "composite_quality_index": {
-    "value": 0.882946,
+    "value": 0.87743,
     "f1_intent": 0.981321,
-    "calibration_factor": 0.657935,
-    "ndcg5": 0.875,
+    "calibration_factor": 0.655871,
+    "ndcg5": 0.85,
     "fabrication_factor": 1.0,
     "formula": "Q = 0.35 * F1_intent + 0.25 * (1 - ECE) + 0.20 * nDCG@5 + 0.20 * (1 - FBR)"
   },
@@ -29,13 +29,13 @@
     "micro_f1": 0.495114006514658,
     "weighted_f1": 0.9806872998723594,
     "cohens_kappa": 0.979435,
-    "expected_calibration_error": 0.342065,
-    "brier_score": 0.137209,
+    "expected_calibration_error": 0.344129,
+    "brier_score": 0.138943,
     "latency_percentiles_ms": {
-      "p50": 0.0862,
-      "p90": 0.1165,
-      "p95": 0.1274,
-      "p99": 0.3881
+      "p50": 0.1883,
+      "p90": 0.3471,
+      "p95": 0.4367,
+      "p99": 1.093
     },
     "per_class": {
       "AUDIT_VERIFY": {
@@ -421,13 +421,13 @@
     "micro_f1": 0.49290060851926976,
     "weighted_f1": 0.9729545981884434,
     "cohens_kappa": 0.970284,
-    "expected_calibration_error": 0.32032,
-    "brier_score": 0.13234,
+    "expected_calibration_error": 0.32288,
+    "brier_score": 0.1344,
     "latency_percentiles_ms": {
-      "p50": 0.0843,
-      "p90": 0.109,
-      "p95": 0.1171,
-      "p99": 0.2052
+      "p50": 0.1276,
+      "p90": 0.2453,
+      "p95": 0.2785,
+      "p99": 0.4047
     },
     "per_class": {
       "AUDIT_VERIFY": {
@@ -815,22 +815,22 @@
   "rag_retrieval": {
     "status": "COMPUTED",
     "sample_size": 40,
-    "recall_at_5": 0.875,
-    "mrr": 0.875,
-    "ndcg_at_5": 0.875,
+    "recall_at_5": 0.85,
+    "mrr": 0.85,
+    "ndcg_at_5": 0.85,
     "grounding_ratio": {
-      "value": 0.875,
+      "value": 0.85,
       "sample_size": 40,
-      "ci95_lower": 0.738879,
-      "ci95_upper": 0.945405,
-      "cited_claims": 35,
+      "ci95_lower": 0.709277,
+      "ci95_upper": 0.929388,
+      "cited_claims": 34,
       "total_claims": 40
     },
     "latency_percentiles_ms": {
-      "p50": 73.6044,
-      "p90": 121.2223,
-      "p95": 124.9979,
-      "p99": 146.7968
+      "p50": 179.1919,
+      "p90": 290.7797,
+      "p95": 335.8651,
+      "p99": 371.9284
     }
   },
   "osint_golden": {

@@ -979,3 +979,4 @@ print(f"Total chat evaluation rubrics generated: {len(chat_eval)}")
 chat_path = FIXTURES_DIR / "chat_eval.json"
 chat_path.write_text(json.dumps(chat_eval, indent=2), encoding="utf-8")
 print(f"Wrote {chat_path}")
+

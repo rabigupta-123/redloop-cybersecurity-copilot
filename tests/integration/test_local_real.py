@@ -263,6 +263,7 @@ def test_real_local_authorized_workflows_and_dashboard_evidence(tmp_path):
         thread.join(timeout=2)
 
 
+@pytest.mark.timeout(300)
 def test_real_local_ollama_response_is_recorded_and_visible(tmp_path, monkeypatch):
     try:
         local_tags = httpx.get(

@@ -70,3 +70,4 @@ def test_scope_rotate_secret_resigns_and_verifies(tmp_path):
     # New secret succeeds
     sm_new = ScopeManager(scope_file=scope_file, secret=new_secret)
     assert sm_new.is_authorized("127.0.0.1", "scan", port=80)
+

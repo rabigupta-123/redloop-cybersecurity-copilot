@@ -63,6 +63,7 @@ def test_checkpoint_detects_truncation(tmp_path):
     import sqlite3
 
     conn = sqlite3.connect(tmp_path / "audit.sqlite")
+    conn.execute("DROP TRIGGER IF EXISTS audit_no_delete")
     conn.execute("DELETE FROM audit_log WHERE id = 5")
     conn.commit()
     conn.close()
@@ -188,6 +189,7 @@ def test_modified_audit_event_invalidates_checkpoint(tmp_path):
     audit, store = _ledger(tmp_path, count=3)
     store.create(audit)
     conn = sqlite3.connect(tmp_path / "audit.sqlite")
+    conn.execute("DROP TRIGGER IF EXISTS audit_no_update")
     conn.execute("UPDATE audit_log SET action = 'tampered' WHERE id = 2")
     conn.commit()
     conn.close()
@@ -201,6 +203,7 @@ def test_deleted_middle_event_invalidates_checkpoint(tmp_path):
     audit, store = _ledger(tmp_path, count=4)
     store.create(audit)
     conn = sqlite3.connect(tmp_path / "audit.sqlite")
+    conn.execute("DROP TRIGGER IF EXISTS audit_no_delete")
     conn.execute("DELETE FROM audit_log WHERE id = 2")
     conn.commit()
     conn.close()

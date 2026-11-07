@@ -28,3 +28,4 @@ async def get_workbench_investigation(investigation_id: str, request: Request) -
     if not inv:
         raise HTTPException(status_code=404, detail="Investigation not found")
     return JSONResponse({"investigation": inv.to_dict() if hasattr(inv, "to_dict") else inv})
+

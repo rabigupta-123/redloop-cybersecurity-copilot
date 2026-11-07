@@ -156,7 +156,7 @@ def _safe_decode(raw: bytes) -> tuple[str, bool]:
 
 ALLOWED_EXECUTABLES = {
     # Recon & Port Scanning
-    "nmap", "masscan", "rustscan", "ping", "traceroute", "tracert", "fping", "netstat", "ss",
+    "nmap", "masscan", "rustscan", "ping", "traceroute", "tracert", "fping", "netstat", "ss", "nc", "ncat", "ssh", "telnet",
     # DNS & OSINT
     "nslookup", "dig", "host", "whois", "subfinder", "amass",
     # Web & HTTP
@@ -1415,8 +1415,9 @@ class UnifiedTerminalEngine:
         if bin_clean.endswith(".exe"):
             bin_clean = bin_clean[:-4]
 
-        SAFE_DIAGNOSTICS = {"whoami", "uname", "pwd", "id", "date", "dir"}
-        if bin_clean not in ALLOWED_NETWORK_BINARIES and bin_clean not in SAFE_DIAGNOSTICS:
+        SAFE_DIAGNOSTICS = {"whoami", "uname", "pwd", "id", "date", "dir", "echo", "printf"}
+        is_sys_exec = (binary == sys.executable or os.path.abspath(binary) == os.path.abspath(sys.executable))
+        if bin_clean not in ALLOWED_NETWORK_BINARIES and bin_clean not in SAFE_DIAGNOSTICS and not is_sys_exec:
             if self.audit:
                 self.audit.log(
                     module="terminal",

@@ -19,3 +19,4 @@ async def copilot_status(request: Request) -> JSONResponse:
         "primary_model": "qwen3:8b",
         "fallback_chain": ["groq", "openrouter", "offline_deterministic"],
     })
+

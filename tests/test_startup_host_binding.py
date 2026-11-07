@@ -98,3 +98,4 @@ def test_cli_report_serve_refuses_non_loopback(monkeypatch):
     result = runner.invoke(app, ["report", "serve", "--host", "0.0.0.0"])
     assert result.exit_code != 0
     assert "Refusing to start dashboard" in result.output
+

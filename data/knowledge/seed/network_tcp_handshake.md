@@ -46,3 +46,4 @@ The Transmission Control Protocol (TCP) establishes a reliable, bidirectional, f
 - **Defenses:**
   - Strict sequence validation and TCP MD5 Signature Option (RFC 2385) or TCP Authentication Option (TCP-AO, RFC 5925) for critical BGP/infrastructure sessions.
   - Mandatory transport encryption (TLS 1.3 / IPsec) over all untrusted networks.
+
