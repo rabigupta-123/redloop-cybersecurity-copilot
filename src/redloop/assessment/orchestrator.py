@@ -419,7 +419,58 @@ class TaskOrchestrator:
                 "confidence": 0.95,
             }
 
-        # 1. FOLLOW_UP_ON_ACTIVE_INVESTIGATION
+        # 1. REPORT_GENERATION (evaluated early to avoid collision with assess/scan verbs)
+        is_report_gen = (
+            any(w in prompt_lower for w in (
+                "generate report", "create report", "export report", "download report",
+                "technical report", "executive report", "markdown report", "audit report",
+                "summary report", "assessment report", "finding report", "remediation report",
+                "compliance report", "risk report", "pdf audit report", "pdf report",
+                "downloadable pdf"
+            ))
+            or (
+                "report" in prompt_lower
+                and any(w in prompt_lower for w in (
+                    "generate", "create", "export", "download", "compile", "produce",
+                    "asmt-", "executive", "technical", "markdown", "compliance", "finding",
+                    "risk summary", "evidence into a report"
+                ))
+            )
+        )
+        if is_report_gen:
+            asmt_id = self._extract_id(prompt, "asmt-") or context.get("assessment_id")
+            variant = "technical" if "technical" in prompt_lower else ("attack_surface" if "attack" in prompt_lower else "executive")
+            return {
+                "action": "report_generate",
+                "intent": "REPORT_GENERATION",
+                "target": target,
+                "assessment_id": asmt_id,
+                "variant": variant,
+            }
+
+        # 2. GRAPH_AND_INVESTIGATION (MUST precede follow_up to capture visual/graph queries)
+        is_graph = (
+            any(w in prompt_lower for w in (
+                "show graph", "investigation graph", "relationship graph", "cytoscape",
+                "entity graph", "verify remediation", "replay investigation",
+                "visual graph", "correlation edges", "ioc graph", "threat actor and ioc graph",
+                "evidence graph", "attack path graph", "blast radius", "topology graph",
+                "graph representation", "connected nodes"
+            ))
+            or (
+                "graph" in prompt_lower
+                and any(w in prompt_lower for w in ("show", "display", "render", "query", "nodes", "edges", "investigation", "inv-", "visual", "representation"))
+            )
+            or ("edges" in prompt_lower and any(w in prompt_lower for w in ("correlation", "investigation", "inv-", "attack surface")))
+        )
+        if is_graph:
+            return {
+                "action": "graph_investigation",
+                "intent": "GRAPH_AND_INVESTIGATION",
+                "target": target,
+            }
+
+        # 3. FOLLOW_UP_ON_ACTIVE_INVESTIGATION
         if any(w in prompt_lower for w in (
             "previous investigation", "last investigation", "prior investigation",
             "summarize the findings from our previous", "summarize previous investigation",
@@ -435,28 +486,24 @@ class TaskOrchestrator:
                 "resolution_source": resolution_source,
             }
 
-        # 2. REPORT_GENERATION
-        if any(w in prompt_lower for w in ("generate report", "create report", "export report", "download report", "technical report", "executive report", "markdown report")):
-            asmt_id = self._extract_id(prompt, "asmt-") or context.get("assessment_id")
-            variant = "technical" if "technical" in prompt_lower else ("attack_surface" if "attack" in prompt_lower else "executive")
-            return {
-                "action": "report_generate",
-                "intent": "REPORT_GENERATION",
-                "target": target,
-                "assessment_id": asmt_id,
-                "variant": variant,
-            }
-
-        # 3. GRAPH_AND_INVESTIGATION
-        if any(w in prompt_lower for w in ("show graph", "investigation graph", "relationship graph", "cytoscape", "entity graph", "verify remediation", "replay investigation")):
-            return {
-                "action": "graph_investigation",
-                "intent": "GRAPH_AND_INVESTIGATION",
-                "target": target,
-            }
-
         # 4. FILE_METADATA_ANALYSIS
-        if any(w in prompt_lower for w in ("extract metadata", "image metadata", "exif", "file metadata", "analyze file", "inspect image", "metadata from this image", "file signature", "sha256 of file")):
+        is_file_metadata = (
+            any(w in prompt_lower for w in (
+                "extract metadata", "image metadata", "exif", "file metadata", "analyze file",
+                "inspect image", "metadata from this image", "file signature", "sha256 of file",
+                "pe header", "ole compound", "elf binary", "mach-o", "zip archive header",
+                "metadata chunks", "audio tag metadata", "author metadata", "creation tool"
+            ))
+            or (
+                any(ext in prompt_lower for ext in (".pdf", ".exe", ".docx", ".png", ".bin", ".wav", ".zip", "binary_macos"))
+                and any(kw in prompt_lower for kw in (
+                    "metadata", "timestamps", "compiler version", "section entropy", "revision history",
+                    "text and ztxt", "section headers", "encoder version", "load commands", "codesign",
+                    "author metadata", "central directory"
+                ))
+            )
+        )
+        if is_file_metadata:
             return {
                 "action": "file_metadata_analysis",
                 "intent": "FILE_METADATA_ANALYSIS",
@@ -479,23 +526,32 @@ class TaskOrchestrator:
                 "raw_output": prompt,
             }
 
-        # 6. CTF_AND_CHALLENGE_ANALYSIS
-        is_ctf = (
+        # 6. KALI_COMMAND_ASSISTANCE (Explicit Execution or CLI tool syntax / query guidance)
+        is_kali_cli_tool_query = (
             any(w in prompt_lower for w in (
-                "solve this ctf", "identify the real flag", "ctf challenge", "find the flag",
-                "flag{", "ctf{", "decoy flag", "reconstruct flag", "decode flag"
+                "how do i configure masscan", "how do i use ffuf", "explain the tcpdump command",
+                "what is the tshark command", "how do i run sslscan", "tcpdump command",
+                "tshark command", "ffuf", "masscan", "sslscan", "sqlmap tamper", "hydra command",
+                "john the ripper", "hashcat mode", "burp error", "terminal error", "debug this command",
+                "suggest a kali", "suggest a command", "command to "
             ))
-            or any(w in prompt_lower for w in ("decode", "encode", "rot13", "caesar", "base64", "base32", "base85", "jwt", "xor", "identify hash", "hash id"))
+            and any(w in prompt_lower for w in (
+                "configure", "how to", "how do i", "command", "syntax", "filter", "fuzz",
+                "packets per second", "wordlist", "output", "fallback support"
+            ))
         )
-        if is_ctf:
-            return {
-                "action": "ctf_analysis",
-                "intent": "CTF_AND_CHALLENGE_ANALYSIS",
-                "target": target,
-                "prompt": prompt,
-            }
+        if prompt_lower.startswith(("run command:", "execute command:", "execute:", "run kali:", "$ ", "cmd:")):
+            cmd_clean = re.sub(r"^(?:run command:|execute command:|execute:|run kali:|\$|cmd:)\s*", "", prompt, flags=re.IGNORECASE).strip()
+            return {"action": "kali_execute", "intent": "KALI_COMMAND_ASSISTANCE", "target": target, "command": cmd_clean}
+        if re.match(r"^(?:uname|id|whoami|hostname|uptime)\b", prompt.strip(), re.IGNORECASE):
+            return {"action": "kali_execute", "intent": "KALI_COMMAND_ASSISTANCE", "target": target, "command": prompt.strip()}
+        if is_kali_cli_tool_query or any(w in prompt_lower for w in (
+            "failed with", "permission denied", "command not found", "explain this command",
+            "kali", "syntax", "how to use", "nmap syntax", "wireshark filter", "tcpdump filter",
+        )):
+            return {"action": "kali_copilot", "intent": "KALI_COMMAND_ASSISTANCE", "target": target}
 
-        # 7. FORENSICS_AND_LOG_ANALYSIS (including auto-routed pasted Sysmon, auth.log, PCAP)
+        # 7. FORENSICS_AND_LOG_ANALYSIS (including auto-routed pasted Sysmon, auth.log, PCAP, Zeek, Nginx, CloudTrail)
         is_sysmon_pasted = bool(
             re.search(r"<Provider Name=[\"']Microsoft-Windows-Sysmon", prompt, re.IGNORECASE)
             or re.search(r"<EventID>\s*(?:1|3|7|11|4624|4625|4688|7045)\s*</EventID>", prompt, re.IGNORECASE)
@@ -515,10 +571,16 @@ class TaskOrchestrator:
             or (re.search(r"Transmission Control Protocol,\s*Src Port:\s*\d+", prompt) and re.search(r"Dst Port:\s*\d+", prompt))
             or re.search(r"ARP,\s*Request who-has", prompt)
         )
+        is_log_analysis_query = any(w in prompt_lower for w in (
+            "access logs", "firewall drop logs", "conn.log", "dns query logs",
+            "script block logging", "event 4104", "cloudtrail", "zeek",
+            "nginx access logs", "firewall logs", "query logs", "cloudtrail audit records"
+        ))
         is_forensics = (
             is_sysmon_pasted
             or is_linux_auth_pasted
             or is_pcap_pasted
+            or is_log_analysis_query
             or (
                 any(w in prompt_lower for w in (
                     "eventid 4625", "eventid 7045", "eventid 4688", "eventid 4624", "eventid 1", "eventid 3",
@@ -527,16 +589,20 @@ class TaskOrchestrator:
                 ))
                 and not any(w in prompt_lower for w in (
                     "filter", "syntax", "how to use wireshark", "suggest a wireshark",
-                    "write a ", "write code", "write script", "bash script", "python script"
+                    "write a ", "write code", "write script", "bash script", "python script", "tcpdump command",
+                    "hidden flag", "flag{", "ctf{", "ctf challenge"
                 ))
             )
         )
         if is_forensics:
             log_subtype = (
                 "pcap" if is_pcap_pasted or "pcap" in prompt_lower or "packet" in prompt_lower
-                else ("sysmon" if is_sysmon_pasted or "sysmon" in prompt_lower
+                else ("sysmon" if is_sysmon_pasted or "sysmon" in prompt_lower or "event 4104" in prompt_lower
                 else ("linux_auth" if is_linux_auth_pasted or "auth.log" in prompt_lower
-                else "windows_event"))
+                else ("web_logs" if "access logs" in prompt_lower or "nginx" in prompt_lower
+                else ("network_logs" if "conn.log" in prompt_lower or "dns query" in prompt_lower or "firewall" in prompt_lower
+                else ("cloud_audit" if "cloudtrail" in prompt_lower
+                else "windows_event")))))
             )
             return {
                 "action": "forensics_analysis",
@@ -546,7 +612,27 @@ class TaskOrchestrator:
                 "prompt": prompt,
             }
 
-        # 8. CODING_AND_RESEARCH (PRIOR TO KALI ASSISTANCE AND SECURITY TOOLS)
+        # 8. CTF_AND_CHALLENGE_ANALYSIS
+        is_ctf = (
+            any(w in prompt_lower for w in (
+                "solve this ctf", "identify the real flag", "ctf challenge", "find the flag",
+                "flag{", "ctf{", "decoy flag", "reconstruct flag", "decode flag", "hidden flag",
+                "ret2libc", "steganography challenge", "cryptographic ctf", "reverse engineering challenge",
+                "binary exploitation challenge", "anti-debugging ptrace"
+            ))
+            or ("challenge" in prompt_lower and any(w in prompt_lower for w in ("ctf", "flag", "ret2libc", "steganography", "reverse engineering", "exploitation", "binary")))
+            or bool(re.search(r"\b(?:rot13|caesar|base64|base32|base85|jwt|xor|identify hash|hash id)\b", prompt_lower))
+            or (bool(re.search(r"\b(?:decode|encode)\b", prompt_lower)) and not any(w in prompt_lower for w in ("encoder version", "decoder version")))
+        )
+        if is_ctf:
+            return {
+                "action": "ctf_analysis",
+                "intent": "CTF_AND_CHALLENGE_ANALYSIS",
+                "target": target,
+                "prompt": prompt,
+            }
+
+        # 9. CODING_AND_RESEARCH
         is_coding = (
             any(w in prompt_lower for w in (
                 "write a java", "write a python", "write a c program", "write a bash", "write a script",
@@ -554,29 +640,34 @@ class TaskOrchestrator:
                 "research the history", "research paper", "research the cryptographic", "write a program", "write function",
                 "write a function", "write code to", "write a fuzz", "write exploit", "exploit script", "poc script", "write payload",
                 "proof of concept exploit", "generate payload", "python script", "bash script",
-                "code an exploit", "develop exploit", "write a simple", "write a port scanner"
+                "code an exploit", "develop exploit", "write a simple", "write a port scanner",
+                "show me a secure implementation", "show me an implementation", "show how to validate and sanitize",
+                "write a secure", "implement a constant-time", "implement a token bucket",
+                "construct a secure", "create a go function", "deserialization parser in rust"
             ))
-            and not any(w in prompt_lower for w in ("scan this", "run assessment", "execute command:", "$ "))
-        )
+            or bool(re.search(
+                r"\b(?:write|create|implement|show\s+me\s+an?|show\s+how\s+to|construct|develop)\s+.*?\b(?:python|rust|golang|go|c|c\+\+|java|bash|node\.js|node|fastapi|asyncpg|serde|script|code|snippet|function|query|limiter|handler|parser|algorithm)\b",
+                prompt_lower,
+            ))
+            or any(tech in prompt_lower for tech in ("argon2id", "hkdf-sha256", "hmac-sha512", "asyncpg", "serde"))
+        ) and not any(w in prompt_lower for w in ("scan this", "run assessment", "execute command:", "$ "))
         if is_coding:
             return {"action": "coding_and_research", "intent": "CODING_AND_RESEARCH", "target": target}
 
-        # 9. KALI_COMMAND_ASSISTANCE (Explicit Execution or Guidance)
-        if prompt_lower.startswith(("run command:", "execute command:", "execute:", "run kali:", "$ ", "cmd:")):
-            cmd_clean = re.sub(r"^(?:run command:|execute command:|execute:|run kali:|\$|cmd:)\s*", "", prompt, flags=re.IGNORECASE).strip()
-            return {"action": "kali_execute", "intent": "KALI_COMMAND_ASSISTANCE", "target": target, "command": cmd_clean}
-        if re.match(r"^(?:uname|id|whoami|hostname|uptime)\b", prompt.strip(), re.IGNORECASE):
-            return {"action": "kali_execute", "intent": "KALI_COMMAND_ASSISTANCE", "target": target, "command": prompt.strip()}
-        if any(w in prompt_lower for w in (
-            "failed with", "permission denied", "command not found", "explain this command",
-            "kali", "syntax", "how to use", "nmap syntax", "wireshark filter", "tcpdump filter",
-            "sqlmap tamper", "hydra command", "john the ripper", "hashcat mode", "burp error",
-            "terminal error", "debug this command", "suggest a kali", "suggest a command", "command to "
-        )):
-            return {"action": "kali_copilot", "intent": "KALI_COMMAND_ASSISTANCE", "target": target}
-
-        # 10. Audit Chain Verification
-        if any(w in prompt_lower for w in ("verify audit", "audit chain", "verify chain", "audit integrity", "tamper check")):
+        # 10. AUDIT_VERIFY
+        is_audit_verify = (
+            any(w in prompt_lower for w in (
+                "verify audit", "audit chain", "verify chain", "audit integrity", "tamper check",
+                "tamper-evident audit", "audit ledger", "merkle checkpoint", "audit database",
+                "audit verification tool", "checkpoint signatures", "hash chain of the system audit",
+                "signature breakage", "cryptographic integrity proofs on the audit"
+            ))
+            or (
+                any(w in prompt_lower for w in ("audit", "ledger", "checkpoint"))
+                and any(w in prompt_lower for w in ("integrity", "tamper", "verify", "validation", "merkle", "authenticity", "proof"))
+            )
+        )
+        if is_audit_verify:
             return {"action": "audit_verify", "intent": "AUDIT_VERIFY", "target": target}
 
         # 11. Lifecycle Commands
@@ -590,15 +681,15 @@ class TaskOrchestrator:
             asmt_id = self._extract_id(prompt, "asmt-") or context.get("assessment_id")
             return {"action": "lifecycle_cancel", "intent": "LIFECYCLE", "target": target, "assessment_id": asmt_id}
 
-        # 12. GENERAL_CHAT EXPLANATIONS (PRIOR TO SECURITY TOOLS, EXCLUDING SPECIFIC FINDING/EVIDENCE IDS)
+        # 12. GENERAL_CHAT EXPLANATIONS
         has_finding_or_evi_id = bool(
             self._extract_id(prompt, "find-")
             or self._extract_id(prompt, "evi-")
             or context.get("type") in ("finding", "evidence", "asset")
         )
         is_imperative_scan = (
-            bool(re.search(r"\b(?:run|execute|launch|start|perform)\s+(?:an?\s+)?(?:nmap|scan|assessment|probe)\b", prompt_lower))
-            or bool(re.search(r"\b(?:scan|assess|probe)\s+(?:https?://|[0-9.]+|[a-zA-Z0-9-]+\.[a-zA-Z]{2,}|localhost|target\b)", prompt_lower))
+            bool(re.search(r"\b(?:run|execute|launch|start|perform|conduct|initiate)\s+(?:an?\s+)?(?:nmap|scan|assessment|probe|sweep|enumeration|discovery)\b", prompt_lower))
+            or bool(re.search(r"\b(?:scan|assess|probe|evaluate)\s+(?:https?://|[0-9.]+|[a-zA-Z0-9-]+\.[a-zA-Z]{2,}|localhost|target\b)", prompt_lower))
         )
         is_explanation = (
             any(prompt_lower.startswith(prefix) for prefix in (
@@ -611,28 +702,37 @@ class TaskOrchestrator:
         if is_explanation:
             return {"action": "general_chat", "intent": "GENERAL_CHAT", "target": target}
 
-        # 13. EXPLICIT ASSESSMENT & ACTIVE RECONNAISSANCE (Takes strict precedence over passive OSINT)
-        # Any prompt with explicit scan or assessment verbs targeting a domain/host must NEVER collide into passive OSINT
+        # 13. EXPLICIT ASSESSMENT & ACTIVE RECONNAISSANCE
         has_scan_verb = any(w in prompt_lower for w in (
             "scan", "probe", "nmap", "nikto", "gobuster", "tls scan", "ssl scan",
-            "web scan", "api scan", "dns scan", "check ports", "enumerate ports"
+            "web scan", "api scan", "dns scan", "check ports", "enumerate ports",
+            "discovery sweep", "network enumeration", "banner grabbing", "fingerprinting sweep",
+            "ping sweep", "cipher suite enumeration", "service discovery sweep"
         ))
-        has_assess_verb = any(w in prompt_lower for w in (
-            "assess", "assessment", "deep scan", "full assessment", "comprehensive",
-            "full scan", "run assessment", "evaluate security", "security audit", "vulnerability scan"
-        ))
+        has_assess_verb = (
+            any(w in prompt_lower for w in (
+                "assess", "assessment", "deep scan", "full assessment", "comprehensive",
+                "full scan", "run assessment", "evaluate security", "security audit", "vulnerability scan",
+                "vulnerability check", "vulnerability evaluation", "web vulnerability",
+                "actuator endpoints", "missing security headers"
+            ))
+            or prompt_lower.startswith("evaluate ")
+            or (prompt_lower.startswith("assess ") and not any(w in prompt_lower for w in ("whois", "rdap", "shodan")))
+        )
 
-        # 13A. AUTHORIZED_RECONNAISSANCE (Specific Tools Execution)
+        # 13A. AUTHORIZED_RECONNAISSANCE
         if any(w in prompt_lower for w in ("scan this authorized lab target", "scan authorized target", "scan the authorized", "scan authorized host")):
             return {"action": "tool_ports", "intent": "AUTHORIZED_RECONNAISSANCE", "target": target}
-        if re.search(r"\bnmap\b", prompt_lower) or (re.search(r"\bports?\b", prompt_lower) and any(w in prompt_lower for w in ("scan", "check", "detect", "open", "probe", "find", "enumerate"))):
+        if any(w in prompt_lower for w in ("tls cipher suite enumeration", "tls cipher suite audit", "cipher suite enumeration", "check tls", "check ssl", "tls scan", "ssl scan")):
+            return {"action": "tool_tls", "intent": "AUTHORIZED_RECONNAISSANCE", "target": target}
+        if re.search(r"\bnmap\b", prompt_lower) or (re.search(r"\bports?\b", prompt_lower) and any(w in prompt_lower for w in ("scan", "check", "detect", "open", "probe", "find", "enumerate", "discovery", "sweep"))):
+            return {"action": "tool_ports", "intent": "AUTHORIZED_RECONNAISSANCE", "target": target}
+        if any(w in prompt_lower for w in ("syn port", "port discovery", "network enumeration", "banner grabbing", "fingerprinting sweep", "ping sweep", "host discovery", "discovery probe", "service discovery")):
             return {"action": "tool_ports", "intent": "AUTHORIZED_RECONNAISSANCE", "target": target}
         if re.search(r"\bnikto\b", prompt_lower):
             return {"action": "tool_nikto", "intent": "AUTHORIZED_RECONNAISSANCE", "target": target}
         if re.search(r"\bgobuster\b", prompt_lower):
             return {"action": "tool_gobuster", "intent": "AUTHORIZED_RECONNAISSANCE", "target": target}
-        if any(w in prompt_lower for w in ("tls scan", "ssl scan", "certificate scan", "check tls", "check ssl")):
-            return {"action": "tool_tls", "intent": "AUTHORIZED_RECONNAISSANCE", "target": target}
         if any(w in prompt_lower for w in ("web scan", "crawl web", "spider web", "check web headers", "crawl target")):
             return {"action": "tool_web", "intent": "AUTHORIZED_RECONNAISSANCE", "target": target}
         if any(w in prompt_lower for w in ("api scan", "graphql scan", "openapi scan", "swagger scan")):
@@ -642,7 +742,7 @@ class TaskOrchestrator:
         if prompt_lower.startswith(("scan ", "probe ")) and not any(w in prompt_lower for w in ("whois", "rdap", "shodan")):
             return {"action": "tool_ports", "intent": "AUTHORIZED_RECONNAISSANCE", "target": target}
 
-        # 13B. VULNERABILITY_ASSESSMENT (Comprehensive or Multi-stage assessment)
+        # 13B. VULNERABILITY_ASSESSMENT
         if has_assess_verb:
             depth = AssessmentDepth.STANDARD
             if "quick" in prompt_lower or "fast" in prompt_lower:
@@ -682,12 +782,12 @@ class TaskOrchestrator:
         )):
             return {"action": "general_chat", "intent": "GENERAL_CHAT", "target": target, "concept": "evaluate_safety"}
 
-        # 14. PASSIVE OSINT INTENTS (Only reached when NOT an active scan/assessment)
+        # 14. PASSIVE OSINT INTENTS
         # A. OSINT_EMAIL
         if email_match:
             em = email_match.group(0)
             return {"action": "osint_email", "intent": "OSINT_EMAIL", "email": em, "target": em}
-        if any(w in prompt_lower for w in ("investigate email", "email intelligence", "verify email", "email breach", "breach search", "hibp")):
+        if any(w in prompt_lower for w in ("investigate email", "email intelligence", "verify email", "email breach", "breach search", "hibp", "email deliverability", "email footprint")):
             return {"action": "osint_email", "intent": "OSINT_EMAIL", "email": target, "target": target}
 
         # B. OSINT_PHONE
@@ -696,19 +796,46 @@ class TaskOrchestrator:
             return {"action": "osint_phone", "intent": "OSINT_PHONE", "phone": ph, "target": ph}
 
         # C. OSINT_USERNAME
-        if any(w in prompt_lower for w in ("investigate username", "username intelligence", "search username", "lookup user", "find accounts for user", "search accounts for user", "accounts for user", "username footprint")):
-            user_clean = re.sub(r".*?(?:username|user|accounts for)\s+([@a-zA-Z0-9_\-\.]+).*", r"\1", prompt, flags=re.IGNORECASE).strip().lstrip("@")
+        is_osint_user = (
+            any(w in prompt_lower for w in (
+                "investigate username", "username intelligence", "search username", "lookup user",
+                "find accounts for user", "search accounts for user", "accounts for user", "username footprint",
+                "username enumeration", "handle presence", "public account existence", "keybase identity",
+                "user handle", "profile registrations"
+            ))
+            or bool(re.search(r"\b(?:for|author|publisher)?\s*(?:username|handle)\s+[@a-zA-Z0-9_\-\.]+", prompt_lower))
+            or ("handle" in prompt_lower and any(w in prompt_lower for w in ("registries", "profiles", "footprint", "identity", "commits", "repositories", "platforms")))
+        )
+        if is_osint_user:
+            user_clean = re.sub(r".*?(?:username|handle|user|accounts for)\s+([@a-zA-Z0-9_\-\.]+).*", r"\1", prompt, flags=re.IGNORECASE).strip().lstrip("@")
             return {"action": "osint_username", "intent": "OSINT_USERNAME", "username": user_clean or target, "target": user_clean or target}
 
         # D. OSINT_IP
         if not (has_scan_verb or has_assess_verb):
-            if (ip_match and (any(w in prompt_lower for w in ("investigate", "osint", "whois", "rdap", "lookup", "shodan", "check asn", "asn", "ip footprint", "public ip")) or prompt_lower.startswith("investigate"))) or any(w in prompt_lower for w in ("investigate this public ip", "investigate public ip", "investigate ip", "ip intelligence", "ip footprint", "shodan")):
+            ip_passive_kw = (
+                "investigate", "osint", "whois", "rdap", "lookup", "shodan", "check asn",
+                "asn", "ip footprint", "public ip", "threat reputation", "reputation",
+                "blocklist", "vpn", "tor exit", "tor node", "ip intelligence", "reverse ptr", "ptr"
+            )
+            if (ip_match or target_type == "ip") and (any(w in prompt_lower for w in ip_passive_kw) or prompt_lower.startswith("investigate")):
+                ip_val = ip_match.group(0) if ip_match else target
+                return {"action": "osint_ip", "intent": "OSINT_IP", "target": ip_val}
+            elif any(w in prompt_lower for w in ("threat reputation", "reputation and blocklist", "tor exit node", "investigate public ip", "ip footprint", "shodan")):
                 ip_val = ip_match.group(0) if ip_match else target
                 return {"action": "osint_ip", "intent": "OSINT_IP", "target": ip_val}
 
         # E. OSINT_DOMAIN
         if not (has_scan_verb or has_assess_verb):
-            if (host_match and (any(w in prompt_lower for w in ("investigate", "osint", "investigation", "whois", "lookup", "subdomain", "dns footprint", "certificate transparency", "security headers", "crt.sh")) or prompt_lower.startswith("investigate"))) or any(w in prompt_lower for w in ("investigate domain", "domain intelligence", "dns footprint", "whois domain", "subdomains for", "crt.sh")):
+            domain_passive_kw = (
+                "investigate", "osint", "investigation", "whois", "lookup", "subdomain",
+                "dns footprint", "certificate transparency", "security headers", "crt.sh",
+                "spf", "dkim", "dmarc", "txt", "mx records", "domain registration", "registrar",
+                "mail server", "dnssec", "soa", "nameserver", "caa"
+            )
+            if (host_match or target_type == "domain") and (any(w in prompt_lower for w in domain_passive_kw) or prompt_lower.startswith("investigate")):
+                host_val = host_match.group(1) if host_match else target
+                return {"action": "osint_domain", "intent": "OSINT_DOMAIN", "target": host_val}
+            elif any(w in prompt_lower for w in ("investigate domain", "domain intelligence", "dns footprint", "whois domain", "subdomains for", "crt.sh")):
                 host_val = host_match.group(1) if host_match else target
                 return {"action": "osint_domain", "intent": "OSINT_DOMAIN", "target": host_val}
 

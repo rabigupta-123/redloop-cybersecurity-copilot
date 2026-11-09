@@ -88,7 +88,7 @@ class TargetResolver:
             return "phone", t
 
         # Check Username
-        STOPWORDS = {"with", "from", "for", "the", "this", "that", "into", "onto", "scan", "check", "assess", "probe", "nmap", "and", "or", "not", "test", "host", "target", "authorized"}
+        STOPWORDS = {"with", "from", "for", "the", "this", "that", "into", "onto", "scan", "check", "assess", "probe", "nmap", "and", "or", "not", "test", "host", "target", "authorized", "ip", "address", "domain"}
         if t.lower() in STOPWORDS:
             return "unknown", t
 
@@ -113,12 +113,12 @@ class TargetResolver:
 
         # Explicit key-value patterns: target: xyz, on xyz, for xyz, target=xyz
         kw_match = re.search(
-            r"\b(?:--target\b|-t\b|target:?|host:|domain:|ip:|url:|email:)\s+([^\s,;]+)",
+            r"\b(?:--target\b|-t\b|target:?|host:|domain:|ip:|url:|email:)\s+(?:ip\s+|address\s+|host\s+|domain\s+)?([^\s,;]+)",
             prompt,
             re.IGNORECASE,
         )
         if kw_match:
-            candidate = kw_match.group(1).strip().strip("'\"")
+            candidate = kw_match.group(1).strip().strip("'\"").rstrip(".,;:!?")
             c_type, c_val = cls.classify_target(candidate)
             if c_type != "unknown" and c_val:
                 return c_val, c_type

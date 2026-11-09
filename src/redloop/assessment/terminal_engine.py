@@ -74,6 +74,8 @@ class ValidatedCommand:
     working_directory: str | None = None
     targets: tuple[tuple[str, int | None], ...] = ()
     is_network: bool = False
+    scope_id: str = ""
+    scope_snapshot_signature: str = ""
     gate_signature: str = ""
 
     def to_dict(self) -> dict[str, Any]:
@@ -85,14 +87,22 @@ class ValidatedCommand:
             "working_directory": self.working_directory,
             "targets": list(self.targets),
             "is_network": self.is_network,
+            "scope_id": self.scope_id,
+            "scope_snapshot_signature": self.scope_snapshot_signature,
         }
 
 
 _GATE_HMAC_KEY = os.urandom(32)
 
 
-def _compute_gate_signature(binary: str, args: tuple[str, ...], env: str) -> str:
-    payload = f"{binary}|{' '.join(args)}|{env}".encode("utf-8")
+def _compute_gate_signature(
+    binary: str,
+    args: tuple[str, ...],
+    env: str,
+    scope_id: str = "",
+    scope_snapshot: str = "",
+) -> str:
+    payload = f"{binary}|{' '.join(args)}|{env}|{scope_id}|{scope_snapshot}".encode("utf-8")
     return hmac.new(_GATE_HMAC_KEY, payload, hashlib.sha256).hexdigest()
 
 
@@ -101,7 +111,13 @@ def _verify_gate_signature(cmd: Any) -> bool:
         return False
     if not cmd.gate_signature:
         return False
-    expected = _compute_gate_signature(cmd.binary, cmd.args, cmd.execution_environment)
+    expected = _compute_gate_signature(
+        cmd.binary,
+        cmd.args,
+        cmd.execution_environment,
+        cmd.scope_id,
+        cmd.scope_snapshot_signature,
+    )
     return hmac.compare_digest(cmd.gate_signature, expected)
 
 
@@ -1833,6 +1849,17 @@ class UnifiedTerminalEngine:
         with self._lock:
             self._active_cancels[t_id] = cancel_evt
 
+        scope_id = ""
+        scope_sig = ""
+        if self.scope_guard:
+            if getattr(self.scope_guard, "engagement_manager", None) and self.scope_guard.engagement_manager.get_active_engagement():
+                act = self.scope_guard.engagement_manager.get_active_engagement()
+                scope_id = act.id
+                scope_sig = act.signature
+            elif getattr(self.scope_guard, "scope_manager", None) and getattr(self.scope_guard.scope_manager, "scope", None):
+                scope_id = getattr(self.scope_guard.scope_manager.scope, "id", "default")
+                scope_sig = getattr(self.scope_guard.scope_manager.scope, "signature", "")
+
         val_cmd = ValidatedCommand(
             binary=binary,
             args=tuple(args),
@@ -1841,7 +1868,9 @@ class UnifiedTerminalEngine:
             working_directory=working_directory,
             targets=tuple(extracted_targets if is_net_cmd else ()),
             is_network=is_net_cmd,
-            gate_signature=_compute_gate_signature(binary, tuple(args), environment),
+            scope_id=scope_id,
+            scope_snapshot_signature=scope_sig,
+            gate_signature=_compute_gate_signature(binary, tuple(args), environment, scope_id, scope_sig),
         )
 
         try:

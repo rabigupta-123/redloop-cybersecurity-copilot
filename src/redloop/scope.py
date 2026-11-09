@@ -65,7 +65,15 @@ class ScopeEntry(BaseModel):
             except ValueError:
                 return False
         if self.domain:
-            return target == self.domain or target.endswith(f".{self.domain}")
+            target_clean = target.lower().strip(".")
+            domain_clean = self.domain.lower().strip(".")
+            if domain_clean.startswith("*."):
+                base = domain_clean[2:]
+                return target_clean == base or target_clean.endswith(f".{base}")
+            if domain_clean.startswith("."):
+                base = domain_clean.lstrip(".")
+                return target_clean == base or target_clean.endswith(f".{base}")
+            return target_clean == domain_clean or target_clean.endswith(f".{domain_clean}")
         return False
 
     def action_allowed(self, action: str) -> bool:
@@ -116,6 +124,7 @@ class ScopeManager:
     def __init__(self, scope_file: str | Path = "scope.yaml", secret: str | None = None):
         self.scope_file = Path(scope_file)
         self.secret = secret or ""
+        self._engagement = None
         if not self.scope_file.exists():
             raise FileNotFoundError(
                 f"scope file not found at {self.scope_file} — refusing to run"
@@ -135,6 +144,59 @@ class ScopeManager:
             raise UnauthorizedTargetError(
                 "scope.yaml signature is invalid — file may be tampered or stale"
             )
+
+    @classmethod
+    def from_engagement(cls, engagement: Any, secret: str = "") -> ScopeManager:
+        """Construct a ScopeManager backed directly by an EngagementScope."""
+        mgr = object.__new__(cls)
+        mgr.scope_file = Path("engagement.yaml")
+        mgr.secret = secret
+        mgr._engagement = engagement
+
+        # Validate signature if secret provided
+        if not secret or not engagement.signature:
+            raise UnauthorizedTargetError("Engagement scope signature is missing or no signing key provided")
+        from redloop.engagement import verify_engagement_scope
+        if not verify_engagement_scope(engagement, secret, engagement.signature):
+            raise UnauthorizedTargetError("Engagement scope signature is invalid — file may be tampered or stale")
+
+        entries: list[ScopeEntry] = []
+        today = date.today()
+        until = engagement.expires_at.date()
+        for t in engagement.targets:
+            pat = t.pattern.strip()
+            is_cidr = "/" in pat
+            if not is_cidr:
+                try:
+                    ipaddress.ip_address(pat)
+                    is_cidr = True
+                    pat = f"{pat}/32"
+                except ValueError:
+                    is_cidr = False
+
+            entries.append(
+                ScopeEntry(
+                    cidr=pat if is_cidr else None,
+                    domain=None if is_cidr else pat,
+                    label=t.description or engagement.name,
+                    authorized_from=today,
+                    authorized_until=until,
+                    allowed_actions=t.allowed_methods,
+                    ports=t.ports,
+                )
+            )
+
+        mgr.scope = ScopeFile(
+            version=1,
+            id=engagement.id,
+            authorized_by=engagement.signed_by,
+            signed_at=engagement.signed_at,
+            expires_at=engagement.expires_at,
+            targets=entries,
+            signature=engagement.signature,
+        )
+        mgr.raw = mgr.scope.model_dump(mode="json")
+        return mgr
 
     # -- public API -----------------------------------------------------------
     def check(
@@ -156,6 +218,14 @@ class ScopeManager:
             raise UnauthorizedTargetError(
                 "scope.yaml is expired — refusing to act"
             )
+        # Check out-of-scope if backed by engagement (Out-of-scope strictly overrides in-scope)
+        if getattr(self, "_engagement", None) and getattr(self._engagement, "out_of_scope", None):
+            from redloop.engagement import pattern_matches_target
+            for oos in self._engagement.out_of_scope:
+                if pattern_matches_target(oos.pattern, target):
+                    raise UnauthorizedTargetError(
+                        f"Target '{target}' is explicitly OUT OF SCOPE (matched '{oos.pattern}')"
+                    )
         today = date.today()
         for entry in self.scope.targets:
             if not entry.matches(target):
@@ -206,6 +276,11 @@ class ScopeManager:
         """Return True if target matches an active entry, ignoring action/port."""
         if not self.is_within_window():
             return False
+        if getattr(self, "_engagement", None) and getattr(self._engagement, "out_of_scope", None):
+            from redloop.engagement import pattern_matches_target
+            for oos in self._engagement.out_of_scope:
+                if pattern_matches_target(oos.pattern, target):
+                    return False
         today = date.today()
         return any(
             entry.matches(target)

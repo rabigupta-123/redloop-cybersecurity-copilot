@@ -43,25 +43,67 @@ class Settings(BaseSettings):
     # --- LLM backend ---------------------------------------------------------
     # Which provider the orchestrator talks to. litellm normalizes all of
     # these behind one ``completion()`` call.
-    llm_provider: str = "ollama"
-    llm_model: str = "qwen3:8b"
-    ollama_base_url: str = "http://localhost:11434"
+    llm_provider: str = Field(
+        default="ollama",
+        validation_alias=AliasChoices("REDLOOP_LLM_PROVIDER", "LLM_PROVIDER"),
+    )
+    llm_model: str = Field(
+        default="qwen3:8b",
+        validation_alias=AliasChoices("REDLOOP_LLM_MODEL", "LLM_MODEL", "OLLAMA_MODEL"),
+    )
+    ollama_base_url: str = Field(
+        default="http://localhost:11434",
+        validation_alias=AliasChoices("REDLOOP_OLLAMA_BASE_URL", "OLLAMA_BASE_URL"),
+    )
 
-    openrouter_api_key: str = ""
-    openrouter_model: str = "qwen/qwen3-8b"
+    openrouter_api_key: str = Field(
+        default="",
+        validation_alias=AliasChoices("REDLOOP_OPENROUTER_API_KEY", "OPENROUTER_API_KEY"),
+    )
+    openrouter_model: str = Field(
+        default="qwen/qwen3-8b",
+        validation_alias=AliasChoices("REDLOOP_OPENROUTER_MODEL", "OPENROUTER_MODEL"),
+    )
 
-    anthropic_api_key: str = ""
-    anthropic_model: str = "claude-sonnet-4-20250514"
+    anthropic_api_key: str = Field(
+        default="",
+        validation_alias=AliasChoices("REDLOOP_ANTHROPIC_API_KEY", "ANTHROPIC_API_KEY"),
+    )
+    anthropic_model: str = Field(
+        default="claude-sonnet-4-20250514",
+        validation_alias=AliasChoices("REDLOOP_ANTHROPIC_MODEL", "ANTHROPIC_MODEL"),
+    )
 
-    groq_api_key: str = ""
-    groq_model: str = "llama-3.3-70b-versatile"
+    groq_api_key: str = Field(
+        default="",
+        validation_alias=AliasChoices("REDLOOP_GROQ_API_KEY", "GROQ_API_KEY"),
+    )
+    groq_model: str = Field(
+        default="llama-3.3-70b-versatile",
+        validation_alias=AliasChoices("REDLOOP_GROQ_MODEL", "GROQ_MODEL"),
+    )
 
-    openai_api_key: str = ""
-    openai_model: str = "gpt-4o"
+    openai_api_key: str = Field(
+        default="",
+        validation_alias=AliasChoices("REDLOOP_OPENAI_API_KEY", "OPENAI_API_KEY"),
+    )
+    openai_model: str = Field(
+        default="gpt-4o",
+        validation_alias=AliasChoices("REDLOOP_OPENAI_MODEL", "OPENAI_MODEL"),
+    )
 
-    apinex_api_key: str = ""
-    apinex_model: str = "deepseek-reasoner"
-    apinex_base_url: str = "https://api.apinex.bond/v1"
+    apinex_api_key: str = Field(
+        default="",
+        validation_alias=AliasChoices("REDLOOP_APINEX_API_KEY", "APINEX_API_KEY"),
+    )
+    apinex_model: str = Field(
+        default="deepseek-reasoner",
+        validation_alias=AliasChoices("REDLOOP_APINEX_MODEL", "APINEX_MODEL"),
+    )
+    apinex_base_url: str = Field(
+        default="https://api.apinex.bond/v1",
+        validation_alias=AliasChoices("REDLOOP_APINEX_BASE_URL", "APINEX_BASE_URL"),
+    )
 
     shodan_api_key: str = Field(
         default="",

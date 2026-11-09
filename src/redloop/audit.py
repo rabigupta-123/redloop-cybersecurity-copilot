@@ -329,6 +329,9 @@ class AuditLogger:
             )
             return cur.lastrowid or 0
 
+    def log_event(self, action: str, target: str = "system", **kwargs: Any) -> int:
+        return self.log(target=target, action=action, **kwargs)
+
     def started(self, target: str, action: str, module: str, **details: Any) -> int:
         return self.log(target, action, module, "started", details)
 

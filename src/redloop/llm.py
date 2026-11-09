@@ -175,6 +175,95 @@ class LLMError(RuntimeError):
     """Base error for provider configuration and completion failures."""
 
 
+class InsufficientMemoryError(LLMError):
+    """Raised when an inference path attempts to launch a model exceeding available RAM without explicit override."""
+
+
+def get_system_ram_gb() -> tuple[float, float]:
+    """Return (total_ram_gb, available_ram_gb) using platform APIs without third-party dependencies."""
+    try:
+        import sys
+        if sys.platform == "win32":
+            import ctypes
+            class MEMORYSTATUSEX(ctypes.Structure):
+                _fields_ = [
+                    ('dwLength', ctypes.c_ulong),
+                    ('dwMemoryLoad', ctypes.c_ulong),
+                    ('ullTotalPhys', ctypes.c_ulonglong),
+                    ('ullAvailPhys', ctypes.c_ulonglong),
+                    ('ullTotalPageFile', ctypes.c_ulonglong),
+                    ('ullAvailPageFile', ctypes.c_ulonglong),
+                    ('ullTotalVirtual', ctypes.c_ulonglong),
+                    ('ullAvailVirtual', ctypes.c_ulonglong),
+                    ('sullAvailExtendedVirtual', ctypes.c_ulonglong),
+                ]
+            stat = MEMORYSTATUSEX()
+            stat.dwLength = ctypes.sizeof(MEMORYSTATUSEX)
+            if ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(stat)):
+                return (
+                    round(stat.ullTotalPhys / (1024 ** 3), 2),
+                    round(stat.ullAvailPhys / (1024 ** 3), 2),
+                )
+        else:
+            import os
+            pages = os.sysconf("SC_PHYS_PAGES")
+            page_size = os.sysconf("SC_PAGE_SIZE")
+            total = (pages * page_size) / (1024 ** 3)
+            avail = total * 0.5
+            if os.path.exists("/proc/meminfo"):
+                with open("/proc/meminfo") as f:
+                    for line in f:
+                        if line.startswith("MemAvailable:"):
+                            avail = int(line.split()[1]) / (1024 ** 2)
+                            break
+            return round(total, 2), round(avail, 2)
+    except Exception:
+        pass
+    return 8.0, 4.0
+
+
+def select_resource_aware_ollama_model(
+    requested_model: str,
+    safe_ram_threshold_gb: float = 6.0,
+    allow_insufficient_ram_override: bool = False,
+    total_ram_override: float | None = None,
+    avail_ram_override: float | None = None,
+) -> tuple[str, str | None]:
+    """Automatic model-tier selection based on resident host RAM (C.1 & Gate C).
+
+    Heavy models (8B+ parameters, such as qwen3:8b) require resident RAM exceeding 6 GB.
+    On machines with constrained physical or available RAM, auto-selects qwen3:4b (or smaller)
+    to prevent OS paging, memory thrashing, and high latency.
+    """
+    total_gb, avail_gb = get_system_ram_gb()
+    if total_ram_override is not None:
+        total_gb = total_ram_override
+    if avail_ram_override is not None:
+        avail_gb = avail_ram_override
+
+    model_lower = requested_model.lower()
+    is_8b_plus = any(tag in model_lower for tag in (":8b", "-8b", ":7b", "-7b", ":14b", ":32b", ":70b"))
+
+    if is_8b_plus and (avail_gb < safe_ram_threshold_gb or total_gb < 12.0):
+        if not allow_insufficient_ram_override:
+            safe_model = "qwen3:4b"
+            warning_msg = (
+                f"RESOURCE WARNING: Model '{requested_model}' requires >= {safe_ram_threshold_gb:.1f} GB free RAM, "
+                f"but only {avail_gb:.2f} GB is available (total RAM: {total_gb:.2f} GB). "
+                f"Defaulting to resource-safe tier '{safe_model}' to prevent swap thrashing and OS paging. "
+                f"(Set REDLOOP_ALLOW_INSUFFICIENT_RAM=1 to force override)."
+            )
+            return safe_model, warning_msg
+        else:
+            warning_msg = (
+                f"OPERATOR OVERRIDE WARNING: Forcing execution of heavy model '{requested_model}' with only "
+                f"{avail_gb:.2f} GB available RAM (recommended: >= 16 GB physical RAM for 8b). OS paging likely."
+            )
+            return requested_model, warning_msg
+
+    return requested_model, None
+
+
 class ProviderNotConfiguredError(LLMError):
     """Raised when a requested cloud provider has no API key."""
 
@@ -212,6 +301,14 @@ class LLMSettings(BaseSettings):
     ollama_base_url: str = Field(
         default="http://localhost:11434",
         validation_alias=_env_names("ollama_base_url"),
+    )
+    ollama_safe_ram_threshold_gb: float = Field(
+        default=6.0,
+        validation_alias=_env_names("ollama_safe_ram_threshold_gb"),
+    )
+    allow_insufficient_ram_override: bool = Field(
+        default=False,
+        validation_alias=_env_names("allow_insufficient_ram_override"),
     )
 
     openrouter_api_key: str | None = Field(
@@ -361,16 +458,25 @@ class LLMClient:
     ) -> str:
         selected = self._coerce_provider(provider or self.settings.llm_provider)
         s = self.settings
+        if selected == Provider.OLLAMA:
+            raw_model = model_override or s.llm_model
+            chosen_model, warning = select_resource_aware_ollama_model(
+                raw_model,
+                safe_ram_threshold_gb=s.ollama_safe_ram_threshold_gb,
+                allow_insufficient_ram_override=s.allow_insufficient_ram_override,
+            )
+            if warning:
+                import logging
+                logging.getLogger("redloop.llm").warning(warning)
+            return f"ollama/{chosen_model}"
         if model_override is not None:
-            if selected in (Provider.OLLAMA, Provider.GROQ, Provider.GEMINI, Provider.NVIDIA):
+            if selected in (Provider.GROQ, Provider.GEMINI, Provider.NVIDIA):
                 return f"{selected.value}/{model_override}"
             if selected == Provider.OPENROUTER:
                 return f"openrouter/{model_override}"
             if selected in (Provider.KIMI, Provider.APINEX):
                 return model_override if model_override.startswith("openai/") else f"openai/{model_override}"
             return model_override
-        if selected == Provider.OLLAMA:
-            return f"ollama/{s.llm_model}"
         if selected == Provider.OPENROUTER:
             return f"openrouter/{s.openrouter_model}"
         if selected == Provider.ANTHROPIC:

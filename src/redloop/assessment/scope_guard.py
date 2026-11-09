@@ -51,13 +51,20 @@ class AssessmentScopeGuard:
 
     def __init__(
         self,
-        scope_manager: ScopeManager,
+        scope_manager: ScopeManager | Any,
         audit: AuditLogger | None = None,
+        engagement_manager: Any = None,
     ):
         self.scope_manager = scope_manager
         self.audit = audit
+        self.engagement_manager = engagement_manager
 
-    def is_authorized(self, target: str, action: str | None = None) -> bool:
+    def is_authorized(
+        self,
+        target: str,
+        action: str | None = None,
+        port: int | None = None,
+    ) -> bool:
         """Check if target (and optionally action) are authorized without raising.
 
         With no action, this answers only "is this target covered by the signed
@@ -67,13 +74,19 @@ class AssessmentScopeGuard:
         try:
             if action is None:
                 return self.is_target_scoped(target)
-            self.is_target_authorized(target, action)
+            self.is_target_authorized(target, action, port=port)
             return True
         except Exception:
             return False
 
     def is_target_scoped(self, target: str) -> bool:
         """Return True only if target matches an active, unexpired scope entry."""
+        if getattr(self, "engagement_manager", None) is not None:
+            active_eng = self.engagement_manager.get_active_engagement()
+            if not active_eng:
+                return False
+            ok, _, _ = active_eng.check_target(target, require_port=False)
+            return ok
         checker = getattr(self.scope_manager, "is_target_in_scope", None)
         if callable(checker):
             try:
@@ -103,6 +116,33 @@ class AssessmentScopeGuard:
         Returns ScopeEntry if authorized.
         Raises ScopeBlockedError if blocked.
         """
+        # 0. Engagement Manager enforcement (if configured)
+        if getattr(self, "engagement_manager", None) is not None:
+            active_eng = self.engagement_manager.get_active_engagement()
+            if not active_eng:
+                msg = "No signed active engagement scope profile is currently set"
+                if self.audit:
+                    self.audit.blocked(target, action, "scope_guard", msg)
+                raise ScopeBlockedError(target, action, msg)
+            if require_port is None:
+                require_port = action in PORT_SCOPED_ACTIONS
+            ok, reason, matched_tgt = active_eng.check_target(target, port=port, action=action, require_port=require_port)
+            if not ok or not matched_tgt:
+                if self.audit:
+                    self.audit.blocked(target, action, "scope_guard", reason)
+                raise ScopeBlockedError(target, action, reason)
+            from datetime import date
+            is_cidr = "/" in matched_tgt.pattern
+            return ScopeEntry(
+                cidr=matched_tgt.pattern if is_cidr else None,
+                domain=None if is_cidr else matched_tgt.pattern,
+                authorized_from=date.today(),
+                authorized_until=active_eng.expires_at.date(),
+                allowed_actions=matched_tgt.allowed_methods,
+                ports=matched_tgt.ports,
+                label=matched_tgt.description or active_eng.name,
+            )
+
         # 1. Scope validity & expiration check
         if not self.scope_manager.is_within_window():
             msg = "Signed scope document has expired"

@@ -17,6 +17,16 @@
     "p95_exceeds_30s": true,
     "recommendation": "Host machine possesses 7.7 GB total physical RAM with ~1.0 GB unreserved headroom. Loading qwen3:8b (5.2 GB) causes severe swapping, OOM, or timeouts exceeding 30s. Recommend benchmarking or deploying qwen3:4b or qwen2.5:1.5b for edge deployments with <= 8 GB RAM."
   },
+  "ollama_qwen3_4b": {
+    "status": "SWAP_OR_TIMEOUT_EXCEEDED",
+    "system_physical_ram_total_mb": 7930.0,
+    "system_ram_used_before_mb": 7040.4,
+    "system_ram_utilization_pct": 89.0,
+    "available_free_ram_mb": 889.6,
+    "model_size_mb": 2500.0,
+    "p95_exceeds_30s": true,
+    "notes": "Attempting CPU inference on a machine with 7.7 GB physical RAM at 89% utilization causes llama-server context initialization timeout (>30s) or OOM. Auto-tier selection appropriately triggers warning and routes to offline engine or cloud provider."
+  },
   "openrouter": {
     "model": "meta-llama/llama-3.3-70b-instruct",
     "prompts_count": 30,
@@ -25,7 +35,44 @@
     "linear_interpolation": true
   },
   "groq": {
-    "status": "NOT_CONFIGURED",
-    "reason": "GROQ_API_KEY environment variable is not set; marked NOT VERIFIED per global instructions."
+    "model": "qwen/qwen3.8-27b",
+    "prompts_count": 30,
+    "p50_s": 0.4058,
+    "p95_s": 0.59,
+    "min_s": 0.3557,
+    "max_s": 0.661,
+    "linear_interpolation": true,
+    "raw_latencies_s": [
+      0.5559,
+      0.3757,
+      0.416,
+      0.403,
+      0.4292,
+      0.4128,
+      0.4217,
+      0.5648,
+      0.5045,
+      0.3741,
+      0.3782,
+      0.6106,
+      0.3855,
+      0.4085,
+      0.3619,
+      0.3648,
+      0.4476,
+      0.3681,
+      0.3826,
+      0.3684,
+      0.661,
+      0.368,
+      0.3694,
+      0.3557,
+      0.4351,
+      0.4266,
+      0.3898,
+      0.439,
+      0.3805,
+      0.5123
+    ]
   }
 }

@@ -21,6 +21,7 @@ from redloop.workbench.router_integrations import router as router_integrations
 from redloop.workbench.router_investigations import router as router_investigations
 from redloop.workbench.router_reporting import router as router_reporting
 from redloop.workbench.router_soc import router as router_soc
+from redloop.workbench.router_engagements import router as router_engagements
 
 ALL_ROUTERS = [
     router_assets,
@@ -31,6 +32,7 @@ ALL_ROUTERS = [
     router_investigations,
     router_reporting,
     router_soc,
+    router_engagements,
 ]
 
 

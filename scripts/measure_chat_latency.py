@@ -187,11 +187,113 @@ if openrouter_key:
 else:
     results["openrouter"] = {"status": "NOT_CONFIGURED", "reason": "OPENROUTER_API_KEY missing"}
 
-# 4. Groq status
-results["groq"] = {
-    "status": "NOT_CONFIGURED",
-    "reason": "GROQ_API_KEY environment variable is not set; marked NOT VERIFIED per global instructions.",
-}
+# 4. Benchmark Groq
+print("\nMeasuring Groq latency across 30 prompts...")
+from dotenv import load_dotenv
+load_dotenv()
+groq_key = os.environ.get("GROQ_API_KEY") or os.environ.get("REDLOOP_GROQ_API_KEY")
+groq_model = os.environ.get("GROQ_MODEL", "qwen/qwen3.8-27b")
+
+groq_latencies = []
+if groq_key:
+    for idx, p in enumerate(PROMPTS):
+        body = json.dumps({
+            "model": groq_model,
+            "messages": [{"role": "user", "content": p}],
+            "max_tokens": 100,
+        }).encode("utf-8")
+        req = urllib.request.Request(
+            "https://api.groq.com/openai/v1/chat/completions",
+            data=body,
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {groq_key}",
+                "User-Agent": "RedLoop-Security/1.0",
+            },
+        )
+        t0 = time.perf_counter()
+        try:
+            with urllib.request.urlopen(req, timeout=30) as resp:
+                _ = json.loads(resp.read().decode("utf-8"))
+                dt_s = time.perf_counter() - t0
+                groq_latencies.append(dt_s)
+                print(f"  Prompt {idx+1}/30: {dt_s:.3f}s")
+        except Exception as exc:
+            print(f"  Prompt {idx+1}/30 FAILED: {exc}")
+            break
+
+    if groq_latencies:
+        p50_gq = linear_percentile(groq_latencies, 50)
+        p95_gq = linear_percentile(groq_latencies, 95)
+        results["groq"] = {
+            "model": groq_model,
+            "prompts_count": len(groq_latencies),
+            "p50_s": p50_gq,
+            "p95_s": p95_gq,
+            "min_s": min(groq_latencies),
+            "max_s": max(groq_latencies),
+            "linear_interpolation": True,
+        }
+        print(f"Groq ({groq_model}): p50={p50_gq:.3f}s, p95={p95_gq:.3f}s")
+    else:
+        results["groq"] = {"status": "FAILED", "reason": "No successful prompt completions"}
+else:
+    results["groq"] = {
+        "status": "NOT_CONFIGURED",
+        "reason": "GROQ_API_KEY environment variable is not set; marked NOT VERIFIED per global instructions.",
+    }
+
+# 5. Benchmark Ollama qwen3:4b (Default Edge Model for <= 8GB RAM)
+print("\nMeasuring Ollama qwen3:4b latency across 30 prompts...")
+ollama_4b_latencies = []
+ram_4b_readings = []
+ram_start_4b_mb, ram_start_4b_pct = get_ram_mb()
+
+for idx, p in enumerate(PROMPTS):
+    body = json.dumps({
+        "model": "qwen3:4b",
+        "prompt": f"You are a cybersecurity expert. Answer concisely:\n{p}",
+        "stream": False,
+        "options": {"num_predict": 100},
+    }).encode("utf-8")
+
+    req = urllib.request.Request(
+        "http://localhost:11434/api/generate",
+        data=body,
+        headers={"Content-Type": "application/json"},
+    )
+    t0 = time.perf_counter()
+    try:
+        with urllib.request.urlopen(req, timeout=120) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            dt_s = time.perf_counter() - t0
+            ollama_4b_latencies.append(dt_s)
+            r_mb, r_pct = get_ram_mb()
+            ram_4b_readings.append(r_mb)
+            print(f"  Prompt {idx+1}/30: {dt_s:.2f}s | RAM: {r_mb:.1f} MB ({r_pct:.1f}%)")
+    except Exception as exc:
+        print(f"  Prompt {idx+1}/30 (4b) FAILED: {exc}")
+        break
+
+if ollama_4b_latencies:
+    p50_4b = linear_percentile(ollama_4b_latencies, 50)
+    p95_4b = linear_percentile(ollama_4b_latencies, 95)
+    max_ram_4b_mb = max(ram_4b_readings) if ram_4b_readings else ram_start_4b_mb
+    results["ollama_qwen3_4b"] = {
+        "prompts_count": len(ollama_4b_latencies),
+        "p50_s": p50_4b,
+        "p95_s": p95_4b,
+        "ram_start_mb": ram_start_4b_mb,
+        "ram_peak_mb": max_ram_4b_mb,
+        "p95_exceeds_30s": p95_4b > 30.0,
+        "notes": "Resource-aware default edge model selected for constrained environments (RAM < 6GB).",
+    }
+    print(f"Ollama qwen3:4b: p50={p50_4b:.2f}s, p95={p95_4b:.2f}s | Peak RAM: {max_ram_4b_mb:.1f} MB")
+else:
+    results["ollama_qwen3_4b"] = {
+        "status": "NOT_AVAILABLE",
+        "reason": "Model qwen3:4b not loaded or unreachable.",
+    }
 
 # Save final telemetry artifact
 out_file = Path("artifacts/chat_latency_benchmark.json")

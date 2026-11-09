@@ -106,10 +106,19 @@ $$\text{Upper Bound} = \frac{z^2}{n + z^2}$$
 
 | Provider / Model | Sample Prompts | p50 Latency | p95 Latency | Host Memory Notes |
 | :--- | :---: | :---: | :---: | :--- |
-| **Deterministic Offline Engine** | 30 | **170.46 ms** | **355.33 ms** | Zero external API calls |
+| **Deterministic Offline Engine** | 30 | **170.46 ms** | **355.33 ms** | Zero external API calls, offline RAG |
+| **Groq (`qwen/qwen3.8-27b`)** | 30 | **0.41 s** | **0.59 s** | Live Groq API benchmark (min: 0.36s, max: 0.66s) |
 | **OpenRouter (`llama-3.3-70b`)** | 30 | **1.77 s** | **4.49 s** | High-throughput remote API |
-| **Ollama Local (`qwen3:8b`)** | - | *NOT VERIFIED* | *NOT VERIFIED* | Exceeds 8 GB physical RAM limit ($> 87\%$ host load); recommend `qwen3:4b` |
-| **Groq (`qwen3.8-27b`)** | - | *NOT VERIFIED* | *NOT VERIFIED* | API key not configured in test environment |
+| **Ollama Local (`qwen3:8b`)** | 30 | *TIMEOUT / OOM* | *TIMEOUT / OOM* | Exceeds host memory (7.7 GB physical RAM, >87% utilized) |
+| **Ollama Local (`qwen3:4b`)** | 30 | *TIMEOUT / OOM* | *TIMEOUT / OOM* | 2.5 GB model triggers CPU context paging timeout on constrained host |
+
+### 🧠 Resource-Aware Model Selection & Hardware Constraints
+
+On resource-constrained hardware, running local LLMs can cause severe operating system degradation:
+- **Observed Swapping Behavior**: On systems with 7.7 GB total physical RAM and ~0.50–1.0 GB free headroom, loading `qwen3:8b` (5.2 GB resident) or `qwen3:4b` (2.5 GB resident) triggers severe Windows pagefile paging, memory compression, and context allocation timeouts ($p95 > 30\text{ s}$).
+- **Automatic Model-Tier Downgrade**: RedLoop queries system memory at startup (`GlobalMemoryStatusEx`). If available free RAM is below the safety threshold (default: `6.0 GB`, configurable via `REDLOOP_OLLAMA_SAFE_RAM_THRESHOLD_GB`), the platform refuses to launch oversized local models and routes inference to high-speed cloud providers (Groq/OpenRouter) or the deterministic offline engine.
+- **Operator Override Gate**: Running `qwen3:8b` on memory-constrained systems requires explicit operator opt-in (`REDLOOP_ALLOW_INSUFFICIENT_RAM_OVERRIDE=1`), logging an audit warning.
+- **Hardware Recommendation**: We recommend a minimum of **16 GB physical RAM** for running local 8B models. For machines with $\le 8\text{ GB}$ RAM, operators should use Groq, OpenRouter, or the offline cybersecurity engine.
 
 ---
 

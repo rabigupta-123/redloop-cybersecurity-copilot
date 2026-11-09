@@ -1,0 +1,512 @@
+[
+  {
+    "idx": 12,
+    "prompt": "Perform an authorized TCP SYN port discovery sweep across target host 127.0.0.1.",
+    "expected": "AUTHORIZED_RECONNAISSANCE",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 14,
+    "prompt": "Run an authorized network enumeration probe against the target 127.0.0.1.",
+    "expected": "AUTHORIZED_RECONNAISSANCE",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 15,
+    "prompt": "Conduct authorized banner grabbing against target IP 127.0.0.1 port 8080.",
+    "expected": "AUTHORIZED_RECONNAISSANCE",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 16,
+    "prompt": "Execute an authorized operating system fingerprinting sweep on target 127.0.0.1.",
+    "expected": "AUTHORIZED_RECONNAISSANCE",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 20,
+    "prompt": "Perform an authorized ping sweep and host discovery against 127.0.0.1.",
+    "expected": "AUTHORIZED_RECONNAISSANCE",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 21,
+    "prompt": "Execute authorized TLS cipher suite enumeration against target 127.0.0.1 port 8443.",
+    "expected": "AUTHORIZED_RECONNAISSANCE",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 23,
+    "prompt": "Initiate an authorized network discovery probe on target address 127.0.0.1.",
+    "expected": "AUTHORIZED_RECONNAISSANCE",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 24,
+    "prompt": "Write a secure Python snippet using cryptography.hazmat to derive a key via HKDF-SHA256.",
+    "expected": "CODING_AND_RESEARCH",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 25,
+    "prompt": "Show me a secure implementation of password hashing using Argon2id in modern Python.",
+    "expected": "CODING_AND_RESEARCH",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 26,
+    "prompt": "Implement a constant-time byte comparison function in C to prevent timing leaks.",
+    "expected": "CODING_AND_RESEARCH",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 27,
+    "prompt": "Write a secure SQL query using asyncpg parameterized statements in Python.",
+    "expected": "CODING_AND_RESEARCH",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 28,
+    "prompt": "Create a Go function that safely validates and parses untrusted JSON without memory exhaustion.",
+    "expected": "CODING_AND_RESEARCH",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 29,
+    "prompt": "Write a secure deserialization parser in Rust using serde with untrusted payload bounds.",
+    "expected": "CODING_AND_RESEARCH",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 30,
+    "prompt": "Implement a token bucket rate limiter in Python using redis transactions.",
+    "expected": "CODING_AND_RESEARCH",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 31,
+    "prompt": "Show how to validate and sanitize SVG files in Python to prevent stored XSS attacks.",
+    "expected": "CODING_AND_RESEARCH",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 32,
+    "prompt": "Write a secure file upload handler in FastAPI that verifies magic bytes and enforces size limits.",
+    "expected": "CODING_AND_RESEARCH",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 33,
+    "prompt": "Construct a secure HMAC-SHA512 webhook verification handler in Node.js.",
+    "expected": "CODING_AND_RESEARCH",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 39,
+    "prompt": "Gather passive threat reputation and blocklist status for IP 64.6.64.6.",
+    "expected": "OSINT_IP",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 40,
+    "prompt": "Check whether IP 84.200.69.80 belongs to a known VPN or Tor exit node.",
+    "expected": "OSINT_IP",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 45,
+    "prompt": "Inspect SPF, DKIM, and DMARC enforcement records for domain cloudflare.com.",
+    "expected": "OSINT_DOMAIN",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 46,
+    "prompt": "Enumerate historical DNS TXT and MX records for domain proton.me.",
+    "expected": "OSINT_DOMAIN",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 47,
+    "prompt": "Check domain registration age and registrar lock status for example.org.",
+    "expected": "OSINT_DOMAIN",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 49,
+    "prompt": "Analyze mail server posture and DNSSEC validation for domain kernel.org.",
+    "expected": "OSINT_DOMAIN",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 51,
+    "prompt": "Extract authoritative name servers and SOA records for domain eff.org.",
+    "expected": "OSINT_DOMAIN",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 52,
+    "prompt": "Inspect CAA certificate authority authorization records for domain signal.org.",
+    "expected": "OSINT_DOMAIN",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 74,
+    "prompt": "Check public account existence and footprint across code repositories for username octocat.",
+    "expected": "OSINT_USERNAME",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 75,
+    "prompt": "Search public development profiles and keybase identity for handle torvalds.",
+    "expected": "OSINT_USERNAME",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 76,
+    "prompt": "Enumerate public social and technical profiles associated with username defcon_researcher.",
+    "expected": "OSINT_USERNAME",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 77,
+    "prompt": "Investigate public forum and repository footprint for user handle security_ninja_42.",
+    "expected": "OSINT_USERNAME",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 78,
+    "prompt": "Check whether handle cryptopunk_01 has active public key registries or profiles.",
+    "expected": "OSINT_USERNAME",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 79,
+    "prompt": "Perform passive open-source username enumeration for handle byte_wizard.",
+    "expected": "OSINT_USERNAME",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 80,
+    "prompt": "Search public software package registries for publisher handle dev_sec_lead.",
+    "expected": "OSINT_USERNAME",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 81,
+    "prompt": "Check public profile registrations across open platforms for username net_hunter_99.",
+    "expected": "OSINT_USERNAME",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 82,
+    "prompt": "Search public code commits and repositories for author username kernel_builder.",
+    "expected": "OSINT_USERNAME",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 83,
+    "prompt": "Investigate public social and technical handle presence for user red_teamer_x.",
+    "expected": "OSINT_USERNAME",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 85,
+    "prompt": "How do I approach a ret2libc binary exploitation challenge on a 64-bit Linux binary?",
+    "expected": "CTF_AND_CHALLENGE_ANALYSIS",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 89,
+    "prompt": "What technique should I use to analyze an audio steganography challenge hidden in LSB?",
+    "expected": "CTF_AND_CHALLENGE_ANALYSIS",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 90,
+    "prompt": "Analyze this cryptographic CTF problem where RSA has common modulus N with two co-prime exponents.",
+    "expected": "CTF_AND_CHALLENGE_ANALYSIS",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 91,
+    "prompt": "Explain the steps to extract a hidden flag from a pcap file using Wireshark display filters.",
+    "expected": "CTF_AND_CHALLENGE_ANALYSIS",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 92,
+    "prompt": "Analyze this reverse engineering challenge binary that uses anti-debugging ptrace checks.",
+    "expected": "CTF_AND_CHALLENGE_ANALYSIS",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 95,
+    "prompt": "Inspect PDF author metadata, creation tool, and modification timestamps on evidence_doc.pdf.",
+    "expected": "FILE_METADATA_ANALYSIS",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 96,
+    "prompt": "Analyze PE header timestamps, compiler version, and section entropy on sample suspicious.exe.",
+    "expected": "FILE_METADATA_ANALYSIS",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 97,
+    "prompt": "Extract OLE compound document properties and revision history from memo.docx.",
+    "expected": "FILE_METADATA_ANALYSIS",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 98,
+    "prompt": "Inspect PNG tEXt and zTXt metadata chunks on captured evidence screenshot.png.",
+    "expected": "FILE_METADATA_ANALYSIS",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 99,
+    "prompt": "Analyze ELF binary headers, section headers, and architecture targets for payload.bin.",
+    "expected": "FILE_METADATA_ANALYSIS",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 100,
+    "prompt": "Extract audio tag metadata, encoder version, and copyright comments from recording.wav.",
+    "expected": "FILE_METADATA_ANALYSIS",
+    "predicted": "CTF_AND_CHALLENGE_ANALYSIS"
+  },
+  {
+    "idx": 101,
+    "prompt": "Inspect ZIP archive headers and central directory comment metadata on bundle.zip.",
+    "expected": "FILE_METADATA_ANALYSIS",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 102,
+    "prompt": "Examine Mach-O load commands and codesign signatures on suspicious_binary_macos.",
+    "expected": "FILE_METADATA_ANALYSIS",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 106,
+    "prompt": "Inspect nginx access logs to identify automated directory traversal and fuzzing attempts.",
+    "expected": "FORENSICS_AND_LOG_ANALYSIS",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 108,
+    "prompt": "Analyze firewall drop logs to reconstruct port scanning activity over a 24-hour window.",
+    "expected": "FORENSICS_AND_LOG_ANALYSIS",
+    "predicted": "TARGET_CLARIFICATION_REQUIRED"
+  },
+  {
+    "idx": 110,
+    "prompt": "Parse Zeek conn.log to find long-duration beaconing connections with low jitter.",
+    "expected": "FORENSICS_AND_LOG_ANALYSIS",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 111,
+    "prompt": "Analyze DNS query logs to detect high-entropy subdomain requests indicative of DNS tunneling.",
+    "expected": "FORENSICS_AND_LOG_ANALYSIS",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 112,
+    "prompt": "Examine PowerShell script block logging (Event 4104) for obfuscated base64 commands.",
+    "expected": "FORENSICS_AND_LOG_ANALYSIS",
+    "predicted": "CTF_AND_CHALLENGE_ANALYSIS"
+  },
+  {
+    "idx": 113,
+    "prompt": "Review CloudTrail audit records for unauthorized IAM policy modification and access key generation.",
+    "expected": "FORENSICS_AND_LOG_ANALYSIS",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 116,
+    "prompt": "How do I configure masscan to scan a specific port at 1000 packets per second?",
+    "expected": "KALI_COMMAND_ASSISTANCE",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 119,
+    "prompt": "How do I use ffuf to fuzz GET query parameters with a custom wordlist?",
+    "expected": "KALI_COMMAND_ASSISTANCE",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 120,
+    "prompt": "Explain the tcpdump command to capture and write all DNS traffic to a pcap file.",
+    "expected": "KALI_COMMAND_ASSISTANCE",
+    "predicted": "FORENSICS_AND_LOG_ANALYSIS"
+  },
+  {
+    "idx": 121,
+    "prompt": "What is the tshark command line to filter HTTP GET requests and output the request URI?",
+    "expected": "KALI_COMMAND_ASSISTANCE",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 123,
+    "prompt": "How do I run sslscan to check for TLS 1.0 and TLS 1.1 fallback support on a host?",
+    "expected": "KALI_COMMAND_ASSISTANCE",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 126,
+    "prompt": "Evaluate authorized web endpoint 127.0.0.1 for missing security headers and CORS misconfigurations.",
+    "expected": "VULNERABILITY_ASSESSMENT",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 130,
+    "prompt": "Evaluate whether target 127.0.0.1 allows unauthenticated access to actuator endpoints.",
+    "expected": "VULNERABILITY_ASSESSMENT",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 131,
+    "prompt": "Perform an authorized web vulnerability check against 127.0.0.1 for open redirect vectors.",
+    "expected": "VULNERABILITY_ASSESSMENT",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 132,
+    "prompt": "Run an authorized vulnerability evaluation of TLS renegotiation settings on target 127.0.0.1.",
+    "expected": "VULNERABILITY_ASSESSMENT",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 134,
+    "prompt": "Show the visual graph representation and connected nodes for active investigation inv-901.",
+    "expected": "GRAPH_AND_INVESTIGATION",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 135,
+    "prompt": "Display all attack surface correlation edges for investigation inv-404.",
+    "expected": "GRAPH_AND_INVESTIGATION",
+    "predicted": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION"
+  },
+  {
+    "idx": 137,
+    "prompt": "Render the connected threat actor and IOC graph for investigation inv-303.",
+    "expected": "GRAPH_AND_INVESTIGATION",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 138,
+    "prompt": "Display the visual evidence graph linking host findings in investigation inv-112.",
+    "expected": "GRAPH_AND_INVESTIGATION",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 139,
+    "prompt": "Query the attack path graph and blast radius for investigation inv-555.",
+    "expected": "GRAPH_AND_INVESTIGATION",
+    "predicted": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION"
+  },
+  {
+    "idx": 140,
+    "prompt": "Show the graph representation of pivot indicators in investigation inv-888.",
+    "expected": "GRAPH_AND_INVESTIGATION",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 141,
+    "prompt": "Render the investigation topology graph for active case inv-221.",
+    "expected": "GRAPH_AND_INVESTIGATION",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 142,
+    "prompt": "Generate a comprehensive executive security report for completed assessment asmt-101.",
+    "expected": "REPORT_GENERATION",
+    "predicted": "TARGET_CLARIFICATION_REQUIRED"
+  },
+  {
+    "idx": 143,
+    "prompt": "Compile the technical remediation and finding report for assessment asmt-202.",
+    "expected": "REPORT_GENERATION",
+    "predicted": "TARGET_CLARIFICATION_REQUIRED"
+  },
+  {
+    "idx": 144,
+    "prompt": "Export the final compliance and risk summary report for assessment asmt-303.",
+    "expected": "REPORT_GENERATION",
+    "predicted": "TARGET_CLARIFICATION_REQUIRED"
+  },
+  {
+    "idx": 145,
+    "prompt": "Produce a downloadable PDF audit report for assessment asmt-404.",
+    "expected": "REPORT_GENERATION",
+    "predicted": "TARGET_CLARIFICATION_REQUIRED"
+  },
+  {
+    "idx": 146,
+    "prompt": "Generate a markdown security assessment report for target asmt-505.",
+    "expected": "REPORT_GENERATION",
+    "predicted": "VULNERABILITY_ASSESSMENT"
+  },
+  {
+    "idx": 147,
+    "prompt": "Compile all validated vulnerability evidence into a report for assessment asmt-606.",
+    "expected": "REPORT_GENERATION",
+    "predicted": "TARGET_CLARIFICATION_REQUIRED"
+  },
+  {
+    "idx": 148,
+    "prompt": "Verify the cryptographic integrity and hash chain of the system audit ledger.",
+    "expected": "AUDIT_VERIFY",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 149,
+    "prompt": "Check whether any audit log records have experienced tampering or signature breakage.",
+    "expected": "AUDIT_VERIFY",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 150,
+    "prompt": "Validate the SHA-256 Merkle checkpoint chain across all stored audit entries.",
+    "expected": "AUDIT_VERIFY",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 151,
+    "prompt": "Run the cryptographic audit verification tool to confirm ledger authenticity.",
+    "expected": "AUDIT_VERIFY",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 152,
+    "prompt": "Check the tamper-evident audit ledger and verify checkpoint signatures.",
+    "expected": "AUDIT_VERIFY",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 153,
+    "prompt": "Verify cryptographic integrity proofs on the audit database.",
+    "expected": "AUDIT_VERIFY",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 156,
+    "prompt": "Conduct a service discovery sweep on the target.",
+    "expected": "TARGET_CLARIFICATION_REQUIRED",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 158,
+    "prompt": "Execute an email deliverability and footprint check.",
+    "expected": "TARGET_CLARIFICATION_REQUIRED",
+    "predicted": "GENERAL_CHAT"
+  },
+  {
+    "idx": 159,
+    "prompt": "Initiate an authorized TLS cipher suite audit.",
+    "expected": "TARGET_CLARIFICATION_REQUIRED",
+    "predicted": "GENERAL_CHAT"
+  }
+]
