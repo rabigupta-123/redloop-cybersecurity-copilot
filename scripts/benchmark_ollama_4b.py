@@ -129,3 +129,4 @@ if len(latencies) >= 30:
     with open(bench_file, "w", encoding="utf-8") as f:
         json.dump(bench_data, f, indent=2)
     print(f"Updated {bench_file} with real Ollama 4b benchmark results!")
+

@@ -116,3 +116,62 @@ def test_holdout_train_hash_overlap():
     assert len(overlap) == 0, f"Contamination detected! Overlapping prompt hashes: {overlap}"
     assert len(v2_data) >= 150, f"Holdout v2 must have >= 150 items, got {len(v2_data)}"
 
+
+def test_holdout_v3_anti_contamination_overlap():
+    """Verify holdout v3 anti-overfit guarantees: >=200 items, zero hash or 6-gram overlap."""
+    import hashlib
+    import re
+    from collections import Counter
+
+    train_path = Path("tests/fixtures/eval/intent_train_v2.json")
+    v1_path = Path("tests/fixtures/eval/intent_holdout_v1.json")
+    v2_path = Path("tests/fixtures/eval/intent_holdout_v2.json")
+    v3_path = Path("tests/fixtures/eval/intent_holdout_v3.json")
+
+    assert v3_path.exists(), f"Holdout v3 dataset missing: {v3_path}"
+
+    with open(v3_path, encoding="utf-8") as f:
+        v3_data = json.load(f)
+
+    assert len(v3_data) >= 200, f"Holdout v3 must have >= 200 items, got {len(v3_data)}"
+
+    # Check class balance: every class >= 10 items
+    counts = Counter(item["expected_intent"] for item in v3_data)
+    for intent, count in counts.items():
+        assert count >= 10, f"Class {intent} has fewer than 10 items in v3: {count}"
+
+    # Load all prior prompts
+    prior_prompts = []
+    for p in (train_path, v1_path, v2_path):
+        if p.exists():
+            with open(p, encoding="utf-8") as f:
+                prior_prompts.extend(json.load(f))
+
+    def p_hash(prompt: str) -> str:
+        return hashlib.sha256(prompt.strip().lower().encode("utf-8")).hexdigest()
+
+    def tokenize(text: str) -> list[str]:
+        return re.findall(r"\b\w+\b", text.lower())
+
+    def get_6grams(tokens: list[str]) -> set[tuple[str, ...]]:
+        return set(tuple(tokens[i : i + 6]) for i in range(len(tokens) - 5))
+
+    prior_hashes = {p_hash(item["prompt"]) for item in prior_prompts}
+    v3_hashes = {p_hash(item["prompt"]) for item in v3_data}
+    exact_overlap = prior_hashes.intersection(v3_hashes)
+    assert len(exact_overlap) == 0, f"Contamination detected! Exact prompt hash overlap: {exact_overlap}"
+
+    prior_6grams = set()
+    for item in prior_prompts:
+        toks = tokenize(item["prompt"])
+        prior_6grams.update(get_6grams(toks))
+
+    for item in v3_data:
+        v3_toks = tokenize(item["prompt"])
+        v3_ngs = get_6grams(v3_toks)
+        overlap_ngs = v3_ngs.intersection(prior_6grams)
+        assert len(overlap_ngs) == 0, (
+            f"Contamination detected! 6-gram overlap '{overlap_ngs}' in prompt: {item['prompt']}"
+        )
+
+

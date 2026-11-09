@@ -1,0 +1,306 @@
+import json
+import re
+from pathlib import Path
+
+def tokenize(text: str) -> list[str]:
+    return re.findall(r"\b\w+\b", text.lower())
+
+def get_ngrams(tokens: list[str], n: int) -> set[tuple[str, ...]]:
+    return set(tuple(tokens[i : i + n]) for i in range(len(tokens) - n + 1))
+
+# Load all prior datasets
+train_path = Path("tests/fixtures/eval/intent_train_v2.json")
+v1_path = Path("tests/fixtures/eval/intent_holdout_v1.json")
+v2_path = Path("tests/fixtures/eval/intent_holdout_v2.json")
+
+prior_prompts = []
+for p in (train_path, v1_path, v2_path):
+    if p.exists():
+        with open(p, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            prior_prompts.extend(x["prompt"] for x in data)
+
+prior_6grams = set()
+for p in prior_prompts:
+    toks = tokenize(p)
+    prior_6grams.update(get_ngrams(toks, 6))
+
+ITEMS = [
+    # 1. REPORT_GENERATION (Bug Class 1: Report verbs vs scan verbs) - 12 items
+    {"prompt": "Compile an assessment briefing summarizing findings on host 198.51.100.22", "expected_intent": "REPORT_GENERATION"},
+    {"prompt": "Export a structured Markdown executive summary of all scanned vulnerabilities", "expected_intent": "REPORT_GENERATION"},
+    {"prompt": "Generate a PDF audit report documenting open ports and discovered security flaws", "expected_intent": "REPORT_GENERATION"},
+    {"prompt": "Produce a remediation roadmap document based on recent penetration test outputs", "expected_intent": "REPORT_GENERATION"},
+    {"prompt": "Publish an assessment synthesis covering the external attack perimeter evaluation", "expected_intent": "REPORT_GENERATION"},
+    {"prompt": "Draft an engagement debrief docket detailing discovered exposures and CVSS metrics", "expected_intent": "REPORT_GENERATION"},
+    {"prompt": "Assemble a comprehensive compliance summary report for SOC2 readiness assessment", "expected_intent": "REPORT_GENERATION"},
+    {"prompt": "Output a finalized vulnerability breakdown report formatted in HTML for leadership", "expected_intent": "REPORT_GENERATION"},
+    {"prompt": "Create an executive assessment memo outlining the impact of the latest web findings", "expected_intent": "REPORT_GENERATION"},
+    {"prompt": "Construct a security review document summarizing perimeter recon results", "expected_intent": "REPORT_GENERATION"},
+    {"prompt": "Prepare an end-of-engagement findings dossier for technical review", "expected_intent": "REPORT_GENERATION"},
+    {"prompt": "Build a formal assessment deliverable summarizing critical risks identified", "expected_intent": "REPORT_GENERATION"},
+
+    # 2. GRAPH_AND_INVESTIGATION (Bug Class 2: Graph queries vs generic follow-up) - 12 items
+    {"prompt": "Render the graph topology showing connections between compromised nodes and database servers", "expected_intent": "GRAPH_AND_INVESTIGATION"},
+    {"prompt": "Display the Neo4j visualization illustrating lateral movement paths from the bastion host", "expected_intent": "GRAPH_AND_INVESTIGATION"},
+    {"prompt": "Map the blast radius graph outward from compromised workstation desktop-7a", "expected_intent": "GRAPH_AND_INVESTIGATION"},
+    {"prompt": "Query the graph database to find the shortest pivot route to the domain controller", "expected_intent": "GRAPH_AND_INVESTIGATION"},
+    {"prompt": "Show entity relationship links between the staging cluster and authentication services", "expected_intent": "GRAPH_AND_INVESTIGATION"},
+    {"prompt": "Visualize the attack graph showing dependency chains across internal microservices", "expected_intent": "GRAPH_AND_INVESTIGATION"},
+    {"prompt": "Trace the graph lineage between discovered credential dumps and active administrator accounts", "expected_intent": "GRAPH_AND_INVESTIGATION"},
+    {"prompt": "Draw the infrastructure topology graph depicting firewalled subnets and DMZ routing", "expected_intent": "GRAPH_AND_INVESTIGATION"},
+    {"prompt": "Plot the entity interaction graph linking suspicious external IP addresses to API endpoints", "expected_intent": "GRAPH_AND_INVESTIGATION"},
+    {"prompt": "Calculate graph centrality metrics to identify the most critical transit gateway nodes", "expected_intent": "GRAPH_AND_INVESTIGATION"},
+    {"prompt": "Explore the identity relationship graph to locate shadow admin groups", "expected_intent": "GRAPH_AND_INVESTIGATION"},
+    {"prompt": "Diagram the pivot pathway from the web ingress container to internal secret vaults", "expected_intent": "GRAPH_AND_INVESTIGATION"},
+
+    # 3. KALI_COMMAND_ASSISTANCE (Bug Class 3: CLI syntax queries vs log analysis) - 12 items
+    {"prompt": "How do I invoke feroxbuster with custom recursion limits and wordlists?", "expected_intent": "KALI_COMMAND_ASSISTANCE"},
+    {"prompt": "What CLI flags should I pass to amass for passive subdomain discovery?", "expected_intent": "KALI_COMMAND_ASSISTANCE"},
+    {"prompt": "Show syntax for chisel client tunneling over reverse socks5 proxies", "expected_intent": "KALI_COMMAND_ASSISTANCE"},
+    {"prompt": "Provide command examples for arpspoof targeting local broadcast gateways", "expected_intent": "KALI_COMMAND_ASSISTANCE"},
+    {"prompt": "How can I configure sqlmap to perform tamper script transformations against WAFs?", "expected_intent": "KALI_COMMAND_ASSISTANCE"},
+    {"prompt": "Give me the syntax for nuclei template execution targeting CVE-2024-21413", "expected_intent": "KALI_COMMAND_ASSISTANCE"},
+    {"prompt": "Which options in crackmapexec enable password spraying over SMB without account lockouts?", "expected_intent": "KALI_COMMAND_ASSISTANCE"},
+    {"prompt": "How do I execute responder on interface eth0 in analyze-only passive mode?", "expected_intent": "KALI_COMMAND_ASSISTANCE"},
+    {"prompt": "Explain the parameters for rustscan to pipe directly into an aggressive nmap banner scan", "expected_intent": "KALI_COMMAND_ASSISTANCE"},
+    {"prompt": "What command line options allow gobuster to fuzz virtual host header routing?", "expected_intent": "KALI_COMMAND_ASSISTANCE"},
+    {"prompt": "Demonstrate how to run hydra against an SSH service using rate limiting throttles", "expected_intent": "KALI_COMMAND_ASSISTANCE"},
+    {"prompt": "Show me the proper syntax for tcpdump capturing DNS queries on port 53", "expected_intent": "KALI_COMMAND_ASSISTANCE"},
+
+    # 4. FORENSICS_AND_LOG_ANALYSIS (Bug Class 4: Specific forensic sources) - 12 items
+    {"prompt": "Inspect Windows Sysmon Event ID 1 process creation records for suspicious powershell spawned", "expected_intent": "FORENSICS_AND_LOG_ANALYSIS"},
+    {"prompt": "Parse the Linux auditd execve logs looking for unauthorized root privilege escalations", "expected_intent": "FORENSICS_AND_LOG_ANALYSIS"},
+    {"prompt": "Analyze AWS CloudTrail events for unauthorized CreateAccessKey API calls", "expected_intent": "FORENSICS_AND_LOG_ANALYSIS"},
+    {"prompt": "Examine the Suricata eve.json telemetry file for triggered alert signatures on port 8080", "expected_intent": "FORENSICS_AND_LOG_ANALYSIS"},
+    {"prompt": "Query the Osquery snapshot logs for unexpected listening sockets on system binaries", "expected_intent": "FORENSICS_AND_LOG_ANALYSIS"},
+    {"prompt": "Review Bro Zeek conn.log records to uncover beaconing intervals to anomalous external hosts", "expected_intent": "FORENSICS_AND_LOG_ANALYSIS"},
+    {"prompt": "Investigate Nginx error.log entries recording sudden spikes in HTTP 502 bad gateway responses", "expected_intent": "FORENSICS_AND_LOG_ANALYSIS"},
+    {"prompt": "Triage VPC flow log entries indicating rejected egress connections toward port 445", "expected_intent": "FORENSICS_AND_LOG_ANALYSIS"},
+    {"prompt": "Search auth.log on the Ubuntu gateway for repeated failed publickey authentication attempts", "expected_intent": "FORENSICS_AND_LOG_ANALYSIS"},
+    {"prompt": "Correlate Okta authentication audit logs for concurrent logins originating from disparate countries", "expected_intent": "FORENSICS_AND_LOG_ANALYSIS"},
+    {"prompt": "Extract anomalous user-agent strings from Apache access logs during the timeframe of the alert", "expected_intent": "FORENSICS_AND_LOG_ANALYSIS"},
+    {"prompt": "Analyze Windows Security Log Event ID 4625 brute force patterns against administrator accounts", "expected_intent": "FORENSICS_AND_LOG_ANALYSIS"},
+
+    # 5. AUTHORIZED_RECONNAISSANCE (Bug Class 5: Trailing punctuation & clean port mapping) - 12 items
+    {"prompt": "Initiate port mapping against target 198.51.100.44.", "expected_intent": "AUTHORIZED_RECONNAISSANCE"},
+    {"prompt": "Perform TCP service enumeration on host 203.0.113.89:8080.", "expected_intent": "AUTHORIZED_RECONNAISSANCE"},
+    {"prompt": "Execute discovery scan across the subnet 192.0.2.0/28, please", "expected_intent": "AUTHORIZED_RECONNAISSANCE"},
+    {"prompt": "Enumerate exposed web services and banner responses on target 198.51.100.12.", "expected_intent": "AUTHORIZED_RECONNAISSANCE"},
+    {"prompt": "Run an authorized recon sweep against 203.0.113.150 on ports 80, 443, and 8443", "expected_intent": "AUTHORIZED_RECONNAISSANCE"},
+    {"prompt": "Scan network interfaces for listening services on 192.0.2.77.", "expected_intent": "AUTHORIZED_RECONNAISSANCE"},
+    {"prompt": "Discover active TCP endpoints on host 198.51.100.60.", "expected_intent": "AUTHORIZED_RECONNAISSANCE"},
+    {"prompt": "Run SYN reconnaissance against target 203.0.113.201 across top 100 ports", "expected_intent": "AUTHORIZED_RECONNAISSANCE"},
+    {"prompt": "Inspect open service ports and version headers on 192.0.2.99:443.", "expected_intent": "AUTHORIZED_RECONNAISSANCE"},
+    {"prompt": "Probe the external perimeter firewall on host 198.51.100.105 for open SSH access", "expected_intent": "AUTHORIZED_RECONNAISSANCE"},
+    {"prompt": "Perform non-destructive service discovery on 203.0.113.75.", "expected_intent": "AUTHORIZED_RECONNAISSANCE"},
+    {"prompt": "Check responsiveness and protocol version on target 192.0.2.33:80.", "expected_intent": "AUTHORIZED_RECONNAISSANCE"},
+
+    # 6. VULNERABILITY_ASSESSMENT (Bug Class 5: Trailing punctuation & clean assessment) - 12 items
+    {"prompt": "Assess target 198.51.100.44 for outdated SSL TLS cipher suites.", "expected_intent": "VULNERABILITY_ASSESSMENT"},
+    {"prompt": "Check whether host 203.0.113.89:8080 is susceptible to default credentials.", "expected_intent": "VULNERABILITY_ASSESSMENT"},
+    {"prompt": "Audit endpoint 192.0.2.77 for lax cross-origin policies and absent CSP directives", "expected_intent": "VULNERABILITY_ASSESSMENT"},
+    {"prompt": "Evaluate the web server on 198.51.100.12 for open directory indexing vulnerabilities", "expected_intent": "VULNERABILITY_ASSESSMENT"},
+    {"prompt": "Run vulnerability checks against 203.0.113.150:443 for heartbleed and poodle flaws", "expected_intent": "VULNERABILITY_ASSESSMENT"},
+    {"prompt": "Perform flaw assessment on host 192.0.2.99 regarding unpatched Apache versions", "expected_intent": "VULNERABILITY_ASSESSMENT"},
+    {"prompt": "Test target 198.51.100.60 for Cross-Site Scripting input handling vulnerabilities", "expected_intent": "VULNERABILITY_ASSESSMENT"},
+    {"prompt": "Scan host 203.0.113.201 for unauthenticated API endpoint access flaws", "expected_intent": "VULNERABILITY_ASSESSMENT"},
+    {"prompt": "Verify if the gateway at 192.0.2.33 exposes vulnerable SNMP community strings", "expected_intent": "VULNERABILITY_ASSESSMENT"},
+    {"prompt": "Check target 198.51.100.105:8443 for insecure direct object references", "expected_intent": "VULNERABILITY_ASSESSMENT"},
+    {"prompt": "Audit the authentication portal on 203.0.113.75 for missing rate limiting defenses", "expected_intent": "VULNERABILITY_ASSESSMENT"},
+    {"prompt": "Assess host 192.0.2.140 for unquoted service path privilege escalation risks", "expected_intent": "VULNERABILITY_ASSESSMENT"},
+
+    # 7. OSINT_IP (Bug Class 6: Disambiguated IP lookups) - 12 items
+    {"prompt": "Investigate IP reputation score for address 198.51.100.87", "expected_intent": "OSINT_IP"},
+    {"prompt": "Lookup threat intelligence records linked to IPv4 address 203.0.113.45", "expected_intent": "OSINT_IP"},
+    {"prompt": "Check VirusTotal and Shodan feeds for IP 192.0.2.115", "expected_intent": "OSINT_IP"},
+    {"prompt": "Retrieve autonomous system number and geolocation for IP 198.51.100.99", "expected_intent": "OSINT_IP"},
+    {"prompt": "What threat feed classifications exist for address 203.0.113.18?", "expected_intent": "OSINT_IP"},
+    {"prompt": "Query malicious history and blocklist status for IP 192.0.2.204", "expected_intent": "OSINT_IP"},
+    {"prompt": "Perform threat triage on external IP address 198.51.100.133", "expected_intent": "OSINT_IP"},
+    {"prompt": "Check if IP 203.0.113.91 is designated as a known Tor exit relay node", "expected_intent": "OSINT_IP"},
+    {"prompt": "Find passive DNS resolutions associated with address 192.0.2.66", "expected_intent": "OSINT_IP"},
+    {"prompt": "Gather intelligence history regarding suspicious IP 198.51.100.240", "expected_intent": "OSINT_IP"},
+    {"prompt": "Check whether address 203.0.113.112 has been recorded in honeypot logs", "expected_intent": "OSINT_IP"},
+    {"prompt": "Lookup registration and ISP attribution for IP 192.0.2.81", "expected_intent": "OSINT_IP"},
+
+    # 8. OSINT_DOMAIN (Bug Class 6: Disambiguated Domain lookups) - 12 items
+    {"prompt": "Investigate registration history and DNS records for domain telemetry-collector.test", "expected_intent": "OSINT_DOMAIN"},
+    {"prompt": "Lookup threat intelligence tags associated with domain perimeter-auth.example", "expected_intent": "OSINT_DOMAIN"},
+    {"prompt": "Check WHOIS and nameserver delegation for host staging-gateway.invalid", "expected_intent": "OSINT_DOMAIN"},
+    {"prompt": "Perform passive DNS analysis on domain relay-service.test", "expected_intent": "OSINT_DOMAIN"},
+    {"prompt": "Retrieve Certificate Transparency log occurrences for identity-hub.example", "expected_intent": "OSINT_DOMAIN"},
+    {"prompt": "What subdomains have been indexed for organization domain corporate-portal.invalid?", "expected_intent": "OSINT_DOMAIN"},
+    {"prompt": "Check whether domain malicious-drop.test appears on active phishing blocklists", "expected_intent": "OSINT_DOMAIN"},
+    {"prompt": "Gather mail exchanger MX and SPF records for domain mail-exchange.example", "expected_intent": "OSINT_DOMAIN"},
+    {"prompt": "Query threat feeds for historical resolutions of domain vpn-concentrator.invalid", "expected_intent": "OSINT_DOMAIN"},
+    {"prompt": "Lookup domain creation date and registrar privacy details for billing-api.test", "expected_intent": "OSINT_DOMAIN"},
+    {"prompt": "Check reputation and category scoring for domain payload-delivery.example", "expected_intent": "OSINT_DOMAIN"},
+    {"prompt": "Inspect DMARC alignment configuration for organization domain security-update.invalid", "expected_intent": "OSINT_DOMAIN"},
+
+    # 9. OSINT_EMAIL - 12 items
+    {"prompt": "Check if email auditor.test@example.org has surfaced in verified breach dumps", "expected_intent": "OSINT_EMAIL"},
+    {"prompt": "Lookup public footprint and linked social profiles for analyst.dev@corp.test", "expected_intent": "OSINT_EMAIL"},
+    {"prompt": "Search credential spill records for email contact support.ops@infrastructure.invalid", "expected_intent": "OSINT_EMAIL"},
+    {"prompt": "Investigate breach exposures associated with operator.sec@defense.example", "expected_intent": "OSINT_EMAIL"},
+    {"prompt": "Find online account registrations tied to address lead.engineer@enterprise.test", "expected_intent": "OSINT_EMAIL"},
+    {"prompt": "Has the email compliance.officer@audit.invalid been exposed in pastebin archives?", "expected_intent": "OSINT_EMAIL"},
+    {"prompt": "Verify deliverability and domain reputation for sender notify.alerts@system.example", "expected_intent": "OSINT_EMAIL"},
+    {"prompt": "Check breach intelligence databases for employee address triage.agent@monitoring.test", "expected_intent": "OSINT_EMAIL"},
+    {"prompt": "Search credential repository collections for identity forensic.team@incident.invalid", "expected_intent": "OSINT_EMAIL"},
+    {"prompt": "Gather intelligence regarding potential compromised accounts for billing.contact@vendor.example", "expected_intent": "OSINT_EMAIL"},
+    {"prompt": "Lookup compromised password hashes associated with admin.ops@telemetry.test", "expected_intent": "OSINT_EMAIL"},
+    {"prompt": "Query breach telemetry feeds for mailbox researcher.labs@security.invalid", "expected_intent": "OSINT_EMAIL"},
+
+    # 10. OSINT_USERNAME - 12 items
+    {"prompt": "Search code repositories and developer platforms for username phantom_dev99", "expected_intent": "OSINT_USERNAME"},
+    {"prompt": "Locate social profile handles matching handle shadow_recon42", "expected_intent": "OSINT_USERNAME"},
+    {"prompt": "Check presence across online communities for alias cyber_falcon77", "expected_intent": "OSINT_USERNAME"},
+    {"prompt": "Investigate public activity footprints for username dark_tracer88", "expected_intent": "OSINT_USERNAME"},
+    {"prompt": "Find registered forum accounts belonging to handle vector_ninja21", "expected_intent": "OSINT_USERNAME"},
+    {"prompt": "Search developer forums and gist snippets for author byte_hunter55", "expected_intent": "OSINT_USERNAME"},
+    {"prompt": "Lookup account aliases and linked commits for user packet_whisperer", "expected_intent": "OSINT_USERNAME"},
+    {"prompt": "Gather online identity footprints matching handle apex_sentinel9", "expected_intent": "OSINT_USERNAME"},
+    {"prompt": "Scan open social networks to identify accounts using handle zero_day_seeker", "expected_intent": "OSINT_USERNAME"},
+    {"prompt": "Check whether username proxy_hopper33 has published public exploit payloads", "expected_intent": "OSINT_USERNAME"},
+    {"prompt": "Find public repositories authored by user root_exploit_analyst", "expected_intent": "OSINT_USERNAME"},
+    {"prompt": "Trace online presence across security forums for handle glitch_hunter4", "expected_intent": "OSINT_USERNAME"},
+
+    # 11. OSINT_PHONE - 12 items
+    {"prompt": "Lookup carrier metadata and line type for telephone number +1-202-555-0184", "expected_intent": "OSINT_PHONE"},
+    {"prompt": "Check caller ID identification and spam scores for phone +1-312-555-0199", "expected_intent": "OSINT_PHONE"},
+    {"prompt": "Identify telecom provider and registered state for phone +1-415-555-0132", "expected_intent": "OSINT_PHONE"},
+    {"prompt": "Investigate whether phone number +1-646-555-0177 is associated with VoIP spoofing", "expected_intent": "OSINT_PHONE"},
+    {"prompt": "Lookup country code and original network operator for +44-20-7946-0912", "expected_intent": "OSINT_PHONE"},
+    {"prompt": "Retrieve carrier billing exchange data for telephone +1-214-555-0145", "expected_intent": "OSINT_PHONE"},
+    {"prompt": "Check fraud database listings for incoming caller number +1-702-555-0168", "expected_intent": "OSINT_PHONE"},
+    {"prompt": "Find telecom routing records for suspicious contact number +1-503-555-0155", "expected_intent": "OSINT_PHONE"},
+    {"prompt": "Determine if phone number +1-305-555-0129 belongs to a prepaid virtual carrier", "expected_intent": "OSINT_PHONE"},
+    {"prompt": "Lookup international dialing prefix and operator details for +49-30-901820", "expected_intent": "OSINT_PHONE"},
+    {"prompt": "Gather intelligence on caller identity for telephone number +1-617-555-0114", "expected_intent": "OSINT_PHONE"},
+    {"prompt": "Check reputation score and risk index for contact phone +1-832-555-0163", "expected_intent": "OSINT_PHONE"},
+
+    # 12. AUDIT_VERIFY - 12 items
+    {"prompt": "Verify the HMAC cryptographic signature chain of the SQLite assessment audit database", "expected_intent": "AUDIT_VERIFY"},
+    {"prompt": "Check whether any entries in the tamper-evident audit ledger fail rolling SHA-256 verification", "expected_intent": "AUDIT_VERIFY"},
+    {"prompt": "Validate the integrity proof for historical audit checkpoint sequence number 42", "expected_intent": "AUDIT_VERIFY"},
+    {"prompt": "Audit the local event ledger to prove that no rows have been deleted or modified", "expected_intent": "AUDIT_VERIFY"},
+    {"prompt": "Inspect the tamper detection triggers on the security assessment audit ledger", "expected_intent": "AUDIT_VERIFY"},
+    {"prompt": "Run integrity verification over all recorded operational logs in audit.sqlite", "expected_intent": "AUDIT_VERIFY"},
+    {"prompt": "Confirm that the rolling hash chain inside the audit table matches the signed manifest", "expected_intent": "AUDIT_VERIFY"},
+    {"prompt": "Check the cryptographic anchor checkpoint for discrepancy in assessment logs", "expected_intent": "AUDIT_VERIFY"},
+    {"prompt": "Verify SQLite database immutability by validating hash links across recent entries", "expected_intent": "AUDIT_VERIFY"},
+    {"prompt": "Inspect audit ledger records to detect any aborted UPDATE operations or chain breaks", "expected_intent": "AUDIT_VERIFY"},
+    {"prompt": "Validate that the latest audit log root hash corresponds to our anchor record", "expected_intent": "AUDIT_VERIFY"},
+    {"prompt": "Perform cryptographic verification of all logged tool executions in the audit chain", "expected_intent": "AUDIT_VERIFY"},
+
+    # 13. FILE_METADATA_ANALYSIS - 12 items
+    {"prompt": "Extract EXIF tags and GPS camera metadata from the attached JPEG image", "expected_intent": "FILE_METADATA_ANALYSIS"},
+    {"prompt": "Analyze PDF author fields and embedded revision streams in quarterly_review.pdf", "expected_intent": "FILE_METADATA_ANALYSIS"},
+    {"prompt": "Inspect the PE header architecture and section entropy for suspect_binary.exe", "expected_intent": "FILE_METADATA_ANALYSIS"},
+    {"prompt": "Parse OOXML core.xml properties inside suspicious_document.docx to identify the creator", "expected_intent": "FILE_METADATA_ANALYSIS"},
+    {"prompt": "Check embedded digital signature timestamps on firmware_update.bin", "expected_intent": "FILE_METADATA_ANALYSIS"},
+    {"prompt": "Examine ELF header sections and linked shared libraries for unknown_daemon.elf", "expected_intent": "FILE_METADATA_ANALYSIS"},
+    {"prompt": "Extract hidden creator metadata and comments from diagram_asset.png", "expected_intent": "FILE_METADATA_ANALYSIS"},
+    {"prompt": "Analyze archive member timestamps and compression ratios inside backup_archive.zip", "expected_intent": "FILE_METADATA_ANALYSIS"},
+    {"prompt": "Inspect Mach-O binary load commands and code signing identity for macOS_agent.dylib", "expected_intent": "FILE_METADATA_ANALYSIS"},
+    {"prompt": "Parse Rich header build artifacts and compiler stamps from sample_artifact.dll", "expected_intent": "FILE_METADATA_ANALYSIS"},
+    {"prompt": "Extract revision history and author tracking fields from spreadsheet_report.xlsx", "expected_intent": "FILE_METADATA_ANALYSIS"},
+    {"prompt": "Examine container tarball layer manifests and creation timestamps for docker_image.tar", "expected_intent": "FILE_METADATA_ANALYSIS"},
+
+    # 14. CTF_AND_CHALLENGE_ANALYSIS - 12 items
+    {"prompt": "Analyze this CTF challenge binary featuring a custom XOR encryption routine", "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS"},
+    {"prompt": "Decompile this Ghidra disassembly snippet to locate the hidden flag string comparison", "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS"},
+    {"prompt": "Solve this reverse engineering challenge involving an anti-debugging ptrace check", "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS"},
+    {"prompt": "Examine this steganography puzzle where data is concealed in the least significant bits of an audio file", "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS"},
+    {"prompt": "Help me construct a ROP chain payload to bypass NX in this 64-bit buffer overflow challenge", "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS"},
+    {"prompt": "Decrypt this ciphertext produced by an insecure RSA implementation with low exponent e=3", "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS"},
+    {"prompt": "Analyze this web challenge featuring an insecure deserialization flaw in Python pickle", "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS"},
+    {"prompt": "Investigate this forensic pcap capture from a CTF competition to extract the exfiltrated flag", "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS"},
+    {"prompt": "Bypass this custom seccomp filter sandbox in an x86_64 shellcoding challenge", "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS"},
+    {"prompt": "Solve this cryptographic challenge exploiting a padding oracle vulnerability in CBC mode", "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS"},
+    {"prompt": "Identify the logic flaw in this Solidity smart contract reentrancy CTF puzzle", "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS"},
+    {"prompt": "Analyze this heap exploitation challenge with a fastbin double-free vulnerability", "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS"},
+
+    # 15. CODING_AND_RESEARCH - 12 items
+    {"prompt": "Write a Python script that parses Nmap XML scan outputs into structured JSON format", "expected_intent": "CODING_AND_RESEARCH"},
+    {"prompt": "Explain the theoretical mechanics of the Rowhammer memory disturbance attack", "expected_intent": "CODING_AND_RESEARCH"},
+    {"prompt": "Provide a Go implementation of an asynchronous TCP port scanner using worker pools", "expected_intent": "CODING_AND_RESEARCH"},
+    {"prompt": "Research the differences between eBPF security monitoring and traditional kernel modules", "expected_intent": "CODING_AND_RESEARCH"},
+    {"prompt": "Write a secure password hashing helper function utilizing Argon2id with recommended parameters", "expected_intent": "CODING_AND_RESEARCH"},
+    {"prompt": "Explain how modern branch predictor vulnerabilities like Spectre v2 bypass hardware isolation", "expected_intent": "CODING_AND_RESEARCH"},
+    {"prompt": "Develop a Rust utility that computes rolling SSDEEP fuzzy hashes for file clustering", "expected_intent": "CODING_AND_RESEARCH"},
+    {"prompt": "Research the security implications of post-quantum lattice cryptography compared to ECC", "expected_intent": "CODING_AND_RESEARCH"},
+    {"prompt": "Implement an automated Python scraper that monitors the NIST National Vulnerability Database API", "expected_intent": "CODING_AND_RESEARCH"},
+    {"prompt": "Explain the architectural design principles of Zero Knowledge Succinct Non-Interactive Arguments", "expected_intent": "CODING_AND_RESEARCH"},
+    {"prompt": "Write a bash utility that audits local Linux permissions for suid binaries", "expected_intent": "CODING_AND_RESEARCH"},
+    {"prompt": "Explain the security guarantees provided by Intel SGX enclaves versus AMD SEV virtualization", "expected_intent": "CODING_AND_RESEARCH"},
+
+    # 16. TARGET_CLARIFICATION_REQUIRED - 12 items
+    {"prompt": "Please run a security audit on that target server", "expected_intent": "TARGET_CLARIFICATION_REQUIRED"},
+    {"prompt": "Scan the perimeter host now", "expected_intent": "TARGET_CLARIFICATION_REQUIRED"},
+    {"prompt": "Perform vulnerability assessment against our production environment", "expected_intent": "TARGET_CLARIFICATION_REQUIRED"},
+    {"prompt": "Initiate port mapping on the gateway machine", "expected_intent": "TARGET_CLARIFICATION_REQUIRED"},
+    {"prompt": "Execute recon on the web portal", "expected_intent": "TARGET_CLARIFICATION_REQUIRED"},
+    {"prompt": "Check the remote system for known security bugs", "expected_intent": "TARGET_CLARIFICATION_REQUIRED"},
+    {"prompt": "Discover open ports on the internal database server", "expected_intent": "TARGET_CLARIFICATION_REQUIRED"},
+    {"prompt": "Audit the cloud bucket for misconfigured permissions", "expected_intent": "TARGET_CLARIFICATION_REQUIRED"},
+    {"prompt": "Probe the firewall to see which ports are accessible", "expected_intent": "TARGET_CLARIFICATION_REQUIRED"},
+    {"prompt": "Scan that external domain for vulnerabilities", "expected_intent": "TARGET_CLARIFICATION_REQUIRED"},
+    {"prompt": "Perform reconnaissance against our staging infrastructure", "expected_intent": "TARGET_CLARIFICATION_REQUIRED"},
+    {"prompt": "Evaluate the security posture of the mail cluster", "expected_intent": "TARGET_CLARIFICATION_REQUIRED"},
+
+    # 17. GENERAL_CHAT - 12 items
+    {"prompt": "What are the core operational principles of a modern Security Operations Center?", "expected_intent": "GENERAL_CHAT"},
+    {"prompt": "How does the defense-in-depth model apply to cloud containerized environments?", "expected_intent": "GENERAL_CHAT"},
+    {"prompt": "Explain the concept of threat modeling using the STRIDE methodology", "expected_intent": "GENERAL_CHAT"},
+    {"prompt": "What is the primary role of an endpoint detection and response platform in incident handling?", "expected_intent": "GENERAL_CHAT"},
+    {"prompt": "Describe how zero trust architecture fundamentally differs from traditional perimeter security", "expected_intent": "GENERAL_CHAT"},
+    {"prompt": "What are the essential steps involved in establishing a formal vulnerability disclosure program?", "expected_intent": "GENERAL_CHAT"},
+    {"prompt": "Explain the difference between a software bill of materials and standard software dependency trees", "expected_intent": "GENERAL_CHAT"},
+    {"prompt": "How does the principle of least privilege mitigate insider threat risks in an organization?", "expected_intent": "GENERAL_CHAT"},
+    {"prompt": "Describe the operational workflow of a Computer Security Incident Response Team during a breach", "expected_intent": "GENERAL_CHAT"},
+    {"prompt": "What are the primary advantages of implementing micro-segmentation in enterprise networks?", "expected_intent": "GENERAL_CHAT"},
+    {"prompt": "Explain how certificate pinning prevents man-in-the-middle attacks on mobile applications", "expected_intent": "GENERAL_CHAT"},
+    {"prompt": "What security factors should be evaluated when reviewing third-party SaaS software integrations?", "expected_intent": "GENERAL_CHAT"},
+]
+
+print(f"Total candidate items: {len(ITEMS)}")
+from collections import Counter
+counts = Counter(x["expected_intent"] for x in ITEMS)
+for k, v in sorted(counts.items()):
+    print(f"  {k}: {v}")
+    assert v >= 10, f"Class {k} has fewer than 10 items: {v}"
+
+# Overlap check
+v3_6grams = set()
+overlap_6grams = []
+
+for idx, it in enumerate(ITEMS):
+    toks = tokenize(it["prompt"])
+    ngs = get_ngrams(toks, 6)
+    for ng in ngs:
+        if ng in prior_6grams:
+            overlap_6grams.append((idx, it["prompt"], " ".join(ng)))
+        v3_6grams.add(ng)
+
+print(f"\nOverlap check: {len(overlap_6grams)} overlapping 6-grams found.")
+if overlap_6grams:
+    for idx, p, ng in overlap_6grams:
+        print(f"  Overlap in item {idx}: '{ng}' in '{p}'")
+    raise SystemExit("FAILED: Overlap detected!")
+
+print("PASSED: Zero 6-gram overlap between candidate v3 and (train U v1 U v2)!")
+
+# Exact prompt hash check
+prior_hashes = {p.strip().lower() for p in prior_prompts}
+exact_overlaps = [it["prompt"] for it in ITEMS if it["prompt"].strip().lower() in prior_hashes]
+assert len(exact_overlaps) == 0, f"Exact prompt overlaps: {exact_overlaps}"
+print("PASSED: Zero exact prompt overlaps!")
+
+# Write intent_holdout_v3.json
+out_path = Path("tests/fixtures/eval/intent_holdout_v3.json")
+with open(out_path, "w", encoding="utf-8") as f:
+    json.dump(ITEMS, f, indent=2)
+
+print(f"\nWrote {len(ITEMS)} items to {out_path}")

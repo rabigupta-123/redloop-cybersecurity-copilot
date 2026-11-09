@@ -1,0 +1,145 @@
+{
+  "evaluated_at": "2026-11-09T17:24:30Z",
+  "dataset": "intent_holdout_v3.json",
+  "sample_size": 204,
+  "correct": 113,
+  "accuracy": 0.5539,
+  "ci_95": [
+    0.4853,
+    0.6205
+  ],
+  "macro_f1": 0.6192,
+  "cohens_kappa": 0.526,
+  "v2_accuracy_baseline": 1.0,
+  "accuracy_delta_from_v2": 0.4461,
+  "generalization_gap_exceeds_5pts": true,
+  "ece": 0.3025,
+  "brier_score": 0.1847,
+  "latencies_ms": {
+    "p50": 0.2089,
+    "p90": 0.3917,
+    "p95": 0.5302,
+    "p99": 0.7569
+  },
+  "per_class": {
+    "AUDIT_VERIFY": {
+      "test_items": 12,
+      "precision": 1.0,
+      "recall": 0.5833,
+      "f1": 0.7368,
+      "statistically_proven": true
+    },
+    "AUTHORIZED_RECONNAISSANCE": {
+      "test_items": 12,
+      "precision": 0.8333,
+      "recall": 0.4167,
+      "f1": 0.5556,
+      "statistically_proven": true
+    },
+    "CODING_AND_RESEARCH": {
+      "test_items": 12,
+      "precision": 1.0,
+      "recall": 0.4167,
+      "f1": 0.5882,
+      "statistically_proven": true
+    },
+    "CTF_AND_CHALLENGE_ANALYSIS": {
+      "test_items": 12,
+      "precision": 1.0,
+      "recall": 0.3333,
+      "f1": 0.5,
+      "statistically_proven": true
+    },
+    "FILE_METADATA_ANALYSIS": {
+      "test_items": 12,
+      "precision": 1.0,
+      "recall": 0.5,
+      "f1": 0.6667,
+      "statistically_proven": true
+    },
+    "FORENSICS_AND_LOG_ANALYSIS": {
+      "test_items": 12,
+      "precision": 0.8571,
+      "recall": 0.5,
+      "f1": 0.6316,
+      "statistically_proven": true
+    },
+    "GENERAL_CHAT": {
+      "test_items": 12,
+      "precision": 0.1319,
+      "recall": 1.0,
+      "f1": 0.233,
+      "statistically_proven": true
+    },
+    "GRAPH_AND_INVESTIGATION": {
+      "test_items": 12,
+      "precision": 1.0,
+      "recall": 0.5833,
+      "f1": 0.7368,
+      "statistically_proven": true
+    },
+    "KALI_COMMAND_ASSISTANCE": {
+      "test_items": 12,
+      "precision": 1.0,
+      "recall": 0.25,
+      "f1": 0.4,
+      "statistically_proven": true
+    },
+    "OSINT_DOMAIN": {
+      "test_items": 12,
+      "precision": 1.0,
+      "recall": 0.6667,
+      "f1": 0.8,
+      "statistically_proven": true
+    },
+    "OSINT_EMAIL": {
+      "test_items": 12,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "statistically_proven": true
+    },
+    "OSINT_IP": {
+      "test_items": 12,
+      "precision": 1.0,
+      "recall": 0.5,
+      "f1": 0.6667,
+      "statistically_proven": true
+    },
+    "OSINT_PHONE": {
+      "test_items": 12,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "statistically_proven": true
+    },
+    "OSINT_USERNAME": {
+      "test_items": 12,
+      "precision": 1.0,
+      "recall": 0.5833,
+      "f1": 0.7368,
+      "statistically_proven": true
+    },
+    "REPORT_GENERATION": {
+      "test_items": 12,
+      "precision": 1.0,
+      "recall": 0.1667,
+      "f1": 0.2857,
+      "statistically_proven": true
+    },
+    "TARGET_CLARIFICATION_REQUIRED": {
+      "test_items": 12,
+      "precision": 0.4286,
+      "recall": 0.5,
+      "f1": 0.4615,
+      "statistically_proven": true
+    },
+    "VULNERABILITY_ASSESSMENT": {
+      "test_items": 12,
+      "precision": 0.7143,
+      "recall": 0.4167,
+      "f1": 0.5263,
+      "statistically_proven": true
+    }
+  }
+}

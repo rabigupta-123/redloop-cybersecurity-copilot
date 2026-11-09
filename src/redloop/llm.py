@@ -243,10 +243,17 @@ def select_resource_aware_ollama_model(
 
     model_lower = requested_model.lower()
     is_8b_plus = any(tag in model_lower for tag in (":8b", "-8b", ":7b", "-7b", ":14b", ":32b", ":70b"))
+    is_4b = any(tag in model_lower for tag in (":4b", "-4b", ":3b", "-3b"))
 
-    if is_8b_plus and (avail_gb < safe_ram_threshold_gb or total_gb < 12.0):
+    if (is_8b_plus or is_4b) and (avail_gb < safe_ram_threshold_gb or total_gb < 12.0):
         if not allow_insufficient_ram_override:
-            safe_model = "qwen3:4b"
+            # On severely constrained hosts (available RAM < 2.0GB or total RAM <= 8.0GB),
+            # qwen3:4b also triggers context memory allocation timeouts; default to verified qwen2.5:0.5b.
+            if avail_gb < 2.0 or total_gb <= 8.0:
+                safe_model = "qwen2.5:0.5b"
+            else:
+                safe_model = "qwen3:4b"
+
             warning_msg = (
                 f"RESOURCE WARNING: Model '{requested_model}' requires >= {safe_ram_threshold_gb:.1f} GB free RAM, "
                 f"but only {avail_gb:.2f} GB is available (total RAM: {total_gb:.2f} GB). "

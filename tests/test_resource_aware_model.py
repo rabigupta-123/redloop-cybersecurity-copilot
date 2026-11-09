@@ -30,7 +30,7 @@ def test_system_ram_detection() -> None:
 
 
 def test_auto_downgrade_on_constrained_memory() -> None:
-    # Machine has 7.70 GB total RAM and < 6.0 GB available
+    # Machine has 7.70 GB total RAM and < 2.0 GB available -> falls back to verified edge tier qwen2.5:0.5b
     model, warning = select_resource_aware_ollama_model(
         requested_model="qwen3:8b",
         safe_ram_threshold_gb=6.0,
@@ -38,10 +38,22 @@ def test_auto_downgrade_on_constrained_memory() -> None:
         total_ram_override=7.70,
         avail_ram_override=0.50,
     )
-    assert model == "qwen3:4b"
+    assert model == "qwen2.5:0.5b"
     assert warning is not None
     assert "RESOURCE WARNING" in warning
-    assert "qwen3:4b" in warning
+    assert "qwen2.5:0.5b" in warning
+
+    # On a 10 GB machine with 3.5 GB available -> falls back to intermediate tier qwen3:4b
+    model_4b, warning_4b = select_resource_aware_ollama_model(
+        requested_model="qwen3:8b",
+        safe_ram_threshold_gb=6.0,
+        allow_insufficient_ram_override=False,
+        total_ram_override=10.0,
+        avail_ram_override=3.5,
+    )
+    assert model_4b == "qwen3:4b"
+    assert warning_4b is not None
+    assert "qwen3:4b" in warning_4b
 
 
 def test_operator_override_allowed_with_warning() -> None:
@@ -81,7 +93,8 @@ def test_gate_c_llm_client_enforcement() -> None:
     )
     client = LLMClient(settings=settings)
     resolved = client.model_string(Provider.OLLAMA)
-    assert resolved == "ollama/qwen3:4b"
+    assert resolved in ("ollama/qwen2.5:0.5b", "ollama/qwen3:4b")
+    assert resolved != "ollama/qwen3:8b"
 
     # With explicit override
     settings_override = LLMSettings(

