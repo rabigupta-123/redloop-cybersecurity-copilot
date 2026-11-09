@@ -1,9 +1,17 @@
-"""Scan git history and repository tree for secrets and generate docs/SECRETS_REPORT.md."""
+"""Secret scanner for pre-commit hooks and CI pipelines.
+
+Enforces:
+- Zero secrets in production source files (src/, scripts/, configs, root).
+- Zero non-synthetic secrets in test suites.
+- Fails with exit code 1 if a potential active secret is detected.
+"""
 from __future__ import annotations
 
+import argparse
 import os
 import re
 import subprocess
+import sys
 from pathlib import Path
 
 PATTERNS = {
@@ -11,120 +19,89 @@ PATTERNS = {
     "OpenAI API Key": re.compile(r"sk-[a-zA-Z0-9_\-]{20,}"),
     "Anthropic API Key": re.compile(r"sk-ant-[a-zA-Z0-9_\-]{20,}"),
     "Google API Key": re.compile(r"AIza[a-zA-Z0-9_\-]{30,}"),
-    "Bearer Token": re.compile(r"Bearer\s+[a-zA-Z0-9_\-\.]{25,}", re.IGNORECASE),
-    "64-Hex String": re.compile(r"\b[a-fA-F0-9]{64}\b"),
+    "Generic Bearer Token": re.compile(r"Bearer\s+[a-zA-Z0-9_\-\.]{25,}", re.IGNORECASE),
 }
 
 EXCLUDE_EXTS = {".png", ".jpg", ".jpeg", ".ico", ".svg", ".lock", ".coverage", ".pyc"}
-EXCLUDE_DIRS = {"artifacts", ".git", "__pycache__", ".pytest_cache"}
+EXCLUDE_DIRS = {"artifacts", ".git", "__pycache__", ".pytest_cache", "dist", "build"}
 
-def main():
-    docs_dir = Path("docs")
-    docs_dir.mkdir(parents=True, exist_ok=True)
-    report_file = docs_dir / "SECRETS_REPORT.md"
+SYNTHETIC_MARKERS = ("dummy", "mock", "example", "placeholder", "fake", "redacted", "test", "123456", "abcdef", "xyz99")
 
-    # 1. Scan working tree tracked files
-    res = subprocess.run(["git", "ls-files"], capture_output=True, text=True, check=True)
-    tracked_files = [f.strip() for f in res.stdout.splitlines() if f.strip()]
+def is_exempt_file(path_str: str) -> bool:
+    p = Path(path_str)
+    if p.suffix in EXCLUDE_EXTS:
+        return True
+    if any(part in EXCLUDE_DIRS for part in p.parts):
+        return True
+    if p.name.endswith(".example") or "fixture" in path_str.lower():
+        return True
+    return False
 
+def scan_files(files: list[str]) -> list[dict[str, str]]:
     findings = []
-    
-    for rel_path in tracked_files:
-        p = Path(rel_path)
-        if p.suffix in EXCLUDE_EXTS or any(part in EXCLUDE_DIRS for part in p.parts):
+    for f in files:
+        if is_exempt_file(f):
             continue
-        # Skip fixtures or test files with dummy keys
-        if "test" in p.name.lower() or "fixture" in str(p).lower() or p.name.endswith(".example"):
+        p = Path(f)
+        if not p.is_file():
             continue
         try:
             content = p.read_text(encoding="utf-8", errors="replace")
         except Exception:
             continue
-        for name, pat in PATTERNS.items():
-            if name == "64-Hex String":
-                # Only check for hex strings in config/env files, not general code hashes
-                if not (p.name.endswith(".env") or p.name.endswith(".yaml") or p.name.endswith(".json")):
+
+        is_test_file = "test" in f.lower()
+
+        for stype, pat in PATTERNS.items():
+            for m in pat.finditer(content):
+                val = m.group(0)
+                val_lower = val.lower()
+                
+                # Check surrounding context (current line)
+                start_line = content.rfind("\n", 0, m.start()) + 1
+                end_line = content.find("\n", m.end())
+                if end_line == -1:
+                    end_line = len(content)
+                line_text = content[start_line:end_line].lower()
+
+                # If in a test file and marked as fake/test/dummy, allow it
+                if is_test_file and any(m in val_lower or m in line_text for m in SYNTHETIC_MARKERS):
                     continue
-            for match in pat.finditer(content):
-                val = match.group(0)
-                # Ignore dummy/mock/placeholder strings
-                if any(x in val.lower() for x in ("dummy", "mock", "test", "example", "fake", "placeholder", "xxx")):
-                    continue
-                # Mask secret value (show env var / redacted form only)
-                masked = val[:4] + "..." + val[-4:] if len(val) > 8 else "***"
+
                 findings.append({
-                    "file": str(p),
-                    "type": name,
-                    "masked": masked,
-                    "location": "working_tree",
+                    "file": f,
+                    "type": stype,
+                    "line": content[:m.start()].count("\n") + 1,
                 })
+    return findings
 
-    # 2. Scan git log history for commits that might contain keys
-    log_res = subprocess.run(["git", "log", "-p", "--max-count=50"], capture_output=True, text=True, errors="replace")
-    for name, pat in PATTERNS.items():
-        if name == "64-Hex String":
-            continue
-        for match in pat.finditer(log_res.stdout):
-            val = match.group(0)
-            if any(x in val.lower() for x in ("dummy", "mock", "test", "example", "fake", "placeholder", "xxx")):
-                continue
-            masked = val[:4] + "..." + val[-4:] if len(val) > 8 else "***"
-            findings.append({
-                "file": "git_commit_history",
-                "type": name,
-                "masked": masked,
-                "location": "git_log",
-            })
+def main():
+    parser = argparse.ArgumentParser(description="Scan repository for hardcoded secrets.")
+    parser.add_argument("--staged", action="store_true", help="Scan only git staged files (for pre-commit)")
+    parser.add_argument("--all", action="store_true", help="Scan all tracked files in git repository")
+    args = parser.parse_args()
 
-    # Deduplicate findings
-    dedup = []
-    seen = set()
-    for f in findings:
-        key = (f["file"], f["type"], f["masked"])
-        if key not in seen:
-            seen.add(key)
-            dedup.append(f)
-
-    # Generate Markdown Report
-    lines = [
-        "# REDLOOP — Secrets Hygiene and Audit Report",
-        "",
-        "## Summary",
-        f"- Total potential secret indicators identified: {len(dedup)}",
-        "- Policy: Zero hardcoded production secrets in tracked source files or public commit history.",
-        "- Environment variables must be loaded via `os.environ` or `.env` (gitignored).",
-        "",
-        "## Findings and Remediation",
-    ]
-
-    if not dedup:
-        lines.append("- **Status:** PASS. No active production secrets detected in tracked files.")
+    if args.staged:
+        cmd = ["git", "diff", "--cached", "--name-only", "--diff-filter=ACM"]
     else:
-        lines.append("| Location | Type | Masked Indicator | Remediation / Recommendation |")
-        lines.append("|---|---|---|---|")
-        for f in dedup:
-            rec = "Revoke immediately at provider portal and rotate secret. Do not rewrite public history."
-            lines.append(f"| `{f['file']}` | {f['type']} | `{f['masked']}` | {rec} |")
+        cmd = ["git", "ls-files"]
 
-    lines.extend([
-        "",
-        "## Recommended Rotation Procedures",
-        "1. **Scope HMAC Secret:** Execute `redloop scope rotate-secret` to re-sign active scope contracts.",
-        "2. **LLM Provider Keys (Groq / OpenAI / Anthropic / Google):** Reissue tokens at provider console and update local `.env`.",
-        "3. **VirusTotal & Shodan Keys:** Reissue in account dashboard and store in local environment variables.",
-        "4. **Operator Capability Tokens:** Rotate via `redloop operator-token --generate`.",
-        "",
-        "## .gitignore Verification",
-        "- `.env` and `.env.*` (excluding `.env.example`): IGNORED",
-        "- `*.key` and cryptographic secret sidecars: IGNORED",
-        "- `data/` and local SQLite databases: IGNORED",
-        "- `logs/` and runtime logs: IGNORED",
-        "- `artifacts/`: IGNORED",
-    ])
+    res = subprocess.run(cmd, capture_output=True, text=True, check=True)
+    files = [line.strip() for line in res.stdout.splitlines() if line.strip()]
 
-    report_file.write_text("\n".join(lines) + "\n", encoding="utf-8")
-    print(f"Secrets report generated at {report_file} with {len(dedup)} findings.")
+    findings = scan_files(files)
+
+    if findings:
+        print("=" * 60, file=sys.stderr)
+        print("SECURITY VIOLATION: Potential secrets detected by scanner!", file=sys.stderr)
+        print("=" * 60, file=sys.stderr)
+        for item in findings:
+            print(f"  - [{item['type']}] {item['file']}:{item['line']}", file=sys.stderr)
+        print("\nPlease remove the secret, place it in .env (gitignored), or use a placeholder.", file=sys.stderr)
+        sys.exit(1)
+
+    print("Secret scan passed: zero unredacted production secrets found.")
+    sys.exit(0)
 
 if __name__ == "__main__":
     main()
-

@@ -471,7 +471,7 @@ async def test_19_unrelated_requests_not_deduplicated(env):
 def test_20_api_key_redaction(tmp_path: Path):
     db_path = tmp_path / "redact_test_20.db"
     audit = AuditLogger(db_path=db_path)
-    sensitive_token = "sk-ant-api03-very-secret-token-value"
+    sensitive_token = "sk-ant-api03-fake-test-token-value"
 
     audit.log(
         "127.0.0.1",
