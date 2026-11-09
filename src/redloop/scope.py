@@ -191,9 +191,16 @@ class ScopeManager:
             f"{target} is not present in scope.yaml — refusing to act"
         )
 
-    def require(self, target: str, action: str) -> ScopeEntry:
+    def require(
+        self,
+        target: str,
+        action: str,
+        port: int | None = None,
+        *,
+        require_port: bool = True,
+    ) -> ScopeEntry:
         """Alias for check(); reads like a precondition guard."""
-        return self.check(target, action)
+        return self.check(target, action, port=port, require_port=require_port)
 
     def is_target_in_scope(self, target: str) -> bool:
         """Return True if target matches an active entry, ignoring action/port."""

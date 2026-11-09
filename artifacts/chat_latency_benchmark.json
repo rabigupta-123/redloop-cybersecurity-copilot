@@ -1,0 +1,31 @@
+{
+  "offline_engine": {
+    "prompts_count": 30,
+    "p50_ms": 170.4611,
+    "p95_ms": 355.3278,
+    "min_ms": 0.0597,
+    "max_ms": 7374.7692,
+    "notes": "Deterministic offline cybersecurity engine only. The historical 0.13 ms was offline-engine regex-only matching."
+  },
+  "ollama_qwen3_8b": {
+    "status": "OOM_OR_TIMEOUT_EXCEEDED",
+    "system_physical_ram_total_mb": 7930.0,
+    "system_ram_used_before_mb": 6914.7,
+    "system_ram_utilization_pct": 87.0,
+    "available_free_ram_mb": 1015.3,
+    "model_size_mb": 5225.4,
+    "p95_exceeds_30s": true,
+    "recommendation": "Host machine possesses 7.7 GB total physical RAM with ~1.0 GB unreserved headroom. Loading qwen3:8b (5.2 GB) causes severe swapping, OOM, or timeouts exceeding 30s. Recommend benchmarking or deploying qwen3:4b or qwen2.5:1.5b for edge deployments with <= 8 GB RAM."
+  },
+  "openrouter": {
+    "model": "meta-llama/llama-3.3-70b-instruct",
+    "prompts_count": 30,
+    "p50_s": 1.7691,
+    "p95_s": 4.4853,
+    "linear_interpolation": true
+  },
+  "groq": {
+    "status": "NOT_CONFIGURED",
+    "reason": "GROQ_API_KEY environment variable is not set; marked NOT VERIFIED per global instructions."
+  }
+}

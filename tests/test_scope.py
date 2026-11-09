@@ -290,3 +290,36 @@ def test_scope_guard_coverage(tmp_path):
     # Public hostname resolving to loopback/private raises ScopeBlockedError
     with pytest.raises(ScopeBlockedError, match="prohibited by policy"):
         guard.validate_resolved_ip("public-site.org", "127.0.0.1", action="recon")
+
+
+def test_scope_manager_convenience_and_validators(tmp_path):
+    path = tmp_path / "scope.yaml"
+    write_signed_scope(path, scope_document())
+    mgr = ScopeManager(path, SECRET)
+
+    # require alias
+    entry = mgr.require("192.168.56.10", "recon", port=80)
+    assert entry.label == "test-lab"
+
+    # is_target_in_scope
+    assert mgr.is_target_in_scope("192.168.56.10") is True
+    assert mgr.is_target_in_scope("10.99.99.99") is False
+
+    # is_authorized
+    assert mgr.is_authorized("192.168.56.10", "recon", port=80) is True
+    assert mgr.is_authorized("192.168.56.10", "recon", port=443) is False
+    assert mgr.is_authorized("10.99.99.99", "recon", port=80) is False
+
+    # is_within_window
+    assert mgr.is_within_window() is True
+
+    # ScopeEntry validators
+    from redloop.scope import ScopeEntry
+    today = date.today()
+    with pytest.raises(ValueError, match="ports must be between 1 and 65535"):
+        ScopeEntry(cidr="192.168.1.0/24", ports=[0], allowed_actions=["recon"], authorized_from=today, authorized_until=today)
+    with pytest.raises(ValueError, match="ports must be between 1 and 65535"):
+        ScopeEntry(cidr="192.168.1.0/24", ports=[70000], allowed_actions=["recon"], authorized_from=today, authorized_until=today)
+    with pytest.raises(ValueError, match="ports must be between 1 and 65535"):
+        ScopeEntry(cidr="192.168.1.0/24", ports=[-5], allowed_actions=["recon"], authorized_from=today, authorized_until=today)
+

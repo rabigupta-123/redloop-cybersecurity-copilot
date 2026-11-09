@@ -1,0 +1,182 @@
+[
+  {
+    "prompt": "What port does SSH use?",
+    "answer": "Port 22",
+    "grounded": true,
+    "evidence_source": "RFC 4253"
+  },
+  {
+    "prompt": "What is SQL injection?",
+    "answer": "CWE-89 untrusted input in SQL query",
+    "grounded": true,
+    "evidence_source": "OWASP"
+  },
+  {
+    "prompt": "What port does HTTPS use?",
+    "answer": "Port 443",
+    "grounded": true,
+    "evidence_source": "IANA"
+  },
+  {
+    "prompt": "What is CSRF?",
+    "answer": "Cross-Site Request Forgery CWE-352",
+    "grounded": true,
+    "evidence_source": "OWASP"
+  },
+  {
+    "prompt": "What is SSRF?",
+    "answer": "Server-Side Request Forgery CWE-918",
+    "grounded": true,
+    "evidence_source": "OWASP"
+  },
+  {
+    "prompt": "What is DNS rebinding?",
+    "answer": "Attacker changes DNS record to 127.0.0.1",
+    "grounded": true,
+    "evidence_source": "RFC 1035"
+  },
+  {
+    "prompt": "What port does SSH use?",
+    "answer": "Port 22",
+    "grounded": true,
+    "evidence_source": "RFC 4253"
+  },
+  {
+    "prompt": "What is SQL injection?",
+    "answer": "CWE-89 untrusted input in SQL query",
+    "grounded": true,
+    "evidence_source": "OWASP"
+  },
+  {
+    "prompt": "What port does HTTPS use?",
+    "answer": "Port 443",
+    "grounded": true,
+    "evidence_source": "IANA"
+  },
+  {
+    "prompt": "What is CSRF?",
+    "answer": "Cross-Site Request Forgery CWE-352",
+    "grounded": true,
+    "evidence_source": "OWASP"
+  },
+  {
+    "prompt": "What is SSRF?",
+    "answer": "Server-Side Request Forgery CWE-918",
+    "grounded": true,
+    "evidence_source": "OWASP"
+  },
+  {
+    "prompt": "What is DNS rebinding?",
+    "answer": "Attacker changes DNS record to 127.0.0.1",
+    "grounded": true,
+    "evidence_source": "RFC 1035"
+  },
+  {
+    "prompt": "What port does SSH use?",
+    "answer": "Port 22",
+    "grounded": true,
+    "evidence_source": "RFC 4253"
+  },
+  {
+    "prompt": "What is SQL injection?",
+    "answer": "CWE-89 untrusted input in SQL query",
+    "grounded": true,
+    "evidence_source": "OWASP"
+  },
+  {
+    "prompt": "What port does HTTPS use?",
+    "answer": "Port 443",
+    "grounded": true,
+    "evidence_source": "IANA"
+  },
+  {
+    "prompt": "What is CSRF?",
+    "answer": "Cross-Site Request Forgery CWE-352",
+    "grounded": true,
+    "evidence_source": "OWASP"
+  },
+  {
+    "prompt": "What is SSRF?",
+    "answer": "Server-Side Request Forgery CWE-918",
+    "grounded": true,
+    "evidence_source": "OWASP"
+  },
+  {
+    "prompt": "What is DNS rebinding?",
+    "answer": "Attacker changes DNS record to 127.0.0.1",
+    "grounded": true,
+    "evidence_source": "RFC 1035"
+  },
+  {
+    "prompt": "What port does SSH use?",
+    "answer": "Port 22",
+    "grounded": true,
+    "evidence_source": "RFC 4253"
+  },
+  {
+    "prompt": "What is SQL injection?",
+    "answer": "CWE-89 untrusted input in SQL query",
+    "grounded": true,
+    "evidence_source": "OWASP"
+  },
+  {
+    "prompt": "What port does HTTPS use?",
+    "answer": "Port 443",
+    "grounded": true,
+    "evidence_source": "IANA"
+  },
+  {
+    "prompt": "What is CSRF?",
+    "answer": "Cross-Site Request Forgery CWE-352",
+    "grounded": true,
+    "evidence_source": "OWASP"
+  },
+  {
+    "prompt": "What is SSRF?",
+    "answer": "Server-Side Request Forgery CWE-918",
+    "grounded": true,
+    "evidence_source": "OWASP"
+  },
+  {
+    "prompt": "What is DNS rebinding?",
+    "answer": "Attacker changes DNS record to 127.0.0.1",
+    "grounded": true,
+    "evidence_source": "RFC 1035"
+  },
+  {
+    "prompt": "What port does SSH use?",
+    "answer": "Port 22",
+    "grounded": true,
+    "evidence_source": "RFC 4253"
+  },
+  {
+    "prompt": "What is SQL injection?",
+    "answer": "CWE-89 untrusted input in SQL query",
+    "grounded": true,
+    "evidence_source": "OWASP"
+  },
+  {
+    "prompt": "What port does HTTPS use?",
+    "answer": "Port 443",
+    "grounded": true,
+    "evidence_source": "IANA"
+  },
+  {
+    "prompt": "What is CSRF?",
+    "answer": "Cross-Site Request Forgery CWE-352",
+    "grounded": true,
+    "evidence_source": "OWASP"
+  },
+  {
+    "prompt": "What is SSRF?",
+    "answer": "Server-Side Request Forgery CWE-918",
+    "grounded": true,
+    "evidence_source": "OWASP"
+  },
+  {
+    "prompt": "What is DNS rebinding?",
+    "answer": "Attacker changes DNS record to 127.0.0.1",
+    "grounded": true,
+    "evidence_source": "RFC 1035"
+  }
+]

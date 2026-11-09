@@ -55,6 +55,7 @@ from redloop.assessment.terminal_engine import (
     KaliExecutionAdapter,
     UnifiedTerminalEngine,
     WSLExecutionAdapter,
+    create_test_only_validated_command,
 )
 from redloop.assessment.tools_v2 import EnvironmentDetector, ToolRegistryV2
 from redloop.audit import AuditLogger
@@ -65,7 +66,8 @@ from redloop.scope import ScopeManager, UnauthorizedTargetError, sign_scope
 # --- TEST 1: Host command execution ---
 def test_01_host_command_execution():
     adapter = HostExecutionAdapter()
-    res = adapter.execute(binary=sys.executable, args=["-c", "print('hello from host')"])
+    cmd = create_test_only_validated_command(binary=sys.executable, args=["-c", "print('hello from host')"])
+    res = adapter.execute(command=cmd)
     assert res.exit_code == 0
     assert "hello from host" in res.stdout
     assert res.status == ExecutionStatus.SUCCESS
@@ -78,7 +80,8 @@ def test_02_wsl_adapter_handling():
     avail, reason = adapter.is_available()
     assert isinstance(avail, bool)
     if not avail:
-        res = adapter.execute(binary="whoami", args=[])
+        cmd = create_test_only_validated_command(binary="whoami", args=[], environment="wsl")
+        res = adapter.execute(command=cmd)
         assert res.status == ExecutionStatus.ENVIRONMENT_UNAVAILABLE
         assert res.exit_code == 127
 
@@ -89,7 +92,8 @@ def test_03_kali_unavailable_reporting():
         adapter = KaliExecutionAdapter()
         avail, reason = adapter.is_available()
         assert avail is False
-        res = adapter.execute(binary="nmap", args=["127.0.0.1"])
+        cmd = create_test_only_validated_command(binary="nmap", args=["127.0.0.1"], environment="kali")
+        res = adapter.execute(command=cmd)
         assert res.status == ExecutionStatus.ENVIRONMENT_UNAVAILABLE
         assert "kali linux" in res.stderr.lower()
 
@@ -108,7 +112,8 @@ def test_05_docker_unavailable_reporting():
         adapter = DockerExecutionAdapter()
         avail, reason = adapter.is_available()
         assert avail is False
-        res = adapter.execute(binary="nmap", args=["127.0.0.1"])
+        cmd = create_test_only_validated_command(binary="nmap", args=["127.0.0.1"], environment="docker")
+        res = adapter.execute(command=cmd)
         assert res.status == ExecutionStatus.ENVIRONMENT_UNAVAILABLE
         assert res.exit_code == 127
 
@@ -116,7 +121,8 @@ def test_05_docker_unavailable_reporting():
 # --- TEST 6: Missing executable handling ---
 def test_06_missing_executable():
     adapter = HostExecutionAdapter()
-    res = adapter.execute(binary="non_existent_binary_xyz_987", args=[])
+    cmd = create_test_only_validated_command(binary="non_existent_binary_xyz_987", args=[])
+    res = adapter.execute(command=cmd)
     assert res.exit_code == 127
     assert res.status == ExecutionStatus.ERROR
     assert "not found" in res.stderr
@@ -134,7 +140,8 @@ def test_07_dangerous_command_rejection():
 # --- TEST 8: Timeout handling ---
 def test_08_timeout_handling():
     adapter = HostExecutionAdapter()
-    res = adapter.execute(binary=sys.executable, args=["-c", "import time; time.sleep(5)"], timeout_seconds=1)
+    cmd = create_test_only_validated_command(binary=sys.executable, args=["-c", "import time; time.sleep(5)"])
+    res = adapter.execute(command=cmd, timeout_seconds=1)
     assert res.timed_out is True
     assert res.status == ExecutionStatus.TIMEOUT
     assert res.exit_code == 124
@@ -151,9 +158,9 @@ def test_09_cancellation_handling():
 
     t = threading.Thread(target=_cancel_after_delay)
     t.start()
+    cmd = create_test_only_validated_command(binary=sys.executable, args=["-c", "import time; time.sleep(10)"])
     res = adapter.execute(
-        binary=sys.executable,
-        args=["-c", "import time; time.sleep(10)"],
+        command=cmd,
         timeout_seconds=10,
         cancel_token=cancel_token,
     )
@@ -166,10 +173,8 @@ def test_09_cancellation_handling():
 def test_10_output_truncation():
     adapter = HostExecutionAdapter()
     # Generate 600 KB of output (greater than MAX_OUTPUT_BYTES = 512 KB)
-    res = adapter.execute(
-        binary=sys.executable,
-        args=["-c", "print('A' * 600000)"],
-    )
+    cmd = create_test_only_validated_command(binary=sys.executable, args=["-c", "print('A' * 600000)"])
+    res = adapter.execute(command=cmd)
     assert res.exit_code == 0
     assert res.truncated is True
     assert len(res.stdout.encode("utf-8")) <= 512 * 1024

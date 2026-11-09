@@ -2998,5 +2998,911 @@
     "prompt": "Cancel assessment asmt-771",
     "expected_intent": "LIFECYCLE",
     "category": "lifecycle"
+  },
+  {
+    "id": "holdout-001",
+    "prompt": "scn open ports on 127.0.0.1",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE",
+    "notes": "typo 'scn'"
+  },
+  {
+    "id": "holdout-002",
+    "prompt": "nmap scan 127.0.0.1:8080 please",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE",
+    "notes": "polite request"
+  },
+  {
+    "id": "holdout-003",
+    "prompt": "check ports 80 and 443 on host 127.0.0.1",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE",
+    "notes": "port enumeration"
+  },
+  {
+    "id": "holdout-004",
+    "prompt": "perform nmap discovery on 127.0.0.1",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE",
+    "notes": "nmap discovery"
+  },
+  {
+    "id": "holdout-005",
+    "prompt": "probe ports 8000-8080 on 127.0.0.1",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE",
+    "notes": "port range probe"
+  },
+  {
+    "id": "holdout-006",
+    "prompt": "nikto scan against http://127.0.0.1:8000/",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE",
+    "notes": "nikto trailing slash"
+  },
+  {
+    "id": "holdout-007",
+    "prompt": "gobuster dir scan on http://127.0.0.1:8080",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE",
+    "notes": "gobuster dir"
+  },
+  {
+    "id": "holdout-008",
+    "prompt": "check tls handshake on 127.0.0.1:8443",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE",
+    "notes": "tls check"
+  },
+  {
+    "id": "holdout-009",
+    "prompt": "web scan http://127.0.0.1:8080 for hidden forms",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE",
+    "notes": "web scan"
+  },
+  {
+    "id": "holdout-010",
+    "prompt": "api scan http://127.0.0.1:8000/api/v2",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE",
+    "notes": "api scan"
+  },
+  {
+    "id": "holdout-011",
+    "prompt": "Explain how nmap performs SYN stealth scans under the hood.",
+    "expected_intent": "GENERAL_CHAT",
+    "notes": "nmap explanation"
+  },
+  {
+    "id": "holdout-012",
+    "prompt": "What is the difference between TCP connect scan and SYN scan?",
+    "expected_intent": "GENERAL_CHAT",
+    "notes": "scan difference"
+  },
+  {
+    "id": "holdout-013",
+    "prompt": "Tell me about how Nikto detects outdated server versions.",
+    "expected_intent": "GENERAL_CHAT",
+    "notes": "nikto theory"
+  },
+  {
+    "id": "holdout-014",
+    "prompt": "Describe the mechanism of DNS amplification attacks.",
+    "expected_intent": "GENERAL_CHAT",
+    "notes": "DNS attack theory"
+  },
+  {
+    "id": "holdout-015",
+    "prompt": "How does TLS 1.3 0-RTT work and what replay risks exist?",
+    "expected_intent": "GENERAL_CHAT",
+    "notes": "TLS 0-RTT theory"
+  },
+  {
+    "id": "holdout-016",
+    "prompt": "Explain why Gobuster is preferred over DirBuster in headless environments.",
+    "expected_intent": "GENERAL_CHAT",
+    "notes": "tool comparison"
+  },
+  {
+    "id": "holdout-017",
+    "prompt": "What are the security implications of exposing an unauthenticated Redis port?",
+    "expected_intent": "GENERAL_CHAT",
+    "notes": "port risk explanation"
+  },
+  {
+    "id": "holdout-018",
+    "prompt": "How can an attacker abuse weak CORS headers on internal APIs?",
+    "expected_intent": "GENERAL_CHAT",
+    "notes": "CORS explanation"
+  },
+  {
+    "id": "holdout-019",
+    "prompt": "Define the term 'Defense in Depth' and give three cloud examples.",
+    "expected_intent": "GENERAL_CHAT",
+    "notes": "definition"
+  },
+  {
+    "id": "holdout-020",
+    "prompt": "Why does stateful packet inspection consume more memory than packet filtering?",
+    "expected_intent": "GENERAL_CHAT",
+    "notes": "firewall theory"
+  },
+  {
+    "id": "holdout-021",
+    "prompt": "Write a Python script that uses socket to probe port 8080.",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "notes": "coding port probe"
+  },
+  {
+    "id": "holdout-022",
+    "prompt": "Write a bash script to parse nmap XML output into a markdown table.",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "notes": "coding parser"
+  },
+  {
+    "id": "holdout-023",
+    "prompt": "Write code to validate IP addresses against RFC 1918 subnets in Python.",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "notes": "coding CIDR check"
+  },
+  {
+    "id": "holdout-024",
+    "prompt": "Write a python function to compute HMAC-SHA256 of an HTTP request body.",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "notes": "coding HMAC"
+  },
+  {
+    "id": "holdout-025",
+    "prompt": "Implement an algorithm in Python to detect brute force attempts in logs.",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "notes": "coding log detection"
+  },
+  {
+    "id": "holdout-026",
+    "prompt": "Write a simple script to check if an SSL certificate expires within 30 days.",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "notes": "coding cert expiration"
+  },
+  {
+    "id": "holdout-027",
+    "prompt": "Write code to parse Sysmon XML events using xml.etree in Python.",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "notes": "coding xml parse"
+  },
+  {
+    "id": "holdout-028",
+    "prompt": "Write a bash script to ping a list of servers and alert if down.",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "notes": "coding ping alert"
+  },
+  {
+    "id": "holdout-029",
+    "prompt": "Research the cryptographic security margin of SHA-256 vs SHA-3.",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "notes": "research crypto"
+  },
+  {
+    "id": "holdout-030",
+    "prompt": "Write a python program to calculate Shannon entropy of a file buffer.",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "notes": "coding entropy"
+  },
+  {
+    "id": "holdout-031",
+    "prompt": "Investigate IP 1.0.0.1",
+    "expected_intent": "OSINT_IP",
+    "notes": "passive IP lookup"
+  },
+  {
+    "id": "holdout-032",
+    "prompt": "Investigate public IP 9.9.9.9 without active probes",
+    "expected_intent": "OSINT_IP",
+    "notes": "passive IP qualifier"
+  },
+  {
+    "id": "holdout-033",
+    "prompt": "Whois and RDAP registration lookup for IP 142.250.190.46",
+    "expected_intent": "OSINT_IP",
+    "notes": "whois IP"
+  },
+  {
+    "id": "holdout-034",
+    "prompt": "Shodan intelligence query for public IP 151.101.65.140",
+    "expected_intent": "OSINT_IP",
+    "notes": "shodan IP"
+  },
+  {
+    "id": "holdout-035",
+    "prompt": "Investigate IP footprint of 76.76.21.21",
+    "expected_intent": "OSINT_IP",
+    "notes": "ip footprint"
+  },
+  {
+    "id": "holdout-036",
+    "prompt": "Lookup ASN allocation and country for IP 208.67.220.220",
+    "expected_intent": "OSINT_IP",
+    "notes": "asn IP"
+  },
+  {
+    "id": "holdout-037",
+    "prompt": "Investigate public IP 104.244.42.129",
+    "expected_intent": "OSINT_IP",
+    "notes": "public IP"
+  },
+  {
+    "id": "holdout-038",
+    "prompt": "Whois details for IP 185.199.109.153",
+    "expected_intent": "OSINT_IP",
+    "notes": "whois IP"
+  },
+  {
+    "id": "holdout-039",
+    "prompt": "Investigate IP 13.107.246.40",
+    "expected_intent": "OSINT_IP",
+    "notes": "ip check"
+  },
+  {
+    "id": "holdout-040",
+    "prompt": "Investigate public IP 172.217.16.196",
+    "expected_intent": "OSINT_IP",
+    "notes": "ip check"
+  },
+  {
+    "id": "holdout-041",
+    "prompt": "Investigate domain debian.org",
+    "expected_intent": "OSINT_DOMAIN",
+    "notes": "domain check"
+  },
+  {
+    "id": "holdout-042",
+    "prompt": "Whois domain lookup for example.net",
+    "expected_intent": "OSINT_DOMAIN",
+    "notes": "domain whois"
+  },
+  {
+    "id": "holdout-043",
+    "prompt": "Investigate domain footprint of archlinux.org",
+    "expected_intent": "OSINT_DOMAIN",
+    "notes": "domain footprint"
+  },
+  {
+    "id": "holdout-044",
+    "prompt": "Lookup crt.sh certificate transparency logs for domain python.org",
+    "expected_intent": "OSINT_DOMAIN",
+    "notes": "crt.sh subdomains"
+  },
+  {
+    "id": "holdout-046",
+    "prompt": "DNS footprint and CAA record lookup for domain mozilla.org",
+    "expected_intent": "OSINT_DOMAIN",
+    "notes": "dns footprint"
+  },
+  {
+    "id": "holdout-047",
+    "prompt": "Investigate domain apache.org",
+    "expected_intent": "OSINT_DOMAIN",
+    "notes": "domain lookup"
+  },
+  {
+    "id": "holdout-048",
+    "prompt": "Subdomains for domain freebsd.org using certificate transparency",
+    "expected_intent": "OSINT_DOMAIN",
+    "notes": "subdomains crt"
+  },
+  {
+    "id": "holdout-049",
+    "prompt": "Investigate domain eff.org",
+    "expected_intent": "OSINT_DOMAIN",
+    "notes": "domain lookup"
+  },
+  {
+    "id": "holdout-050",
+    "prompt": "Lookup RDAP registrar information for domain cve.org",
+    "expected_intent": "OSINT_DOMAIN",
+    "notes": "rdap domain"
+  },
+  {
+    "id": "holdout-051",
+    "prompt": "Investigate email testuser@example.com",
+    "expected_intent": "OSINT_EMAIL",
+    "notes": "email check"
+  },
+  {
+    "id": "holdout-052",
+    "prompt": "Check breach status for email security-team@corp.net",
+    "expected_intent": "OSINT_EMAIL",
+    "notes": "email breach"
+  },
+  {
+    "id": "holdout-053",
+    "prompt": "Verify email domain MX and SPF for admin@foundation.org",
+    "expected_intent": "OSINT_EMAIL",
+    "notes": "email verify"
+  },
+  {
+    "id": "holdout-054",
+    "prompt": "Investigate email researcher@academic.edu",
+    "expected_intent": "OSINT_EMAIL",
+    "notes": "email research"
+  },
+  {
+    "id": "holdout-055",
+    "prompt": "Check disposable domain status for burner@10minutemail.com",
+    "expected_intent": "OSINT_EMAIL",
+    "notes": "disposable check"
+  },
+  {
+    "id": "holdout-056",
+    "prompt": "Investigate email webmaster@linuxfoundation.org",
+    "expected_intent": "OSINT_EMAIL",
+    "notes": "email lookup"
+  },
+  {
+    "id": "holdout-057",
+    "prompt": "Email intelligence lookup for contact@charity.org",
+    "expected_intent": "OSINT_EMAIL",
+    "notes": "email intelligence"
+  },
+  {
+    "id": "holdout-058",
+    "prompt": "Investigate email abuse@isp.net",
+    "expected_intent": "OSINT_EMAIL",
+    "notes": "email abuse"
+  },
+  {
+    "id": "holdout-059",
+    "prompt": "Breach search for email founder@techcompany.io",
+    "expected_intent": "OSINT_EMAIL",
+    "notes": "breach search"
+  },
+  {
+    "id": "holdout-060",
+    "prompt": "Investigate email audit@financial.com",
+    "expected_intent": "OSINT_EMAIL",
+    "notes": "audit email"
+  },
+  {
+    "id": "holdout-061",
+    "prompt": "Investigate phone +14155550199",
+    "expected_intent": "OSINT_PHONE",
+    "notes": "phone lookup"
+  },
+  {
+    "id": "holdout-062",
+    "prompt": "Lookup phone number +44 1632 960999",
+    "expected_intent": "OSINT_PHONE",
+    "notes": "uk phone"
+  },
+  {
+    "id": "holdout-063",
+    "prompt": "Phone intelligence on +33 1 42 68 55 00",
+    "expected_intent": "OSINT_PHONE",
+    "notes": "french phone"
+  },
+  {
+    "id": "holdout-064",
+    "prompt": "Investigate phone +49 89 2180 0",
+    "expected_intent": "OSINT_PHONE",
+    "notes": "german phone"
+  },
+  {
+    "id": "holdout-065",
+    "prompt": "Lookup country code for phone +81 6 6208 8181",
+    "expected_intent": "OSINT_PHONE",
+    "notes": "japan phone"
+  },
+  {
+    "id": "holdout-066",
+    "prompt": "Investigate phone +61 3 9905 4000",
+    "expected_intent": "OSINT_PHONE",
+    "notes": "aus phone"
+  },
+  {
+    "id": "holdout-067",
+    "prompt": "Phone intelligence for number +1-312-555-0143",
+    "expected_intent": "OSINT_PHONE",
+    "notes": "us phone"
+  },
+  {
+    "id": "holdout-068",
+    "prompt": "Investigate phone +41 44 632 11 11",
+    "expected_intent": "OSINT_PHONE",
+    "notes": "swiss phone"
+  },
+  {
+    "id": "holdout-069",
+    "prompt": "Lookup carrier prefix metadata for phone +1-888-555-0100",
+    "expected_intent": "OSINT_PHONE",
+    "notes": "toll free phone"
+  },
+  {
+    "id": "holdout-070",
+    "prompt": "Investigate phone +31 20 525 9111",
+    "expected_intent": "OSINT_PHONE",
+    "notes": "dutch phone"
+  },
+  {
+    "id": "holdout-071",
+    "prompt": "Investigate username shadow_coder",
+    "expected_intent": "OSINT_USERNAME",
+    "notes": "username lookup"
+  },
+  {
+    "id": "holdout-072",
+    "prompt": "Search username byte_runner across public platforms",
+    "expected_intent": "OSINT_USERNAME",
+    "notes": "username search"
+  },
+  {
+    "id": "holdout-073",
+    "prompt": "Find accounts for user null_ptr_0x0",
+    "expected_intent": "OSINT_USERNAME",
+    "notes": "find accounts"
+  },
+  {
+    "id": "holdout-074",
+    "prompt": "Lookup user cyber_fox on GitHub and Twitter",
+    "expected_intent": "OSINT_USERNAME",
+    "notes": "lookup user"
+  },
+  {
+    "id": "holdout-075",
+    "prompt": "Investigate username crypto_pwn",
+    "expected_intent": "OSINT_USERNAME",
+    "notes": "username lookup"
+  },
+  {
+    "id": "holdout-076",
+    "prompt": "Search accounts for user stealth_falcon",
+    "expected_intent": "OSINT_USERNAME",
+    "notes": "search accounts"
+  },
+  {
+    "id": "holdout-077",
+    "prompt": "Username intelligence for target handle grey_hat_42",
+    "expected_intent": "OSINT_USERNAME",
+    "notes": "handle lookup"
+  },
+  {
+    "id": "holdout-078",
+    "prompt": "Investigate username sec_analyst_99",
+    "expected_intent": "OSINT_USERNAME",
+    "notes": "username lookup"
+  },
+  {
+    "id": "holdout-079",
+    "prompt": "Lookup user buffer_overflow_fan",
+    "expected_intent": "OSINT_USERNAME",
+    "notes": "user lookup"
+  },
+  {
+    "id": "holdout-080",
+    "prompt": "Find accounts for user binary_ninja_x",
+    "expected_intent": "OSINT_USERNAME",
+    "notes": "find accounts"
+  },
+  {
+    "id": "holdout-081",
+    "prompt": "Solve this ctf challenge and extract the hidden key",
+    "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS",
+    "notes": "ctf solve"
+  },
+  {
+    "id": "holdout-082",
+    "prompt": "Decode base64 string dGVzdF9zdHJpbmc=",
+    "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS",
+    "notes": "b64 decode"
+  },
+  {
+    "id": "holdout-083",
+    "prompt": "Decode rot13 text synt{guvf_vf_n_grfg}",
+    "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS",
+    "notes": "rot13"
+  },
+  {
+    "id": "holdout-084",
+    "prompt": "Identify hash 21232f297a57a5a743894a0e4a801fc3",
+    "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS",
+    "notes": "hash id"
+  },
+  {
+    "id": "holdout-085",
+    "prompt": "Decode hex string 68656c6c6f20776f726c64",
+    "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS",
+    "notes": "hex decode"
+  },
+  {
+    "id": "holdout-086",
+    "prompt": "Identify hash $1$salt$qF35ntBPd2E88250QxLqQX",
+    "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS",
+    "notes": "hash id md5crypt"
+  },
+  {
+    "id": "holdout-087",
+    "prompt": "Decode base32 ciphertext MZXW6YTB",
+    "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS",
+    "notes": "base32"
+  },
+  {
+    "id": "holdout-088",
+    "prompt": "Find the flag in this obfuscated string ctf{test_flag_123}",
+    "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS",
+    "notes": "flag extraction"
+  },
+  {
+    "id": "holdout-089",
+    "prompt": "Decode JWT token eyJhbGciOiJub25lIn0.eyJ1c2VyIjoiYWRtaW4ifQ.",
+    "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS",
+    "notes": "jwt none"
+  },
+  {
+    "id": "holdout-090",
+    "prompt": "Solve this ctf XOR cipher with key 0x55",
+    "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS",
+    "notes": "xor solve"
+  },
+  {
+    "id": "holdout-091",
+    "prompt": "Extract metadata from artifact_photo.png",
+    "expected_intent": "FILE_METADATA_ANALYSIS",
+    "notes": "metadata png"
+  },
+  {
+    "id": "holdout-092",
+    "prompt": "Analyze file exif data for evidence_snapshot.jpg",
+    "expected_intent": "FILE_METADATA_ANALYSIS",
+    "notes": "exif jpg"
+  },
+  {
+    "id": "holdout-093",
+    "prompt": "Extract sha256 of file suspicious_payload.dll",
+    "expected_intent": "FILE_METADATA_ANALYSIS",
+    "notes": "sha256 file"
+  },
+  {
+    "id": "holdout-094",
+    "prompt": "Inspect image metadata for camera serial and GPS",
+    "expected_intent": "FILE_METADATA_ANALYSIS",
+    "notes": "gps exif"
+  },
+  {
+    "id": "holdout-095",
+    "prompt": "File signature check for unknown_extension_file",
+    "expected_intent": "FILE_METADATA_ANALYSIS",
+    "notes": "magic bytes"
+  },
+  {
+    "id": "holdout-096",
+    "prompt": "Extract metadata from confidential_memo.pdf",
+    "expected_intent": "FILE_METADATA_ANALYSIS",
+    "notes": "pdf metadata"
+  },
+  {
+    "id": "holdout-097",
+    "prompt": "Analyze file headers for corrupted_archive.zip",
+    "expected_intent": "FILE_METADATA_ANALYSIS",
+    "notes": "zip headers"
+  },
+  {
+    "id": "holdout-098",
+    "prompt": "Compute sha256 of file kernel_driver.sys",
+    "expected_intent": "FILE_METADATA_ANALYSIS",
+    "notes": "sha256 sys"
+  },
+  {
+    "id": "holdout-099",
+    "prompt": "Inspect image metadata for author name in EXIF",
+    "expected_intent": "FILE_METADATA_ANALYSIS",
+    "notes": "author exif"
+  },
+  {
+    "id": "holdout-100",
+    "prompt": "Extract metadata and software tags from drawing.tiff",
+    "expected_intent": "FILE_METADATA_ANALYSIS",
+    "notes": "tiff tags"
+  },
+  {
+    "id": "holdout-101",
+    "prompt": "Analyze auth.log lines for accepted publickey logins",
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS",
+    "notes": "auth.log accept"
+  },
+  {
+    "id": "holdout-102",
+    "prompt": "Forensic triage of Windows EventID 7045 service creation",
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS",
+    "notes": "eventid 7045"
+  },
+  {
+    "id": "holdout-103",
+    "prompt": "PCAP packet analysis for ARP cache poisoning evidence",
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS",
+    "notes": "arp poison pcap"
+  },
+  {
+    "id": "holdout-104",
+    "prompt": "Analyze Sysmon EventID 1 for powershell -encodedcommand",
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS",
+    "notes": "sysmon cmdline"
+  },
+  {
+    "id": "holdout-105",
+    "prompt": "Forensic triage of EventID 4625 failed logins from external IP",
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS",
+    "notes": "eventid 4625"
+  },
+  {
+    "id": "holdout-106",
+    "prompt": "Analyze log entries from nginx access.log for directory traversal",
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS",
+    "notes": "nginx log"
+  },
+  {
+    "id": "holdout-107",
+    "prompt": "Wireshark packet analysis for DNS exfiltration tunnels",
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS",
+    "notes": "dns exfil wireshark"
+  },
+  {
+    "id": "holdout-108",
+    "prompt": "Analyze auth.log for pam_unix authentication failures",
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS",
+    "notes": "pam auth failures"
+  },
+  {
+    "id": "holdout-109",
+    "prompt": "EventID 4688 process execution triage for whoami.exe",
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS",
+    "notes": "eventid 4688"
+  },
+  {
+    "id": "holdout-110",
+    "prompt": "PCAP analysis for unencrypted HTTP basic auth headers",
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS",
+    "notes": "http basic pcap"
+  },
+  {
+    "id": "holdout-111",
+    "prompt": "How to use nmap to save output in XML format?",
+    "expected_intent": "KALI_COMMAND_ASSISTANCE",
+    "notes": "nmap xml flag"
+  },
+  {
+    "id": "holdout-112",
+    "prompt": "Suggest a kali command to scan SMB shares with smbclient",
+    "expected_intent": "KALI_COMMAND_ASSISTANCE",
+    "notes": "smbclient command"
+  },
+  {
+    "id": "holdout-113",
+    "prompt": "Syntax for sqlmap using a request file from burp",
+    "expected_intent": "KALI_COMMAND_ASSISTANCE",
+    "notes": "sqlmap request file"
+  },
+  {
+    "id": "holdout-114",
+    "prompt": "Terminal error permission denied when running tcpdump",
+    "expected_intent": "KALI_COMMAND_ASSISTANCE",
+    "notes": "tcpdump permission"
+  },
+  {
+    "id": "holdout-115",
+    "prompt": "Kali command failed with command not found for gobuster",
+    "expected_intent": "KALI_COMMAND_ASSISTANCE",
+    "notes": "command not found"
+  },
+  {
+    "id": "holdout-116",
+    "prompt": "Explain this command: hashcat -m 0 -a 0 hashes.txt rockyou.txt",
+    "expected_intent": "KALI_COMMAND_ASSISTANCE",
+    "notes": "hashcat explain"
+  },
+  {
+    "id": "holdout-117",
+    "prompt": "Suggest a tcpdump filter to capture traffic on port 53",
+    "expected_intent": "KALI_COMMAND_ASSISTANCE",
+    "notes": "tcpdump filter"
+  },
+  {
+    "id": "holdout-118",
+    "prompt": "How to use john the ripper with wordlist and rules?",
+    "expected_intent": "KALI_COMMAND_ASSISTANCE",
+    "notes": "john rules"
+  },
+  {
+    "id": "holdout-119",
+    "prompt": "Syntax for tshark to filter HTTP 404 responses",
+    "expected_intent": "KALI_COMMAND_ASSISTANCE",
+    "notes": "tshark filter"
+  },
+  {
+    "id": "holdout-120",
+    "prompt": "How to use nikto with tuning options for file upload checks?",
+    "expected_intent": "KALI_COMMAND_ASSISTANCE",
+    "notes": "nikto tuning"
+  },
+  {
+    "id": "holdout-121",
+    "prompt": "Run security assessment on local target 127.0.0.1",
+    "expected_intent": "VULNERABILITY_ASSESSMENT",
+    "notes": "run assessment"
+  },
+  {
+    "id": "holdout-122",
+    "prompt": "Comprehensive vulnerability assessment for lab host 127.0.0.1:8080",
+    "expected_intent": "VULNERABILITY_ASSESSMENT",
+    "notes": "comprehensive va"
+  },
+  {
+    "id": "holdout-124",
+    "prompt": "Assess security posture of local server 127.0.0.1:5000",
+    "expected_intent": "VULNERABILITY_ASSESSMENT",
+    "notes": "assess posture"
+  },
+  {
+    "id": "holdout-125",
+    "prompt": "Execute full assessment on 127.0.0.1 with standard depth",
+    "expected_intent": "VULNERABILITY_ASSESSMENT",
+    "notes": "full assessment"
+  },
+  {
+    "id": "holdout-126",
+    "prompt": "Run quick security assessment on 127.0.0.1",
+    "expected_intent": "VULNERABILITY_ASSESSMENT",
+    "notes": "quick assessment"
+  },
+  {
+    "id": "holdout-127",
+    "prompt": "Evaluate security vulnerabilities on authorized target 127.0.0.1:8443",
+    "expected_intent": "VULNERABILITY_ASSESSMENT",
+    "notes": "eval vulnerabilities"
+  },
+  {
+    "id": "holdout-128",
+    "prompt": "Perform vulnerability scan on local container 127.0.0.1:9000",
+    "expected_intent": "VULNERABILITY_ASSESSMENT",
+    "notes": "vuln scan container"
+  },
+  {
+    "id": "holdout-129",
+    "prompt": "Deep scan and audit of web service on 127.0.0.1:8080",
+    "expected_intent": "VULNERABILITY_ASSESSMENT",
+    "notes": "deep scan audit"
+  },
+  {
+    "id": "holdout-130",
+    "prompt": "Comprehensive security assessment on test environment 127.0.0.1",
+    "expected_intent": "VULNERABILITY_ASSESSMENT",
+    "notes": "comprehensive test"
+  },
+  {
+    "id": "holdout-131",
+    "prompt": "Show graph of current investigation assets and findings",
+    "expected_intent": "GRAPH_AND_INVESTIGATION",
+    "notes": "show graph"
+  },
+  {
+    "id": "holdout-132",
+    "prompt": "Display cytoscape entity graph of network relationships",
+    "expected_intent": "GRAPH_AND_INVESTIGATION",
+    "notes": "cytoscape entity"
+  },
+  {
+    "id": "holdout-133",
+    "prompt": "Open relationship graph to review lateral movement paths",
+    "expected_intent": "GRAPH_AND_INVESTIGATION",
+    "notes": "lateral movement graph"
+  },
+  {
+    "id": "holdout-135",
+    "prompt": "Replay investigation graph changes step by step",
+    "expected_intent": "GRAPH_AND_INVESTIGATION",
+    "notes": "replay graph"
+  },
+  {
+    "id": "holdout-137",
+    "prompt": "Recap previous findings from the last security scan",
+    "expected_intent": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "notes": "recap scan"
+  },
+  {
+    "id": "holdout-138",
+    "prompt": "Explain finding find-9912 remediation steps",
+    "expected_intent": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "notes": "explain finding"
+  },
+  {
+    "id": "holdout-139",
+    "prompt": "Detail evidence evi-3341 provenance and hash",
+    "expected_intent": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "notes": "explain evidence"
+  },
+  {
+    "id": "holdout-140",
+    "prompt": "Active investigation summary of critical risks",
+    "expected_intent": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "notes": "active inv summary"
+  },
+  {
+    "id": "holdout-141",
+    "prompt": "Generate executive report for completed assessment asmt-501",
+    "expected_intent": "REPORT_GENERATION",
+    "notes": "gen exec report"
+  },
+  {
+    "id": "holdout-142",
+    "prompt": "Export technical report in markdown format for developers",
+    "expected_intent": "REPORT_GENERATION",
+    "notes": "export tech report"
+  },
+  {
+    "id": "holdout-143",
+    "prompt": "Create markdown report with full risk matrices",
+    "expected_intent": "REPORT_GENERATION",
+    "notes": "create md report"
+  },
+  {
+    "id": "holdout-144",
+    "prompt": "Download report summarizing assessment asmt-302",
+    "expected_intent": "REPORT_GENERATION",
+    "notes": "download report"
+  },
+  {
+    "id": "holdout-145",
+    "prompt": "Generate report with MITRE ATT&CK tactic mappings",
+    "expected_intent": "REPORT_GENERATION",
+    "notes": "mitre report"
+  },
+  {
+    "id": "holdout-146",
+    "prompt": "Check if nmap is installed on the host",
+    "expected_intent": "TOOL_DETECTION",
+    "notes": "tool check nmap"
+  },
+  {
+    "id": "holdout-147",
+    "prompt": "Check whether tools are installed in the local environment",
+    "expected_intent": "TOOL_DETECTION",
+    "notes": "tool check env"
+  },
+  {
+    "id": "holdout-148",
+    "prompt": "Verify audit chain integrity and checkpoints",
+    "expected_intent": "AUDIT_VERIFY",
+    "notes": "audit verify"
+  },
+  {
+    "id": "holdout-149",
+    "prompt": "Run tamper check on audit ledger entries",
+    "expected_intent": "AUDIT_VERIFY",
+    "notes": "audit tamper"
+  },
+  {
+    "id": "holdout-150",
+    "prompt": "Pause assessment asmt-881",
+    "expected_intent": "LIFECYCLE",
+    "notes": "pause assessment"
+  },
+  {
+    "id": "holdout-151",
+    "prompt": "Resume assessment asmt-881",
+    "expected_intent": "LIFECYCLE",
+    "notes": "resume assessment"
+  },
+  {
+    "id": "holdout-152",
+    "prompt": "Cancel assessment asmt-881 immediately",
+    "expected_intent": "LIFECYCLE",
+    "notes": "cancel assessment"
+  },
+  {
+    "id": "holdout-153",
+    "prompt": "Stop assessment currently running on target",
+    "expected_intent": "LIFECYCLE",
+    "notes": "stop assessment"
+  },
+  {
+    "id": "holdout-154",
+    "prompt": "Is curl installed on this system?",
+    "expected_intent": "TOOL_DETECTION",
+    "notes": "is curl installed"
+  },
+  {
+    "id": "holdout-155",
+    "prompt": "Verify chain HMAC integrity against genesis block",
+    "expected_intent": "AUDIT_VERIFY",
+    "notes": "verify chain hmac"
   }
 ]

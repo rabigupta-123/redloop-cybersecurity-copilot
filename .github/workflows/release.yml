@@ -4,7 +4,8 @@ on:
   push:
     branches:
       - main
-      - fix/quality-pass
+      - feat/*
+      - fix/*
     tags:
       - 'v*'
   workflow_dispatch:
@@ -19,19 +20,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 0
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@0b93645e9fb717ef66e4732e7d373014c3db0a26 # v5.3.0
         with:
           python-version: "3.12"
 
       - name: Install Build Tooling
         run: |
           python -m pip install --upgrade pip
-          python -m pip install build hatchling
+          python -m pip install build hatchling pytest PyYAML pydantic cryptography
+
+      - name: Verify Secret Hygiene
+        run: |
+          python scripts/scan_secrets.py --all
 
       - name: Determine Release Tag
         id: versioning
@@ -62,7 +67,7 @@ jobs:
           python -m build
 
       - name: Create or Update GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@c062e08bd532815e2082a85e87e3ef29c3e6d191 # v2.0.8
         with:
           tag_name: ${{ steps.versioning.outputs.release_tag }}
           name: "Release ${{ steps.versioning.outputs.release_tag }}"
@@ -71,4 +76,3 @@ jobs:
           files: dist/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-

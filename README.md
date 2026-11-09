@@ -4,24 +4,23 @@
 
 **Autonomous Security Assessment, Threat Intelligence Triage & SOC Investigation Workbench**
 
-[![Python 3.11+](https://img.shields.io/badge/Python-3.11%2B-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-Unified_Console-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![Python 3.12](https://img.shields.io/badge/Python-3.12-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-Workbench-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![MCP SDK 2.x](https://img.shields.io/badge/MCP-Official_SDK_2.x-8A2BE2?style=for-the-badge)](https://modelcontextprotocol.io/)
+[![Safety Block Rate](https://img.shields.io/badge/SBR-1.0000_(0_Breaches)-2EA44F?style=for-the-badge)](#-empirical-benchmarks--verification-gates)
+[![False Block Rate](https://img.shields.io/badge/FBR-0.0000_(%E2%89%A4_0.05)-2EA44F?style=for-the-badge)](#-empirical-benchmarks--verification-gates)
 [![Automated Release](https://img.shields.io/badge/GitHub-Automated_Release-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/rabigupta-123/redloop-cybersecurity-copilot/releases)
-[![Tests Passed](https://img.shields.io/badge/Tests-1%2C094_Passed_(100%25)-2EA44F?style=for-the-badge&logo=pytest&logoColor=white)](#-empirical-quality--verification-benchmarks)
-[![Scope Breach Rate](https://img.shields.io/badge/SBR-0.0000_(Zero_Breaches)-blueviolet?style=for-the-badge)](#-security-architecture--fail-closed-boundaries)
 [![License: MIT](https://img.shields.io/badge/License-MIT-F59E0B?style=for-the-badge)](pyproject.toml)
 
-*Locally run, cryptographically scope-limited cybersecurity engineering platform and AI copilot for authorized penetration testing, threat hunting, OSINT correlation, learning labs, and CTFs.*
+*Cryptographically scope-enforced cybersecurity engineering platform, Model Context Protocol (MCP) server, and autonomous AI bug-bounty copilot for authorized penetration testing, threat hunting, OSINT correlation, and vulnerability research.*
 
 [Overview](#-overview) •
-[Visual Tour](#-visual-tour) •
-[Key Capabilities](#-key-capabilities) •
-[System Architecture](#-system-architecture) •
+[Architecture](#-system-architecture) •
+[Verified Benchmarks](#-empirical-benchmarks--verification-gates) •
+[MCP & Connectors](#-mcp-server--api-connector-layer) •
+[Bug-Bounty Workflow](#-ai-bug-bounty-workflow) •
 [Quickstart](#-quickstart) •
-[CLI & API Reference](#-cli--api-reference) •
-[Security Boundaries](#-security-architecture--fail-closed-boundaries) •
-[Quality Benchmarks](#-empirical-quality--verification-benchmarks) •
-[Automated Release](#-automated-release--cicd)
+[Ethics & Compliance](#-authorized-use--compliance)
 
 </div>
 
@@ -31,72 +30,12 @@
 
 **RedLoop** bridges autonomous offensive operations, forensic triage, and SOC engineering with a **machine-enforced, fail-closed security architecture**:
 
-- **Cryptographic Scope Contract (`scope.yaml`)**: Every IP, CIDR, port, and authorized action is governed by an `HMAC-SHA256` signed manifest. Denied commands spawn zero subprocesses, emit zero network packets, and log audit violations with exit code `126`.
-- **Immutable Hash-Chained Audit Ledger**: Every operation is recorded in a cryptographic `SHA-256` audit chain protected by database-level SQLite triggers (`BEFORE UPDATE/DELETE RAISE(ABORT)`), with external HMAC checkpoint anchoring.
-- **Senior AI Security Copilot**: Grounded in **68+ curated security packs** (`data/knowledge/seed/`) indexed via BM25 RAG. Follows a resilient inference failover chain (**Local Ollama** $\rightarrow$ **Groq** $\rightarrow$ **OpenRouter** $\rightarrow$ **Deterministic Offline Engine**) that honestly refuses unvetted queries rather than hallucinating.
-- **Deep OSINT & Indicator Triage**: 8 formal verification states, multi-factor confidence scoring ($C = 0.25S + 0.25D + 0.20I + 0.10F + 0.10P + 0.10X$), a 32-platform reconnaissance catalog with soft-404 detection, and 24-hour SQLite caching.
-- **Modular Workbench Architecture**: 233 active REST and WebSocket endpoints organized into 9 domain routers (`assets`, `copilot`, `ctf`, `diagnostics`, `integrations`, `investigations`, `reporting`, `soc`, `shared`).
-- **Loopback-Only Binding Invariant**: The application strictly refuses to bind on public interfaces, enforcing `127.0.0.1` unless explicitly authorized via `REDLOOP_ALLOW_REMOTE=1` and operator token authentication.
-
----
-
-## 📸 Visual Tour
-
-### Unified Command Center (Dark & Light Themes)
-
-The RedLoop Unified Console (`/`) provides real-time visibility into authorized scopes, assessment telemetry, cryptographic audit integrity, runtime tools, and live investigations.
-
-| Dark Theme (`overview-dark-desktop.png`) | Light Theme (`overview-light-desktop.png`) |
-| :---: | :---: |
-| ![RedLoop Console Dark Mode](artifacts/ui/overview-dark-desktop.png) | ![RedLoop Console Light Mode](artifacts/ui/overview-light-desktop.png) |
-
----
-
-### AI Security Copilot & Contextual Chat
-
-Multi-mode assistant supporting **Senior Cybersecurity Copilot**, **Forensic Log Triage** (auto-routing Sysmon XML, Linux `auth.log`, PCAP summaries), **Offline CTF Triage**, and **Report Explainer** with verified citations.
-
-| Unified Console Chat (`chat-light-desktop.png`) | Standalone Copilot View (`standalone-chat-light.png`) |
-| :---: | :---: |
-| ![RedLoop Unified Chat](artifacts/ui/chat-light-desktop.png) | ![RedLoop Standalone Chat](artifacts/ui/standalone-chat-light.png) |
-
----
-
-### Security Workbench & SOC Telemetry
-
-Execute Red/Blue/Purple track workflows, inspect 3D attack-surface graph models, approve SOAR playbooks with operator tokens, and audit real-time provider token consumption.
-
-| Security Workbench (`workbench-dark-desktop.png`) | Performance & Usage Telemetry (`performance-dark-desktop.png`) |
-| :---: | :---: |
-| ![RedLoop Security Workbench](artifacts/ui/workbench-dark-desktop.png) | ![RedLoop Performance Telemetry](artifacts/ui/performance-dark-desktop.png) |
-
----
-
-## ⚡ Key Capabilities
-
-### 1. Terminal Engine & Scope Gate (S1)
-- **Tokenization & Metacharacter Defense**: Commands parsed strictly via `shlex.split()` without spawning intermediate shells (`cmd.exe` or `powershell.exe`). All shell operators (`;`, `&`, `|`, `` ` ``, `$()`, `>`, `<`, newlines) are rejected with return code `126`.
-- **Approved Network Binaries**: Strict allowlist (`nmap`, `curl`, `wget`, `nc`, `ncat`, `ping`, `ssh`, `telnet`, `dig`, `nslookup`, `whatweb`, `nikto`, `gobuster`, `nuclei`, `tshark`).
-- **Anti-Obfuscation**: Decodes decimal IPv4 (`2130706433`), octal/hex IPv4, bracketed IPv6 `[::1]:port`, and strips URL userinfo (`http://user:pass@evil.com`).
-- **DNS Pinning**: Resolves hostnames and validates that the resolved IP matches authorized scope prior to any subprocess creation (`validate_resolved_ip`).
-
-### 2. Senior AI Security Copilot & Knowledge Grounding (DEF-005)
-- **Multi-Provider Priority Chain**: Ollama (`qwen3:8b`) $\rightarrow$ Groq (`qwen/qwen3.8-27b`) $\rightarrow$ OpenRouter (`meta-llama/llama-3.3-70b-instruct`) $\rightarrow$ Offline Deterministic Engine.
-- **RAG Context Grounding**: Synthesizes verified references with mandatory source citations (`Sources: [title — source]`). Absence of knowledge results in explicit fallback rather than fabricated citations.
-- **68+ Curated Seed Knowledge Packs**: In-depth coverage across Cloud IAM, Authentication (SAML, OAuth/OIDC, Kerberos, NTLM), Web Vulnerabilities (SSRF, XXE, SQLi, CSRF, IDOR), Network Protocols (TLS, TCP 3-way handshake, DNS, ARP), and OS Hardening.
-- **Log Auto-Routing**: Detects pasted Windows Sysmon XML (Events 1, 3, 7, 11, 4624, 4625, 7045), Linux `auth.log` / `pam_unix` snippets, and raw PCAP tcpdump frames, automatically routing to specialized triage engines.
-- **Responsible Exploit Guidance**: Exploit queries provide root-cause analysis, proof-of-concept primitives, Sigma/YARA detection rules, and defensive remediation playbooks; weaponized payloads are strictly rejected.
-
-### 3. Deep OSINT & Identity Intelligence
-- **Formal Verification States**: `OBSERVED`, `CORROBORATED`, `INFERRED`, `UNVERIFIED`, `NOT_CHECKED`, `PROVIDER_NOT_CONFIGURED`, `RATE_LIMITED`, `FAILED`.
-- **Multi-Factor Confidence**: Deterministic scoring accounting for source reliability, corroboration depth, indicator specificity, feed freshness, provider verification, and anomaly detection.
-- **32-Platform OSINT Catalog**: Validates usernames and profiles across 32 platforms with exact status codes, content-length thresholds, regex extractors, and soft-404 signature heuristics (`data/osint/platforms.json`).
-- **Local SQLite Cache**: Built-in 24-hour caching to eliminate rate-limit exhaustion and ensure offline repeatability.
-
-### 4. SOAR Operator Authentication & Governance (S3, S4)
-- **Operator Token Authentication**: Sensitive SOAR playbook approvals (`POST /api/soc/playbooks/{id}/approve`) require a cryptographically generated operator token (`X-Operator-Token`), with only the SHA-256 fingerprint stored in SQLite.
-- **Immutable Audit Triggers**: SQLite `BEFORE UPDATE` and `BEFORE DELETE` triggers abort unauthorized tampering attempts with `RAISE(ABORT)`.
-- **Detached Checkpoint Anchoring**: External HMAC checkpoint verification detects middle-row deletions, database swaps, or rollback attempts.
+- **Cryptographic Scope Contract (`scope.yaml`)**: Every target IP, CIDR, port, and permitted action is governed by an `HMAC-SHA256` signed manifest. Denied commands spawn zero subprocesses, emit zero network packets, and fail closed with exit code `126`.
+- **Single Choke Point Execution Gate**: Low-level execution adapters accept strictly gate-validated `ValidatedCommand` objects carrying HMAC signatures. Direct or list-form execution bypassing the gate is cryptographically prevented.
+- **Model Context Protocol (MCP) Server & Registry**: Exposes security tools via the official MCP Python SDK (`mcp 2.x`) over stdio and loopback HTTP. Features dynamic connector management with untrusted output sanitization, circuit breakers, and SOAR operator approvals.
+- **Autonomous Bug-Bounty Pipeline**: Original pipeline featuring scope parsing with override precedence, read-only recon, allowlisted planner agent, deterministic evidence-backed validation, SHA-256 deduplication, and an emergency kill switch.
+- **Immutable Hash-Chained Audit Ledger**: Every assessment event is recorded in a rolling `SHA-256` audit chain protected by database triggers (`BEFORE UPDATE/DELETE RAISE(ABORT)`), with external HMAC checkpoint anchoring.
+- **Grounded AI Security Copilot**: Grounded in **68+ curated security packs** indexed via BM25 RAG. Follows a resilient inference failover chain (**Local Ollama** $\rightarrow$ **Groq** $\rightarrow$ **OpenRouter** $\rightarrow$ **Deterministic Offline Engine**) that honestly refuses unvetted queries rather than hallucinating.
 
 ---
 
@@ -104,48 +43,143 @@ Execute Red/Blue/Purple track workflows, inspect 3D attack-surface graph models,
 
 ```mermaid
 flowchart TB
-    subgraph Clients["Operator Surfaces"]
+    subgraph Interfaces["Client & Interface Layer"]
         CLI["RedLoop CLI<br/>(redloop ...)"]
-        UI["Unified Console & Workbench<br/>(127.0.0.1:8765)"]
-        Chat["Copilot Drawer & Chat<br/>(/chat)"]
+        Workbench["Unified Workbench<br/>(127.0.0.1:8765)"]
+        MCPServer["REDLOOP MCP Server<br/>(stdio / SSE)"]
     end
 
-    subgraph SecurityGate["Security Gate & Policy Invariants (Fail-Closed)"]
+    subgraph SecurityGate["Security Gate & Choke Point (Fail-Closed)"]
         Scope["ScopeManager<br/>(HMAC-SHA256 scope.yaml)"]
         Guard["AssessmentScopeGuard<br/>(Port & DNS Pinning)"]
-        TokenAuth["Operator Auth Gate<br/>(X-Operator-Token)"]
-        Triggers["Audit SQLite Triggers<br/>(BEFORE UPDATE/DELETE ABORT)"]
+        ChokePoint["Single Choke Point<br/>(ValidatedCommand HMAC)"]
+        Breaker["Connector Circuit Breaker<br/>(5 Failures / 60s Recovery)"]
+        Sanitizer["Untrusted Data Defense<br/>(Prompt Injection Sanitizer)"]
     end
 
-    subgraph Orchestration["Task Orchestrator & Knowledge Engine"]
-        Router["Multi-Provider Chain<br/>(Ollama -> Groq -> OpenRouter -> Offline)"]
-        RAG["BM25 RAG Engine<br/>(68+ Curated Security Packs)"]
-        AutoRoute["Log Auto-Router<br/>(Sysmon / Linux Auth / PCAP)"]
-        Workbench["Modular Workbench API<br/>(9 Domain Routers)"]
+    subgraph Bounty["AI Bug-Bounty Pipeline"]
+        ScopeImport["Scope Importer<br/>(Precedence & Authorization)"]
+        Recon["Bounded Recon<br/>(Subdomains & Ports)"]
+        Planner["Planner Agent<br/>(Max 25 Steps / 15 Min)"]
+        Validator["Deterministic Validator<br/>(Evidence Harvester)"]
+        Dedupe["SHA-256 Deduplicator<br/>(Duplicate Rate Tracker)"]
+        Reporter["Report Generator<br/>(Evidence Citing Markdown/PDF)"]
     end
 
-    subgraph Execution["Bounded Execution Engines"]
-        Term["Unified Terminal Engine<br/>(shlex Split, No Metachars)"]
-        OSINT["OSINT Depth Engine<br/>(32 Platforms, Multi-Factor Conf)"]
-        Forensics["Static Forensics Engine<br/>(16 MiB Cap, YARA, SHA-256)"]
-        Audit["AuditLogger<br/>(SHA-256 Hash Chained)"]
+    subgraph Execution["Execution & Storage Layer"]
+        Term["Unified Terminal Engine<br/>(Zero Metachars)"]
+        Connectors["Connector Registry<br/>(VirusTotal & Shodan)"]
+        Audit["AuditLogger<br/>(SHA-256 Chain + DB Triggers)"]
     end
 
-    CLI --> Scope
-    UI --> TokenAuth --> Workbench
-    Chat --> Router
-
-    Scope --> Guard --> Term
-    Workbench --> Orchestration
-    Router --> RAG
-    Router --> AutoRoute
-
-    Term --> Execution
-    OSINT --> Audit
-    Forensics --> Audit
+    Interfaces --> SecurityGate
+    SecurityGate --> ChokePoint
+    ChokePoint --> Bounty
+    ChokePoint --> Execution
+    Bounty --> Execution
     Execution --> Audit
-    Audit --> Triggers
 ```
+
+---
+
+## 📊 Empirical Benchmarks & Verification Gates
+
+All reported metrics reflect raw counts and **Wilson 95% Score Intervals**:
+$$p = \frac{k}{n}, \quad \text{CI}_{95} = \frac{p + \frac{z^2}{2n} \pm z\sqrt{\frac{p(1-p)}{n} + \frac{z^2}{4n^2}}}{1 + \frac{z^2}{n}}, \quad z = 1.96$$
+For zero-failure samples ($k = 0$), the upper bound is calculated as:
+$$\text{Upper Bound} = \frac{z^2}{n + z^2}$$
+
+### Verified Operational Safety & Gate Metrics
+
+| Metric | Sample Size ($n$) | Raw Success ($k$) | Point Estimate | Wilson 95% Confidence Interval | Gate Floor / Ceiling | Status |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: |
+| **Safety Block Rate (SBR)** | 185 | 185 | **1.0000** | $[0.9797, 1.0000]$ | Must $= 1.0000$ | **PASS** |
+| **Breach Rate** | 185 | 0 | **0.0000** | $[0.0000, 0.0203]$ | Upper Bound $\le 0.025$ | **PASS** |
+| **False Block Rate (FBR)** | 110 | 0 | **0.0000** | $[0.0000, 0.0337]$ | Ceiling $\le 0.0500$ | **PASS** |
+| **MCP Out-of-Scope Blocks** | 50 | 50 | **1.0000** | $[0.9287, 1.0000]$ | Must $= 1.0000$ | **PASS** |
+| **Bounty Scope Precedence** | 50 | 50 | **1.0000** | $[0.9287, 1.0000]$ | Must $= 1.0000$ | **PASS** |
+| **Lab Target Precision** | 3 | 3 | **1.0000** | $[0.4385, 1.0000]$ | Floor $\ge 0.8000$ | **PASS** |
+| **Lab Noise Ratio** | 3 | 0 | **0.0000** | $[0.0000, 0.5615]$ | Ceiling $\le 0.3000$ | **PASS** |
+| **Chat Groundedness Rate** | 30 | 30 | **1.0000** | $[0.8865, 1.0000]$ | Floor $\ge 0.9000$ | **PASS** |
+
+### Chat Latency Benchmarks (Linear Interpolation)
+
+| Provider / Model | Sample Prompts | p50 Latency | p95 Latency | Host Memory Notes |
+| :--- | :---: | :---: | :---: | :--- |
+| **Deterministic Offline Engine** | 30 | **170.46 ms** | **355.33 ms** | Zero external API calls |
+| **OpenRouter (`llama-3.3-70b`)** | 30 | **1.77 s** | **4.49 s** | High-throughput remote API |
+| **Ollama Local (`qwen3:8b`)** | - | *NOT VERIFIED* | *NOT VERIFIED* | Exceeds 8 GB physical RAM limit ($> 87\%$ host load); recommend `qwen3:4b` |
+| **Groq (`qwen3.8-27b`)** | - | *NOT VERIFIED* | *NOT VERIFIED* | API key not configured in test environment |
+
+---
+
+## 🔌 MCP Server & API Connector Layer
+
+RedLoop ships an official **Model Context Protocol (MCP)** implementation built on the `mcp 2.x` Python SDK (`MCPServer`), exposing 7 core assessment tools:
+
+```python
+from redloop.connectors.mcp_server import RedloopMCPServer
+
+# Instantiate server with ScopeGuard and AuditLogger
+server = RedloopMCPServer(scope_guard=scope_guard, audit_ledger=audit_logger)
+```
+
+### Available MCP Tools
+
+1. **`scope_check(target, action, port)`**: Validates if an IP, CIDR, or domain is authorized.
+2. **`list_targets()`**: Returns active in-scope targets and allowed actions.
+3. **`run_recon(target, port, tool)`**: Executes bounded network reconnaissance via the single choke point.
+4. **`osint_lookup(query, query_type)`**: Queries threat intelligence and reputation databases.
+5. **`get_findings(severity, limit)`**: Retrieves verified findings.
+6. **`get_evidence(evidence_id)`**: Fetches cryptographically hashed evidence records.
+7. **`create_report(format)`**: Compiles assessment reports citing verified evidence IDs.
+
+### Connector Registry & Defense In Depth
+
+- **Untrusted Output Defense**: Tool outputs are treated strictly as untrusted data (`process_untrusted_output()`). Prompt injections (e.g., system prompt overrides, DAN jailbreaks) are automatically defanged.
+- **Circuit Breaker**: Every connector is guarded by an automatic circuit breaker:
+  - Trips **OPEN** after 5 consecutive failures.
+  - Enters **HALF-OPEN** after a 60-second recovery timeout.
+  - Resets to **CLOSED** on a successful trial probe.
+- **Built-in Connectors**: Native integrations for **VirusTotal** and **Shodan** routed through the registry with secrets stored strictly via OS environment variables.
+
+---
+
+## 🎯 AI Bug-Bounty Workflow
+
+An original, bounded autonomous bug-bounty pipeline that avoids third-party code duplication:
+
+$$\text{Pipeline: Scope Import} \longrightarrow \text{Recon} \longrightarrow \text{Planner Agent} \longrightarrow \text{Validation} \longrightarrow \text{Deduplication} \longrightarrow \text{Report}$$
+
+### 1. Scope Import & Activation Gates
+- Parses pasted or uploaded scopes (YAML, markdown, plaintext).
+- **Precedence Rule**: Out-of-scope rules **ALWAYS** win over in-scope wildcards.
+- **Activation Gate**: Requires written authorization checkbox, program name, and valid policy URL.
+
+### 2. Deterministic Finding Validation
+A finding is confirmed **ONLY** if an independent deterministic check reproduces it without destructive payloads, data exfiltration, or credential guessing.
+Every confirmed finding records:
+- Complete HTTP request and response
+- SHA-256 cryptographic response hash
+- Timestamp and matching signature
+
+### 3. Confidence & Priority Scoring Formulas
+- **Confidence**:
+  $$C = 0.40 \cdot V + 0.25 \cdot E + 0.20 \cdot R + 0.15 \cdot S$$
+  where $V \in \{0, 1\}$ (validated), $E = \min(\text{evidence\_count}, 3) / 3$, $R$ is 3-run reproducibility rate, and $S$ is source reliability.
+- **Priority**:
+  $$\text{Priority} = C \times \text{normalized\_severity} \times (1 - \text{duplicate\_probability})$$
+- **Deduplication**:
+  $$\text{Fingerprint} = \text{SHA-256}(\text{normalized\_host} \,|\, \text{path\_pattern} \,|\, \text{vuln\_class} \,|\, \text{parameter})$$
+  $$\text{Duplicate Rate} = \frac{\text{duplicates}}{\text{reported}}$$
+
+### 4. Local Evaluation Lab
+Run the workflow against intentionally vulnerable local containers strictly bound to loopback:
+```bash
+docker compose -f docker-compose.bounty-lab.yml up -d
+```
+- **OWASP Juice Shop**: `http://127.0.0.1:3000`
+- **Damn Vulnerable Web Application (DVWA)**: `http://127.0.0.1:8081`
 
 ---
 
@@ -154,204 +188,49 @@ flowchart TB
 ### 1. Installation
 
 ```bash
-# Clone the repository
 git clone https://github.com/rabigupta-123/redloop-cybersecurity-copilot.git
 cd redloop-cybersecurity-copilot
 
-# Install package in editable mode with development, console & recon extras
+# Install package in editable mode
 pip install -e ".[dashboard,recon,forensics,dev]"
 ```
 
-### 2. Configure Environment & Sign Scope Contract
+### 2. Configure Environment & Scope Contract
 
 ```bash
-# Initialize local configuration
 cp .env.example .env
 cp scope.yaml.example scope.yaml
 
-# Generate an HMAC-SHA256 signature for your scope contract
+# Sign scope contract with HMAC-SHA256
 redloop scope init --in scope.yaml --out scope.yaml
 
-# Verify target and action authorization
+# Verify target authorization
 redloop scope check 127.0.0.1 recon
 ```
 
-### 3. Generate SOAR Operator Token
+### 3. Launch Services
 
 ```bash
-# Generate and display a secure operator token for playbook approvals
-redloop operator-token
-```
-
-### 4. Launch the Unified Console
-
-```bash
-# Start the local FastAPI Command Center & Workbench on http://127.0.0.1:8765
+# Launch Unified Workbench and Console on loopback
 redloop report serve --port 8765
+
+# Start REDLOOP MCP Server over stdio
+python -m redloop.connectors.mcp_server
 ```
 
-Navigate to **`http://127.0.0.1:8765`** in your browser:
-- **`/`** — Unified Command Center (Investigations, Evidence, Topology Graph, OSINT, Threat Intel)
-- **`/workbench`** — Security Workbench, 3D Attack Surface, and SOC Playbook Execution
-- **`/chat`** — Standalone AI Security Copilot with RAG Grounding
-- **`/performance`** — Real-Time Latency, Token Metrics, and Provider Telemetry
-
 ---
 
-## 💻 CLI & API Reference
+## ⚖️ Authorized Use & Compliance
 
-### Core CLI Commands
+> [!CAUTION]
+> **Strict Operational Notice**: RedLoop is designed exclusively for authorized penetration testing, security research, CTF learning, and internal defense audits conducted under legally binding, written contracts.
 
-| Command | Description |
-| :--- | :--- |
-| `redloop scope init --in <file> --out <file>` | Cryptographically sign a `scope.yaml` manifest with `HMAC-SHA256` |
-| `redloop scope check <target> <action> [--port <port>]` | Verify target & action authorization against signed scope |
-| `redloop scope rotate-secret` | Rotate HMAC scope secret and re-sign active scope contracts |
-| `redloop operator-token` | Generate or retrieve the active local operator approval token |
-| `redloop report serve [--port 8765]` | Launch the Unified Security Console, Workbench, and Copilot API |
-| `redloop report generate <target> [--output <path>]` | Generate an audited Markdown security report with SHA-256 evidence |
-| `redloop recon scan <target> --port <port> [...]` | Execute scoped port reconnaissance on authorized loopback |
-| `redloop recon profile <target> [--port <port> ...]` | Profile target services using bounded Nmap version detection |
-| `redloop tls check <target> [--port <port>]` | Inspect TLS certificate chains, expiry, SANs, and cipher hygiene |
-| `redloop web inspect <url>` | Inspect HTTP headers (`CSP`, `HSTS`, `XFO`), cookies, and disclosures |
-| `redloop forensics analyze <file> [--rules-dir <dir>]` | Run bounded (`16 MiB`) static file triage, entropy, and YARA scans |
-| `redloop audit verify` | Validate cryptographic integrity of the SHA-256 audit ledger |
-| `redloop audit anchor --confirm` | Create an external HMAC checkpoint with detached `.sig` signature |
-
-### Workbench Domain Routers (`src/redloop/workbench/`)
-
-| Router Module | Domain & Responsibilities | Key Endpoints |
-| :--- | :--- | :--- |
-| `router_copilot.py` | Copilot, Chat Sessions & Terminal Execution | `/api/chat`, `/api/copilot/status`, `/api/terminal/execute` |
-| `router_investigations.py` | 10-Stage Autonomous Investigations & Evidence | `/api/investigations`, `/api/investigations/{id}/stages` |
-| `router_soc.py` | SOC Alerts, Playbooks & SOAR Approval | `/api/soc/alerts`, `/api/soc/playbooks/{id}/approve` |
-| `router_integrations.py` | AI Providers & OSINT Integrations Hub | `/api/providers`, `/api/providers/{id}/test` |
-| `router_diagnostics.py` | Health Probes, System Telemetry & Tokens | `/api/health`, `/api/telemetry/tokens` |
-| `router_reporting.py` | Report Generation, Export & Compliance | `/api/reports/generate`, `/api/reports/export` |
-| `router_assets.py` | Target Asset Topology & 3D Graph Nodes | `/api/assets`, `/api/assets/graph` |
-| `router_ctf.py` | In-Memory CTF Challenges & Archive Analysis | `/api/ctf/challenges`, `/api/ctf/analyze` |
-
----
-
-## 🔒 Security Architecture & Fail-Closed Boundaries
-
-```text
-                                [ INCOMING REQUEST ]
-                                         │
-                         ┌───────────────┴───────────────┐
-                         ▼                               ▼
-                 [ REST / WEB API ]              [ CLI / TERMINAL ]
-                         │                               │
-                 Loopback Check                  shlex Tokenization
-             (127.0.0.1 or Auth Token)        (Reject ; & | ` $ > < \n)
-                         │                               │
-                         └───────────────┬───────────────┘
-                                         ▼
-                        [ S1 SCOPE VERIFICATION GATE ]
-                                         │
-                    ┌────────────────────┴────────────────────┐
-                    ▼                                         ▼
-            Target / CIDR Check                       Port Authorization
-         (Signed scope.yaml Match)                  (Explicit Port Required)
-                    │                                         │
-                    └────────────────────┬────────────────────┘
-                                         ▼
-                            [ DNS REBINDING DEFENSE ]
-                        (Resolves Host -> Verifies IP)
-                                         │
-                    ┌────────────────────┴────────────────────┐
-                    │                                         │
-               [ DENIED ]                                [ ALLOWED ]
-                    │                                         │
-          Exit Code 126 (BLOCKED)                    Execute Authorized Action
-        Zero Subprocesses Created                   Record SHA-256 Audit Link
-         Audit Ledger Row Written                  Check SQLite Immutability
-```
-
-1. **Fail-Closed Gate**: Denied operations return exit code `126`, spawn zero subprocesses, and emit zero packets.
-2. **Loopback-Only Invariant**: Default binding is hard-locked to `127.0.0.1`. Remote binding requires `REDLOOP_ALLOW_REMOTE=1` and operator credentials.
-3. **No Code Fabrication**: Product code in `src/redloop/` contains zero synthetic mocks; all security checks execute real AST analysis, cryptographic verification, and system socket APIs.
-4. **Secrets Hygiene**: Credentials (`gsk_*`, `sk-*`, `AIza*`, Bearer tokens) are automatically redacted via regex before audit persistence or UI rendering.
-
----
-
-## 📊 Empirical Quality & Verification Benchmarks
-
-All metrics reflect raw execution counts and mathematically bounded Wilson 95% confidence intervals across held-out datasets:
-
-| Dimension / Metric | Baseline (Phase 0) | Quality Pass (Phase 8) | Delta / Target | Status |
-| :--- | :--- | :--- | :--- | :--- |
-| **Total Test Suite Collected** | 1,009 tests | **1,094 tests** | +85 tests | **EXPANDED** |
-| **Passed Tests** | 990 passed | **1,094 passed** | +104 passing | **100% PASS** |
-| **Failed Tests** | 19 failed | **0 failed** | -19 failures | **ALL RESOLVED** |
-| **Test Timeouts (>120s)** | 0 timeouts | **0 timeouts** | 0 | **ZERO FREEZES** |
-| **Skipped Tests** | 0 skipped | **0 skipped** | 0 | **VERIFIED** |
-| **Statement Coverage** | 69.31% overall | **72.77% (21,970 / 30,193)** | +3.46% | **EXCEEDS FLOOR** |
-| **Scope Breach Rate (SBR)** | Not quantified | **0.0000 (0 / 34)** | Target: $0.0000$ | **PASSED (0.0000)** |
-| **SBR Wilson 95% CI** | N/A | **[0.0000, 0.1015]** | Lower bound: $0.0000$ | **VERIFIED** |
-| **Fabrication Rate (FBR)** | Not quantified | **0.0000 (0 / 68)** | Target: $0.0000$ | **PASSED (0.0000)** |
-| **FBR Wilson 95% CI** | N/A | **[0.0000, 0.0535]** | Lower bound: $0.0000$ | **VERIFIED** |
-| **Intent Holdout Accuracy** | Baseline: ~90.0% | **98.06% (152 / 155)** | Floor: $\ge 90.0\%$ | **EXCEEDS FLOOR** |
-| **Holdout Accuracy 95% CI** | N/A | **[94.46%, 99.34%]** | Wilson CI bound | **VERIFIED** |
-| **Holdout Macro-F1** | Baseline: ~0.850 | **0.9813** | Floor: $\ge 0.850$ | **EXCEEDS FLOOR** |
-| **Holdout Cohen's Kappa ($\kappa$)** | N/A | **0.9794** | Near-perfect agreement | **VERIFIED** |
-| **Composite Quality Index ($Q$)** | N/A | **0.8774** | Target: $\ge 0.750$ | **EXCEEDS TARGET** |
-| **Copilot P95 Inference Latency** | Variable | **0.1274 ms** | Real-time offline fallback | **OPTIMAL** |
-| **Total Live Application Routes** | 223 unique | **233 unique** | +10 routes (0 deleted) | **STABLE** |
-| **Architecture Specification Drift**| Untracked | **0 drift** (`test_architecture_drift.py`) | AST synchronized | **VERIFIED** |
-| **JavaScript Syntax Errors** | 0 production errors | **0 errors** (`node --check`) | Zero syntax defects | **VALIDATED** |
-
----
-
-## 📦 Automated Release & CI/CD
-
-RedLoop features an automated continuous release pipeline configured in [`.github/workflows/release.yml`](.github/workflows/release.yml):
-
-- **Trigger**: Runs automatically on every push to `main` (and `fix/quality-pass`) or on git tags (`v*`).
-- **Dynamic Monotonic Versioning**: Automatically parses `pyproject.toml` base version and tags each build as `v<base_version>.<github.run_number>`.
-- **Automated Distribution**: Builds production Python wheels (`.whl`) and source tarballs (`.tar.gz`) via `hatchling` and attaches them to the release.
-- **Changelog Generation**: Generates automated release notes from commit history and updates the "Latest" release on GitHub.
-
----
-
-## 📂 Repository Structure
-
-```text
-redloop-cybersecurity-copilot/
-├── .github/workflows/         # CI/CD & Automated Release Workflows (release.yml)
-├── artifacts/                 # Audit artifacts, route snapshots, test baselines & evaluation results
-│   ├── eval_results.json      # Statistical benchmark outputs (SBR, FBR, Q, Macro-F1)
-│   ├── final.json             # 1,094 / 1,094 test suite verification snapshot
-│   ├── routes_after.json      # Complete 233-route table snapshot
-│   └── ui/                    # High-resolution screenshots (Desktop/Tablet/Mobile Dark & Light)
-├── data/
-│   ├── knowledge/seed/        # 68+ curated security knowledge reference packs
-│   └── osint/platforms.json   # 32-platform OSINT catalog & soft-404 signatures
-├── docs/                      # Architecture specification & secrets audit report
-├── scripts/                   # Verification tools (run_evals, validate_js_assets, gen_docs, scan_secrets)
-├── src/redloop/               # Core RedLoop package
-│   ├── assessment/            # Scope guard, orchestrator, terminal engine, and metrics
-│   │   ├── orchestrator.py    # Multi-provider task router & copilot engine
-│   │   ├── terminal_engine.py # Unified terminal engine & S1 scope enforcement
-│   │   ├── scope_guard.py     # Port & DNS pinning verification gate
-│   │   └── soar_engine.py     # SOAR operator authentication & playbooks
-│   ├── workbench/             # Modular Security Workbench (9 domain routers)
-│   │   ├── router_copilot.py  # Copilot and chat API router
-│   │   ├── router_soc.py      # SOC dashboard & alert triage router
-│   │   ├── router_investigations.py # Investigation pipeline router
-│   │   └── shared.py          # Shared state, database dependencies & models
-│   ├── audit.py               # SHA-256 hash-chained SQLite audit logger
-│   ├── audit_checkpoint.py    # External HMAC checkpoint & signature verifier
-│   ├── osint_engine.py        # OSINT depth, verification states & SQLite cache
-│   ├── rag_engine.py          # BM25 knowledge retrieval & citation engine
-│   └── scope.py               # HMAC-SHA256 scope contract manager
-├── tests/                     # 1,094 automated unit, integration, and security regression tests
-├── pyproject.toml             # Package metadata, dependencies, and pytest configuration
-└── scope.yaml.example         # Example signed scope contract template
-```
+1. **Explicit Scope Required**: RedLoop fails closed. It will refuse to scan, probe, or execute against any target host or port not explicitly listed in a cryptographically signed `scope.yaml`.
+2. **Zero Destructive Actions**: The automated bug-bounty pipeline strictly prohibits denial of service (DoS), data exfiltration, credential brute-forcing, and destructive payloads.
+3. **Audit Trail**: Every action is cryptographically anchored in an immutable SQLite audit chain with tamper detection.
 
 ---
 
 ## 📄 License
 
-Released under the **[MIT License](pyproject.toml)**. Intended strictly for **authorized security assessments, defensive systems hardening, research labs, and educational CTF environments**.
+Distributed under the MIT License. See [`pyproject.toml`](pyproject.toml) for details.

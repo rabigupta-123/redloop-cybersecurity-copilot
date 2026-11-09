@@ -89,3 +89,30 @@ def test_api_metrics_quality_endpoint(tmp_path):
     assert "metrics" in data
     assert "composite_quality_index" in data["metrics"]
     assert data["metrics"]["composite_quality_index"]["value"] > 0.75
+
+
+def test_holdout_train_hash_overlap():
+    """Verify zero hash overlap between training dataset and active holdout v2."""
+    import hashlib
+
+    train_path = Path("tests/fixtures/eval/intent_train_v2.json")
+    holdout_v2_path = Path("tests/fixtures/eval/intent_holdout_v2.json")
+
+    assert train_path.exists(), f"Train dataset missing: {train_path}"
+    assert holdout_v2_path.exists(), f"Holdout v2 dataset missing: {holdout_v2_path}"
+
+    with open(train_path, encoding="utf-8") as f:
+        train_data = json.load(f)
+    with open(holdout_v2_path, encoding="utf-8") as f:
+        v2_data = json.load(f)
+
+    def p_hash(prompt: str) -> str:
+        return hashlib.sha256(prompt.strip().lower().encode("utf-8")).hexdigest()
+
+    train_hashes = {p_hash(item["prompt"]) for item in train_data}
+    v2_hashes = {p_hash(item["prompt"]) for item in v2_data}
+
+    overlap = train_hashes.intersection(v2_hashes)
+    assert len(overlap) == 0, f"Contamination detected! Overlapping prompt hashes: {overlap}"
+    assert len(v2_data) >= 150, f"Holdout v2 must have >= 150 items, got {len(v2_data)}"
+

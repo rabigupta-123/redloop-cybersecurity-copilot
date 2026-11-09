@@ -1,0 +1,642 @@
+[
+  {
+    "prompt": "What are the key trade-offs between symmetric and asymmetric cryptography in enterprise PKI?",
+    "expected_intent": "GENERAL_CHAT"
+  },
+  {
+    "prompt": "Explain the architectural difference between OAuth 2.0 authorization code grant and implicit grant.",
+    "expected_intent": "GENERAL_CHAT"
+  },
+  {
+    "prompt": "Can you explain how side-channel timing attacks exploit non-constant-time string comparison?",
+    "expected_intent": "GENERAL_CHAT"
+  },
+  {
+    "prompt": "What is the security significance of the Strict-Transport-Security header max-age directive?",
+    "expected_intent": "GENERAL_CHAT"
+  },
+  {
+    "prompt": "Describe how hardware security modules protect root certificate authority private keys.",
+    "expected_intent": "GENERAL_CHAT"
+  },
+  {
+    "prompt": "Explain the principle of least privilege in the context of AWS IAM role delegation.",
+    "expected_intent": "GENERAL_CHAT"
+  },
+  {
+    "prompt": "How does Certificate Transparency prevent rogue CA certificate issuance?",
+    "expected_intent": "GENERAL_CHAT"
+  },
+  {
+    "prompt": "What is the difference between authenticated encryption modes like GCM and unauthenticated CBC?",
+    "expected_intent": "GENERAL_CHAT"
+  },
+  {
+    "prompt": "Describe the operational mechanics of DNS over HTTPS vs DNS over TLS.",
+    "expected_intent": "GENERAL_CHAT"
+  },
+  {
+    "prompt": "Explain how eBPF programs are verified for safety before execution in the Linux kernel.",
+    "expected_intent": "GENERAL_CHAT"
+  },
+  {
+    "prompt": "What are the common weaknesses in JSON Web Token signature verification implementations?",
+    "expected_intent": "GENERAL_CHAT"
+  },
+  {
+    "prompt": "Describe the security considerations when implementing mutual TLS for microservice service meshes.",
+    "expected_intent": "GENERAL_CHAT"
+  },
+  {
+    "prompt": "Perform an authorized TCP SYN port discovery sweep across target host 127.0.0.1.",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE"
+  },
+  {
+    "prompt": "Execute an authorized service version scan on localhost for services running on ports 80, 443.",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE"
+  },
+  {
+    "prompt": "Run an authorized network enumeration probe against the target 127.0.0.1.",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE"
+  },
+  {
+    "prompt": "Conduct authorized banner grabbing against target IP 127.0.0.1 port 8080.",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE"
+  },
+  {
+    "prompt": "Execute an authorized operating system fingerprinting sweep on target 127.0.0.1.",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE"
+  },
+  {
+    "prompt": "Run an authorized UDP service detection check for target host 127.0.0.1 on port 53.",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE"
+  },
+  {
+    "prompt": "Scan target 127.0.0.1 for listening SSH and HTTP endpoints under current authorization.",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE"
+  },
+  {
+    "prompt": "Probe the permitted lab target 127.0.0.1 for open high-order TCP services.",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE"
+  },
+  {
+    "prompt": "Perform an authorized ping sweep and host discovery against 127.0.0.1.",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE"
+  },
+  {
+    "prompt": "Execute authorized TLS cipher suite enumeration against target 127.0.0.1 port 8443.",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE"
+  },
+  {
+    "prompt": "Scan the authorized target host 127.0.0.1 to identify exposed database ports.",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE"
+  },
+  {
+    "prompt": "Initiate an authorized network discovery probe on target address 127.0.0.1.",
+    "expected_intent": "AUTHORIZED_RECONNAISSANCE"
+  },
+  {
+    "prompt": "Write a secure Python snippet using cryptography.hazmat to derive a key via HKDF-SHA256.",
+    "expected_intent": "CODING_AND_RESEARCH"
+  },
+  {
+    "prompt": "Show me a secure implementation of password hashing using Argon2id in modern Python.",
+    "expected_intent": "CODING_AND_RESEARCH"
+  },
+  {
+    "prompt": "Implement a constant-time byte comparison function in C to prevent timing leaks.",
+    "expected_intent": "CODING_AND_RESEARCH"
+  },
+  {
+    "prompt": "Write a secure SQL query using asyncpg parameterized statements in Python.",
+    "expected_intent": "CODING_AND_RESEARCH"
+  },
+  {
+    "prompt": "Create a Go function that safely validates and parses untrusted JSON without memory exhaustion.",
+    "expected_intent": "CODING_AND_RESEARCH"
+  },
+  {
+    "prompt": "Write a secure deserialization parser in Rust using serde with untrusted payload bounds.",
+    "expected_intent": "CODING_AND_RESEARCH"
+  },
+  {
+    "prompt": "Implement a token bucket rate limiter in Python using redis transactions.",
+    "expected_intent": "CODING_AND_RESEARCH"
+  },
+  {
+    "prompt": "Show how to validate and sanitize SVG files in Python to prevent stored XSS attacks.",
+    "expected_intent": "CODING_AND_RESEARCH"
+  },
+  {
+    "prompt": "Write a secure file upload handler in FastAPI that verifies magic bytes and enforces size limits.",
+    "expected_intent": "CODING_AND_RESEARCH"
+  },
+  {
+    "prompt": "Construct a secure HMAC-SHA512 webhook verification handler in Node.js.",
+    "expected_intent": "CODING_AND_RESEARCH"
+  },
+  {
+    "prompt": "Lookup autonomous system number, BGP prefix, and geolocation for IP 8.8.8.8.",
+    "expected_intent": "OSINT_IP"
+  },
+  {
+    "prompt": "Perform passive IP intelligence and reverse PTR query on 1.1.1.1.",
+    "expected_intent": "OSINT_IP"
+  },
+  {
+    "prompt": "Investigate routing history and hosting provider details for IP 9.9.9.9.",
+    "expected_intent": "OSINT_IP"
+  },
+  {
+    "prompt": "Query Shodan and InternetDB passive records for IP address 208.67.222.222.",
+    "expected_intent": "OSINT_IP"
+  },
+  {
+    "prompt": "Analyze ASN allocation and regional internet registry registration for IP 199.85.126.10.",
+    "expected_intent": "OSINT_IP"
+  },
+  {
+    "prompt": "Gather passive threat reputation and blocklist status for IP 64.6.64.6.",
+    "expected_intent": "OSINT_IP"
+  },
+  {
+    "prompt": "Check whether IP 84.200.69.80 belongs to a known VPN or Tor exit node.",
+    "expected_intent": "OSINT_IP"
+  },
+  {
+    "prompt": "Retrieve passive DNS co-hosted domain history for public IP 185.228.168.9.",
+    "expected_intent": "OSINT_IP"
+  },
+  {
+    "prompt": "Investigate BGP announcement and geolocation telemetry for IP 76.76.2.0.",
+    "expected_intent": "OSINT_IP"
+  },
+  {
+    "prompt": "Extract RIR whois delegation records for target IP 94.140.14.14.",
+    "expected_intent": "OSINT_IP"
+  },
+  {
+    "prompt": "Perform passive DNS enumeration and whois lookup for domain github.com.",
+    "expected_intent": "OSINT_DOMAIN"
+  },
+  {
+    "prompt": "Inspect SPF, DKIM, and DMARC enforcement records for domain cloudflare.com.",
+    "expected_intent": "OSINT_DOMAIN"
+  },
+  {
+    "prompt": "Enumerate historical DNS TXT and MX records for domain proton.me.",
+    "expected_intent": "OSINT_DOMAIN"
+  },
+  {
+    "prompt": "Check domain registration age and registrar lock status for example.org.",
+    "expected_intent": "OSINT_DOMAIN"
+  },
+  {
+    "prompt": "Query Certificate Transparency logs for subdomains belonging to mozilla.org.",
+    "expected_intent": "OSINT_DOMAIN"
+  },
+  {
+    "prompt": "Analyze mail server posture and DNSSEC validation for domain kernel.org.",
+    "expected_intent": "OSINT_DOMAIN"
+  },
+  {
+    "prompt": "Perform passive OSINT reconnaissance on domain name debian.org.",
+    "expected_intent": "OSINT_DOMAIN"
+  },
+  {
+    "prompt": "Extract authoritative name servers and SOA records for domain eff.org.",
+    "expected_intent": "OSINT_DOMAIN"
+  },
+  {
+    "prompt": "Inspect CAA certificate authority authorization records for domain signal.org.",
+    "expected_intent": "OSINT_DOMAIN"
+  },
+  {
+    "prompt": "Conduct passive WHOIS and RDAP entity investigation for domain archlinux.org.",
+    "expected_intent": "OSINT_DOMAIN"
+  },
+  {
+    "prompt": "Verify MX delivery reachability and catch-all status for security@example.com.",
+    "expected_intent": "OSINT_EMAIL"
+  },
+  {
+    "prompt": "Perform passive email footprint check for contact@mozilla.org.",
+    "expected_intent": "OSINT_EMAIL"
+  },
+  {
+    "prompt": "Check whether admin@kernel.org is associated with public breach dumps.",
+    "expected_intent": "OSINT_EMAIL"
+  },
+  {
+    "prompt": "Investigate mailbox deliverability and disposable domain status for test@proton.me.",
+    "expected_intent": "OSINT_EMAIL"
+  },
+  {
+    "prompt": "Analyze mailbox routing and SMTP banner for noc@cloudflare.com.",
+    "expected_intent": "OSINT_EMAIL"
+  },
+  {
+    "prompt": "Perform OSINT footprint lookup on email address researcher@mitre.org.",
+    "expected_intent": "OSINT_EMAIL"
+  },
+  {
+    "prompt": "Check for historical PGP key signatures associated with tor-team@torproject.org.",
+    "expected_intent": "OSINT_EMAIL"
+  },
+  {
+    "prompt": "Conduct email verification and SPF alignment inspection for webmaster@eff.org.",
+    "expected_intent": "OSINT_EMAIL"
+  },
+  {
+    "prompt": "Check if user@archlinux.org has exposed public commit identities.",
+    "expected_intent": "OSINT_EMAIL"
+  },
+  {
+    "prompt": "Inspect email reputation and SMTP handshake responsiveness for info@github.com.",
+    "expected_intent": "OSINT_EMAIL"
+  },
+  {
+    "prompt": "Lookup international dialing prefix, telecom carrier, and format for +14155550199.",
+    "expected_intent": "OSINT_PHONE"
+  },
+  {
+    "prompt": "Perform telecom metadata and line-type analysis for phone number +442071838750.",
+    "expected_intent": "OSINT_PHONE"
+  },
+  {
+    "prompt": "Determine geographic region and mobile country code for phone +33140506070.",
+    "expected_intent": "OSINT_PHONE"
+  },
+  {
+    "prompt": "Check carrier routing and VoIP designation for number +49301234567.",
+    "expected_intent": "OSINT_PHONE"
+  },
+  {
+    "prompt": "Analyze number portability and original telecom assigner for +61299998888.",
+    "expected_intent": "OSINT_PHONE"
+  },
+  {
+    "prompt": "Perform passive telecommunications lookup for target phone +81355550100.",
+    "expected_intent": "OSINT_PHONE"
+  },
+  {
+    "prompt": "Extract telecom area code and carrier allocation for +12125550144.",
+    "expected_intent": "OSINT_PHONE"
+  },
+  {
+    "prompt": "Verify E.164 compliance and geographical routing for phone number +41225550123.",
+    "expected_intent": "OSINT_PHONE"
+  },
+  {
+    "prompt": "Investigate telecom exchange and country registration for +34911234567.",
+    "expected_intent": "OSINT_PHONE"
+  },
+  {
+    "prompt": "Check whether phone number +12065550188 is classified as toll-free or premium rate.",
+    "expected_intent": "OSINT_PHONE"
+  },
+  {
+    "prompt": "Check public account existence and footprint across code repositories for username octocat.",
+    "expected_intent": "OSINT_USERNAME"
+  },
+  {
+    "prompt": "Search public development profiles and keybase identity for handle torvalds.",
+    "expected_intent": "OSINT_USERNAME"
+  },
+  {
+    "prompt": "Enumerate public social and technical profiles associated with username defcon_researcher.",
+    "expected_intent": "OSINT_USERNAME"
+  },
+  {
+    "prompt": "Investigate public forum and repository footprint for user handle security_ninja_42.",
+    "expected_intent": "OSINT_USERNAME"
+  },
+  {
+    "prompt": "Check whether handle cryptopunk_01 has active public key registries or profiles.",
+    "expected_intent": "OSINT_USERNAME"
+  },
+  {
+    "prompt": "Perform passive open-source username enumeration for handle byte_wizard.",
+    "expected_intent": "OSINT_USERNAME"
+  },
+  {
+    "prompt": "Search public software package registries for publisher handle dev_sec_lead.",
+    "expected_intent": "OSINT_USERNAME"
+  },
+  {
+    "prompt": "Check public profile registrations across open platforms for username net_hunter_99.",
+    "expected_intent": "OSINT_USERNAME"
+  },
+  {
+    "prompt": "Search public code commits and repositories for author username kernel_builder.",
+    "expected_intent": "OSINT_USERNAME"
+  },
+  {
+    "prompt": "Investigate public social and technical handle presence for user red_teamer_x.",
+    "expected_intent": "OSINT_USERNAME"
+  },
+  {
+    "prompt": "Analyze this CTF challenge: solve a custom XOR-based cipher given known plaintext prefix.",
+    "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS"
+  },
+  {
+    "prompt": "How do I approach a ret2libc binary exploitation challenge on a 64-bit Linux binary?",
+    "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS"
+  },
+  {
+    "prompt": "Analyze this blind SQL injection CTF challenge that uses boolean-based responses.",
+    "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS"
+  },
+  {
+    "prompt": "Explain the methodology for solving a heap exploitation CTF challenge involving fastbin dup.",
+    "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS"
+  },
+  {
+    "prompt": "Help analyze this web CTF challenge featuring server-side template injection in Jinja2.",
+    "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS"
+  },
+  {
+    "prompt": "What technique should I use to analyze an audio steganography challenge hidden in LSB?",
+    "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS"
+  },
+  {
+    "prompt": "Analyze this cryptographic CTF problem where RSA has common modulus N with two co-prime exponents.",
+    "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS"
+  },
+  {
+    "prompt": "Explain the steps to extract a hidden flag from a pcap file using Wireshark display filters.",
+    "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS"
+  },
+  {
+    "prompt": "Analyze this reverse engineering challenge binary that uses anti-debugging ptrace checks.",
+    "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS"
+  },
+  {
+    "prompt": "Guide me through solving an insecure deserialization CTF challenge in PHP object injection.",
+    "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS"
+  },
+  {
+    "prompt": "Extract Exif metadata, camera model, and GPS coordinates from evidence sample artifact.jpg.",
+    "expected_intent": "FILE_METADATA_ANALYSIS"
+  },
+  {
+    "prompt": "Inspect PDF author metadata, creation tool, and modification timestamps on evidence_doc.pdf.",
+    "expected_intent": "FILE_METADATA_ANALYSIS"
+  },
+  {
+    "prompt": "Analyze PE header timestamps, compiler version, and section entropy on sample suspicious.exe.",
+    "expected_intent": "FILE_METADATA_ANALYSIS"
+  },
+  {
+    "prompt": "Extract OLE compound document properties and revision history from memo.docx.",
+    "expected_intent": "FILE_METADATA_ANALYSIS"
+  },
+  {
+    "prompt": "Inspect PNG tEXt and zTXt metadata chunks on captured evidence screenshot.png.",
+    "expected_intent": "FILE_METADATA_ANALYSIS"
+  },
+  {
+    "prompt": "Analyze ELF binary headers, section headers, and architecture targets for payload.bin.",
+    "expected_intent": "FILE_METADATA_ANALYSIS"
+  },
+  {
+    "prompt": "Extract audio tag metadata, encoder version, and copyright comments from recording.wav.",
+    "expected_intent": "FILE_METADATA_ANALYSIS"
+  },
+  {
+    "prompt": "Inspect ZIP archive headers and central directory comment metadata on bundle.zip.",
+    "expected_intent": "FILE_METADATA_ANALYSIS"
+  },
+  {
+    "prompt": "Examine Mach-O load commands and codesign signatures on suspicious_binary_macos.",
+    "expected_intent": "FILE_METADATA_ANALYSIS"
+  },
+  {
+    "prompt": "Extract metadata tags, software signatures, and color profile from diagram.tiff.",
+    "expected_intent": "FILE_METADATA_ANALYSIS"
+  },
+  {
+    "prompt": "Parse auth.log to detect brute-force SSH authentication anomalies and source IP distribution.",
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS"
+  },
+  {
+    "prompt": "Analyze Windows Event ID 4624 type 3 logon records for suspicious administrative access.",
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS"
+  },
+  {
+    "prompt": "Inspect nginx access logs to identify automated directory traversal and fuzzing attempts.",
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS"
+  },
+  {
+    "prompt": "Correlate Sysmon Event 1 process creation telemetry to detect living-off-the-land execution.",
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS"
+  },
+  {
+    "prompt": "Analyze firewall drop logs to reconstruct port scanning activity over a 24-hour window.",
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS"
+  },
+  {
+    "prompt": "Inspect auditd execve logs to identify unauthorized privilege elevation attempts.",
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS"
+  },
+  {
+    "prompt": "Parse Zeek conn.log to find long-duration beaconing connections with low jitter.",
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS"
+  },
+  {
+    "prompt": "Analyze DNS query logs to detect high-entropy subdomain requests indicative of DNS tunneling.",
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS"
+  },
+  {
+    "prompt": "Examine PowerShell script block logging (Event 4104) for obfuscated base64 commands.",
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS"
+  },
+  {
+    "prompt": "Review CloudTrail audit records for unauthorized IAM policy modification and access key generation.",
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS"
+  },
+  {
+    "prompt": "What is the recommended nmap syntax for performing an OS detection scan with default scripts?",
+    "expected_intent": "KALI_COMMAND_ASSISTANCE"
+  },
+  {
+    "prompt": "Show me the gobuster command syntax for directory brute-forcing using an external wordlist.",
+    "expected_intent": "KALI_COMMAND_ASSISTANCE"
+  },
+  {
+    "prompt": "How do I configure masscan to scan a specific port at 1000 packets per second?",
+    "expected_intent": "KALI_COMMAND_ASSISTANCE"
+  },
+  {
+    "prompt": "What is the proper nikto command to scan an HTTPS server on port 8443?",
+    "expected_intent": "KALI_COMMAND_ASSISTANCE"
+  },
+  {
+    "prompt": "Show me the whatweb syntax for aggressive web technology fingerprinting.",
+    "expected_intent": "KALI_COMMAND_ASSISTANCE"
+  },
+  {
+    "prompt": "How do I use ffuf to fuzz GET query parameters with a custom wordlist?",
+    "expected_intent": "KALI_COMMAND_ASSISTANCE"
+  },
+  {
+    "prompt": "Explain the tcpdump command to capture and write all DNS traffic to a pcap file.",
+    "expected_intent": "KALI_COMMAND_ASSISTANCE"
+  },
+  {
+    "prompt": "What is the tshark command line to filter HTTP GET requests and output the request URI?",
+    "expected_intent": "KALI_COMMAND_ASSISTANCE"
+  },
+  {
+    "prompt": "Show the curl syntax to send a POST request with JSON payload and custom Authorization header.",
+    "expected_intent": "KALI_COMMAND_ASSISTANCE"
+  },
+  {
+    "prompt": "How do I run sslscan to check for TLS 1.0 and TLS 1.1 fallback support on a host?",
+    "expected_intent": "KALI_COMMAND_ASSISTANCE"
+  },
+  {
+    "prompt": "Perform a non-destructive vulnerability assessment against authorized target 127.0.0.1.",
+    "expected_intent": "VULNERABILITY_ASSESSMENT"
+  },
+  {
+    "prompt": "Assess whether authorized target host 127.0.0.1 is vulnerable to CVE-2021-44228.",
+    "expected_intent": "VULNERABILITY_ASSESSMENT"
+  },
+  {
+    "prompt": "Evaluate authorized web endpoint 127.0.0.1 for missing security headers and CORS misconfigurations.",
+    "expected_intent": "VULNERABILITY_ASSESSMENT"
+  },
+  {
+    "prompt": "Run a non-destructive TLS vulnerability assessment on authorized host 127.0.0.1 port 443.",
+    "expected_intent": "VULNERABILITY_ASSESSMENT"
+  },
+  {
+    "prompt": "Conduct an authorized vulnerability scan for known CMS flaws on target 127.0.0.1.",
+    "expected_intent": "VULNERABILITY_ASSESSMENT"
+  },
+  {
+    "prompt": "Assess authorized target 127.0.0.1 for exposed administrative panels and debug endpoints.",
+    "expected_intent": "VULNERABILITY_ASSESSMENT"
+  },
+  {
+    "prompt": "Evaluate whether target 127.0.0.1 allows unauthenticated access to actuator endpoints.",
+    "expected_intent": "VULNERABILITY_ASSESSMENT"
+  },
+  {
+    "prompt": "Perform an authorized web vulnerability check against 127.0.0.1 for open redirect vectors.",
+    "expected_intent": "VULNERABILITY_ASSESSMENT"
+  },
+  {
+    "prompt": "Run an authorized vulnerability evaluation of TLS renegotiation settings on target 127.0.0.1.",
+    "expected_intent": "VULNERABILITY_ASSESSMENT"
+  },
+  {
+    "prompt": "Assess authorized server 127.0.0.1 for default credentials and misconfigured services.",
+    "expected_intent": "VULNERABILITY_ASSESSMENT"
+  },
+  {
+    "prompt": "Show the visual graph representation and connected nodes for active investigation inv-901.",
+    "expected_intent": "GRAPH_AND_INVESTIGATION"
+  },
+  {
+    "prompt": "Display all attack surface correlation edges for investigation inv-404.",
+    "expected_intent": "GRAPH_AND_INVESTIGATION"
+  },
+  {
+    "prompt": "Retrieve the investigation entity relationship graph for case inv-782.",
+    "expected_intent": "GRAPH_AND_INVESTIGATION"
+  },
+  {
+    "prompt": "Render the connected threat actor and IOC graph for investigation inv-303.",
+    "expected_intent": "GRAPH_AND_INVESTIGATION"
+  },
+  {
+    "prompt": "Display the visual evidence graph linking host findings in investigation inv-112.",
+    "expected_intent": "GRAPH_AND_INVESTIGATION"
+  },
+  {
+    "prompt": "Query the attack path graph and blast radius for investigation inv-555.",
+    "expected_intent": "GRAPH_AND_INVESTIGATION"
+  },
+  {
+    "prompt": "Show the graph representation of pivot indicators in investigation inv-888.",
+    "expected_intent": "GRAPH_AND_INVESTIGATION"
+  },
+  {
+    "prompt": "Render the investigation topology graph for active case inv-221.",
+    "expected_intent": "GRAPH_AND_INVESTIGATION"
+  },
+  {
+    "prompt": "Generate a comprehensive executive security report for completed assessment asmt-101.",
+    "expected_intent": "REPORT_GENERATION"
+  },
+  {
+    "prompt": "Compile the technical remediation and finding report for assessment asmt-202.",
+    "expected_intent": "REPORT_GENERATION"
+  },
+  {
+    "prompt": "Export the final compliance and risk summary report for assessment asmt-303.",
+    "expected_intent": "REPORT_GENERATION"
+  },
+  {
+    "prompt": "Produce a downloadable PDF audit report for assessment asmt-404.",
+    "expected_intent": "REPORT_GENERATION"
+  },
+  {
+    "prompt": "Generate a markdown security assessment report for target asmt-505.",
+    "expected_intent": "REPORT_GENERATION"
+  },
+  {
+    "prompt": "Compile all validated vulnerability evidence into a report for assessment asmt-606.",
+    "expected_intent": "REPORT_GENERATION"
+  },
+  {
+    "prompt": "Verify the cryptographic integrity and hash chain of the system audit ledger.",
+    "expected_intent": "AUDIT_VERIFY"
+  },
+  {
+    "prompt": "Check whether any audit log records have experienced tampering or signature breakage.",
+    "expected_intent": "AUDIT_VERIFY"
+  },
+  {
+    "prompt": "Validate the SHA-256 Merkle checkpoint chain across all stored audit entries.",
+    "expected_intent": "AUDIT_VERIFY"
+  },
+  {
+    "prompt": "Run the cryptographic audit verification tool to confirm ledger authenticity.",
+    "expected_intent": "AUDIT_VERIFY"
+  },
+  {
+    "prompt": "Check the tamper-evident audit ledger and verify checkpoint signatures.",
+    "expected_intent": "AUDIT_VERIFY"
+  },
+  {
+    "prompt": "Verify cryptographic integrity proofs on the audit database.",
+    "expected_intent": "AUDIT_VERIFY"
+  },
+  {
+    "prompt": "Perform a network port scan.",
+    "expected_intent": "TARGET_CLARIFICATION_REQUIRED"
+  },
+  {
+    "prompt": "Run an authorized vulnerability assessment probe.",
+    "expected_intent": "TARGET_CLARIFICATION_REQUIRED"
+  },
+  {
+    "prompt": "Conduct a service discovery sweep on the target.",
+    "expected_intent": "TARGET_CLARIFICATION_REQUIRED"
+  },
+  {
+    "prompt": "Perform a whois domain registration lookup.",
+    "expected_intent": "TARGET_CLARIFICATION_REQUIRED"
+  },
+  {
+    "prompt": "Execute an email deliverability and footprint check.",
+    "expected_intent": "TARGET_CLARIFICATION_REQUIRED"
+  },
+  {
+    "prompt": "Initiate an authorized TLS cipher suite audit.",
+    "expected_intent": "TARGET_CLARIFICATION_REQUIRED"
+  }
+]

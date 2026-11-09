@@ -15400,8 +15400,12 @@ def register_workbench_routes(
         return JSONResponse({"tasks": [t.to_dict() for t in store.list_all(limit=limit)]})
 
     @app.post("/api/agent/tasks")
-    async def create_agent_task_endpoint(payload: dict[str, Any], request: Request):
+    async def create_agent_task_endpoint(request: Request):
         _require_same_origin(request)
+        try:
+            payload = await request.json()
+        except Exception:
+            payload = {}
         prompt = payload.get("prompt") or ""
         target = payload.get("target")
         environment = payload.get("environment") or "host"

@@ -19,6 +19,7 @@ Enforces:
 from __future__ import annotations
 
 import hashlib
+import hmac
 import ipaddress
 import os
 import platform
@@ -53,6 +54,82 @@ from redloop.audit import AuditLogger
 
 
 MAX_OUTPUT_BYTES = 512 * 1024  # 512 KB
+
+
+class SecurityGateError(PermissionError):
+    """Raised when execution violates the single choke point security gate."""
+    pass
+
+
+@dataclass(frozen=True)
+class ValidatedCommand:
+    """Cryptographically authenticated command token produced solely by the REDLOOP security gate.
+
+    The lowest-level process spawn functions accept ONLY instances of ValidatedCommand.
+    """
+    binary: str
+    args: tuple[str, ...]
+    command_string: str
+    execution_environment: str = "host"
+    working_directory: str | None = None
+    targets: tuple[tuple[str, int | None], ...] = ()
+    is_network: bool = False
+    gate_signature: str = ""
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "binary": self.binary,
+            "args": list(self.args),
+            "command_string": self.command_string,
+            "execution_environment": self.execution_environment,
+            "working_directory": self.working_directory,
+            "targets": list(self.targets),
+            "is_network": self.is_network,
+        }
+
+
+_GATE_HMAC_KEY = os.urandom(32)
+
+
+def _compute_gate_signature(binary: str, args: tuple[str, ...], env: str) -> str:
+    payload = f"{binary}|{' '.join(args)}|{env}".encode("utf-8")
+    return hmac.new(_GATE_HMAC_KEY, payload, hashlib.sha256).hexdigest()
+
+
+def _verify_gate_signature(cmd: Any) -> bool:
+    if not isinstance(cmd, ValidatedCommand):
+        return False
+    if not cmd.gate_signature:
+        return False
+    expected = _compute_gate_signature(cmd.binary, cmd.args, cmd.execution_environment)
+    return hmac.compare_digest(cmd.gate_signature, expected)
+
+
+def create_test_only_validated_command(
+    binary: str,
+    args: list[str] | tuple[str, ...] | None = None,
+    environment: str = "host",
+    working_directory: str | None = None,
+    targets: list[tuple[str, int | None]] | None = None,
+    is_network: bool = False,
+) -> ValidatedCommand:
+    """TEST ONLY factory to build a signed ValidatedCommand for adapter unit tests.
+
+    MUST NOT be imported or referenced in production code!
+    """
+    clean_args = tuple(args or [])
+    sig = _compute_gate_signature(binary, clean_args, environment)
+    return ValidatedCommand(
+        binary=binary,
+        args=clean_args,
+        command_string=f"{binary} {' '.join(clean_args)}".strip(),
+        execution_environment=environment,
+        working_directory=working_directory,
+        targets=tuple(targets or []),
+        is_network=is_network,
+        gate_signature=sig,
+    )
+
 
 
 class ExecutionEnvironment(str, Enum):
@@ -183,7 +260,8 @@ ALLOWED_NETWORK_BINARIES = {
     "dig", "nslookup", "whatweb", "nikto", "gobuster", "nuclei", "tshark",
 }
 
-FORBIDDEN_SHELL_CHARS = re.compile(r"[;&|`$<>\n\(\)]")
+FORBIDDEN_SHELL_CHARS = re.compile(r"[;&|`$<>\n]")
+FORBIDDEN_LIST_CHARS = re.compile(r"[;&|`\n]")
 
 
 def _normalize_host(host_str: str) -> str:
@@ -234,11 +312,16 @@ def _normalize_host(host_str: str) -> str:
     return h
 
 
-def _parse_url_or_endpoint(raw: str) -> tuple[str, int | None]:
-    """Extract (host, port) from URL, host:port, or bare host."""
+def _parse_url_or_endpoint(raw: str) -> list[tuple[str, int | None]]:
+    """Extract all candidate (host, port) pairs from URL, host:port, or bare host.
+
+    Detects and guards against URL userinfo / fragment / query host confusion.
+    """
     m_v6 = re.match(r"^\[([a-fA-F0-9:]+)\]:(\d+)$", raw)
     if m_v6:
-        return m_v6.group(1), int(m_v6.group(2))
+        return [(m_v6.group(1), int(m_v6.group(2)))]
+
+    targets: list[tuple[str, int | None]] = []
 
     if "://" in raw:
         parsed = urllib.parse.urlsplit(raw)
@@ -256,16 +339,30 @@ def _parse_url_or_endpoint(raw: str) -> tuple[str, int | None]:
                 port = 21
             elif parsed.scheme == "ssh":
                 port = 22
-        return norm_h, port
+        targets.append((norm_h, port))
+
+        # Anti-userinfo / fragment / query confusion: detect embedded hosts after '@' or '%40'
+        unquoted = urllib.parse.unquote(raw)
+        if "@" in unquoted:
+            matches = re.findall(r"@([a-zA-Z0-9.\-]+(?::\d+)?)", unquoted)
+            for m in matches:
+                # Strip trailing path/slash/hash
+                m_clean = m.split("/")[0].split("?")[0].split("#")[0]
+                if ":" in m_clean and not m_clean.endswith(":"):
+                    hc, pc = m_clean.split(":", 1)
+                    targets.append((_normalize_host(hc), int(pc) if pc.isdigit() else (port or 80)))
+                elif m_clean:
+                    targets.append((_normalize_host(m_clean), port or 80))
+        return list(dict.fromkeys(targets))
 
     if ":" in raw and not raw.startswith(":") and raw.count(":") == 1:
         h_part, p_part = raw.split(":", 1)
         if p_part.isdigit():
             p_val = int(p_part)
             if 1 <= p_val <= 65535:
-                return _normalize_host(h_part), p_val
+                return [(_normalize_host(h_part), p_val)]
 
-    return _normalize_host(raw), None
+    return [(_normalize_host(raw), None)]
 
 
 def extract_network_targets(command: str) -> list[tuple[str, int | None]]:
@@ -402,8 +499,8 @@ def extract_network_targets(command: str) -> list[tuple[str, int | None]]:
             if arg.startswith("-"):
                 i += 1
                 continue
-            host, port = _parse_url_or_endpoint(arg)
-            results.append((host, port or 80))
+            for host, port in _parse_url_or_endpoint(arg):
+                results.append((host, port or 80))
             i += 1
 
     elif bin_name in ("nc", "ncat"):
@@ -422,11 +519,11 @@ def extract_network_targets(command: str) -> list[tuple[str, int | None]]:
         if len(positionals) < 1:
             raise ValueError("nc/ncat missing target host")
         host = _normalize_host(positionals[0])
-        port = None
-        if len(positionals) >= 2:
-            if not positionals[1].isdigit():
-                raise ValueError(f"Invalid nc port: {positionals[1]}")
-            port = int(positionals[1])
+        if len(positionals) < 2 or not positionals[1].isdigit():
+            raise ValueError("nc/ncat requires explicit target port")
+        port = int(positionals[1])
+        if not (1 <= port <= 65535):
+            raise ValueError(f"Invalid nc port: {port}")
         results.append((host, port))
 
     elif bin_name == "ssh":
@@ -501,8 +598,8 @@ def extract_network_targets(command: str) -> list[tuple[str, int | None]]:
             i += 1
         if not url_target:
             raise ValueError(f"{bin_name} missing target URL/host")
-        host, port = _parse_url_or_endpoint(url_target)
-        results.append((host, port or 80))
+        for host, port in _parse_url_or_endpoint(url_target):
+            results.append((host, port or 80))
 
     elif bin_name == "tshark":
         host_target = None
@@ -589,8 +686,7 @@ class BaseExecutionAdapter:
 
     def execute(
         self,
-        binary: str,
-        args: list[str],
+        command: ValidatedCommand,
         working_directory: str | None = None,
         timeout_seconds: int = 30,
         cancel_token: threading.Event | None = None,
@@ -609,16 +705,22 @@ class HostExecutionAdapter(BaseExecutionAdapter):
 
     def execute(
         self,
-        binary: str,
-        args: list[str],
+        command: ValidatedCommand,
         working_directory: str | None = None,
         timeout_seconds: int = 30,
         cancel_token: threading.Event | None = None,
         task_id: str | None = None,
     ) -> ExecutionResult:
+        if not isinstance(command, ValidatedCommand) or not _verify_gate_signature(command):
+            raise SecurityGateError(
+                "Choke point violation: low-level execution adapters accept ONLY a gate-validated ValidatedCommand."
+            )
+
+        binary = command.binary
+        args = list(command.args)
+        full_cmd_str = command.command_string or " ".join([binary] + args)
         start_ts = datetime.now(timezone.utc).isoformat()
         t0 = time.time()
-        full_cmd_str = " ".join([binary] + args)
 
         if cancel_token and cancel_token.is_set():
             err_msg = "Process execution cancelled by user before process creation."
@@ -877,16 +979,22 @@ class WSLExecutionAdapter(BaseExecutionAdapter):
 
     def execute(
         self,
-        binary: str,
-        args: list[str],
+        command: ValidatedCommand,
         working_directory: str | None = None,
         timeout_seconds: int = 30,
         cancel_token: threading.Event | None = None,
         task_id: str | None = None,
     ) -> ExecutionResult:
+        if not isinstance(command, ValidatedCommand) or not _verify_gate_signature(command):
+            raise SecurityGateError(
+                "Choke point violation: low-level execution adapters accept ONLY a gate-validated ValidatedCommand."
+            )
+
+        binary = command.binary
+        args = list(command.args)
+        full_cmd_str = command.command_string or " ".join([binary] + args)
         avail, reason = self.is_available()
         start_ts = datetime.now(timezone.utc).isoformat()
-        full_cmd_str = " ".join([binary] + args)
 
         if cancel_token and cancel_token.is_set():
             return ExecutionResult(
@@ -1064,16 +1172,22 @@ class KaliExecutionAdapter(BaseExecutionAdapter):
 
     def execute(
         self,
-        binary: str,
-        args: list[str],
+        command: ValidatedCommand,
         working_directory: str | None = None,
         timeout_seconds: int = 30,
         cancel_token: threading.Event | None = None,
         task_id: str | None = None,
     ) -> ExecutionResult:
+        if not isinstance(command, ValidatedCommand) or not _verify_gate_signature(command):
+            raise SecurityGateError(
+                "Choke point violation: low-level execution adapters accept ONLY a gate-validated ValidatedCommand."
+            )
+
+        binary = command.binary
+        args = list(command.args)
+        full_cmd_str = command.command_string or " ".join([binary] + args)
         avail, reason = self.is_available()
         start_ts = datetime.now(timezone.utc).isoformat()
-        full_cmd_str = " ".join([binary] + args)
 
         if cancel_token and cancel_token.is_set():
             return ExecutionResult(
@@ -1118,8 +1232,7 @@ class KaliExecutionAdapter(BaseExecutionAdapter):
         distro = kali_info.get("distro_name")
         wsl_adapter = WSLExecutionAdapter(distro=distro)
         res = wsl_adapter.execute(
-            binary=binary,
-            args=args,
+            command=command,
             working_directory=working_directory,
             timeout_seconds=timeout_seconds,
             cancel_token=cancel_token,
@@ -1147,16 +1260,22 @@ class DockerExecutionAdapter(BaseExecutionAdapter):
 
     def execute(
         self,
-        binary: str,
-        args: list[str],
+        command: ValidatedCommand,
         working_directory: str | None = None,
         timeout_seconds: int = 30,
         cancel_token: threading.Event | None = None,
         task_id: str | None = None,
     ) -> ExecutionResult:
+        if not isinstance(command, ValidatedCommand) or not _verify_gate_signature(command):
+            raise SecurityGateError(
+                "Choke point violation: low-level execution adapters accept ONLY a gate-validated ValidatedCommand."
+            )
+
+        binary = command.binary
+        args = list(command.args)
+        full_cmd_str = command.command_string or " ".join([binary] + args)
         avail, reason = self.is_available()
         start_ts = datetime.now(timezone.utc).isoformat()
-        full_cmd_str = " ".join([binary] + args)
 
         if cancel_token and cancel_token.is_set():
             return ExecutionResult(
@@ -1320,6 +1439,20 @@ class DockerExecutionAdapter(BaseExecutionAdapter):
 
 # --- UNIFIED TERMINAL ENGINE ---
 
+def _is_dangerous_inline_code(code_str: str) -> bool:
+    DANGER_KEYWORDS = (
+        "socket", "subprocess", "urllib", "requests", "http.client",
+        "os.system", "os.popen", "pty", "shutil", "eval(", "exec(",
+        "__import__", "open(", "/etc/passwd", "/etc/shadow",
+    )
+    c_lower = code_str.lower()
+    if any(kw in c_lower for kw in DANGER_KEYWORDS):
+        return True
+    if re.search(r"\b(?:192\.0\.2|198\.51\.100|203\.0\.113)\.", code_str):
+        return True
+    return False
+
+
 class UnifiedTerminalEngine:
     """Coordinates command validation, security authorization, and multi-environment execution."""
 
@@ -1352,7 +1485,7 @@ class UnifiedTerminalEngine:
 
     def execute_command(
         self,
-        command_string_or_args: str | list[str],
+        command_string_or_args: str | list[str] | ValidatedCommand,
         environment: Literal["host", "wsl", "kali", "linux", "docker"] = "host",
         target: str | None = None,
         working_directory: str | None = None,
@@ -1364,10 +1497,58 @@ class UnifiedTerminalEngine:
         start_ts = datetime.now(timezone.utc).isoformat()
         t_id = task_id or f"term-{uuid.uuid4().hex[:8]}"
 
-        # 1. Parse into binary and argument list
+        # 0. If already a ValidatedCommand, verify gate signature
+        if isinstance(command_string_or_args, ValidatedCommand):
+            if not _verify_gate_signature(command_string_or_args):
+                return ExecutionResult(
+                    command=command_string_or_args.command_string,
+                    args=list(command_string_or_args.args),
+                    execution_environment=environment,
+                    start_timestamp=start_ts,
+                    completion_timestamp=datetime.now(timezone.utc).isoformat(),
+                    duration_ms=0.0,
+                    stdout="",
+                    stderr="SECURITY_ALERT: ValidatedCommand signature verification failed.",
+                    exit_code=126,
+                    status=ExecutionStatus.BLOCKED,
+                    error="SECURITY_ALERT: Invalid gate signature.",
+                    task_id=t_id,
+                )
+            adapter = self._adapters.get(command_string_or_args.execution_environment.lower()) or self._adapters["host"]
+            cancel_evt = cancel_token or threading.Event()
+            with self._lock:
+                self._active_cancels[t_id] = cancel_evt
+            try:
+                res = adapter.execute(
+                    command=command_string_or_args,
+                    working_directory=working_directory or command_string_or_args.working_directory,
+                    timeout_seconds=timeout_seconds,
+                    cancel_token=cancel_evt,
+                    task_id=t_id,
+                )
+            finally:
+                with self._lock:
+                    self._active_cancels.pop(t_id, None)
+            return res
+
+        # 1. Parse into binary and argument list with strict gate validation
         if isinstance(command_string_or_args, str):
             cmd_str = command_string_or_args.strip()
-            # Safety parse via KaliCommandParser
+            if FORBIDDEN_SHELL_CHARS.search(cmd_str):
+                return ExecutionResult(
+                    command=cmd_str,
+                    args=[],
+                    execution_environment=environment,
+                    start_timestamp=start_ts,
+                    completion_timestamp=datetime.now(timezone.utc).isoformat(),
+                    duration_ms=0.0,
+                    stdout="",
+                    stderr="SECURITY_ALERT: Command contains forbidden shell metacharacters or chaining (;&|`$( )><\\n).",
+                    exit_code=126,
+                    status=ExecutionStatus.BLOCKED,
+                    error="SECURITY_ALERT: Shell metacharacters or chaining rejected by gate.",
+                    task_id=t_id,
+                )
             parsed = KaliCommandParser.parse(cmd_str)
             if parsed.is_dangerous or parsed.state == KaliCommandState.BLOCKED:
                 return ExecutionResult(
@@ -1388,6 +1569,49 @@ class UnifiedTerminalEngine:
             args = parsed.args
             inferred_target = target or parsed.target
             is_network = parsed.is_network
+            # Interpreter inline execution wrapper check
+            try:
+                sh_tokens = shlex.split(cmd_str)
+            except Exception:
+                sh_tokens = cmd_str.split()
+            if sh_tokens:
+                sh_b = os.path.basename(sh_tokens[0]).lower().split(".")[0]
+                if sh_b in ("sh", "bash", "zsh", "cmd", "cmd.exe", "powershell", "pwsh"):
+                    for a_tok in sh_tokens[1:]:
+                        if a_tok.lower() in ("-c", "/c", "-command", "-e"):
+                            return ExecutionResult(
+                                command=cmd_str,
+                                args=args,
+                                execution_environment=environment,
+                                start_timestamp=start_ts,
+                                completion_timestamp=datetime.now(timezone.utc).isoformat(),
+                                duration_ms=0.0,
+                                stdout="",
+                                stderr="SECURITY_ALERT: Shell inline code execution (-c) is blocked by REDLOOP security gate.",
+                                exit_code=126,
+                                status=ExecutionStatus.BLOCKED,
+                                error="SECURITY_ALERT: Shell execution wrapper rejected.",
+                                task_id=t_id,
+                            )
+                elif sh_b in ("python", "python3"):
+                    for idx_a, a_tok in enumerate(sh_tokens[1:], 1):
+                        if a_tok.lower() == "-c" and idx_a < len(sh_tokens):
+                            code_cand = " ".join(sh_tokens[idx_a:])
+                            if _is_dangerous_inline_code(code_cand):
+                                return ExecutionResult(
+                                    command=cmd_str,
+                                    args=args,
+                                    execution_environment=environment,
+                                    start_timestamp=start_ts,
+                                    completion_timestamp=datetime.now(timezone.utc).isoformat(),
+                                    duration_ms=0.0,
+                                    stdout="",
+                                    stderr="SECURITY_ALERT: Interpreter inline code execution (-c) with unauthorized payload is blocked by REDLOOP security gate.",
+                                    exit_code=126,
+                                    status=ExecutionStatus.BLOCKED,
+                                    error="SECURITY_ALERT: Dangerous interpreter payload rejected.",
+                                    task_id=t_id,
+                                )
         else:
             if not command_string_or_args:
                 return ExecutionResult(
@@ -1404,6 +1628,61 @@ class UnifiedTerminalEngine:
                     error="Empty command list.",
                     task_id=t_id,
                 )
+            # Rejection of shell metacharacters in any list token
+            for tok in command_string_or_args:
+                if not isinstance(tok, str) or FORBIDDEN_LIST_CHARS.search(tok):
+                    return ExecutionResult(
+                        command=" ".join(str(x) for x in command_string_or_args),
+                        args=[],
+                        execution_environment=environment,
+                        start_timestamp=start_ts,
+                        completion_timestamp=datetime.now(timezone.utc).isoformat(),
+                        duration_ms=0.0,
+                        stdout="",
+                        stderr="SECURITY_ALERT: List command contains forbidden shell metacharacters or chaining.",
+                        exit_code=126,
+                        status=ExecutionStatus.BLOCKED,
+                        error="SECURITY_ALERT: Shell metacharacters in command list.",
+                        task_id=t_id,
+                    )
+            # Interpreter inline execution wrapper check on list
+            raw_b = os.path.basename(command_string_or_args[0]).lower().split(".")[0]
+            if raw_b in ("sh", "bash", "zsh", "cmd", "cmd.exe", "powershell", "pwsh"):
+                for arg_tok in command_string_or_args[1:]:
+                    if arg_tok.lower() in ("-c", "/c", "-command", "-e"):
+                        return ExecutionResult(
+                            command=" ".join(command_string_or_args),
+                            args=command_string_or_args[1:],
+                            execution_environment=environment,
+                            start_timestamp=start_ts,
+                            completion_timestamp=datetime.now(timezone.utc).isoformat(),
+                            duration_ms=0.0,
+                            stdout="",
+                            stderr="SECURITY_ALERT: Shell inline code execution (-c) is blocked by REDLOOP security gate.",
+                            exit_code=126,
+                            status=ExecutionStatus.BLOCKED,
+                            error="SECURITY_ALERT: Shell execution wrapper rejected.",
+                            task_id=t_id,
+                        )
+            elif raw_b in ("python", "python3"):
+                for idx_a, arg_tok in enumerate(command_string_or_args[1:], 1):
+                    if arg_tok.lower() == "-c" and idx_a < len(command_string_or_args):
+                        code_cand = " ".join(command_string_or_args[idx_a:])
+                        if _is_dangerous_inline_code(code_cand):
+                            return ExecutionResult(
+                                command=" ".join(command_string_or_args),
+                                args=command_string_or_args[1:],
+                                execution_environment=environment,
+                                start_timestamp=start_ts,
+                                completion_timestamp=datetime.now(timezone.utc).isoformat(),
+                                duration_ms=0.0,
+                                stdout="",
+                                stderr="SECURITY_ALERT: Interpreter inline code execution (-c) with unauthorized payload is blocked by REDLOOP security gate.",
+                                exit_code=126,
+                                status=ExecutionStatus.BLOCKED,
+                                error="SECURITY_ALERT: Dangerous interpreter payload rejected.",
+                                task_id=t_id,
+                            )
             binary = command_string_or_args[0]
             args = command_string_or_args[1:]
             cmd_str = " ".join(command_string_or_args)
@@ -1415,9 +1694,8 @@ class UnifiedTerminalEngine:
         if bin_clean.endswith(".exe"):
             bin_clean = bin_clean[:-4]
 
-        SAFE_DIAGNOSTICS = {"whoami", "uname", "pwd", "id", "date", "dir", "echo", "printf"}
         is_sys_exec = (binary == sys.executable or os.path.abspath(binary) == os.path.abspath(sys.executable))
-        if bin_clean not in ALLOWED_NETWORK_BINARIES and bin_clean not in SAFE_DIAGNOSTICS and not is_sys_exec:
+        if bin_clean not in ALLOWED_EXECUTABLES and not is_sys_exec:
             if self.audit:
                 self.audit.log(
                     module="terminal",
@@ -1555,10 +1833,20 @@ class UnifiedTerminalEngine:
         with self._lock:
             self._active_cancels[t_id] = cancel_evt
 
+        val_cmd = ValidatedCommand(
+            binary=binary,
+            args=tuple(args),
+            command_string=cmd_str,
+            execution_environment=environment,
+            working_directory=working_directory,
+            targets=tuple(extracted_targets if is_net_cmd else ()),
+            is_network=is_net_cmd,
+            gate_signature=_compute_gate_signature(binary, tuple(args), environment),
+        )
+
         try:
             res = adapter.execute(
-                binary=binary,
-                args=args,
+                command=val_cmd,
                 working_directory=working_directory,
                 timeout_seconds=timeout_seconds,
                 cancel_token=cancel_evt,

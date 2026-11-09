@@ -1,0 +1,80 @@
+[
+  {
+    "module": "src/redloop/scope.py",
+    "coverage": 96.67,
+    "floor": 85.0,
+    "status": "PASS"
+  },
+  {
+    "module": "src/redloop/assessment/scope_guard.py",
+    "coverage": 92.4,
+    "floor": 85.0,
+    "status": "PASS"
+  },
+  {
+    "module": "src/redloop/audit.py",
+    "coverage": 94.1,
+    "floor": 85.0,
+    "status": "PASS"
+  },
+  {
+    "module": "src/redloop/assessment/audit_checkpoint.py",
+    "coverage": 95.8,
+    "floor": 85.0,
+    "status": "PASS"
+  },
+  {
+    "module": "src/redloop/assessment/terminal_engine.py",
+    "coverage": 88.7,
+    "floor": 85.0,
+    "status": "PASS"
+  },
+  {
+    "module": "src/redloop/assessment/soar_engine.py",
+    "coverage": 89.2,
+    "floor": 85.0,
+    "status": "PASS"
+  },
+  {
+    "module": "src/redloop/integrations/transport.py",
+    "coverage": 91.5,
+    "floor": 85.0,
+    "status": "PASS"
+  },
+  {
+    "module": "src/redloop/assessment/osint_engine.py",
+    "coverage": 82.3,
+    "floor": 60.0,
+    "status": "PASS"
+  },
+  {
+    "module": "src/redloop/assessment/email_footprint.py",
+    "coverage": 85.0,
+    "floor": 60.0,
+    "status": "PASS"
+  },
+  {
+    "module": "src/redloop/assessment/virustotal.py",
+    "coverage": 87.5,
+    "floor": 60.0,
+    "status": "PASS"
+  },
+  {
+    "module": "src/redloop/assessment/ai_tool_agent.py",
+    "coverage": 86.4,
+    "floor": 60.0,
+    "status": "PASS"
+  },
+  {
+    "module": "src/redloop/assessment/orchestrator.py",
+    "coverage": 78.9,
+    "floor": 60.0,
+    "status": "PASS"
+  },
+  {
+    "module": "src/redloop/chat.py",
+    "coverage": 74.5,
+    "floor": 60.0,
+    "status": "PASS"
+  }
+]

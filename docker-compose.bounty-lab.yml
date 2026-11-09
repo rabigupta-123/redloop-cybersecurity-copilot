@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  # Intentionally vulnerable target for REDLOOP automated evaluation harness
+  # STRICTLY bound to loopback 127.0.0.1 (never exposed externally)
+  juice-shop:
+    image: bkimminich/juice-shop:latest
+    container_name: redloop-lab-juiceshop
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3000:3000"
+    environment:
+      - NODE_ENV=unsafe
+    mem_limit: 512m
+    cpus: 0.5
+    security_opt:
+      - no-new-privileges:true
+
+  # Damn Vulnerable Web Application (DVWA) bound strictly to loopback
+  dvwa:
+    image: vulnerables/web-dvwa:latest
+    container_name: redloop-lab-dvwa
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8081:80"
+    environment:
+      - PHP_EXTENSIONS=pdo_sqlite
+    mem_limit: 512m
+    cpus: 0.5
+    security_opt:
+      - no-new-privileges:true
+
