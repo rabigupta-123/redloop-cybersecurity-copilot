@@ -16,6 +16,7 @@
 
 [Overview](#-overview) •
 [Architecture](#-system-architecture) •
+[Workbench & Copilot](#-unified-workbench--ai-copilot) •
 [Verified Benchmarks](#-empirical-benchmarks--verification-gates) •
 [MCP & Connectors](#-mcp-server--api-connector-layer) •
 [Bug-Bounty Workflow](#-ai-bug-bounty-workflow) •
@@ -27,6 +28,11 @@
 ---
 
 ## 🎯 Overview
+
+<div align="center">
+  <img src="docs/images/dashboard_overview.png" alt="RedLoop Security Operations & Assessment Workbench" width="100%"/>
+  <p><em>Figure 1: RedLoop Unified Operations & Assessment Workbench — Real-time telemetry, signed target scope status, and active incident response.</em></p>
+</div>
 
 **RedLoop** bridges autonomous offensive operations, forensic triage, and SOC engineering with a **machine-enforced, fail-closed security architecture**:
 
@@ -82,6 +88,22 @@ flowchart TB
 
 ---
 
+## 🖥️ Unified Workbench & AI Copilot
+
+RedLoop features a complete, operator-first user interface served locally on loopback (`http://127.0.0.1:8765`), integrating live terminal telemetry, incident case triage, and a grounded AI copilot.
+
+<div align="center">
+  <img src="docs/images/workbench_investigation.png" alt="RedLoop SOC Investigation Workbench" width="100%"/>
+  <p><em>Figure 2: SOC Investigation Workbench — Real-time telemetry, execution choke point authorization, and incident response playbook execution.</em></p>
+</div>
+
+<div align="center">
+  <img src="docs/images/chat_copilot.png" alt="RedLoop Grounded AI Security Copilot" width="100%"/>
+  <p><em>Figure 3: RedLoop AI Security Copilot — Grounded RAG reasoning, zero hallucinations, RFC citations, and resilient multi-tier inference failover.</em></p>
+</div>
+
+---
+
 ## 📊 Empirical Benchmarks & Verification Gates
 
 All reported metrics reflect raw counts and **Wilson 95% Score Intervals**:
@@ -127,6 +149,11 @@ On resource-constrained hardware, running local LLMs can cause severe operating 
 
 RedLoop ships an official **Model Context Protocol (MCP)** implementation built on the `mcp 2.x` Python SDK (`MCPServer`), exposing 7 core assessment tools:
 
+<div align="center">
+  <img src="docs/images/integrations_hub.png" alt="RedLoop MCP Server & Canonical Integrations Hub" width="100%"/>
+  <p><em>Figure 4: RedLoop Integrations Hub — Real-time health monitoring, MCP tool registry, circuit breakers, and rate-limiting.</em></p>
+</div>
+
 ```python
 from redloop.connectors.mcp_server import RedloopMCPServer
 
@@ -158,6 +185,11 @@ server = RedloopMCPServer(scope_guard=scope_guard, audit_ledger=audit_logger)
 ## 🎯 AI Bug-Bounty Workflow
 
 An original, bounded autonomous bug-bounty pipeline that avoids third-party code duplication:
+
+<div align="center">
+  <img src="docs/images/investigation_pipeline.png" alt="Autonomous Investigation & Bug-Bounty Pipeline" width="100%"/>
+  <p><em>Figure 5: Autonomous Assessment & Bug-Bounty Pipeline — Bounded reconnaissance, deterministic evidence validation, and deduplication.</em></p>
+</div>
 
 $$\text{Pipeline: Scope Import} \longrightarrow \text{Recon} \longrightarrow \text{Planner Agent} \longrightarrow \text{Validation} \longrightarrow \text{Deduplication} \longrightarrow \text{Report}$$
 
