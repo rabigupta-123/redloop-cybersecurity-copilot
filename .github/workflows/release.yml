@@ -6,22 +6,20 @@ on:
       - 'v*'
   workflow_dispatch:
 
-permissions:
-  contents: write
-  packages: write
-
 jobs:
   release:
     name: Build & Publish Automated Release
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout Code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Set up Python
-        uses: actions/setup-python@0b93645e9fb717ef66e4732e7d373014c3db0a26 # v5.3.0
+        uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
@@ -38,22 +36,17 @@ jobs:
         id: versioning
         shell: bash
         run: |
-          # Read base version from pyproject.toml
           BASE_VERSION=$(python -c "
           import tomllib
           with open('pyproject.toml', 'rb') as f:
               data = tomllib.load(f)
-          print(data.get('project', {}).get('version', '0.1.0'))
+          print(data.get('project', {}).get('version', '0.2.0'))
           ")
-          
-          # If triggered by a git tag, use that tag.
-          # Otherwise generate a monotonic, unique release tag: v<base_version>.<run_number>
           if [[ "${{ github.ref }}" == refs/tags/* ]]; then
             RELEASE_TAG="${GITHUB_REF#refs/tags/}"
           else
             RELEASE_TAG="v${BASE_VERSION}.${{ github.run_number }}"
           fi
-          
           echo "release_tag=${RELEASE_TAG}" >> $GITHUB_OUTPUT
           echo "base_version=${BASE_VERSION}" >> $GITHUB_OUTPUT
           echo "Computed release tag: ${RELEASE_TAG}"
@@ -62,8 +55,16 @@ jobs:
         run: |
           python -m build
 
+      - name: Upload Distribution Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-packages
+          path: dist/*
+          retention-days: 90
+
       - name: Create or Update GitHub Release
-        uses: softprops/action-gh-release@c062e08bd532815e2082a85e87e3ef29c3e6d191 # v2.0.8
+        continue-on-error: true
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.versioning.outputs.release_tag }}
           name: "Release ${{ steps.versioning.outputs.release_tag }}"

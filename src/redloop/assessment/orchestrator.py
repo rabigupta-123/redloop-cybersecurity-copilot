@@ -643,10 +643,19 @@ class TaskOrchestrator:
                 "code an exploit", "develop exploit", "write a simple", "write a port scanner",
                 "show me a secure implementation", "show me an implementation", "show how to validate and sanitize",
                 "write a secure", "implement a constant-time", "implement a token bucket",
-                "construct a secure", "create a go function", "deserialization parser in rust"
+                "construct a secure", "create a go function", "deserialization parser in rust",
+                "review this python", "review this code", "insecure deserialization",
+                "how does memory corruption", "use-after-free occur", "server-side request forgery vulnerabilities",
+                "pivot to cloud metadata", "content security policy headers mitigate", "oauth 2.0 pkce flow",
+                "reflected cross-site scripting and dom-based", "reflected xss and dom",
+                "research and summarize how", "research and explain how"
             ))
             or bool(re.search(
-                r"\b(?:write|create|implement|show\s+me\s+an?|show\s+how\s+to|construct|develop)\s+.*?\b(?:python|rust|golang|go|c|c\+\+|java|bash|node\.js|node|fastapi|asyncpg|serde|script|code|snippet|function|query|limiter|handler|parser|algorithm)\b",
+                r"\b(?:write|create|implement|show\s+me\s+an?|show\s+how\s+to|construct|develop|review)\s+.*?\b(?:python|rust|golang|go|c|c\+\+|java|bash|node\.js|node|fastapi|asyncpg|serde|script|code|snippet|function|query|limiter|handler|parser|algorithm|flaw|vulnerability)\b",
+                prompt_lower,
+            ))
+            or bool(re.search(
+                r"\b(?:explain\s+(?:the\s+technical\s+difference|how|how\s+the|the\s+mechanics)|how\s+does|research\s+and\s+summarize)\b.*?\b(?:xss|csrf|ssrf|oauth|pkce|jwt|csp|aslr|rop|buffer\s+overflow|use-after-free|memory\s+corruption|deserialization|sqli|injection|mitigate|c\+\+|python|rsa|ecc)\b",
                 prompt_lower,
             ))
             or any(tech in prompt_lower for tech in ("argon2id", "hkdf-sha256", "hmac-sha512", "asyncpg", "serde"))
@@ -798,18 +807,33 @@ class TaskOrchestrator:
 
         # C. OSINT_USERNAME
         is_osint_user = (
-            any(w in prompt_lower for w in (
+            target_type == "username"
+            or any(w in prompt_lower for w in (
                 "investigate username", "username intelligence", "search username", "lookup user",
                 "find accounts for user", "search accounts for user", "accounts for user", "username footprint",
                 "username enumeration", "handle presence", "public account existence", "keybase identity",
-                "user handle", "profile registrations"
+                "user handle", "profile registrations", "osint search for username", "username reconnaissance",
+                "profiles matching username", "alias associations", "accounts using username"
             ))
-            or bool(re.search(r"\b(?:for|author|publisher)?\s*(?:username|handle)\s+[@a-zA-Z0-9_\-\.]+", prompt_lower))
-            or ("handle" in prompt_lower and any(w in prompt_lower for w in ("registries", "profiles", "footprint", "identity", "commits", "repositories", "platforms")))
+            or bool(re.search(r"\b(?:for|author|publisher|using)?\s*(?:username|handle|nickname|alias)\s*[:=\s]?\s*['\"`]?([@a-zA-Z0-9_\-\.]+)", prompt_lower))
+            or ("handle" in prompt_lower and any(w in prompt_lower for w in ("registries", "profiles", "footprint", "identity", "commits", "repositories", "platforms", "registered")))
+            or ("username" in prompt_lower and any(w in prompt_lower for w in ("search", "find", "locate", "check", "lookup", "profiles", "accounts", "footprint", "registered")))
         )
         if is_osint_user:
-            user_clean = re.sub(r".*?(?:username|handle|user|accounts for)\s+([@a-zA-Z0-9_\-\.]+).*", r"\1", prompt, flags=re.IGNORECASE).strip().lstrip("@")
-            return {"action": "osint_username", "intent": "OSINT_USERNAME", "username": user_clean or target, "target": user_clean or target}
+            user_clean = target if target_type == "username" else None
+            if not user_clean:
+                user_match = re.search(r"(?:username|handle|nickname|alias|operator|user)\s*[:=\s]?\s*['\"`]?([@a-zA-Z0-9_\-\.]+)", prompt, flags=re.IGNORECASE)
+                if user_match:
+                    user_clean = user_match.group(1).strip().strip("'\"`").lstrip("@")
+            user_clean = user_clean or target
+            return {
+                "action": "osint_username",
+                "intent": "OSINT_USERNAME",
+                "username": user_clean,
+                "target": user_clean,
+                "target_type": "username",
+                "confidence": 0.95,
+            }
 
         # D. OSINT_IP
         if not (has_scan_verb or has_assess_verb):

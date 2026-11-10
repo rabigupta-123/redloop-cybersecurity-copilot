@@ -60,6 +60,29 @@ class TargetResolver:
             return "none", None
         t = target.strip()
 
+        # 0. Strip surrounding quotes and backticks: "'handle'" -> "handle"
+        t_unquoted = t.strip("'\"`").strip()
+
+        # 0.1 Check platform prefix: e.g. "on GitHub: shadow_broker", "github: shadow_broker", "handle: shadow_broker"
+        plat_match = re.match(
+            r"^(?:on\s+)?(?:github|gitlab|twitter|x|reddit|discord|telegram|linkedin|instagram|keybase|medium|hackerone|bugcrowd|user|handle|username|alias|nickname|operator)\s*[:=\s]\s*['\"`]?([@a-zA-Z0-9_\-\.]+)",
+            t_unquoted,
+            re.IGNORECASE,
+        )
+        if plat_match:
+            cand = plat_match.group(1).lstrip("@").strip("'\"`").rstrip(".,;:!?")
+            if not cls.DOMAIN_PATTERN.fullmatch(cand):
+                return "username", cand
+
+        # 0.2 Check @-prefixed handle: e.g. "@shadow_broker"
+        if t_unquoted.startswith("@") and len(t_unquoted) > 1:
+            cand = t_unquoted.lstrip("@").strip()
+            if re.fullmatch(r"[a-zA-Z0-9_\-\.]{2,32}", cand) and not cls.DOMAIN_PATTERN.fullmatch(cand):
+                return "username", cand
+
+        # Update working target to unquoted string
+        t = t_unquoted
+
         # 1. URL Check
         if t.lower().startswith(("http://", "https://")):
             return "url", t
@@ -87,21 +110,18 @@ class TargetResolver:
         if re.fullmatch(r"(?:\+|00)[0-9\s\-\(\)\.]{7,22}", t) or re.fullmatch(r"\+?1?[-. ]?\(?\d{3}\)?[-. ]?\d{3}[-. ]?\d{4}", t):
             return "phone", t
 
-        # Check Username
-        STOPWORDS = {"with", "from", "for", "the", "this", "that", "into", "onto", "scan", "check", "assess", "probe", "nmap", "and", "or", "not", "test", "host", "target", "authorized", "ip", "address", "domain"}
-        if t.lower() in STOPWORDS:
-            return "unknown", t
-
-        if re.fullmatch(r"[a-zA-Z0-9_\-\.]{2,32}", t) and not cls.DOMAIN_PATTERN.fullmatch(t):
-            return "username", t
-
         # 5. Exclude file names from domains, except known domain TLDs
         if any(t.lower().endswith(ext) for ext in cls.FILE_EXTENSIONS) and not t.lower().endswith(".sh"):
             return "unknown", t
 
-        # 6. Domain Check
+        # 6. Domain Check (must precede general username check)
         if cls.DOMAIN_PATTERN.fullmatch(t):
             return "domain", t.lower()
+
+        # Check Username: 2-32 chars alphanumeric with underscores/hyphens/dots
+        STOPWORDS = {"with", "from", "for", "the", "this", "that", "into", "onto", "scan", "check", "assess", "probe", "nmap", "and", "or", "not", "test", "host", "target", "authorized", "ip", "address", "domain"}
+        if t.lower() not in STOPWORDS and re.fullmatch(r"[a-zA-Z0-9_\-\.]{2,32}", t):
+            return "username", t
 
         return "unknown", t
 
@@ -110,8 +130,50 @@ class TargetResolver:
         """Extract explicit target indicator from natural language prompt."""
         if not prompt or not prompt.strip():
             return None, "none"
+        p_lower = prompt.lower().strip()
+        STOPWORDS = {"with", "from", "for", "the", "this", "that", "into", "onto", "scan", "check", "assess", "probe", "nmap", "and", "or", "not", "test", "host", "target", "authorized", "ip", "address", "domain", "accounts", "public", "online", "profiles", "active", "open", "source", "associations", "reconnaissance"}
 
-        # Explicit key-value patterns: target: xyz, on xyz, for xyz, target=xyz
+        # 1. Quoted handle/username tokens when user/handle/account/osint context keywords are present
+        if any(w in p_lower for w in ("username", "handle", "user", "operator", "alias", "nickname", "social", "profile", "account", "forum", "footprint", "identity", "repositories", "commits")):
+            q_matches = re.findall(r"['\"`]([a-zA-Z0-9_\-\.]{2,32})['\"`]", prompt)
+            for q_cand in q_matches:
+                q_clean = q_cand.lstrip("@").strip()
+                if q_clean.lower() not in STOPWORDS and not cls.DOMAIN_PATTERN.fullmatch(q_clean):
+                    try:
+                        ipaddress.ip_address(q_clean)
+                    except ValueError:
+                        return q_clean, "username"
+
+        # 2. Explicit key-value patterns: username: xyz, handle: xyz, alias: xyz, --username xyz
+        user_kw = re.search(
+            r"\b(?:--username\b|-u\b|username:?|handle:?|alias:?|nickname:?|operator:?)\s*[:=\s]\s*['\"`]?([@a-zA-Z0-9_\-\.]{2,32})['\"`]?",
+            prompt,
+            re.IGNORECASE,
+        )
+        if user_kw:
+            u_cand = user_kw.group(1).lstrip("@").strip("'\"`").rstrip(".,;:!?")
+            if u_cand.lower() not in STOPWORDS and not cls.DOMAIN_PATTERN.fullmatch(u_cand):
+                return u_cand, "username"
+
+        # 3. Platform prefix: "on GitHub: shadow_broker", "Twitter: shadow_coder", "Reddit: @stealth"
+        plat_match = re.search(
+            r"\b(?:on\s+)?(?:github|gitlab|twitter|x|reddit|discord|telegram|linkedin|instagram|keybase|medium|hackerone|bugcrowd)\s*[:=\s]\s*['\"`]?([@a-zA-Z0-9_\-\.]{2,32})['\"`]?",
+            prompt,
+            re.IGNORECASE,
+        )
+        if plat_match:
+            cand = plat_match.group(1).lstrip("@").strip("'\"`").rstrip(".,;:!?")
+            if cand.lower() not in STOPWORDS and not cls.DOMAIN_PATTERN.fullmatch(cand):
+                return cand, "username"
+
+        # 4. Standalone @handle: e.g. "@shadow_broker"
+        at_match = re.search(r"(?<!\w)@([a-zA-Z0-9_\-\.]{2,32})\b", prompt)
+        if at_match:
+            at_cand = at_match.group(1)
+            if not cls.DOMAIN_PATTERN.fullmatch(at_cand):
+                return at_cand, "username"
+
+        # 5. Explicit target patterns: target: xyz, on xyz, for xyz, target=xyz
         kw_match = re.search(
             r"\b(?:--target\b|-t\b|target:?|host:|domain:|ip:|url:|email:)\s+(?:ip\s+|address\s+|host\s+|domain\s+)?([^\s,;]+)",
             prompt,

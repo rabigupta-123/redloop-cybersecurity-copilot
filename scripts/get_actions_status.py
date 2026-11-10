@@ -10,3 +10,4 @@ try:
             print(f"Branch: {r['head_branch']} | Status: {r['status']} | Conclusion: {r['conclusion']} | URL: {r['html_url']} | Created: {r['created_at']} | Commit: {r['head_sha'][:7]}")
 except Exception as e:
     print("Error querying GitHub API:", e)
+

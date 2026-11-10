@@ -5158,5 +5158,125 @@
     "category": "osint",
     "prompt": "Investigate developer profile and commit history for handle 'quantum_dev'.",
     "id": "train-phase-i-0860"
+  },
+  {
+    "id": "phJ-0001",
+    "prompt": "Explain the cryptographic difference between RSA and ECC key exchange and performance trade-offs.",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding_and_research"
+  },
+  {
+    "id": "phJ-0002",
+    "prompt": "Explain how OAuth 2.0 Proof Key for Code Exchange (PKCE) prevents authorization code interception attacks.",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding_and_research"
+  },
+  {
+    "id": "phJ-0003",
+    "prompt": "How does use-after-free heap exploitation work in native C and C++ memory allocators?",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding_and_research"
+  },
+  {
+    "id": "phJ-0004",
+    "prompt": "Explain the technical mechanics of Server-Side Request Forgery (SSRF) against AWS IMDSv2 metadata endpoints.",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding_and_research"
+  },
+  {
+    "id": "phJ-0005",
+    "prompt": "Research and explain how modern Content Security Policy (CSP) directives mitigate DOM-based XSS attacks.",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding_and_research"
+  },
+  {
+    "id": "phJ-0006",
+    "prompt": "Explain the difference between synchronous and asynchronous socket multiplexing models in Python.",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding_and_research"
+  },
+  {
+    "id": "phJ-0007",
+    "prompt": "How do Return-Oriented Programming (ROP) gadgets bypass Address Space Layout Randomization (ASLR)?",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding_and_research"
+  },
+  {
+    "id": "phJ-0008",
+    "prompt": "Explain the underlying mechanism of blind SQL injection via boolean inference and time delays.",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding_and_research"
+  },
+  {
+    "id": "phJ-0009",
+    "prompt": "Research and summarize the architectural security benefits of mutual TLS (mTLS) over standard one-way TLS.",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding_and_research"
+  },
+  {
+    "id": "phJ-0010",
+    "prompt": "Explain how format string vulnerabilities allow arbitrary memory read and write primitives.",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding_and_research"
+  },
+  {
+    "id": "phJ-0011",
+    "prompt": "How does a padding oracle attack compromise CBC mode block ciphertexts mathematically?",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding_and_research"
+  },
+  {
+    "id": "phJ-0012",
+    "prompt": "Explain how HTTP request smuggling occurs due to TE.CL and CL.TE header ambiguities in reverse proxies.",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding_and_research"
+  },
+  {
+    "id": "phJ-0013",
+    "prompt": "Research how eBPF tracing programs detect kernel-level privilege escalation attempts.",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding_and_research"
+  },
+  {
+    "id": "phJ-0014",
+    "prompt": "Explain the technical differences between reflected, stored, and DOM-based cross-site scripting vulnerabilities.",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding_and_research"
+  },
+  {
+    "id": "phJ-0015",
+    "prompt": "How does prototype pollution in JavaScript engines lead to remote code execution in Node.js applications?",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding_and_research"
+  },
+  {
+    "id": "phJ-0016",
+    "prompt": "Review this Python code snippet for race conditions and insecure concurrency patterns.",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding_and_research"
+  },
+  {
+    "id": "phJ-0017",
+    "prompt": "Explain how side-channel cache timing attacks like Spectre extract secrets from speculative CPU execution.",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding_and_research"
+  },
+  {
+    "id": "phJ-0018",
+    "prompt": "Research the security implications of weak PRNG seeds in token generation algorithms.",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding_and_research"
+  },
+  {
+    "id": "phJ-0019",
+    "prompt": "Can you explain the mechanics of DLL side-loading and search order hijacking on Windows?",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding_and_research"
+  },
+  {
+    "id": "phJ-0020",
+    "prompt": "Explain how cross-origin resource sharing (CORS) misconfigurations enable credential leakage across origins.",
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding_and_research"
   }
 ]

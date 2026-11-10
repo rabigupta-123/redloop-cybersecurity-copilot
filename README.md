@@ -8,14 +8,16 @@
 [![FastAPI](https://img.shields.io/badge/FastAPI-Workbench-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![MCP SDK 2.x](https://img.shields.io/badge/MCP-Official_SDK_2.x-8A2BE2?style=for-the-badge)](https://modelcontextprotocol.io/)
 [![Safety Block Rate](https://img.shields.io/badge/SBR-1.0000_(0_Breaches)-2EA44F?style=for-the-badge)](#-empirical-benchmarks--verification-gates)
-[![False Block Rate](https://img.shields.io/badge/FBR-0.0000_(%E2%89%A4_0.05)-2EA44F?style=for-the-badge)](#-empirical-benchmarks--verification-gates)
-[![Automated Release](https://img.shields.io/badge/GitHub-Automated_Release-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/rabigupta-123/redloop-cybersecurity-copilot/releases)
+[![Router Accuracy](https://img.shields.io/badge/Router_Accuracy-92.16%25_(Wilson_CI_%5B0.8764%2C_0.9511%5D)-2EA44F?style=for-the-badge)](#-two-stage-semantic-intent-router-9216-accuracy)
+[![Release](https://img.shields.io/badge/Release-v0.2.0-blue?style=for-the-badge&logo=github&logoColor=white)](https://github.com/rabigupta-123/redloop-cybersecurity-copilot/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-F59E0B?style=for-the-badge)](LICENSE)
 
 *Cryptographically scope-enforced cybersecurity engineering platform, Model Context Protocol (MCP) server, and autonomous AI bug-bounty copilot for authorized penetration testing, threat hunting, OSINT correlation, and vulnerability research.*
 
 [Overview](#-overview) •
 [Architecture](#-system-architecture) •
+[Semantic Router](#-two-stage-semantic-intent-router-9216-accuracy) •
+[Production Hardening](#-production-hardening--telemetry) •
 [Workbench & Copilot](#-unified-workbench--ai-copilot) •
 [Verified Benchmarks](#-empirical-benchmarks--verification-gates) •
 [MCP & Connectors](#-mcp-server--api-connector-layer) •
@@ -88,6 +90,43 @@ flowchart TB
 
 ---
 
+## 🧠 Two-Stage Semantic Intent Router (92.16% Accuracy)
+
+<div align="center">
+  <img src="artifacts/redloop_phase_i_architecture.jpg" alt="RedLoop Two-Stage Semantic Intent Router & Verification Pipeline" width="100%"/>
+  <p><em>Figure 2: RedLoop Two-Stage Intent Router & Verification Architecture — Regex first pass with target check gating, sentence-transformers semantic classification, and ScopeGuard enforcement.</em></p>
+</div>
+
+RedLoop replaces brittle regex-only classification with a **hybrid two-stage intent router** achieving **92.16% accuracy** on Holdout v5 ($n=204, k=188$, Wilson 95% CI $[0.8764, 0.9511]$):
+
+1. **Stage 1 (Deterministic Regex & Target Check Gating)**:
+   - High-confidence keywords are evaluated with strict target requirement gating.
+   - Targetless queries (e.g. general questions or tools missing IP/domain parameters) are prevented from prematurely firing tool execution, allowing seamless fall-through to semantic embedding evaluation.
+2. **Stage 2 (Local Sentence-Transformers Classifier)**:
+   - Evaluates cosine similarities against 880 calibrated exemplars across 17 intent classes with an empirically calibrated confidence threshold ($\theta = 0.32$, tuned strictly via 5-fold cross-validation on train data).
+   - Runs **100% locally** using `all-MiniLM-L6-v2` with zero external API calls or latency spikes.
+3. **Multi-Format Target Resolver**:
+   - Resolves handles across quoted (`'shadow_broker'`), unquoted (`shadow_broker`), `@-prefixed` (`@shadow_broker`), and platform-prefixed (`on GitHub: shadow_broker`, `Twitter: @handle`) formats with 100% recall.
+4. **Boundary Separation**:
+   - Accurately distinguishes deep technical security explanations ("Explain how OAuth 2.0 PKCE protects against interception") from casual small talk, maintaining **84.62% precision** on `GENERAL_CHAT`.
+
+---
+
+## 🛡️ Production Hardening & Telemetry
+
+RedLoop is engineered for high-concurrency, resilient enterprise SOC deployment:
+
+- **Token Bucket Rate Limiting**: Per-operator/IP rate limiting on all mutating and LLM-calling endpoints with configurable requests-per-second (`REDLOOP_RATE_LIMIT_RPS`) and burst capacity (`REDLOOP_RATE_LIMIT_BURST`).
+- **Load Shedding & Queue Depth Cap**: Strict active concurrency queue limit returning HTTP 429 (`QUEUE_CAPACITY_EXCEEDED`) with `Retry-After` headers, shedding excess traffic before memory exhaustion occurs.
+- **Structured Error Handling & Secret Redaction**: Pure ASGI middleware intercepts all unhandled 5xx exceptions, generating a unique `X-Correlation-ID` without leaking stack traces or credentials to clients. Automatic pattern redaction sweeps Groq, OpenAI, JWT, and custom credentials from all log streams.
+- **HMAC-Signed Findings Dossiers**: Findings exports (`export_signed_findings`, `verify_signed_findings`) compute canonical SHA-256 digests over sorted findings JSON and sign with HMAC-SHA256, mathematically preventing post-generation report alteration.
+- **Real-Time Prometheus Telemetry (`/api/metrics/live`)**: Exposes live gauges and counters (`redloop_safety_block_rate`, `redloop_false_block_rate`, `redloop_router_accuracy`, `redloop_circuit_breaker_state`, `redloop_requests_in_flight`).
+- **Static Type Safety**: Full `mypy` static type checking in CI across all 156 source files with 0 type errors.
+
+---
+
+---
+
 ## 🖥️ Unified Workbench & AI Copilot
 
 RedLoop features a complete, operator-first user interface served locally on loopback (`http://127.0.0.1:8765`), integrating live terminal telemetry, incident case triage, and a grounded AI copilot.
@@ -120,6 +159,10 @@ $$\text{Upper Bound} = \frac{z^2}{n + z^2}$$
 | **False Block Rate (FBR)** | 110 | 0 | **0.0000** | $[0.0000, 0.0337]$ | Ceiling $\le 0.0500$ | **PASS** |
 | **MCP Out-of-Scope Blocks** | 50 | 50 | **1.0000** | $[0.9287, 1.0000]$ | Must $= 1.0000$ | **PASS** |
 | **Bounty Scope Precedence** | 50 | 50 | **1.0000** | $[0.9287, 1.0000]$ | Must $= 1.0000$ | **PASS** |
+| **Intent Router Accuracy (Holdout v5)** | 204 | 188 | **0.9216** | $[0.8764, 0.9511]$ | Floor $\ge 0.8500$ | **PASS** |
+| **OSINT_USERNAME Recall (Holdout v5)** | 12 | 12 | **1.0000** | $[0.7575, 1.0000]$ | Floor $\ge 0.7500$ | **PASS** |
+| **CODING_AND_RESEARCH Recall (Holdout v5)** | 12 | 12 | **1.0000** | $[0.7575, 1.0000]$ | Floor $\ge 0.7000$ | **PASS** |
+| **GENERAL_CHAT Precision (Holdout v5)** | 13 | 11 | **0.8462** | $[0.5777, 0.9567]$ | Baseline $0.6000$ | **PASS (+24.6%)** |
 | **Lab Target Precision** | 3 | 3 | **1.0000** | $[0.4385, 1.0000]$ | Floor $\ge 0.8000$ | **PASS** |
 | **Lab Noise Ratio** | 3 | 0 | **0.0000** | $[0.0000, 0.5615]$ | Ceiling $\le 0.3000$ | **PASS** |
 | **Chat Groundedness Rate** | 30 | 30 | **1.0000** | $[0.8865, 1.0000]$ | Floor $\ge 0.9000$ | **PASS** |

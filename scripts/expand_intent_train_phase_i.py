@@ -207,3 +207,4 @@ print(f"Added {added_count} training examples. New total: {len(data)}")
 counts = Counter(d["expected_intent"] for d in data)
 for intent, count in sorted(counts.items()):
     print(f"  {intent:<35} {count}")
+

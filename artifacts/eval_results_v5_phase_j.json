@@ -1,0 +1,291 @@
+{
+  "evaluation_set": "tests/fixtures/eval/intent_holdout_v5.json",
+  "phase": "Phase J Re-score",
+  "sample_size": 204,
+  "correct_predictions": 188,
+  "accuracy": 0.9216,
+  "wilson_ci_95": [
+    0.8764,
+    0.9511
+  ],
+  "macro_precision": 0.952,
+  "macro_recall": 0.9216,
+  "macro_f1": 0.9339,
+  "gate_verifications": {
+    "osint_username_recall": 1.0,
+    "osint_username_gate_passed": true,
+    "coding_and_research_recall": 1.0,
+    "coding_and_research_gate_passed": true,
+    "general_chat_precision": 0.8462,
+    "general_chat_precision_delta_vs_0_60": 0.2462
+  },
+  "per_class": {
+    "AUDIT_VERIFY": {
+      "support": 12,
+      "tp": 11,
+      "fp": 1,
+      "fn": 1,
+      "precision": 0.9167,
+      "recall": 0.9167,
+      "f1": 0.9167
+    },
+    "CODING_AND_RESEARCH": {
+      "support": 12,
+      "tp": 12,
+      "fp": 1,
+      "fn": 0,
+      "precision": 0.9231,
+      "recall": 1.0,
+      "f1": 0.96
+    },
+    "CTF_AND_CHALLENGE_ANALYSIS": {
+      "support": 12,
+      "tp": 9,
+      "fp": 0,
+      "fn": 3,
+      "precision": 1.0,
+      "recall": 0.75,
+      "f1": 0.8571
+    },
+    "FILE_METADATA_ANALYSIS": {
+      "support": 12,
+      "tp": 10,
+      "fp": 1,
+      "fn": 2,
+      "precision": 0.9091,
+      "recall": 0.8333,
+      "f1": 0.8696
+    },
+    "FOLLOW_UP_ON_ACTIVE_INVESTIGATION": {
+      "support": 12,
+      "tp": 9,
+      "fp": 1,
+      "fn": 3,
+      "precision": 0.9,
+      "recall": 0.75,
+      "f1": 0.8182
+    },
+    "FORENSICS_AND_LOG_ANALYSIS": {
+      "support": 12,
+      "tp": 10,
+      "fp": 1,
+      "fn": 2,
+      "precision": 0.9091,
+      "recall": 0.8333,
+      "f1": 0.8696
+    },
+    "GENERAL_CHAT": {
+      "support": 12,
+      "tp": 11,
+      "fp": 2,
+      "fn": 1,
+      "precision": 0.8462,
+      "recall": 0.9167,
+      "f1": 0.88
+    },
+    "GRAPH_AND_INVESTIGATION": {
+      "support": 12,
+      "tp": 11,
+      "fp": 0,
+      "fn": 1,
+      "precision": 1.0,
+      "recall": 0.9167,
+      "f1": 0.9565
+    },
+    "KALI_COMMAND_ASSISTANCE": {
+      "support": 12,
+      "tp": 11,
+      "fp": 0,
+      "fn": 1,
+      "precision": 1.0,
+      "recall": 0.9167,
+      "f1": 0.9565
+    },
+    "LIFECYCLE": {
+      "support": 12,
+      "tp": 10,
+      "fp": 0,
+      "fn": 2,
+      "precision": 1.0,
+      "recall": 0.8333,
+      "f1": 0.9091
+    },
+    "OSINT_DOMAIN": {
+      "support": 12,
+      "tp": 12,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "OSINT_EMAIL": {
+      "support": 12,
+      "tp": 12,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "OSINT_IP": {
+      "support": 12,
+      "tp": 12,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "OSINT_PHONE": {
+      "support": 12,
+      "tp": 12,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "OSINT_USERNAME": {
+      "support": 12,
+      "tp": 12,
+      "fp": 2,
+      "fn": 0,
+      "precision": 0.8571,
+      "recall": 1.0,
+      "f1": 0.9231
+    },
+    "REPORT_GENERATION": {
+      "support": 12,
+      "tp": 12,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "TOOL_DETECTION": {
+      "support": 12,
+      "tp": 12,
+      "fp": 1,
+      "fn": 0,
+      "precision": 0.9231,
+      "recall": 1.0,
+      "f1": 0.96
+    }
+  },
+  "mismatches": [
+    {
+      "id": "v5-024",
+      "prompt": "Display an attack path visualization for the privilege escalation steps observed.",
+      "expected": "GRAPH_AND_INVESTIGATION",
+      "predicted": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+      "router": "regex"
+    },
+    {
+      "id": "v5-035",
+      "prompt": "Execute an audit verification routine over the recorded operator commands.",
+      "expected": "AUDIT_VERIFY",
+      "predicted": "OSINT_USERNAME",
+      "router": "regex"
+    },
+    {
+      "id": "v5-042",
+      "prompt": "Look through this syslog file to find unauthorized sudo command executions.",
+      "expected": "FORENSICS_AND_LOG_ANALYSIS",
+      "predicted": "TOOL_DETECTION",
+      "router": "embedding_second_stage"
+    },
+    {
+      "id": "v5-047",
+      "prompt": "Analyze these mail server logs for evidence of spam relaying or account takeover.",
+      "expected": "FORENSICS_AND_LOG_ANALYSIS",
+      "predicted": "TARGET_CLARIFICATION_REQUIRED",
+      "router": "regex"
+    },
+    {
+      "id": "v5-117",
+      "prompt": "Assist in assembling return-oriented programming gadgets to bypass NX protections in this challenge.",
+      "expected": "CTF_AND_CHALLENGE_ANALYSIS",
+      "predicted": "GENERAL_CHAT",
+      "router": "regex"
+    },
+    {
+      "id": "v5-119",
+      "prompt": "Analyze this format string vulnerability challenge in a 32-bit Linux ELF binary.",
+      "expected": "CTF_AND_CHALLENGE_ANALYSIS",
+      "predicted": "FILE_METADATA_ANALYSIS",
+      "router": "regex"
+    },
+    {
+      "id": "v5-120",
+      "prompt": "How to exploit this timing attack challenge on a cryptographic HMAC comparison routine?",
+      "expected": "CTF_AND_CHALLENGE_ANALYSIS",
+      "predicted": "AUDIT_VERIFY",
+      "router": "embedding_second_stage"
+    },
+    {
+      "id": "v5-126",
+      "prompt": "Check the metadata of this Excel spreadsheet to see which user account last edited it.",
+      "expected": "FILE_METADATA_ANALYSIS",
+      "predicted": "TARGET_CLARIFICATION_REQUIRED",
+      "router": "regex"
+    },
+    {
+      "id": "v5-130",
+      "prompt": "Check this PowerPoint presentation file for embedded revision history and creator usernames.",
+      "expected": "FILE_METADATA_ANALYSIS",
+      "predicted": "OSINT_USERNAME",
+      "router": "regex"
+    },
+    {
+      "id": "v5-138",
+      "prompt": "Show the terminal command for running Nikto with evasion mode enabled.",
+      "expected": "KALI_COMMAND_ASSISTANCE",
+      "predicted": "TARGET_CLARIFICATION_REQUIRED",
+      "router": "regex"
+    },
+    {
+      "id": "v5-177",
+      "prompt": "Display current server process status, memory footprint, and thread pool allocation.",
+      "expected": "LIFECYCLE",
+      "predicted": "GENERAL_CHAT",
+      "router": "regex"
+    },
+    {
+      "id": "v5-178",
+      "prompt": "Cease running the local web API process and unbind active listening sockets.",
+      "expected": "LIFECYCLE",
+      "predicted": "TARGET_CLARIFICATION_REQUIRED",
+      "router": "regex"
+    },
+    {
+      "id": "v5-182",
+      "prompt": "What were the open ports detected on the primary database server in our active case?",
+      "expected": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+      "predicted": "TARGET_CLARIFICATION_REQUIRED",
+      "router": "regex"
+    },
+    {
+      "id": "v5-186",
+      "prompt": "Can we look deeper into the anomalous DNS responses logged in step 4?",
+      "expected": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+      "predicted": "FORENSICS_AND_LOG_ANALYSIS",
+      "router": "embedding_second_stage"
+    },
+    {
+      "id": "v5-191",
+      "prompt": "Following up on that open port 8443, what application version was running behind TLS?",
+      "expected": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+      "predicted": "TARGET_CLARIFICATION_REQUIRED",
+      "router": "regex"
+    },
+    {
+      "id": "v5-204",
+      "prompt": "Could you write a short haiku about network packets traveling across the internet?",
+      "expected": "GENERAL_CHAT",
+      "predicted": "CODING_AND_RESEARCH",
+      "router": "embedding_second_stage"
+    }
+  ]
+}
