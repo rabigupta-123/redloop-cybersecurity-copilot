@@ -2,10 +2,6 @@ name: Automated Release
 
 on:
   push:
-    branches:
-      - main
-      - feat/*
-      - fix/*
     tags:
       - 'v*'
   workflow_dispatch:
