@@ -546,11 +546,27 @@ class LLMClient:
                 else self.settings.kimi_base_url
             )
 
+        from redloop.hardening import global_llm_circuit_breaker
+        if not global_llm_circuit_breaker.can_execute():
+            raise ProviderCallError(selected, "CircuitBreakerOpen")
+
         started = time.monotonic()
-        try:
-            response = litellm.completion(**call_kwargs)
-        except Exception as exc:
-            raise ProviderCallError(selected, type(exc).__name__) from exc
+        last_exc = None
+        response = None
+        max_retries = kwargs.pop("max_retries", 2)
+
+        for attempt in range(max_retries + 1):
+            try:
+                response = litellm.completion(**call_kwargs)
+                global_llm_circuit_breaker.record_success()
+                break
+            except Exception as exc:
+                last_exc = exc
+                if attempt < max_retries and any(err_kw in str(exc).lower() for err_kw in ("timeout", "rate", "429", "502", "503", "504", "connection")):
+                    time.sleep(0.3 * (2 ** attempt))
+                    continue
+                global_llm_circuit_breaker.record_failure()
+                raise ProviderCallError(selected, type(exc).__name__) from exc
         elapsed = time.monotonic() - started
 
         choice = response.choices[0] if getattr(response, "choices", None) else None

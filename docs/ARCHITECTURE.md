@@ -129,7 +129,7 @@ Held-out dataset immutability is strictly enforced (`tests/fixtures/eval/intent_
 
 ## 5. Component Inventory
 
-Total inspected modules: **139**
+Total inspected modules: **156**
 
 | Module | Purpose / Docstring | Public API | Tests | Coverage |
 | :--- | :--- | :--- | :--- | :--- |
@@ -155,6 +155,7 @@ Total inspected modules: **139**
 | `src/redloop/assessment/ctf_toolkit.py` | REDLOOP CTF & Cybersecurity Multi-Codec Toolkit. | `CodecResult, CTFCodec` | `tests/integration/ or suite` | 45.2% |
 | `src/redloop/assessment/detection_engineering.py` | REDLOOP Autonomous SOC Operations — Cross-Platform Detection Engineering Layer (Phase 9). | `RuleSource, RuleSeverity, DetectionRuleTestCase, DetectionRule, DetectionEngineeringManager` | `tests/integration/ or suite` | 81.0% |
 | `src/redloop/assessment/dns_engine.py` | DNS security assessment engine. | `DNSEngine` | `tests/integration/ or suite` | 65.7% |
+| `src/redloop/assessment/embedding_router.py` | Embedding-based Intent Classifier for REDLOOP Orchestrator (Phase G.2). | `EmbeddingIntentClassifier` | `tests/integration/ or suite` | N/A |
 | `src/redloop/assessment/engine.py` | Central Assessment Orchestrator Engine for RedLoop. | `AssessmentStore, AssessmentEngine` | `tests/integration/ or suite` | 71.0% |
 | `src/redloop/assessment/evaluation.py` | Evaluation, provenance scoring, confidence modeling, and accuracy metrics for REDLOOP. | `VerificationState, OllamaHealthState, ProviderState, ConfidenceFactors, LowConfidenceReviewQueue, calculate_precision...` | `tests/integration/ or suite` | 77.7% |
 | `src/redloop/assessment/exploit_simulator.py` | REDLOOP Offline Exploit Simulator. | `SimulationStep, ExploitSimulationResult, ExploitSimulator` | `tests/integration/ or suite` | 92.0% |
@@ -192,7 +193,7 @@ Total inspected modules: **139**
 | `src/redloop/assessment/soc_timeline.py` | Chronological SOC Timeline & Incident Correlation Engine (Phase 5). | `IncidentRelationType, EvidenceObservationClass, SOCTimelineItem, SOCIncidentRelation, SOCIncident, SOCTimelineEngine...` | `tests/integration/ or suite` | 84.2% |
 | `src/redloop/assessment/software_engine.py` | Software version normalization and pluggable vulnerability intelligence engine for RedLoop. | `SoftwareComponent, VulnerabilityRecord, VulnerabilityFeed, OfflineVulnerabilityFeed, SoftwareEngine` | `tests/integration/ or suite` | 64.1% |
 | `src/redloop/assessment/task_graph.py` | Autonomous Task Graph Architecture and Execution Loop Controller for REDLOOP. | `NodeAuthState, TaskNode, TaskGraph, TaskGraphStore, AutonomousLoopController` | `tests/integration/ or suite` | 64.9% |
-| `src/redloop/assessment/terminal_engine.py` | Unified Terminal Engine & Multi-Environment Execution Layer (Phase 3). | `ExecutionEnvironment, ExecutionStatus, ExecutionResult, BaseExecutionAdapter, HostExecutionAdapter, WSLExecutionAdapter...` | `tests/integration/ or suite` | 69.8% |
+| `src/redloop/assessment/terminal_engine.py` | Unified Terminal Engine & Multi-Environment Execution Layer (Phase 3). | `SecurityGateError, ValidatedCommand, ExecutionEnvironment, ExecutionStatus, ExecutionResult, BaseExecutionAdapter...` | `tests/integration/ or suite` | 69.8% |
 | `src/redloop/assessment/threat_hunting.py` | REDLOOP Threat Hunting & Hypothesis Validation Engine (Phase 6). | `QuerySecurityError, HypothesisStatus, QueryExecutionCost, HuntingFilterClause, HuntingQueryPlan, HuntingQueryResult...` | `tests/integration/ or suite` | 84.2% |
 | `src/redloop/assessment/tls_engine.py` | Deep TLS / SSL security assessment engine. | `TLSEngine` | `tests/integration/ or suite` | 51.9% |
 | `src/redloop/assessment/tool_planner.py` | Autonomous Tool Selection Engine & Planning Layer (Phase 2). | `PlanStageState, ToolPlanRequest, ToolPlanStage, ToolPlan, ToolPlanner` | `tests/integration/ or suite` | 85.5% |
@@ -204,9 +205,22 @@ Total inspected modules: **139**
 | `src/redloop/audit.py` | Cryptographically chained tamper-evident SQLite activity records for RedLoop workflows. | `AuditLogger, install_audit_triggers, sanitize_audit_data, compute_canonical_event_json, compute_event_hash` | `tests/integration/ or suite` | 89.2% |
 | `src/redloop/audit_checkpoint.py` | Protected, external audit checkpoints for the RedLoop hash-chained ledger. | `AuditCheckpointError, CheckpointPaths, AuditCheckpointStore` | `tests/test_audit_checkpoint.py` | 85.6% |
 | `src/redloop/auth.py` | Local-first Authentication, Role-Based Access Control (RBAC), and Session Management for REDLOOP. | `UserRole, Permission, User, Session, AuthManager` | `tests/integration/ or suite` | 42.3% |
+| `src/redloop/bounty/__init__.py` | REDLOOP AI Bug-Bounty Workflow Package (Phase 3). | `` | `tests/integration/ or suite` | N/A |
+| `src/redloop/bounty/dedupe.py` | Finding Deduplication and Duplicate Rate Calculation (Phase 3.6). | `FindingDeduplicator` | `tests/integration/ or suite` | N/A |
+| `src/redloop/bounty/models.py` | Data models and formulas for REDLOOP AI Bug-Bounty Workflow (Phase 3). | `BountyRunStatus, FindingValidationState, SeverityLevel, EvidenceRecord, CandidateFinding, ProgramScopeDefinition` | `tests/integration/ or suite` | N/A |
+| `src/redloop/bounty/reporting.py` | Bounty Report Generator with Evidence Citing (Phase 3.7). | `BountyReportGenerator` | `tests/test_reporting.py` | N/A |
+| `src/redloop/bounty/runner.py` | AI Bug-Bounty Workflow Orchestrator and Pipeline Runner (Phase 3). | `BountyWorkflowRunner` | `tests/integration/ or suite` | N/A |
+| `src/redloop/bounty/scope_import.py` | Scope Import, Parsing, and Activation Guard (Phase 3.1). | `ScopeImportError, parse_scope_text, validate_scope_activation, normalize_asset, is_asset_in_scope, build_draft_scope_document` | `tests/integration/ or suite` | N/A |
+| `src/redloop/bounty/validator.py` | Deterministic Finding Validator and Evidence Harvester (Phase 3.4). | `FindingValidator` | `tests/integration/ or suite` | N/A |
 | `src/redloop/chat.py` | Local RedLoop chat interface with private, persistent conversations. | `register_chat_routes` | `tests/test_chat.py` | 73.0% |
 | `src/redloop/cli.py` | RedLoop CLI entrypoint. | `operator_token_command, eval_run_command, scope_init, scope_check, scope_rotate_secret, sandbox_build...` | `tests/integration/ or suite` | 23.1% |
 | `src/redloop/config.py` | Runtime configuration for RedLoop. | `Settings` | `tests/test_config.py` | 92.9% |
+| `src/redloop/connectors/__init__.py` | REDLOOP Connectors and MCP Layer. | `` | `tests/integration/ or suite` | N/A |
+| `src/redloop/connectors/circuit_breaker.py` | Per-connector circuit breaker (Phase 2.2). | `CircuitBreakerOpenError, CircuitBreaker` | `tests/integration/ or suite` | N/A |
+| `src/redloop/connectors/mcp_server.py` | REDLOOP as an MCP Server (Phase 2.1). | `MCPSecurityError, RedloopMCPServer` | `tests/integration/ or suite` | N/A |
+| `src/redloop/connectors/models.py` | Data models and manifests for REDLOOP Connector Layer (Phase 2). | `TransportType, RiskLevel, CircuitState, ConnectorTool, ConnectorManifest, ConnectorTelemetry` | `tests/integration/ or suite` | N/A |
+| `src/redloop/connectors/registry.py` | REDLOOP Connector Registry and Execution Gateway (Phase 2.2 & 2.4). | `ConnectorSecurityError, ConnectorNotFoundError, ConnectorRegistry, get_connector_registry` | `tests/integration/ or suite` | N/A |
+| `src/redloop/connectors/untrusted.py` | Untrusted tool output handling and prompt injection defense (Phase 2.2). | `UntrustedDataResult, process_untrusted_output` | `tests/integration/ or suite` | N/A |
 | `src/redloop/ctf.py` | In-process CTF workflow simulator with synthetic targets and outcomes. | `CTFChallenge, SimulatedExploitResult, CTFSimulator` | `tests/test_ctf.py` | 90.9% |
 | `src/redloop/ctf_files.py` | Bounded, in-memory CTF archive triage without executing sample content. | `FileCategory, CTFFileFinding, CTFArchiveReport, FlagDetector, CTFArchiveAnalyzer, find_flags` | `tests/test_ctf_files.py` | 78.4% |
 | `src/redloop/ctf_orchestrator.py` | CTF Orchestrator: Multi-strategy, multi-provider, bounded CTF solver. | `AttemptRecord, FileSolveReport, CTFSolveResult, CTFOrchestrator` | `tests/test_ctf_orchestrator.py` | 78.6% |
@@ -216,10 +230,12 @@ Total inspected modules: **139**
 | `src/redloop/dashboard_performance.py` | Professional Performance Dashboard — Latency, Confidence, Learning Rate. | `fetch_performance, fetch_modes, fetch_trends, fetch_errors` | `tests/integration/ or suite` | 0.0% |
 | `src/redloop/dashboard_router.py` | RedLoop Multi-Page Console Navigator. | `` | `tests/integration/ or suite` | 0.0% |
 | `src/redloop/email_footprint.py` | Email digital-footprint intelligence with modular, auditable source adapters. | `FootprintObservation, EmailFootprintReport, FootprintAdapter, DomainMailAdapter, GravatarAdapter, OpenPgpKeyAdapter...` | `tests/test_email_footprint.py` | 67.2% |
+| `src/redloop/engagement.py` | Engagement-Scoped Profiles Architecture (Phase B). | `UnauthorizedEngagementError, EngagementTarget, EngagementOutOfScope, EngagementScope, EngagementManager, pattern_matches_target...` | `tests/integration/ or suite` | N/A |
 | `src/redloop/executor.py` | Bounded retry execution for a small set of local, deterministic operations. | `PlanValidationError, OperationPlan, DivideArguments, ParseJsonArguments, Attempt, ExecutionReport...` | `tests/test_executor.py` | 90.4% |
 | `src/redloop/exploit.py` | Public export module for ExploitSimulator. | `` | `tests/integration/ or suite` | 0.0% |
 | `src/redloop/forensics.py` | Bounded, static-only file triage. Uploaded content is never executed. | `FileProfile, ExtractedIOCs, YaraMatch, ForensicsReport, YaraScanner, ForensicsAnalyzer` | `tests/test_forensics.py` | 74.1% |
 | `src/redloop/forensics_advanced.py` | Advanced Blue Team and Digital Forensics Analysis Engine for REDLOOP. | `IOCItem, ForensicsReport, AdvancedForensicsEngine, get_advanced_forensics_engine` | `tests/test_forensics_advanced.py` | 50.0% |
+| `src/redloop/hardening.py` | Production Hardening Suite (Phase G.3). | `TokenBucket, RateLimiter, StructuredJsonFormatter, LLMCircuitBreaker, ProductionHardeningMiddleware, redact_secrets...` | `tests/integration/ or suite` | N/A |
 | `src/redloop/identity_correlation.py` | Unified identity correlation and analyst review for RedLoop. | `IdentityObservation, IdentityCluster, IdentityCorrelationStore, get_identity_correlation_store` | `tests/test_identity_correlation.py` | 83.9% |
 | `src/redloop/integrations/__init__.py` | REDLOOP Enterprise Security Integrations Gateway (Phase 8). | `` | `tests/integration/ or suite` | 100.0% |
 | `src/redloop/integrations/adapters/__init__.py` | Provider Adapters Package (Phase 8). | `` | `tests/integration/ or suite` | 100.0% |
@@ -241,7 +257,7 @@ Total inspected modules: **139**
 | `src/redloop/integrations/transport.py` | SSRF-Protected Connection-Pinned HTTP Transport (Phase 9.1). | `SSRFDestinationError, PinnedHTTPSConnection, PinnedHTTPConnection, SafeHTTPClient, redact_url_secrets, check_ip_address_safety...` | `tests/integration/ or suite` | 55.1% |
 | `src/redloop/investigation.py` | Investigation-first architecture for REDLOOP cybersecurity platform. | `TimelineEvent, Investigation, InvestigationStore, utc_now_iso, get_investigation_store` | `tests/integration/ or suite` | 80.3% |
 | `src/redloop/investigation_graph.py` | Dual-Graph Investigation System, Replay Engine, Remediation Verification, and Multi-Model Evaluator. | `ProvenanceType, NodeType, GraphNode, GraphEdge, InvestigationGraph, RemediationVerifier...` | `tests/test_investigation_graph.py` | 83.8% |
-| `src/redloop/llm.py` | Provider-neutral LLM calls and runtime configuration for RedLoop. | `Provider, ProviderStatus, CompletionResult, LLMError, ProviderNotConfiguredError, ProviderCallError...` | `tests/test_llm.py` | 59.6% |
+| `src/redloop/llm.py` | Provider-neutral LLM calls and runtime configuration for RedLoop. | `Provider, ProviderStatus, CompletionResult, LLMError, InsufficientMemoryError, ProviderNotConfiguredError...` | `tests/test_llm.py` | 59.6% |
 | `src/redloop/memory.py` | Local episodic memory with bounded lexical similarity retrieval. | `MemoryRecord, MemoryMatch, EpisodicMemory` | `tests/test_memory.py` | 96.5% |
 | `src/redloop/osint_engine.py` | Unified OSINT Intelligence Engine for REDLOOP. | `OSINTVerificationState, OSINTResult, OSINTCache, OSINTEngine, classify_ip_address, request_with_backoff...` | `tests/test_osint_engine.py` | 76.3% |
 | `src/redloop/overview_enhanced.py` | Enhanced Overview Dashboard — Professional security console view. | `` | `tests/integration/ or suite` | 0.0% |
@@ -266,7 +282,8 @@ Total inspected modules: **139**
 | `src/redloop/workbench/router_copilot.py` | Copilot, Chat, and Terminal Execution Router. | `copilot_status` | `tests/integration/ or suite` | N/A |
 | `src/redloop/workbench/router_ctf.py` | CTF & Challenge Operations Router. | `decode_ctf_payload` | `tests/integration/ or suite` | N/A |
 | `src/redloop/workbench/router_diagnostics.py` | Diagnostics, Health, and Audit Verification Router. | `workbench_health` | `tests/integration/ or suite` | N/A |
-| `src/redloop/workbench/router_integrations.py` | Integrations, SIEM, and EDR Router. | `integrations_status` | `tests/integration/ or suite` | N/A |
+| `src/redloop/workbench/router_engagements.py` | Workbench REST router for Engagement-Scoped Profiles (Phase B.5). | `ImportScopeRequest, SelfAuthorizeRequest, ActivateScopeRequest, get_global_engagement_manager, list_engagements, import_scope...` | `tests/integration/ or suite` | N/A |
+| `src/redloop/workbench/router_integrations.py` | Integrations, SIEM, EDR, and MCP/API Connector Registry Router (Phase 2). | `integrations_status, list_connectors, create_connector, get_all_connectors_telemetry, get_connector, update_connector...` | `tests/integration/ or suite` | N/A |
 | `src/redloop/workbench/router_investigations.py` | Investigations & Attack Reconstruction Router. | `list_workbench_investigations, get_workbench_investigation` | `tests/integration/ or suite` | N/A |
 | `src/redloop/workbench/router_reporting.py` | Reporting & Quality Metrics Router. | `reports_summary` | `tests/integration/ or suite` | N/A |
 | `src/redloop/workbench/router_soc.py` | SOC Operations, Incidents, and Playbooks Router. | `soc_metrics_overview` | `tests/integration/ or suite` | N/A |
@@ -277,7 +294,7 @@ Total inspected modules: **139**
 
 ## 6. Route Inventory (REST & WebSocket Endpoints)
 
-Total declared endpoints: **241**
+Total declared endpoints: **258**
 
 | Method | Path | Handler | Auth Requirements | Audit Trail |
 | :--- | :--- | :--- | :--- | :--- |
@@ -438,6 +455,7 @@ Total declared endpoints: **241**
 | `POST` | `/api/providers/test` | `test_provider_gateway` | Loopback Only | None |
 | `POST` | `/api/rag/ingest` | `ingest_rag_knowledge` | Loopback Only | None |
 | `GET` | `/api/rag/query` | `query_rag_knowledge` | Loopback Only | None |
+| `GET` | `/api/readyz` | `ready_check` | Loopback Only | None |
 | `GET` | `/api/reports/{task_id}` | `get_phase4_report_endpoint` | Loopback Only | None |
 | `GET` | `/api/scope` | `api_scope` | Loopback Only | None |
 | `GET` | `/api/search` | `global_search_api` | Loopback Only | None |
@@ -494,6 +512,20 @@ Total declared endpoints: **241**
 | `GET` | `/api/workbench/copilot/status` | `copilot_status` | Loopback Only | None |
 | `POST` | `/api/workbench/ctf/decode` | `decode_ctf_payload` | Loopback Only | None |
 | `GET` | `/api/workbench/diagnostics/health` | `workbench_health` | Loopback Only | None |
+| `GET` | `/api/workbench/engagements` | `list_engagements` | Loopback Only | None |
+| `POST` | `/api/workbench/engagements/import` | `import_scope` | Loopback Only | None |
+| `POST` | `/api/workbench/engagements/self-authorize` | `self_authorize` | Loopback Only | None |
+| `POST` | `/api/workbench/engagements/{engagement_id}/activate` | `activate_engagement` | Loopback Only | None |
+| `GET` | `/api/workbench/integrations/connectors` | `list_connectors` | Loopback Only | None |
+| `POST` | `/api/workbench/integrations/connectors` | `create_connector` | Loopback Only | None |
+| `GET` | `/api/workbench/integrations/connectors/telemetry` | `get_all_connectors_telemetry` | Loopback Only | None |
+| `DELETE` | `/api/workbench/integrations/connectors/{connector_id}` | `delete_connector` | Loopback Only | None |
+| `GET` | `/api/workbench/integrations/connectors/{connector_id}` | `get_connector` | Loopback Only | None |
+| `PUT` | `/api/workbench/integrations/connectors/{connector_id}` | `update_connector` | Loopback Only | None |
+| `POST` | `/api/workbench/integrations/connectors/{connector_id}/disable` | `disable_connector` | Loopback Only | None |
+| `POST` | `/api/workbench/integrations/connectors/{connector_id}/enable` | `enable_connector` | Loopback Only | None |
+| `POST` | `/api/workbench/integrations/connectors/{connector_id}/execute` | `execute_connector_tool` | Loopback Only | None |
+| `POST` | `/api/workbench/integrations/connectors/{connector_id}/test` | `test_connector` | Loopback Only | None |
 | `GET` | `/api/workbench/integrations/status` | `integrations_status` | Loopback Only | None |
 | `GET` | `/api/workbench/investigations` | `list_workbench_investigations` | Loopback Only | HMAC Audit Ledger |
 | `GET` | `/api/workbench/investigations/{investigation_id}` | `get_workbench_investigation` | Loopback Only | HMAC Audit Ledger |
@@ -513,8 +545,10 @@ Total declared endpoints: **241**
 | `POST` | `/chat` | `send_message` | Loopback Only | HMAC Audit Ledger |
 | `GET` | `/favicon.ico` | `favicon` | Loopback Only | None |
 | `GET` | `/health` | `health_check` | Loopback Only | None |
+| `GET` | `/healthz` | `health_check` | Loopback Only | None |
 | `GET` | `/openapi.json` | `openapi` | Loopback Only | None |
 | `GET` | `/performance` | `performance_page` | Loopback Only | None |
+| `GET` | `/readyz` | `ready_check` | Loopback Only | None |
 | `GET` | `/report/html` | `report_html` | Loopback Only | None |
 | `GET` | `/report/json` | `report_json` | Loopback Only | None |
 | `GET` | `/report/markdown` | `report_md` | Loopback Only | None |

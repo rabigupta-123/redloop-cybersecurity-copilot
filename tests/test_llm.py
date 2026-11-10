@@ -213,6 +213,7 @@ def test_complete_sanitizes_unexpected_provider_exceptions(monkeypatch):
 
 
 def test_router_falls_back_after_provider_api_error(monkeypatch):
+    monkeypatch.setenv("REDLOOP_ALLOW_INSUFFICIENT_RAM", "1")
     calls = []
 
     def completion(**kwargs):
@@ -233,6 +234,7 @@ def test_router_falls_back_after_provider_api_error(monkeypatch):
         settings(
             gemini_api_key="test-key",
             allow_cloud_routing=True,
+            allow_insufficient_ram_override=True,
         )
     )
 
@@ -245,6 +247,7 @@ def test_router_falls_back_after_provider_api_error(monkeypatch):
 
 
 def test_router_skips_provider_without_key(monkeypatch):
+    monkeypatch.setenv("REDLOOP_ALLOW_INSUFFICIENT_RAM", "1")
     calls = []
 
     def completion(**kwargs):
@@ -254,7 +257,7 @@ def test_router_skips_provider_without_key(monkeypatch):
         )
 
     monkeypatch.setattr("redloop.llm.litellm.completion", completion)
-    client = LLMClient(settings(allow_cloud_routing=True))
+    client = LLMClient(settings(allow_cloud_routing=True, allow_insufficient_ram_override=True))
 
     result = SmartRouter(client).route_and_complete(
         "system", "user", complexity=TaskComplexity.SIMPLE

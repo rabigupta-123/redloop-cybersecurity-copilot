@@ -1,0 +1,112 @@
+[
+  {
+    "id": 10,
+    "timestamp": "2026-11-09T18:51:41.559815+00:00",
+    "target": "192.0.2.200:80",
+    "action": "mcp:run_recon",
+    "module": "mcp",
+    "status": "BLOCKED",
+    "details": "{\"status\": \"error\", \"error\": \"SCOPE_DENIED\", \"message\": \"Scope blocked: 192.0.2.200 [scan] - 192.0.2.200 is not present in scope.yaml \\u2014 refusing to act\"}",
+    "prev_hash": "fe9fad7a7bd2b3f1e3912c33a0d6ab88862457d8a1a91820ce8d13d5e9edeba1",
+    "event_hash": "c51789b0c3634b3d7aca4f8473c3e2e118e62a3dd86a8c8b0727dbc4ba8c42fe"
+  },
+  {
+    "id": 9,
+    "timestamp": "2026-11-09T18:51:41.550042+00:00",
+    "target": "192.0.2.200",
+    "action": "scan",
+    "module": "scope_guard",
+    "status": "blocked",
+    "details": "{\"reason\": \"192.0.2.200 is not present in scope.yaml \\u2014 refusing to act\", \"scope_entry\": null}",
+    "prev_hash": "41032442be7939d5c7e1c4c57269bbe2754087758f6acccfd293d3760a1738df",
+    "event_hash": "fe9fad7a7bd2b3f1e3912c33a0d6ab88862457d8a1a91820ce8d13d5e9edeba1"
+  },
+  {
+    "id": 8,
+    "timestamp": "2026-11-09T18:51:41.543058+00:00",
+    "target": "192.0.2.200",
+    "action": "mcp:scope_check",
+    "module": "mcp",
+    "status": "BLOCKED",
+    "details": "{\"allowed\": false, \"target\": \"192.0.2.200\", \"action\": \"recon\", \"port\": 80, \"reason\": \"Scope blocked: 192.0.2.200 [recon] - 192.0.2.200 is not present in scope.yaml \\u2014 refusing to act\"}",
+    "prev_hash": "b59ff148046c00074dbae8adfc586de5203a20104a770819836a2097b0671b5b",
+    "event_hash": "41032442be7939d5c7e1c4c57269bbe2754087758f6acccfd293d3760a1738df"
+  },
+  {
+    "id": 7,
+    "timestamp": "2026-11-09T18:51:41.536165+00:00",
+    "target": "192.0.2.200",
+    "action": "recon",
+    "module": "scope_guard",
+    "status": "blocked",
+    "details": "{\"reason\": \"192.0.2.200 is not present in scope.yaml \\u2014 refusing to act\", \"scope_entry\": null}",
+    "prev_hash": "bc94ad5cbe3d9f3db33756800e694c63b058b47ba33cf28c4b2f29b39e93489e",
+    "event_hash": "b59ff148046c00074dbae8adfc586de5203a20104a770819836a2097b0671b5b"
+  },
+  {
+    "id": 6,
+    "timestamp": "2026-11-09T18:51:41.499038+00:00",
+    "target": "copilot-turn",
+    "action": "chat_turn",
+    "module": "assistant",
+    "status": "completed",
+    "details": "{\"conversation_id\": \"workbench-copilot\", \"prompt\": \"Scan all ports and assess vulnerabilities on 192.0.2.200\", \"capability\": \"TOOL_EXECUTION\"}",
+    "prev_hash": "c71b2ffa00215b6028b34edb0c2fa9f3c84d0f0027c6d255bd99bdfdea21a9d1",
+    "event_hash": "bc94ad5cbe3d9f3db33756800e694c63b058b47ba33cf28c4b2f29b39e93489e"
+  },
+  {
+    "id": 5,
+    "timestamp": "2026-11-09T18:51:41.478074+00:00",
+    "target": "192.0.2.200",
+    "action": "tool_ports",
+    "module": "scope_guard",
+    "status": "blocked",
+    "details": "{\"reason\": \"Target '192.0.2.200' is not authorized by the active signed scope contract for capability 'tool_ports'.\", \"scope_entry\": null}",
+    "prev_hash": "dadba0d6b0eb9180ccd7631f240ef74210db4b23dded38c0451159d5940bedf9",
+    "event_hash": "c71b2ffa00215b6028b34edb0c2fa9f3c84d0f0027c6d255bd99bdfdea21a9d1"
+  },
+  {
+    "id": 4,
+    "timestamp": "2026-11-09T18:51:41.468774+00:00",
+    "target": "192.0.2.200",
+    "action": "scan",
+    "module": "scope_guard",
+    "status": "blocked",
+    "details": "{\"reason\": \"192.0.2.200 is not present in scope.yaml \\u2014 refusing to act\", \"scope_entry\": null}",
+    "prev_hash": "d3d5464ea46c49e039cbf06ce23fd45457c4579bcdc4d8371a68ad0377ab8b83",
+    "event_hash": "dadba0d6b0eb9180ccd7631f240ef74210db4b23dded38c0451159d5940bedf9"
+  },
+  {
+    "id": 3,
+    "timestamp": "2026-11-09T18:51:41.407271+00:00",
+    "target": "*",
+    "action": "mcp:list_targets",
+    "module": "mcp",
+    "status": "SUCCESS",
+    "details": "{\"count\": 2}",
+    "prev_hash": "947c66e94e52f4a6cb2626cfb17f50ad046751099f8b27be3a9460bea9a58fec",
+    "event_hash": "d3d5464ea46c49e039cbf06ce23fd45457c4579bcdc4d8371a68ad0377ab8b83"
+  },
+  {
+    "id": 2,
+    "timestamp": "2026-11-09T18:51:41.397678+00:00",
+    "target": "127.0.0.1",
+    "action": "mcp:scope_check",
+    "module": "mcp",
+    "status": "ALLOWED",
+    "details": "{\"allowed\": true, \"target\": \"127.0.0.1\", \"action\": \"recon\", \"port\": 80, \"reason\": \"AUTHORIZED\"}",
+    "prev_hash": "2b9eb27d6f8b3120d08557bfc3e7574ba25156c76f0c26ccb94d75a4354415ba",
+    "event_hash": "947c66e94e52f4a6cb2626cfb17f50ad046751099f8b27be3a9460bea9a58fec"
+  },
+  {
+    "id": 1,
+    "timestamp": "2026-11-09T18:51:40.864063+00:00",
+    "target": "copilot-turn",
+    "action": "chat_turn",
+    "module": "assistant",
+    "status": "completed",
+    "details": "{\"conversation_id\": \"smoke-test-conv-01\", \"prompt\": \"What are the core differences between a reverse shell and a bind shell in network penetration testing?\", \"capability\": \"GENERAL_CHAT\"}",
+    "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+    "event_hash": "2b9eb27d6f8b3120d08557bfc3e7574ba25156c76f0c26ccb94d75a4354415ba"
+  }
+]

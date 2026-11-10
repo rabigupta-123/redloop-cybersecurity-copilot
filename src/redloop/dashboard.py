@@ -940,10 +940,24 @@ def create_app(
     register_chat_routes(app, db_path, scope_manager=scope_manager)
     register_workbench_routes(app, db_path, scope_manager)
 
+    from redloop.hardening import (
+        ProductionHardeningMiddleware,
+        check_readiness,
+    )
+    app.add_middleware(ProductionHardeningMiddleware)
+
     @app.get("/health")
     @app.get("/api/health")
+    @app.get("/healthz")
     def health_check():
         return {"status": "ok", "service": "REDLOOP Unified Cybersecurity Platform", "version": "1.0.0"}
+
+    @app.get("/readyz")
+    @app.get("/api/readyz")
+    def ready_check():
+        res = check_readiness(db_path)
+        status_code = 200 if res["status"] == "ready" else 503
+        return JSONResponse(status_code=status_code, content=res)
 
     @app.middleware("http")
     async def security_headers(request, call_next):

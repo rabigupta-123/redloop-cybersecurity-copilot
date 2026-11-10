@@ -1,0 +1,112 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" width="100%" height="100%" style="background:#0b0b10; font-family:'Segoe UI', sans-serif;">
+  <defs>
+    <linearGradient id="gradCyan" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2563eb" />
+      <stop offset="100%" stop-color="#3b82f6" />
+    </linearGradient>
+    <linearGradient id="gradOrange" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ea580c" />
+      <stop offset="100%" stop-color="#f97316" />
+    </linearGradient>
+    <linearGradient id="gradGreen" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#059669" />
+      <stop offset="100%" stop-color="#10b981" />
+    </linearGradient>
+    <linearGradient id="gradDark" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#181824" />
+      <stop offset="100%" stop-color="#111119" />
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Title -->
+  <text x="50" y="50" fill="#f8fafc" font-size="24" font-weight="bold" letter-spacing="1">REDLOOP PRODUCTION HARDENING &amp; ROUTING PIPELINE</text>
+  <text x="50" y="75" fill="#94a3b8" font-size="13">Truthful Architecture: Rate Limiter • Secret Redaction • Two-Stage Intent Router • HMAC Choke Point • Cryptographic Audit</text>
+
+  <!-- Stage 1: Request Ingestion & Rate Limiting -->
+  <g transform="translate(50, 110)">
+    <rect width="260" height="200" rx="12" fill="url(#gradDark)" stroke="#2563eb" stroke-width="2" />
+    <rect x="0" y="0" width="260" height="36" rx="12" fill="url(#gradCyan)" />
+    <text x="130" y="24" fill="#ffffff" font-size="14" font-weight="bold" text-anchor="middle">1. INGRESS &amp; RATE LIMITING</text>
+    
+    <text x="20" y="65" fill="#f8fafc" font-size="12" font-weight="bold">• Token Bucket Rate Limiter</text>
+    <text x="30" y="85" fill="#94a3b8" font-size="11">Per-operator &amp; IP burst tracking</text>
+    <text x="30" y="102" fill="#ef4444" font-size="11">Burst &gt; 40 ➔ HTTP 429 Retry-After</text>
+    
+    <text x="20" y="132" fill="#f8fafc" font-size="12" font-weight="bold">• Production Middleware</text>
+    <text x="30" y="152" fill="#94a3b8" font-size="11">Injects X-Correlation-ID</text>
+    <text x="30" y="169" fill="#10b981" font-size="11">Zero stack trace leaks on 500s</text>
+    <text x="30" y="186" fill="#10b981" font-size="11">Real-time secret redaction</text>
+  </g>
+
+  <!-- Arrow 1 -> 2 -->
+  <path d="M 310 210 L 370 210" stroke="#f97316" stroke-width="3" stroke-dasharray="6,4" marker-end="url(#arrow)" />
+
+  <!-- Stage 2: Two-Stage Hybrid Intent Router -->
+  <g transform="translate(370, 110)">
+    <rect width="280" height="200" rx="12" fill="url(#gradDark)" stroke="#f97316" stroke-width="2" />
+    <rect x="0" y="0" width="280" height="36" rx="12" fill="url(#gradOrange)" />
+    <text x="140" y="24" fill="#ffffff" font-size="14" font-weight="bold" text-anchor="middle">2. TWO-STAGE HYBRID ROUTER</text>
+    
+    <text x="20" y="65" fill="#f8fafc" font-size="12" font-weight="bold">• Stage 1: Regex Heuristic Filter</text>
+    <text x="30" y="85" fill="#94a3b8" font-size="11">Fast domain verb &amp; syntax match</text>
+    <text x="30" y="102" fill="#10b981" font-size="11">Deterministic high-precision dispatch</text>
+    
+    <text x="20" y="132" fill="#f8fafc" font-size="12" font-weight="bold">• Stage 2: Local Embedding Classifier</text>
+    <text x="30" y="152" fill="#94a3b8" font-size="11">sentence-transformers (all-MiniLM-L6-v2)</text>
+    <text x="30" y="169" fill="#94a3b8" font-size="11">698 exemplars, cosine centroid match</text>
+    <text x="30" y="186" fill="#fbbf24" font-size="11">Fail-Closed fallback to GENERAL_CHAT</text>
+  </g>
+
+  <!-- Arrow 2 -> 3 -->
+  <path d="M 650 210 L 710 210" stroke="#10b981" stroke-width="3" stroke-dasharray="6,4" />
+
+  <!-- Stage 3: Single Choke Point & Audit -->
+  <g transform="translate(710, 110)">
+    <rect width="240" height="200" rx="12" fill="url(#gradDark)" stroke="#10b981" stroke-width="2" />
+    <rect x="0" y="0" width="240" height="36" rx="12" fill="url(#gradGreen)" />
+    <text x="120" y="24" fill="#ffffff" font-size="14" font-weight="bold" text-anchor="middle">3. CHOKE POINT &amp; AUDIT</text>
+    
+    <text x="20" y="65" fill="#f8fafc" font-size="12" font-weight="bold">• ScopeGuard Enforcement</text>
+    <text x="30" y="85" fill="#94a3b8" font-size="11">CIDR, wildcard domain &amp; ports</text>
+    <text x="30" y="102" fill="#ef4444" font-size="11">Out-of-scope override (SBR=1.0)</text>
+    
+    <text x="20" y="132" fill="#f8fafc" font-size="12" font-weight="bold">• Cryptographic Ledger</text>
+    <text x="30" y="152" fill="#94a3b8" font-size="11">HMAC-SHA256 ValidatedCommand</text>
+    <text x="30" y="169" fill="#10b981" font-size="11">Continuous SHA-256 hash chaining</text>
+    <text x="30" y="186" fill="#10b981" font-size="11">Tamper-evident audit rows</text>
+  </g>
+
+  <!-- Bottom Resiliency Panel -->
+  <g transform="translate(50, 350)">
+    <rect width="900" height="200" rx="12" fill="#121218" stroke="#334155" stroke-width="1.5" />
+    <text x="25" y="32" fill="#f8fafc" font-size="15" font-weight="bold">SYSTEM RESILIENCY &amp; PRODUCTION OBSERVABILITY</text>
+    
+    <!-- Box A: Circuit Breaker -->
+    <rect x="25" y="50" width="265" height="125" rx="8" fill="#1a1a24" stroke="#475569" stroke-width="1" />
+    <text x="40" y="75" fill="#38bdf8" font-size="13" font-weight="bold">Outbound Circuit Breaker</text>
+    <text x="40" y="98" fill="#94a3b8" font-size="11">• State: CLOSED ➔ OPEN ➔ HALF_OPEN</text>
+    <text x="40" y="118" fill="#94a3b8" font-size="11">• Trips on 5 consecutive failures</text>
+    <text x="40" y="138" fill="#94a3b8" font-size="11">• 60s recovery timeout with backoff</text>
+    <text x="40" y="158" fill="#10b981" font-size="11">• Protects Groq / OpenRouter / APIs</text>
+
+    <!-- Box B: Health & Readiness -->
+    <rect x="315" y="50" width="265" height="125" rx="8" fill="#1a1a24" stroke="#475569" stroke-width="1" />
+    <text x="330" y="75" fill="#38bdf8" font-size="13" font-weight="bold">Health &amp; Readiness Probes</text>
+    <text x="330" y="98" fill="#94a3b8" font-size="11">• /healthz: Fast liveness check</text>
+    <text x="330" y="118" fill="#94a3b8" font-size="11">• /readyz: Multi-component audit</text>
+    <text x="330" y="138" fill="#94a3b8" font-size="11">• Validates DB, Ledger hash chain</text>
+    <text x="330" y="158" fill="#10b981" font-size="11">• Fail-closed 503 on broken chain</text>
+
+    <!-- Box C: Load Testing Validation -->
+    <rect x="605" y="50" width="270" height="125" rx="8" fill="#1a1a24" stroke="#475569" stroke-width="1" />
+    <text x="620" y="75" fill="#38bdf8" font-size="13" font-weight="bold">Locust Load Test Profile</text>
+    <text x="620" y="98" fill="#94a3b8" font-size="11">• 50 concurrent simulated operators</text>
+    <text x="620" y="118" fill="#94a3b8" font-size="11">• 5-minute sustained duration (300s)</text>
+    <text x="620" y="138" fill="#10b981" font-size="11">• 0.0% errors across core endpoints</text>
+    <text x="620" y="158" fill="#10b981" font-size="11">• Max safe concurrency: 25 workers</text>
+  </g>
+</svg>

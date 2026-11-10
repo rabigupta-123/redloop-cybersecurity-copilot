@@ -62,7 +62,8 @@ app = create_app(str(db_path), scope_manager=scope_mgr)
 
 transcripts = {}
 
-print("=== SMOKE TEST 1: Real Chat Request ===")
+import sys
+print("=== SMOKE TEST 1: Real Chat Request ===", file=sys.stderr)
 # 1. Real chat request
 async def test_chat():
     async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://127.0.0.1:8765") as client:
@@ -100,10 +101,10 @@ transcripts["smoke_test_1_chat"] = {
     "request": chat_req,
     "response": chat_resp
 }
-print(f"Chat status: {chat_resp['status_code']}, latency: {chat_resp['elapsed_ms']}ms")
+print(f"Chat status: {chat_resp['status_code']}, latency: {chat_resp['elapsed_ms']}ms", file=sys.stderr)
 
 
-print("\n=== SMOKE TEST 2: Real OSINT Lookup with Evidence IDs ===")
+print("\n=== SMOKE TEST 2: Real OSINT Lookup with Evidence IDs ===", file=sys.stderr)
 # 2. Real OSINT lookup against authorized public target
 async def test_osint():
     from redloop.osint_engine import OSINTEngine
@@ -135,10 +136,10 @@ transcripts["smoke_test_2_osint"] = {
     "description": "Real OSINT lookup against authorized domain with evidence IDs",
     "result": osint_res
 }
-print(f"OSINT target: {osint_res['target']}, evidence id: {osint_res['evidence_id']}, confidence: {osint_res['confidence']}")
+print(f"OSINT target: {osint_res['target']}, evidence id: {osint_res['evidence_id']}, confidence: {osint_res['confidence']}", file=sys.stderr)
 
 
-print("\n=== SMOKE TEST 3: Real MCP Tool Call Round-Trip ===")
+print("\n=== SMOKE TEST 3: Real MCP Tool Call Round-Trip ===", file=sys.stderr)
 # 3. Real MCP Tool Call Round-Trip (scope_check and list_targets)
 async def test_mcp():
     mcp_server = RedloopMCPServer(scope_guard=scope_guard, audit_ledger=audit)
@@ -182,10 +183,10 @@ transcripts["smoke_test_3_mcp"] = {
     "description": "Real MCP Tool Call Round-Trip via MCPServer 2.x",
     "result": mcp_res
 }
-print(f"MCP tool scope_check content: {mcp_res['tool_call_1']['content']}")
+print(f"MCP tool scope_check content: {mcp_res['tool_call_1']['content']}", file=sys.stderr)
 
 
-print("\n=== SMOKE TEST 4: Deliberately Out-of-Scope Action Attempt ===")
+print("\n=== SMOKE TEST 4: Deliberately Out-of-Scope Action Attempt ===", file=sys.stderr)
 # 4. Out-of-scope action attempts via REST, Chat, and MCP + Ledger Rows
 unauthorized_target = "192.0.2.200"
 
@@ -279,9 +280,9 @@ async def test_out_of_scope():
 oos_res = asyncio.run(test_out_of_scope())
 transcripts["smoke_test_4_out_of_scope"] = oos_res
 
-# Save all transcripts
-out_file = Path("artifacts/smoke_test_transcripts.json")
-with open(out_file, "w", encoding="utf-8") as f:
+# Print full unedited JSON transcripts to stdout for tee capture
+print(json.dumps(transcripts, indent=2))
+with open("artifacts/smoke_test_transcripts.json", "w", encoding="utf-8") as f:
     json.dump(transcripts, f, indent=2)
-
-print(f"\nAll smoke test transcripts successfully recorded in {out_file}!")
+with open("artifacts/audit_ledger_rows_raw.json", "w", encoding="utf-8") as f:
+    json.dump(oos_res.get("audit_ledger_rows", []), f, indent=2)

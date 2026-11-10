@@ -575,7 +575,7 @@ class TaskOrchestrator:
             "access logs", "firewall drop logs", "conn.log", "dns query logs",
             "script block logging", "event 4104", "cloudtrail", "zeek",
             "nginx access logs", "firewall logs", "query logs", "cloudtrail audit records"
-        ))
+        )) and not any(w in prompt_lower for w in ("write a ", "write code", "write script", "bash script", "python script", "how to write"))
         is_forensics = (
             is_sysmon_pasted
             or is_linux_auth_pasted
@@ -857,6 +857,43 @@ class TaskOrchestrator:
             elif "tls" in prompt_lower or "ssl" in prompt_lower:
                 service = "tls"
             return {"action": "exploit_simulation", "intent": "AUTHORIZED_RECONNAISSANCE", "target": target, "service": service}
+
+        # Second-stage check: embedding similarity to labeled intent examples as tiebreaker (Phase G.2)
+        try:
+            from redloop.assessment.embedding_router import EmbeddingIntentClassifier
+            clf = EmbeddingIntentClassifier.get_instance()
+            predicted_intent, confidence = clf.classify(prompt)
+            if predicted_intent != "GENERAL_CHAT" and confidence >= 0.50:
+                action_map = {
+                    "AUTHORIZED_RECONNAISSANCE": "authorized_recon",
+                    "VULNERABILITY_ASSESSMENT": "vulnerability_assessment",
+                    "OSINT_DOMAIN": "osint_domain",
+                    "OSINT_IP": "osint_ip",
+                    "OSINT_EMAIL": "osint_email",
+                    "OSINT_USERNAME": "osint_username",
+                    "OSINT_PHONE": "osint_phone",
+                    "FORENSICS_AND_LOG_ANALYSIS": "forensics_analysis",
+                    "CTF_AND_CHALLENGE_ANALYSIS": "ctf_analysis",
+                    "CODING_AND_RESEARCH": "coding_and_research",
+                    "AUDIT_VERIFY": "audit_verify",
+                    "GRAPH_AND_INVESTIGATION": "graph_and_investigation",
+                    "REPORT_GENERATION": "report_generation",
+                    "KALI_COMMAND_ASSISTANCE": "kali_command_assistance",
+                    "FILE_METADATA_ANALYSIS": "file_metadata_analysis",
+                    "TOOL_DETECTION": "tool_detection",
+                    "LIFECYCLE": "lifecycle",
+                    "FOLLOW_UP_ON_ACTIVE_INVESTIGATION": "follow_up",
+                }
+                act = action_map.get(predicted_intent, "general_chat")
+                return {
+                    "action": act,
+                    "intent": predicted_intent,
+                    "target": target,
+                    "confidence": confidence,
+                    "router": "embedding_second_stage"
+                }
+        except Exception:
+            pass
 
         # DEFAULT: GENERAL_CHAT
         return {"action": "general_chat", "intent": "GENERAL_CHAT", "target": target}

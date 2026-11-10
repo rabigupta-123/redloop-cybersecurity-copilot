@@ -139,6 +139,14 @@ class RedloopMCPServer:
             except MCPSecurityError as err:
                 return err.to_dict()
 
+            if port is not None and not (1 <= port <= 65535):
+                return {
+                    "allowed": False,
+                    "target": target,
+                    "error_code": "INVALID_PORT",
+                    "reason": f"Port {port} is invalid (must be between 1 and 65535)."
+                }
+
             if not self.scope_guard:
                 res = {"allowed": False, "target": target, "reason": "No active scope guard configured."}
                 self._log_audit("scope_check", target, "BLOCKED", res)
@@ -174,6 +182,14 @@ class RedloopMCPServer:
             except MCPSecurityError as err:
                 return err.to_dict()
 
+            if port is not None and not (1 <= port <= 65535):
+                return {
+                    "allowed": False,
+                    "target": target,
+                    "error_code": "INVALID_PORT",
+                    "reason": f"Port {port} is invalid (must be between 1 and 65535)."
+                }
+
             targets: List[Dict[str, Any]] = []
             if self.scope_guard and hasattr(self.scope_guard, "scope_manager"):
                 sm = self.scope_guard.scope_manager
@@ -207,6 +223,14 @@ class RedloopMCPServer:
                 self._check_client_limits(client_token)
             except MCPSecurityError as err:
                 return err.to_dict()
+
+            if port is not None and not (1 <= port <= 65535):
+                return {
+                    "allowed": False,
+                    "target": target,
+                    "error_code": "INVALID_PORT",
+                    "reason": f"Port {port} is invalid (must be between 1 and 65535)."
+                }
 
             # Strict scope gate check
             if self.scope_guard:

@@ -1,0 +1,1022 @@
+[
+  {
+    "id": "v4-001",
+    "prompt": "Deliver an executive briefing portfolio encapsulating vulnerability findings on target 198.51.100.99",
+    "expected_intent": "REPORT_GENERATION"
+  },
+  {
+    "id": "v4-002",
+    "prompt": "Generate an HTML security audit dossier covering confirmed ingress vectors and exposure ratings",
+    "expected_intent": "REPORT_GENERATION"
+  },
+  {
+    "id": "v4-003",
+    "prompt": "Output a finalized penetration test writeup in formatted markdown for executive sponsors",
+    "expected_intent": "REPORT_GENERATION"
+  },
+  {
+    "id": "v4-004",
+    "prompt": "Compile a risk mitigation brief summarizing critical severity deficiencies across scoped web services",
+    "expected_intent": "REPORT_GENERATION"
+  },
+  {
+    "id": "v4-005",
+    "prompt": "Produce a client-deliverable compliance documentation packet evaluating ISO27001 readiness posture",
+    "expected_intent": "REPORT_GENERATION"
+  },
+  {
+    "id": "v4-006",
+    "prompt": "Prepare an assessment findings brochure illustrating discovered flaws and suggested remediation steps",
+    "expected_intent": "REPORT_GENERATION"
+  },
+  {
+    "id": "v4-007",
+    "prompt": "Draft an engagement conclusion summary document reviewing external attack perimeter exposure metrics",
+    "expected_intent": "REPORT_GENERATION"
+  },
+  {
+    "id": "v4-008",
+    "prompt": "Publish a sanitized technical post-mortem report outlining web exploitation validation findings",
+    "expected_intent": "REPORT_GENERATION"
+  },
+  {
+    "id": "v4-009",
+    "prompt": "Assemble a PDF executive debrief paper presenting prioritized vulnerability management items",
+    "expected_intent": "REPORT_GENERATION"
+  },
+  {
+    "id": "v4-010",
+    "prompt": "Export an assessment deliverable ledger summarizing observed weaknesses across production endpoints",
+    "expected_intent": "REPORT_GENERATION"
+  },
+  {
+    "id": "v4-011",
+    "prompt": "Create an executive debrief pamphlet breaking down penetration testing discoveries and business impacts",
+    "expected_intent": "REPORT_GENERATION"
+  },
+  {
+    "id": "v4-012",
+    "prompt": "Synthesize security test observations into a comprehensive findings compendium for leadership",
+    "expected_intent": "REPORT_GENERATION"
+  },
+  {
+    "id": "v4-013",
+    "prompt": "Plot an attack vector traversal chart connecting ingress perimeter nodes with core databases",
+    "expected_intent": "GRAPH_AND_INVESTIGATION"
+  },
+  {
+    "id": "v4-014",
+    "prompt": "Construct a dependency link visualization tracking credential pivot routes across enterprise assets",
+    "expected_intent": "GRAPH_AND_INVESTIGATION"
+  },
+  {
+    "id": "v4-015",
+    "prompt": "Map graph neighborhood relations outwards from infected endpoint workstation-finance-03",
+    "expected_intent": "GRAPH_AND_INVESTIGATION"
+  },
+  {
+    "id": "v4-016",
+    "prompt": "Render an interactive node topology diagram illustrating microservice communication relationships",
+    "expected_intent": "GRAPH_AND_INVESTIGATION"
+  },
+  {
+    "id": "v4-017",
+    "prompt": "Calculate centrality scores across the asset relational graph to pinpoint choke point servers",
+    "expected_intent": "GRAPH_AND_INVESTIGATION"
+  },
+  {
+    "id": "v4-018",
+    "prompt": "Display an attack path visual schema demonstrating multi-stage privilege escalation chains",
+    "expected_intent": "GRAPH_AND_INVESTIGATION"
+  },
+  {
+    "id": "v4-019",
+    "prompt": "Query the relational graph index to identify shortest paths between untrusted web roots and LDAP",
+    "expected_intent": "GRAPH_AND_INVESTIGATION"
+  },
+  {
+    "id": "v4-020",
+    "prompt": "Draw an infrastructure layout network graph highlighting firewall boundary segmentation",
+    "expected_intent": "GRAPH_AND_INVESTIGATION"
+  },
+  {
+    "id": "v4-021",
+    "prompt": "Visualize trust boundary intersections in the identity graph connecting external vendors",
+    "expected_intent": "GRAPH_AND_INVESTIGATION"
+  },
+  {
+    "id": "v4-022",
+    "prompt": "Generate a graph model layout showing blast radius reachability from the DMZ edge gateway",
+    "expected_intent": "GRAPH_AND_INVESTIGATION"
+  },
+  {
+    "id": "v4-023",
+    "prompt": "Diagram lateral movement exposure corridors within the hybrid cloud infrastructure model",
+    "expected_intent": "GRAPH_AND_INVESTIGATION"
+  },
+  {
+    "id": "v4-024",
+    "prompt": "Extract the shortest adversary transition pathway through intermediate jump boxes to storage",
+    "expected_intent": "GRAPH_AND_INVESTIGATION"
+  },
+  {
+    "id": "v4-025",
+    "prompt": "Which command line arguments enable multi-threaded dictionary brute-forcing in ffuf?",
+    "expected_intent": "KALI_COMMAND_ASSISTANCE"
+  },
+  {
+    "id": "v4-026",
+    "prompt": "Explain syntax conventions when setting up pivoting relays using socat on Linux systems",
+    "expected_intent": "KALI_COMMAND_ASSISTANCE"
+  },
+  {
+    "id": "v4-027",
+    "prompt": "Provide the exact command parameters to dump Kerberos tickets using impacket ticketer",
+    "expected_intent": "KALI_COMMAND_ASSISTANCE"
+  },
+  {
+    "id": "v4-028",
+    "prompt": "How do I configure hydra to avoid account lockouts while testing SMTP credentials?",
+    "expected_intent": "KALI_COMMAND_ASSISTANCE"
+  },
+  {
+    "id": "v4-029",
+    "prompt": "What flags instruct masscan to inspect banner outputs without crashing router devices?",
+    "expected_intent": "KALI_COMMAND_ASSISTANCE"
+  },
+  {
+    "id": "v4-030",
+    "prompt": "Show terminal parameters for capturing raw beacon frames using airmon-ng and airodump-ng",
+    "expected_intent": "KALI_COMMAND_ASSISTANCE"
+  },
+  {
+    "id": "v4-031",
+    "prompt": "Demonstrate the proper CLI options for invoking crackmapexec against winrm services",
+    "expected_intent": "KALI_COMMAND_ASSISTANCE"
+  },
+  {
+    "id": "v4-032",
+    "prompt": "How to executeResponder in analysis mode without answering poisonous LLMNR queries?",
+    "expected_intent": "KALI_COMMAND_ASSISTANCE"
+  },
+  {
+    "id": "v4-033",
+    "prompt": "What parameters should be provided to sqlmap for extracting tables via time-based blind injection?",
+    "expected_intent": "KALI_COMMAND_ASSISTANCE"
+  },
+  {
+    "id": "v4-034",
+    "prompt": "Explain CLI usage patterns for automating nikto vulnerability audits over secure socks proxies",
+    "expected_intent": "KALI_COMMAND_ASSISTANCE"
+  },
+  {
+    "id": "v4-035",
+    "prompt": "Provide guidance on invoking bloodhound-python with LDAPS authentication and custom collection loops",
+    "expected_intent": "KALI_COMMAND_ASSISTANCE"
+  },
+  {
+    "id": "v4-036",
+    "prompt": "Which arguments allow john the ripper to apply custom word mangling mutation rules?",
+    "expected_intent": "KALI_COMMAND_ASSISTANCE"
+  },
+  {
+    "id": "v4-037",
+    "prompt": "Examine the Windows event viewer records for abnormal account creations under Event ID 4720",
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS"
+  },
+  {
+    "id": "v4-038",
+    "prompt": "Review this snippet of apache error_log to identify directory traversal exploitation attempts",
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS"
+  },
+  {
+    "id": "v4-039",
+    "prompt": "Inspect the captured memory artifact for signs of process hollowing in svchost.exe",
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS"
+  },
+  {
+    "id": "v4-040",
+    "prompt": "Triage these Sysmon telemetry entries matching Event 7 image load anomalies in rundll32",
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS"
+  },
+  {
+    "id": "v4-041",
+    "prompt": "Analyze Linux auditd logs for unauthorized privilege modification via sudoers file edits",
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS"
+  },
+  {
+    "id": "v4-042",
+    "prompt": "Inspect zeek ssl.log outputs to detect anomalous self-signed server certificate handshakes",
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS"
+  },
+  {
+    "id": "v4-043",
+    "prompt": "Investigate this packet capture trace for indicators of DNS tunneling command and control",
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS"
+  },
+  {
+    "id": "v4-044",
+    "prompt": "Scan authentication journal messages in auth.log for successful SSH logins from external subnets",
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS"
+  },
+  {
+    "id": "v4-045",
+    "prompt": "Evaluate CloudTrail management events indicating unauthorized IAM policy modifications",
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS"
+  },
+  {
+    "id": "v4-046",
+    "prompt": "Review Suricata fast.log alerts flagging outbound Cobalt Strike malleable C2 profiles",
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS"
+  },
+  {
+    "id": "v4-047",
+    "prompt": "Parse these raw nginx reverse proxy logs to isolate automated SQL injection probe traffic",
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS"
+  },
+  {
+    "id": "v4-048",
+    "prompt": "Assess firewall connection tracking dumps for high-volume data staging prior to exfiltration",
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS"
+  },
+  {
+    "id": "v4-049",
+    "prompt": "Look up geolocation records, ISP ownership, and route announcements for IP 198.51.100.88",
+    "expected_intent": "OSINT_IP"
+  },
+  {
+    "id": "v4-050",
+    "prompt": "Check threat intelligence reputation and honeypot trigger counts for public address 203.0.113.72",
+    "expected_intent": "OSINT_IP"
+  },
+  {
+    "id": "v4-051",
+    "prompt": "Query IP reputation databases for host 192.0.2.145 to evaluate abuse complaint frequency",
+    "expected_intent": "OSINT_IP"
+  },
+  {
+    "id": "v4-052",
+    "prompt": "Investigate routing prefix allocation and ASN ownership details for external IP 198.51.100.210",
+    "expected_intent": "OSINT_IP"
+  },
+  {
+    "id": "v4-053",
+    "prompt": "Retrieve passive reputation data and historical malicious score for address 203.0.113.19",
+    "expected_intent": "OSINT_IP"
+  },
+  {
+    "id": "v4-054",
+    "prompt": "Check if IP address 192.0.2.77 has been recorded in active botnet command node listings",
+    "expected_intent": "OSINT_IP"
+  },
+  {
+    "id": "v4-055",
+    "prompt": "Lookup autonomous system number and BGP origin history for host address 198.51.100.4",
+    "expected_intent": "OSINT_IP"
+  },
+  {
+    "id": "v4-056",
+    "prompt": "Gather open-source threat intelligence intelligence relating to external IPv4 node 203.0.113.111",
+    "expected_intent": "OSINT_IP"
+  },
+  {
+    "id": "v4-057",
+    "prompt": "Query pDNS historical repositories to identify domain names that previously resolved to 192.0.2.233",
+    "expected_intent": "OSINT_IP"
+  },
+  {
+    "id": "v4-058",
+    "prompt": "Query Shodan and Censys telemetry records for public facing IP 198.51.100.60",
+    "expected_intent": "OSINT_IP"
+  },
+  {
+    "id": "v4-059",
+    "prompt": "Check IP abuse database registries to determine if 203.0.113.84 is an active Tor exit relay",
+    "expected_intent": "OSINT_IP"
+  },
+  {
+    "id": "v4-060",
+    "prompt": "Retrieve registrar registry block assignments and country code data for address 192.0.2.18",
+    "expected_intent": "OSINT_IP"
+  },
+  {
+    "id": "v4-061",
+    "prompt": "Gather whois records, registrar identity, and expiration timestamps for domain nebula-ops.org",
+    "expected_intent": "OSINT_DOMAIN"
+  },
+  {
+    "id": "v4-062",
+    "prompt": "Inspect certificate transparency logs on crt.sh to uncover subdomains for staging-vault.net",
+    "expected_intent": "OSINT_DOMAIN"
+  },
+  {
+    "id": "v4-063",
+    "prompt": "Analyze DNS mail exchange MX records and SPF validation configurations for domain apex-defense.io",
+    "expected_intent": "OSINT_DOMAIN"
+  },
+  {
+    "id": "v4-064",
+    "prompt": "Query passive DNS caches to map past hosting IP changes for portal.target-corp.com",
+    "expected_intent": "OSINT_DOMAIN"
+  },
+  {
+    "id": "v4-065",
+    "prompt": "Check domain reputation score and phishing threat flags for apex-fintech-systems.com",
+    "expected_intent": "OSINT_DOMAIN"
+  },
+  {
+    "id": "v4-066",
+    "prompt": "Enumerate exposed nameservers and DNSSEC signing parameters for enterprise-domain.co.uk",
+    "expected_intent": "OSINT_DOMAIN"
+  },
+  {
+    "id": "v4-067",
+    "prompt": "Investigate historical WHOIS registrant contacts and nameserver records for cloud-infra.org",
+    "expected_intent": "OSINT_DOMAIN"
+  },
+  {
+    "id": "v4-068",
+    "prompt": "Audit DKIM, DMARC policy enforcement, and TXT verification entries for mail.corp-internal.com",
+    "expected_intent": "OSINT_DOMAIN"
+  },
+  {
+    "id": "v4-069",
+    "prompt": "Discover virtual hosts and SSL certificate subject alternative names for gateway.edge-sec.net",
+    "expected_intent": "OSINT_DOMAIN"
+  },
+  {
+    "id": "v4-070",
+    "prompt": "Check security headers, HSTS preloading, and TLS ciphers for payment-portal.example.org",
+    "expected_intent": "OSINT_DOMAIN"
+  },
+  {
+    "id": "v4-071",
+    "prompt": "Perform passive reconnaissance on domain registration metadata for global-logistics-hub.biz",
+    "expected_intent": "OSINT_DOMAIN"
+  },
+  {
+    "id": "v4-072",
+    "prompt": "Look up reverse DNS pointers and sub-delegated zone records for auth.services-platform.net",
+    "expected_intent": "OSINT_DOMAIN"
+  },
+  {
+    "id": "v4-073",
+    "prompt": "Verify mailbox existence and MX delivery route for address devops-lead@secure-banking.net",
+    "expected_intent": "OSINT_EMAIL"
+  },
+  {
+    "id": "v4-074",
+    "prompt": "Check if email account security-architect@fin-exchange.org appeared in public breach dumps",
+    "expected_intent": "OSINT_EMAIL"
+  },
+  {
+    "id": "v4-075",
+    "prompt": "Query breach databases to check compromise status for cto-office@cloud-operations.io",
+    "expected_intent": "OSINT_EMAIL"
+  },
+  {
+    "id": "v4-076",
+    "prompt": "Inspect email handle admin-monitoring@health-analytics.com for associated social profiles",
+    "expected_intent": "OSINT_EMAIL"
+  },
+  {
+    "id": "v4-077",
+    "prompt": "Validate SMTP recipient deliverability and catch-all status for auditor@compliance-audit.org",
+    "expected_intent": "OSINT_EMAIL"
+  },
+  {
+    "id": "v4-078",
+    "prompt": "Search credential spill records to verify compromised passwords for developer7@staging-app.net",
+    "expected_intent": "OSINT_EMAIL"
+  },
+  {
+    "id": "v4-079",
+    "prompt": "Investigate email address sysadmin-core@internal-platform.biz for open source mentions",
+    "expected_intent": "OSINT_EMAIL"
+  },
+  {
+    "id": "v4-080",
+    "prompt": "Check HaveIBeenPwned API entries for enterprise address lead-engineer@defense-systems.com",
+    "expected_intent": "OSINT_EMAIL"
+  },
+  {
+    "id": "v4-081",
+    "prompt": "Audit deliverability and disposable mailbox domain status for contact@temp-inbox-mail.org",
+    "expected_intent": "OSINT_EMAIL"
+  },
+  {
+    "id": "v4-082",
+    "prompt": "Determine if email address infrastructure-team@global-network.co has leaked credentials",
+    "expected_intent": "OSINT_EMAIL"
+  },
+  {
+    "id": "v4-083",
+    "prompt": "Look up public PGP keyrings and code commit logs for author dev-maintainer@crypto-open.io",
+    "expected_intent": "OSINT_EMAIL"
+  },
+  {
+    "id": "v4-084",
+    "prompt": "Gather breach exposure intelligence regarding corporate email ceo-desk@enterprise-holdings.com",
+    "expected_intent": "OSINT_EMAIL"
+  },
+  {
+    "id": "v4-085",
+    "prompt": "Locate public accounts registered across social platforms for handle ghost_recon_99",
+    "expected_intent": "OSINT_USERNAME"
+  },
+  {
+    "id": "v4-086",
+    "prompt": "Search developer code hosting repositories and paste services for alias cyber_sentinel_x",
+    "expected_intent": "OSINT_USERNAME"
+  },
+  {
+    "id": "v4-087",
+    "prompt": "Check forum member directories and code commit histories for pseudonym shadow_operator_01",
+    "expected_intent": "OSINT_USERNAME"
+  },
+  {
+    "id": "v4-088",
+    "prompt": "Investigate open profile registrations across developer networks for username byte_hunter_42",
+    "expected_intent": "OSINT_USERNAME"
+  },
+  {
+    "id": "v4-089",
+    "prompt": "Determine if online identity zero_vector_88 has public profiles on GitHub, GitLab, or Keybase",
+    "expected_intent": "OSINT_USERNAME"
+  },
+  {
+    "id": "v4-090",
+    "prompt": "Scan social media platforms to identify accounts linked to nickname quantum_hacker_7",
+    "expected_intent": "OSINT_USERNAME"
+  },
+  {
+    "id": "v4-091",
+    "prompt": "Perform handle enumeration across open-source communities for username stealth_coder_33",
+    "expected_intent": "OSINT_USERNAME"
+  },
+  {
+    "id": "v4-092",
+    "prompt": "Track public discussion forum threads and code repositories referencing alias hex_infiltrator",
+    "expected_intent": "OSINT_USERNAME"
+  },
+  {
+    "id": "v4-093",
+    "prompt": "Audit web presence and platform accounts registered under handle binary_ranger_55",
+    "expected_intent": "OSINT_USERNAME"
+  },
+  {
+    "id": "v4-094",
+    "prompt": "Search technical bug-bounty leaderboard listings for user handle apex_bounty_seeker",
+    "expected_intent": "OSINT_USERNAME"
+  },
+  {
+    "id": "v4-095",
+    "prompt": "Look up open profile biographies and avatar hashes for username dark_tracer_12",
+    "expected_intent": "OSINT_USERNAME"
+  },
+  {
+    "id": "v4-096",
+    "prompt": "Gather digital footprint intelligence associated with online handle cipher_rebel_90",
+    "expected_intent": "OSINT_USERNAME"
+  },
+  {
+    "id": "v4-097",
+    "prompt": "Identify telecom carrier, line type, and geographic origin for telephone number +1-206-555-0144",
+    "expected_intent": "OSINT_PHONE"
+  },
+  {
+    "id": "v4-098",
+    "prompt": "Lookup mobile network operator and porting status for subscriber number +44-20-7946-0922",
+    "expected_intent": "OSINT_PHONE"
+  },
+  {
+    "id": "v4-099",
+    "prompt": "Determine international dialing prefix and region details for telephone contact +49-30-901820",
+    "expected_intent": "OSINT_PHONE"
+  },
+  {
+    "id": "v4-100",
+    "prompt": "Check if phone number +1-312-555-0188 is registered as a VOIP virtual service provider",
+    "expected_intent": "OSINT_PHONE"
+  },
+  {
+    "id": "v4-101",
+    "prompt": "Verify E.164 formatting, country allocation, and validity for cellular line +33-1-42685555",
+    "expected_intent": "OSINT_PHONE"
+  },
+  {
+    "id": "v4-102",
+    "prompt": "Gather carrier routing information and caller ID registry records for number +61-2-93744000",
+    "expected_intent": "OSINT_PHONE"
+  },
+  {
+    "id": "v4-103",
+    "prompt": "Determine originating telecom company and state jurisdiction for telephone +1-415-555-0199",
+    "expected_intent": "OSINT_PHONE"
+  },
+  {
+    "id": "v4-104",
+    "prompt": "Audit telephone number +81-3-5555-0143 to discover carrier name and mobile network code",
+    "expected_intent": "OSINT_PHONE"
+  },
+  {
+    "id": "v4-105",
+    "prompt": "Look up reverse directory listings and spam risk reputation for caller +1-646-555-0177",
+    "expected_intent": "OSINT_PHONE"
+  },
+  {
+    "id": "v4-106",
+    "prompt": "Investigate country code, area exchange, and network carrier for subscriber +41-22-555-0123",
+    "expected_intent": "OSINT_PHONE"
+  },
+  {
+    "id": "v4-107",
+    "prompt": "Check telecom routing database to determine carrier type for business line +1-512-555-0132",
+    "expected_intent": "OSINT_PHONE"
+  },
+  {
+    "id": "v4-108",
+    "prompt": "Evaluate phone number formatting and original operator assignment for +34-91-555-0181",
+    "expected_intent": "OSINT_PHONE"
+  },
+  {
+    "id": "v4-109",
+    "prompt": "Extract the hidden flag from this steganographic image file using LSB plane extraction",
+    "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS"
+  },
+  {
+    "id": "v4-110",
+    "prompt": "Decompile this stripped 64-bit ELF binary to locate the string validation routine",
+    "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS"
+  },
+  {
+    "id": "v4-111",
+    "prompt": "Analyze this custom multi-round XOR cipher ciphertext to recover the plaintext secret",
+    "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS"
+  },
+  {
+    "id": "v4-112",
+    "prompt": "Construct a ret2libc payload calculating system() address offset from leaked puts() pointer",
+    "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS"
+  },
+  {
+    "id": "v4-113",
+    "prompt": "Solve this crypto challenge involving small RSA public exponent e=3 and unpadded messages",
+    "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS"
+  },
+  {
+    "id": "v4-114",
+    "prompt": "Examine this obfuscated JavaScript bookmarklet to decode the hidden CTF challenge solution",
+    "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS"
+  },
+  {
+    "id": "v4-115",
+    "prompt": "Identify the real challenge token among multiple decoy flags inserted in memory buffers",
+    "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS"
+  },
+  {
+    "id": "v4-116",
+    "prompt": "Bypass the anti-debugging ptrace check in this Linux challenge executable to reach main()",
+    "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS"
+  },
+  {
+    "id": "v4-117",
+    "prompt": "Reverse engineer this webassembly Wasm bytecode module to find the password check logic",
+    "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS"
+  },
+  {
+    "id": "v4-118",
+    "prompt": "Break this substitution cipher using bigram frequency distribution analysis to read the flag",
+    "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS"
+  },
+  {
+    "id": "v4-119",
+    "prompt": "Exploit an integer overflow flaw in this challenge binary to achieve buffer size manipulation",
+    "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS"
+  },
+  {
+    "id": "v4-120",
+    "prompt": "Decode this nested multi-layer base85 and rot13 payload to uncover the contest prize flag",
+    "expected_intent": "CTF_AND_CHALLENGE_ANALYSIS"
+  },
+  {
+    "id": "v4-121",
+    "prompt": "Write a python function implementing an LRU cache with O(1) retrieval and constant time eviction",
+    "expected_intent": "CODING_AND_RESEARCH"
+  },
+  {
+    "id": "v4-122",
+    "prompt": "Provide a secure C implementation of constant-time memory comparison to mitigate timing attacks",
+    "expected_intent": "CODING_AND_RESEARCH"
+  },
+  {
+    "id": "v4-123",
+    "prompt": "Develop a Go microservice handler that enforces token bucket rate limiting per client API key",
+    "expected_intent": "CODING_AND_RESEARCH"
+  },
+  {
+    "id": "v4-124",
+    "prompt": "Write an async Python script using aiohttp to concurrently query JSON endpoints with backoff",
+    "expected_intent": "CODING_AND_RESEARCH"
+  },
+  {
+    "id": "v4-125",
+    "prompt": "Show how to implement Argon2id password hashing securely using modern cryptography libraries",
+    "expected_intent": "CODING_AND_RESEARCH"
+  },
+  {
+    "id": "v4-126",
+    "prompt": "Write a Rust function that validates incoming JSON web tokens without external unvetted crates",
+    "expected_intent": "CODING_AND_RESEARCH"
+  },
+  {
+    "id": "v4-127",
+    "prompt": "Research the mathematical foundations of lattice-based cryptography and post-quantum standards",
+    "expected_intent": "CODING_AND_RESEARCH"
+  },
+  {
+    "id": "v4-128",
+    "prompt": "Provide a Python class implementing a deterministic finite automaton for lexing tokens",
+    "expected_intent": "CODING_AND_RESEARCH"
+  },
+  {
+    "id": "v4-129",
+    "prompt": "Develop an idiomatic TypeScript wrapper for calling authenticated REST APIs with typed schemas",
+    "expected_intent": "CODING_AND_RESEARCH"
+  },
+  {
+    "id": "v4-130",
+    "prompt": "Write a bash utility that monitors disk space utilization and dispatches alerts via curl",
+    "expected_intent": "CODING_AND_RESEARCH"
+  },
+  {
+    "id": "v4-131",
+    "prompt": "How does the zero-knowledge Succinct Non-Interactive Argument of Knowledge (SNARK) protocol function mathematically?",
+    "expected_intent": "CODING_AND_RESEARCH"
+  },
+  {
+    "id": "v4-132",
+    "prompt": "Construct an asynchronous token bucket request throttling class using Python asyncio and time metrics",
+    "expected_intent": "CODING_AND_RESEARCH"
+  },
+  {
+    "id": "v4-133",
+    "prompt": "Validate the SHA-256 rolling ledger hash chain in the SQLite security log database",
+    "expected_intent": "AUDIT_VERIFY"
+  },
+  {
+    "id": "v4-134",
+    "prompt": "Verify that cryptographic HMAC checkpoints match the external signature state for the ledger",
+    "expected_intent": "AUDIT_VERIFY"
+  },
+  {
+    "id": "v4-135",
+    "prompt": "Perform an integrity audit on the assessment events table to confirm zero deleted records",
+    "expected_intent": "AUDIT_VERIFY"
+  },
+  {
+    "id": "v4-136",
+    "prompt": "Check whether database triggers prevented unauthorized update operations on historical events",
+    "expected_intent": "AUDIT_VERIFY"
+  },
+  {
+    "id": "v4-137",
+    "prompt": "Inspect the tamper-evident audit ledger sequence numbering to detect missing transaction blocks",
+    "expected_intent": "AUDIT_VERIFY"
+  },
+  {
+    "id": "v4-138",
+    "prompt": "Validate digital signatures on assessment audit checkpoints to ensure immutable log preservation",
+    "expected_intent": "AUDIT_VERIFY"
+  },
+  {
+    "id": "v4-139",
+    "prompt": "Run cryptographic verification algorithms across all recorded ledger entries to prove provenance",
+    "expected_intent": "AUDIT_VERIFY"
+  },
+  {
+    "id": "v4-140",
+    "prompt": "Check if any audit database event has been modified post-execution by inspecting prev_hash linkage",
+    "expected_intent": "AUDIT_VERIFY"
+  },
+  {
+    "id": "v4-141",
+    "prompt": "Generate a cryptographic ledger compliance report proving uncompromised audit trail integrity",
+    "expected_intent": "AUDIT_VERIFY"
+  },
+  {
+    "id": "v4-142",
+    "prompt": "Verify the HMAC signature key rotation manifest for recent assessment audit transactions",
+    "expected_intent": "AUDIT_VERIFY"
+  },
+  {
+    "id": "v4-143",
+    "prompt": "Detect potential rollback tampering attempts by checking the audit ledger checkpoint sidecar",
+    "expected_intent": "AUDIT_VERIFY"
+  },
+  {
+    "id": "v4-144",
+    "prompt": "Audit recent database operations against external ledger commitments to confirm zero discrepancies",
+    "expected_intent": "AUDIT_VERIFY"
+  },
+  {
+    "id": "v4-145",
+    "prompt": "Calculate Shannon entropy across the binary file sections to detect packed code segments",
+    "expected_intent": "FILE_METADATA_ANALYSIS"
+  },
+  {
+    "id": "v4-146",
+    "prompt": "Extract EXIF metadata tags, camera serials, and GPS coordinate points from this JPEG image",
+    "expected_intent": "FILE_METADATA_ANALYSIS"
+  },
+  {
+    "id": "v4-147",
+    "prompt": "Analyze Portable Executable PE header timestamps, section names, and import tables",
+    "expected_intent": "FILE_METADATA_ANALYSIS"
+  },
+  {
+    "id": "v4-148",
+    "prompt": "Inspect PDF document metadata properties to identify author usernames and creation software",
+    "expected_intent": "FILE_METADATA_ANALYSIS"
+  },
+  {
+    "id": "v4-149",
+    "prompt": "Calculate cryptographic checksums MD5, SHA-1, and SHA-256 for this suspicious uploaded file",
+    "expected_intent": "FILE_METADATA_ANALYSIS"
+  },
+  {
+    "id": "v4-150",
+    "prompt": "Check the entropy profile of this sample to determine if payload data is encrypted or compressed",
+    "expected_intent": "FILE_METADATA_ANALYSIS"
+  },
+  {
+    "id": "v4-151",
+    "prompt": "Extract Mach-O header architecture flags and linked dynamic library dependencies from binary",
+    "expected_intent": "FILE_METADATA_ANALYSIS"
+  },
+  {
+    "id": "v4-152",
+    "prompt": "Triage this suspicious Office document to inspect embedded VBA macro streams and OLE objects",
+    "expected_intent": "FILE_METADATA_ANALYSIS"
+  },
+  {
+    "id": "v4-153",
+    "prompt": "Inspect digital authenticode signatures and certificate issuer chains on this Windows binary",
+    "expected_intent": "FILE_METADATA_ANALYSIS"
+  },
+  {
+    "id": "v4-154",
+    "prompt": "Extract string literals and embedded URLs from the data section of this unknown binary artifact",
+    "expected_intent": "FILE_METADATA_ANALYSIS"
+  },
+  {
+    "id": "v4-155",
+    "prompt": "Analyze ELF program headers and dynamic symbol tables to identify imported libc functions",
+    "expected_intent": "FILE_METADATA_ANALYSIS"
+  },
+  {
+    "id": "v4-156",
+    "prompt": "Parse archive file header structures to verify zip slip directory traversal risks in entries",
+    "expected_intent": "FILE_METADATA_ANALYSIS"
+  },
+  {
+    "id": "v4-157",
+    "prompt": "Scan the current operating system environment to identify available security assessment binaries",
+    "expected_intent": "TOOL_DETECTION"
+  },
+  {
+    "id": "v4-158",
+    "prompt": "Check which network exploration and reconnaissance utilities are installed on system PATH",
+    "expected_intent": "TOOL_DETECTION"
+  },
+  {
+    "id": "v4-159",
+    "prompt": "Detect whether Wireshark, tshark, or tcpdump are available for capturing network traffic",
+    "expected_intent": "TOOL_DETECTION"
+  },
+  {
+    "id": "v4-160",
+    "prompt": "Audit system PATH to verify presence of vulnerability assessment tools like nikto or sqlmap",
+    "expected_intent": "TOOL_DETECTION"
+  },
+  {
+    "id": "v4-161",
+    "prompt": "List available command execution adapters and platform runtimes configured in RedLoop",
+    "expected_intent": "TOOL_DETECTION"
+  },
+  {
+    "id": "v4-162",
+    "prompt": "Inspect local environment capabilities to verify if Docker and WSL subcomponents are active",
+    "expected_intent": "TOOL_DETECTION"
+  },
+  {
+    "id": "v4-163",
+    "prompt": "Determine which web fuzzing binaries like ffuf, gobuster, or feroxbuster are installed locally",
+    "expected_intent": "TOOL_DETECTION"
+  },
+  {
+    "id": "v4-164",
+    "prompt": "Query the system to report software versions for installed cybersecurity testing packages",
+    "expected_intent": "TOOL_DETECTION"
+  },
+  {
+    "id": "v4-165",
+    "prompt": "Check whether Metasploit framework or msfconsole binaries are accessible on the host",
+    "expected_intent": "TOOL_DETECTION"
+  },
+  {
+    "id": "v4-166",
+    "prompt": "Verify the operational availability of forensic extraction software like volatility or binwalk",
+    "expected_intent": "TOOL_DETECTION"
+  },
+  {
+    "id": "v4-167",
+    "prompt": "Scan local system utilities to discover supported exploitation and reconnaissance adapters",
+    "expected_intent": "TOOL_DETECTION"
+  },
+  {
+    "id": "v4-168",
+    "prompt": "Report installed software status and execution environment prerequisites for penetration testing",
+    "expected_intent": "TOOL_DETECTION"
+  },
+  {
+    "id": "v4-169",
+    "prompt": "Halt the local assessment API daemon and release bound network ports gracefully",
+    "expected_intent": "LIFECYCLE"
+  },
+  {
+    "id": "v4-170",
+    "prompt": "Trigger a graceful reload of configuration parameters and refresh provider credentials",
+    "expected_intent": "LIFECYCLE"
+  },
+  {
+    "id": "v4-171",
+    "prompt": "Check the running health status and uptime metrics of the RedLoop background worker processes",
+    "expected_intent": "LIFECYCLE"
+  },
+  {
+    "id": "v4-172",
+    "prompt": "Shut down the loopback web console service listening on port 8765 cleanly",
+    "expected_intent": "LIFECYCLE"
+  },
+  {
+    "id": "v4-173",
+    "prompt": "Restart the core copilot orchestration service to apply updated environment settings",
+    "expected_intent": "LIFECYCLE"
+  },
+  {
+    "id": "v4-174",
+    "prompt": "Display active process IDs and thread pool allocation for background assessment workers",
+    "expected_intent": "LIFECYCLE"
+  },
+  {
+    "id": "v4-175",
+    "prompt": "Initialize runtime logging directories and verify state database access permissions",
+    "expected_intent": "LIFECYCLE"
+  },
+  {
+    "id": "v4-176",
+    "prompt": "Flush ephemeral memory caches and re-synchronize local assessment workspace state",
+    "expected_intent": "LIFECYCLE"
+  },
+  {
+    "id": "v4-177",
+    "prompt": "Stop all active background worker jobs and exit the CLI management process safely",
+    "expected_intent": "LIFECYCLE"
+  },
+  {
+    "id": "v4-178",
+    "prompt": "Verify system health indicators and operational readiness probes across all sub-services",
+    "expected_intent": "LIFECYCLE"
+  },
+  {
+    "id": "v4-179",
+    "prompt": "Terminate pending execution threads and shutdown the local assessment runtime cleanly",
+    "expected_intent": "LIFECYCLE"
+  },
+  {
+    "id": "v4-180",
+    "prompt": "Reload the application configuration file from disk without interrupting ongoing tasks",
+    "expected_intent": "LIFECYCLE"
+  },
+  {
+    "id": "v4-181",
+    "prompt": "In our current active investigation, what specific vulnerability was flagged on the API gateway?",
+    "expected_intent": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION"
+  },
+  {
+    "id": "v4-182",
+    "prompt": "Can you provide more technical details regarding the finding we just discussed?",
+    "expected_intent": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION"
+  },
+  {
+    "id": "v4-183",
+    "prompt": "Pull the raw evidence records linked to the high-severity alert discovered in this case",
+    "expected_intent": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION"
+  },
+  {
+    "id": "v4-184",
+    "prompt": "What additional testing steps should we undertake next for this active security incident?",
+    "expected_intent": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION"
+  },
+  {
+    "id": "v4-185",
+    "prompt": "Review the latest findings logged in our current assessment session and suggest priorities",
+    "expected_intent": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION"
+  },
+  {
+    "id": "v4-186",
+    "prompt": "Regarding the SQL injection issue discovered earlier, show the complete reproduction payload",
+    "expected_intent": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION"
+  },
+  {
+    "id": "v4-187",
+    "prompt": "Continue evaluating the open incident case ticket and check for related lateral alerts",
+    "expected_intent": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION"
+  },
+  {
+    "id": "v4-188",
+    "prompt": "Fetch the cryptographically hashed response evidence associated with the previous finding",
+    "expected_intent": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION"
+  },
+  {
+    "id": "v4-189",
+    "prompt": "What was the CVSS base score assigned to the finding we analyzed in the previous turn?",
+    "expected_intent": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION"
+  },
+  {
+    "id": "v4-190",
+    "prompt": "Proceed with the next phase of investigation for the open target compromise ticket",
+    "expected_intent": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION"
+  },
+  {
+    "id": "v4-191",
+    "prompt": "Explain the business impact and exploitation prerequisites for the alert under review",
+    "expected_intent": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION"
+  },
+  {
+    "id": "v4-192",
+    "prompt": "Summarize the current progress and outstanding investigative questions in this case",
+    "expected_intent": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION"
+  },
+  {
+    "id": "v4-193",
+    "prompt": "Explain the difference between symmetric block ciphers and stream ciphers in data encryption",
+    "expected_intent": "GENERAL_CHAT"
+  },
+  {
+    "id": "v4-194",
+    "prompt": "What security benefits does Address Space Layout Randomization (ASLR) provide against buffer overflows?",
+    "expected_intent": "GENERAL_CHAT"
+  },
+  {
+    "id": "v4-195",
+    "prompt": "How does the OAuth 2.0 authorization code flow protect client application credentials?",
+    "expected_intent": "GENERAL_CHAT"
+  },
+  {
+    "id": "v4-196",
+    "prompt": "Describe the operational mechanics of Cross-Site Request Forgery (CSRF) and anti-CSRF token defense",
+    "expected_intent": "GENERAL_CHAT"
+  },
+  {
+    "id": "v4-197",
+    "prompt": "What is the purpose of Certificate Transparency logs in modern Public Key Infrastructure?",
+    "expected_intent": "GENERAL_CHAT"
+  },
+  {
+    "id": "v4-198",
+    "prompt": "Explain how the Diffie-Hellman ephemeral key exchange establishes forward secrecy in TLS",
+    "expected_intent": "GENERAL_CHAT"
+  },
+  {
+    "id": "v4-199",
+    "prompt": "What are the key security distinctions between discretionary and mandatory access control models?",
+    "expected_intent": "GENERAL_CHAT"
+  },
+  {
+    "id": "v4-200",
+    "prompt": "How does DNS over HTTPS (DoH) improve user privacy compared to traditional plaintext DNS?",
+    "expected_intent": "GENERAL_CHAT"
+  },
+  {
+    "id": "v4-201",
+    "prompt": "Describe common mitigation strategies against Server-Side Request Forgery (SSRF) vulnerabilities",
+    "expected_intent": "GENERAL_CHAT"
+  },
+  {
+    "id": "v4-202",
+    "prompt": "What role does the Content Security Policy (CSP) HTTP header play in mitigating XSS attacks?",
+    "expected_intent": "GENERAL_CHAT"
+  },
+  {
+    "id": "v4-203",
+    "prompt": "Explain the architectural concepts behind zero-trust network architectures and continuous verification",
+    "expected_intent": "GENERAL_CHAT"
+  },
+  {
+    "id": "v4-204",
+    "prompt": "How does the bcrypt hashing function use work factors to resist hardware-accelerated brute forcing?",
+    "expected_intent": "GENERAL_CHAT"
+  }
+]

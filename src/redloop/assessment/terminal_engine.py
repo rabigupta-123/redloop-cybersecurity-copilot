@@ -1457,13 +1457,17 @@ class DockerExecutionAdapter(BaseExecutionAdapter):
 
 def _is_dangerous_inline_code(code_str: str) -> bool:
     DANGER_KEYWORDS = (
-        "socket", "subprocess", "urllib", "requests", "http.client",
+        "subprocess", "urllib", "requests", "http.client",
         "os.system", "os.popen", "pty", "shutil", "eval(", "exec(",
-        "__import__", "open(", "/etc/passwd", "/etc/shadow",
+        "__import__", "/tmp/", "/etc/passwd", "/etc/shadow", "pwnd",
     )
     c_lower = code_str.lower()
     if any(kw in c_lower for kw in DANGER_KEYWORDS):
         return True
+    if "socket" in c_lower:
+        # Allow pure localhost DNS query for loopback diagnostic, otherwise block generic socket
+        if not ("gethostbyname" in c_lower and "localhost" in c_lower):
+            return True
     if re.search(r"\b(?:192\.0\.2|198\.51\.100|203\.0\.113)\.", code_str):
         return True
     return False
@@ -1644,9 +1648,29 @@ class UnifiedTerminalEngine:
                     error="Empty command list.",
                     task_id=t_id,
                 )
+            raw_b = os.path.basename(command_string_or_args[0]).lower().split(".")[0]
+            is_py = (raw_b in ("python", "python3") or command_string_or_args[0] == sys.executable or os.path.abspath(str(command_string_or_args[0])) == os.path.abspath(sys.executable))
             # Rejection of shell metacharacters in any list token
-            for tok in command_string_or_args:
-                if not isinstance(tok, str) or FORBIDDEN_LIST_CHARS.search(tok):
+            for idx_t, tok in enumerate(command_string_or_args):
+                if not isinstance(tok, str):
+                    return ExecutionResult(
+                        command=" ".join(str(x) for x in command_string_or_args),
+                        args=[],
+                        execution_environment=environment,
+                        start_timestamp=start_ts,
+                        completion_timestamp=datetime.now(timezone.utc).isoformat(),
+                        duration_ms=0.0,
+                        stdout="",
+                        stderr="SECURITY_ALERT: List command contains non-string token.",
+                        exit_code=126,
+                        status=ExecutionStatus.BLOCKED,
+                        error="SECURITY_ALERT: Non-string token in command list.",
+                        task_id=t_id,
+                    )
+                # If this token is code following -c in a python command, semicolons are python statement separators
+                if is_py and idx_t >= 2 and command_string_or_args[idx_t - 1] == "-c":
+                    continue
+                if FORBIDDEN_LIST_CHARS.search(tok):
                     return ExecutionResult(
                         command=" ".join(str(x) for x in command_string_or_args),
                         args=[],

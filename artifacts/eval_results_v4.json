@@ -1,0 +1,771 @@
+{
+  "evaluation_version": "v4",
+  "sample_size": 204,
+  "correct": 113,
+  "accuracy": 0.5539,
+  "wilson_ci_95": [
+    0.4853,
+    0.6205
+  ],
+  "macro_precision": 0.7146,
+  "macro_recall": 0.4956,
+  "macro_f1": 0.5378,
+  "cohen_kappa": 0.5302,
+  "v3_accuracy": 0.5539,
+  "delta_vs_v3": 0.0,
+  "class_metrics": {
+    "AUDIT_VERIFY": {
+      "precision": 0.9,
+      "recall": 0.75,
+      "f1": 0.8182,
+      "support": 12
+    },
+    "CODING_AND_RESEARCH": {
+      "precision": 1.0,
+      "recall": 0.5,
+      "f1": 0.6667,
+      "support": 12
+    },
+    "CTF_AND_CHALLENGE_ANALYSIS": {
+      "precision": 1.0,
+      "recall": 0.75,
+      "f1": 0.8571,
+      "support": 12
+    },
+    "FILE_METADATA_ANALYSIS": {
+      "precision": 0.75,
+      "recall": 0.5,
+      "f1": 0.6,
+      "support": 12
+    },
+    "FOLLOW_UP_ON_ACTIVE_INVESTIGATION": {
+      "precision": 0.5,
+      "recall": 0.0833,
+      "f1": 0.1429,
+      "support": 12
+    },
+    "FORENSICS_AND_LOG_ANALYSIS": {
+      "precision": 1.0,
+      "recall": 0.5833,
+      "f1": 0.7368,
+      "support": 12
+    },
+    "GENERAL_CHAT": {
+      "precision": 0.1765,
+      "recall": 1.0,
+      "f1": 0.3,
+      "support": 12
+    },
+    "GRAPH_AND_INVESTIGATION": {
+      "precision": 0.75,
+      "recall": 0.25,
+      "f1": 0.375,
+      "support": 12
+    },
+    "KALI_COMMAND_ASSISTANCE": {
+      "precision": 1.0,
+      "recall": 0.25,
+      "f1": 0.4,
+      "support": 12
+    },
+    "LIFECYCLE": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 12
+    },
+    "OSINT_DOMAIN": {
+      "precision": 1.0,
+      "recall": 0.8333,
+      "f1": 0.9091,
+      "support": 12
+    },
+    "OSINT_EMAIL": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 12
+    },
+    "OSINT_IP": {
+      "precision": 1.0,
+      "recall": 0.8333,
+      "f1": 0.9091,
+      "support": 12
+    },
+    "OSINT_PHONE": {
+      "precision": 1.0,
+      "recall": 0.9167,
+      "f1": 0.9565,
+      "support": 12
+    },
+    "OSINT_USERNAME": {
+      "precision": 1.0,
+      "recall": 0.5833,
+      "f1": 0.7368,
+      "support": 12
+    },
+    "REPORT_GENERATION": {
+      "precision": 0.5,
+      "recall": 0.0833,
+      "f1": 0.1429,
+      "support": 12
+    },
+    "TARGET_CLARIFICATION_REQUIRED": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 0
+    },
+    "TOOL_DETECTION": {
+      "precision": 1.0,
+      "recall": 0.5,
+      "f1": 0.6667,
+      "support": 12
+    },
+    "VULNERABILITY_ASSESSMENT": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 0
+    }
+  },
+  "mismatches": [
+    {
+      "id": "v4-001",
+      "prompt": "Deliver an executive briefing portfolio encapsulating vulnerability findings on target 198.51.100.99",
+      "expected": "REPORT_GENERATION",
+      "predicted": "GENERAL_CHAT",
+      "router": "regex"
+    },
+    {
+      "id": "v4-002",
+      "prompt": "Generate an HTML security audit dossier covering confirmed ingress vectors and exposure ratings",
+      "expected": "REPORT_GENERATION",
+      "predicted": "TARGET_CLARIFICATION_REQUIRED",
+      "router": "regex"
+    },
+    {
+      "id": "v4-003",
+      "prompt": "Output a finalized penetration test writeup in formatted markdown for executive sponsors",
+      "expected": "REPORT_GENERATION",
+      "predicted": "TARGET_CLARIFICATION_REQUIRED",
+      "router": "regex"
+    },
+    {
+      "id": "v4-004",
+      "prompt": "Compile a risk mitigation brief summarizing critical severity deficiencies across scoped web services",
+      "expected": "REPORT_GENERATION",
+      "predicted": "GENERAL_CHAT",
+      "router": "regex"
+    },
+    {
+      "id": "v4-005",
+      "prompt": "Produce a client-deliverable compliance documentation packet evaluating ISO27001 readiness posture",
+      "expected": "REPORT_GENERATION",
+      "predicted": "GENERAL_CHAT",
+      "router": "regex"
+    },
+    {
+      "id": "v4-006",
+      "prompt": "Prepare an assessment findings brochure illustrating discovered flaws and suggested remediation steps",
+      "expected": "REPORT_GENERATION",
+      "predicted": "TARGET_CLARIFICATION_REQUIRED",
+      "router": "regex"
+    },
+    {
+      "id": "v4-007",
+      "prompt": "Draft an engagement conclusion summary document reviewing external attack perimeter exposure metrics",
+      "expected": "REPORT_GENERATION",
+      "predicted": "GENERAL_CHAT",
+      "router": "regex"
+    },
+    {
+      "id": "v4-009",
+      "prompt": "Assemble a PDF executive debrief paper presenting prioritized vulnerability management items",
+      "expected": "REPORT_GENERATION",
+      "predicted": "TARGET_CLARIFICATION_REQUIRED",
+      "router": "regex"
+    },
+    {
+      "id": "v4-010",
+      "prompt": "Export an assessment deliverable ledger summarizing observed weaknesses across production endpoints",
+      "expected": "REPORT_GENERATION",
+      "predicted": "TARGET_CLARIFICATION_REQUIRED",
+      "router": "regex"
+    },
+    {
+      "id": "v4-011",
+      "prompt": "Create an executive debrief pamphlet breaking down penetration testing discoveries and business impacts",
+      "expected": "REPORT_GENERATION",
+      "predicted": "GENERAL_CHAT",
+      "router": "regex"
+    },
+    {
+      "id": "v4-012",
+      "prompt": "Synthesize security test observations into a comprehensive findings compendium for leadership",
+      "expected": "REPORT_GENERATION",
+      "predicted": "TARGET_CLARIFICATION_REQUIRED",
+      "router": "regex"
+    },
+    {
+      "id": "v4-013",
+      "prompt": "Plot an attack vector traversal chart connecting ingress perimeter nodes with core databases",
+      "expected": "GRAPH_AND_INVESTIGATION",
+      "predicted": "TARGET_CLARIFICATION_REQUIRED",
+      "router": "regex"
+    },
+    {
+      "id": "v4-014",
+      "prompt": "Construct a dependency link visualization tracking credential pivot routes across enterprise assets",
+      "expected": "GRAPH_AND_INVESTIGATION",
+      "predicted": "TARGET_CLARIFICATION_REQUIRED",
+      "router": "regex"
+    },
+    {
+      "id": "v4-015",
+      "prompt": "Map graph neighborhood relations outwards from infected endpoint workstation-finance-03",
+      "expected": "GRAPH_AND_INVESTIGATION",
+      "predicted": "TARGET_CLARIFICATION_REQUIRED",
+      "router": "regex"
+    },
+    {
+      "id": "v4-016",
+      "prompt": "Render an interactive node topology diagram illustrating microservice communication relationships",
+      "expected": "GRAPH_AND_INVESTIGATION",
+      "predicted": "TARGET_CLARIFICATION_REQUIRED",
+      "router": "regex"
+    },
+    {
+      "id": "v4-017",
+      "prompt": "Calculate centrality scores across the asset relational graph to pinpoint choke point servers",
+      "expected": "GRAPH_AND_INVESTIGATION",
+      "predicted": "GENERAL_CHAT",
+      "router": "regex"
+    },
+    {
+      "id": "v4-018",
+      "prompt": "Display an attack path visual schema demonstrating multi-stage privilege escalation chains",
+      "expected": "GRAPH_AND_INVESTIGATION",
+      "predicted": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+      "router": "regex"
+    },
+    {
+      "id": "v4-020",
+      "prompt": "Draw an infrastructure layout network graph highlighting firewall boundary segmentation",
+      "expected": "GRAPH_AND_INVESTIGATION",
+      "predicted": "TARGET_CLARIFICATION_REQUIRED",
+      "router": "regex"
+    },
+    {
+      "id": "v4-023",
+      "prompt": "Diagram lateral movement exposure corridors within the hybrid cloud infrastructure model",
+      "expected": "GRAPH_AND_INVESTIGATION",
+      "predicted": "GENERAL_CHAT",
+      "router": "regex"
+    },
+    {
+      "id": "v4-024",
+      "prompt": "Extract the shortest adversary transition pathway through intermediate jump boxes to storage",
+      "expected": "GRAPH_AND_INVESTIGATION",
+      "predicted": "GENERAL_CHAT",
+      "router": "regex"
+    },
+    {
+      "id": "v4-027",
+      "prompt": "Provide the exact command parameters to dump Kerberos tickets using impacket ticketer",
+      "expected": "KALI_COMMAND_ASSISTANCE",
+      "predicted": "GENERAL_CHAT",
+      "router": "regex"
+    },
+    {
+      "id": "v4-028",
+      "prompt": "How do I configure hydra to avoid account lockouts while testing SMTP credentials?",
+      "expected": "KALI_COMMAND_ASSISTANCE",
+      "predicted": "GENERAL_CHAT",
+      "router": "regex"
+    },
+    {
+      "id": "v4-030",
+      "prompt": "Show terminal parameters for capturing raw beacon frames using airmon-ng and airodump-ng",
+      "expected": "KALI_COMMAND_ASSISTANCE",
+      "predicted": "GENERAL_CHAT",
+      "router": "regex"
+    },
+    {
+      "id": "v4-031",
+      "prompt": "Demonstrate the proper CLI options for invoking crackmapexec against winrm services",
+      "expected": "KALI_COMMAND_ASSISTANCE",
+      "predicted": "GENERAL_CHAT",
+      "router": "regex"
+    },
+    {
+      "id": "v4-032",
+      "prompt": "How to executeResponder in analysis mode without answering poisonous LLMNR queries?",
+      "expected": "KALI_COMMAND_ASSISTANCE",
+      "predicted": "GENERAL_CHAT",
+      "router": "regex"
+    },
+    {
+      "id": "v4-033",
+      "prompt": "What parameters should be provided to sqlmap for extracting tables via time-based blind injection?",
+      "expected": "KALI_COMMAND_ASSISTANCE",
+      "predicted": "GENERAL_CHAT",
+      "router": "regex"
+    },
+    {
+      "id": "v4-034",
+      "prompt": "Explain CLI usage patterns for automating nikto vulnerability audits over secure socks proxies",
+      "expected": "KALI_COMMAND_ASSISTANCE",
+      "predicted": "GENERAL_CHAT",
+      "router": "regex"
+    },
+    {
+      "id": "v4-035",
+      "prompt": "Provide guidance on invoking bloodhound-python with LDAPS authentication and custom collection loops",
+      "expected": "KALI_COMMAND_ASSISTANCE",
+      "predicted": "GENERAL_CHAT",
+      "router": "regex"
+    },
+    {
+      "id": "v4-036",
+      "prompt": "Which arguments allow john the ripper to apply custom word mangling mutation rules?",
+      "expected": "KALI_COMMAND_ASSISTANCE",
+      "predicted": "GENERAL_CHAT",
+      "router": "regex"
+    },
+    {
+      "id": "v4-038",
+      "prompt": "Review this snippet of apache error_log to identify directory traversal exploitation attempts",
+      "expected": "FORENSICS_AND_LOG_ANALYSIS",
+      "predicted": "GENERAL_CHAT",
+      "router": "regex"
+    },
+    {
+      "id": "v4-039",
+      "prompt": "Inspect the captured memory artifact for signs of process hollowing in svchost.exe",
+      "expected": "FORENSICS_AND_LOG_ANALYSIS",
+      "predicted": "GENERAL_CHAT",
+      "router": "regex"
+    },
+    {
+      "id": "v4-046",
+      "prompt": "Review Suricata fast.log alerts flagging outbound Cobalt Strike malleable C2 profiles",
+      "expected": "FORENSICS_AND_LOG_ANALYSIS",
+      "predicted": "GENERAL_CHAT",
+      "router": "regex"
+    },
+    {
+      "id": "v4-047",
+      "prompt": "Parse these raw nginx reverse proxy logs to isolate automated SQL injection probe traffic",
+      "expected": "FORENSICS_AND_LOG_ANALYSIS",
+      "predicted": "GENERAL_CHAT",
+      "router": "regex"
+    },
+    {
+      "id": "v4-048",
+      "prompt": "Assess firewall connection tracking dumps for high-volume data staging prior to exfiltration",
+      "expected": "FORENSICS_AND_LOG_ANALYSIS",
+      "predicted": "TARGET_CLARIFICATION_REQUIRED",
+      "router": "regex"
+    },
+    {
+      "id": "v4-057",
+      "prompt": "Query pDNS historical repositories to identify domain names that previously resolved to 192.0.2.233",
+      "expected": "OSINT_IP",
+      "predicted": "TARGET_CLARIFICATION_REQUIRED",
+      "router": "regex"
+    },
+    {
+      "id": "v4-060",
+      "prompt": "Retrieve registrar registry block assignments and country code data for address 192.0.2.18",
+      "expected": "OSINT_IP",
+      "predicted": "GENERAL_CHAT",
+      "router": "regex"
+    },
+    {
+      "id": "v4-064",
+      "prompt": "Query passive DNS caches to map past hosting IP changes for portal.target-corp.com",
+      "expected": "OSINT_DOMAIN",
+      "predicted": "GENERAL_CHAT",
+      "router": "regex"
+    },
+    {
+      "id": "v4-069",
+      "prompt": "Discover virtual hosts and SSL certificate subject alternative names for gateway.edge-sec.net",
+      "expected": "OSINT_DOMAIN",
+      "predicted": "GENERAL_CHAT",
+      "router": "regex"
+    },
+    {
+      "id": "v4-086",
+      "prompt": "Search developer code hosting repositories and paste services for alias cyber_sentinel_x",
+      "expected": "OSINT_USERNAME",
+      "predicted": "GENERAL_CHAT",
+      "router": "regex"
+    },
+    {
+      "id": "v4-087",
+      "prompt": "Check forum member directories and code commit histories for pseudonym shadow_operator_01",
+      "expected": "OSINT_USERNAME",
+      "predicted": "TARGET_CLARIFICATION_REQUIRED",
+      "router": "regex"
+    },
+    {
+      "id": "v4-089",
+      "prompt": "Determine if online identity zero_vector_88 has public profiles on GitHub, GitLab, or Keybase",
+      "expected": "OSINT_USERNAME",
+      "predicted": "GENERAL_CHAT",
+      "router": "regex"
+    },
+    {
+      "id": "v4-090",
+      "prompt": "Scan social media platforms to identify accounts linked to nickname quantum_hacker_7",
+      "expected": "OSINT_USERNAME",
+      "predicted": "TARGET_CLARIFICATION_REQUIRED",
+      "router": "regex"
+    },
+    {
+      "id": "v4-092",
+      "prompt": "Track public discussion forum threads and code repositories referencing alias hex_infiltrator",
+      "expected": "OSINT_USERNAME",
+      "predicted": "GENERAL_CHAT",
+      "router": "regex"
+    },
+    {
+      "id": "v4-108",
+      "prompt": "Evaluate phone number formatting and original operator assignment for +34-91-555-0181",
+      "expected": "OSINT_PHONE",
+      "predicted": "VULNERABILITY_ASSESSMENT",
+      "router": "regex"
+    },
+    {
+      "id": "v4-110",
+      "prompt": "Decompile this stripped 64-bit ELF binary to locate the string validation routine",
+      "expected": "CTF_AND_CHALLENGE_ANALYSIS",
+      "predicted": "FILE_METADATA_ANALYSIS",
+      "router": "regex"
+    },
+    {
+      "id": "v4-113",
+      "prompt": "Solve this crypto challenge involving small RSA public exponent e=3 and unpadded messages",
+      "expected": "CTF_AND_CHALLENGE_ANALYSIS",
+      "predicted": "GENERAL_CHAT",
+      "router": "regex"
+    },
+    {
+      "id": "v4-117",
+      "prompt": "Reverse engineer this webassembly Wasm bytecode module to find the password check logic",
+      "expected": "CTF_AND_CHALLENGE_ANALYSIS",
+      "predicted": "GENERAL_CHAT",
+      "router": "regex"
+    },
+    {
+      "id": "v4-122",
+      "prompt": "Provide a secure C implementation of constant-time memory comparison to mitigate timing attacks",
+      "expected": "CODING_AND_RESEARCH",
+      "predicted": "GENERAL_CHAT",
+      "router": "regex"
+    },
+    {
+      "id": "v4-125",
+      "prompt": "Show how to implement Argon2id password hashing securely using modern cryptography libraries",
+      "expected": "CODING_AND_RESEARCH",
+      "predicted": "GRAPH_AND_INVESTIGATION",
+      "router": "regex"
+    },
+    {
+      "id": "v4-127",
+      "prompt": "Research the mathematical foundations of lattice-based cryptography and post-quantum standards",
+      "expected": "CODING_AND_RESEARCH",
+      "predicted": "GENERAL_CHAT",
+      "router": "regex"
+    },
+    {
+      "id": "v4-128",
+      "prompt": "Provide a Python class implementing a deterministic finite automaton for lexing tokens",
+      "expected": "CODING_AND_RESEARCH",
+      "predicted": "GENERAL_CHAT",
+      "router": "regex"
+    },
+    {
+      "id": "v4-129",
+      "prompt": "Develop an idiomatic TypeScript wrapper for calling authenticated REST APIs with typed schemas",
+      "expected": "CODING_AND_RESEARCH",
+      "predicted": "GENERAL_CHAT",
+      "router": "regex"
+    },
+    {
+      "id": "v4-131",
+      "prompt": "How does the zero-knowledge Succinct Non-Interactive Argument of Knowledge (SNARK) protocol function mathematically?",
+      "expected": "CODING_AND_RESEARCH",
+      "predicted": "GENERAL_CHAT",
+      "router": "regex"
+    },
+    {
+      "id": "v4-136",
+      "prompt": "Check whether database triggers prevented unauthorized update operations on historical events",
+      "expected": "AUDIT_VERIFY",
+      "predicted": "GENERAL_CHAT",
+      "router": "regex"
+    },
+    {
+      "id": "v4-138",
+      "prompt": "Validate digital signatures on assessment audit checkpoints to ensure immutable log preservation",
+      "expected": "AUDIT_VERIFY",
+      "predicted": "TARGET_CLARIFICATION_REQUIRED",
+      "router": "regex"
+    },
+    {
+      "id": "v4-141",
+      "prompt": "Generate a cryptographic ledger compliance report proving uncompromised audit trail integrity",
+      "expected": "AUDIT_VERIFY",
+      "predicted": "REPORT_GENERATION",
+      "router": "regex"
+    },
+    {
+      "id": "v4-145",
+      "prompt": "Calculate Shannon entropy across the binary file sections to detect packed code segments",
+      "expected": "FILE_METADATA_ANALYSIS",
+      "predicted": "GENERAL_CHAT",
+      "router": "regex"
+    },
+    {
+      "id": "v4-150",
+      "prompt": "Check the entropy profile of this sample to determine if payload data is encrypted or compressed",
+      "expected": "FILE_METADATA_ANALYSIS",
+      "predicted": "GENERAL_CHAT",
+      "router": "regex"
+    },
+    {
+      "id": "v4-152",
+      "prompt": "Triage this suspicious Office document to inspect embedded VBA macro streams and OLE objects",
+      "expected": "FILE_METADATA_ANALYSIS",
+      "predicted": "GENERAL_CHAT",
+      "router": "regex"
+    },
+    {
+      "id": "v4-153",
+      "prompt": "Inspect digital authenticode signatures and certificate issuer chains on this Windows binary",
+      "expected": "FILE_METADATA_ANALYSIS",
+      "predicted": "GENERAL_CHAT",
+      "router": "regex"
+    },
+    {
+      "id": "v4-155",
+      "prompt": "Analyze ELF program headers and dynamic symbol tables to identify imported libc functions",
+      "expected": "FILE_METADATA_ANALYSIS",
+      "predicted": "GENERAL_CHAT",
+      "router": "regex"
+    },
+    {
+      "id": "v4-156",
+      "prompt": "Parse archive file header structures to verify zip slip directory traversal risks in entries",
+      "expected": "FILE_METADATA_ANALYSIS",
+      "predicted": "GENERAL_CHAT",
+      "router": "regex"
+    },
+    {
+      "id": "v4-157",
+      "prompt": "Scan the current operating system environment to identify available security assessment binaries",
+      "expected": "TOOL_DETECTION",
+      "predicted": "TARGET_CLARIFICATION_REQUIRED",
+      "router": "regex"
+    },
+    {
+      "id": "v4-160",
+      "prompt": "Audit system PATH to verify presence of vulnerability assessment tools like nikto or sqlmap",
+      "expected": "TOOL_DETECTION",
+      "predicted": "AUDIT_VERIFY",
+      "router": "regex"
+    },
+    {
+      "id": "v4-162",
+      "prompt": "Inspect local environment capabilities to verify if Docker and WSL subcomponents are active",
+      "expected": "TOOL_DETECTION",
+      "predicted": "GENERAL_CHAT",
+      "router": "regex"
+    },
+    {
+      "id": "v4-165",
+      "prompt": "Check whether Metasploit framework or msfconsole binaries are accessible on the host",
+      "expected": "TOOL_DETECTION",
+      "predicted": "GENERAL_CHAT",
+      "router": "regex"
+    },
+    {
+      "id": "v4-166",
+      "prompt": "Verify the operational availability of forensic extraction software like volatility or binwalk",
+      "expected": "TOOL_DETECTION",
+      "predicted": "FILE_METADATA_ANALYSIS",
+      "router": "embedding_second_stage"
+    },
+    {
+      "id": "v4-167",
+      "prompt": "Scan local system utilities to discover supported exploitation and reconnaissance adapters",
+      "expected": "TOOL_DETECTION",
+      "predicted": "TARGET_CLARIFICATION_REQUIRED",
+      "router": "regex"
+    },
+    {
+      "id": "v4-169",
+      "prompt": "Halt the local assessment API daemon and release bound network ports gracefully",
+      "expected": "LIFECYCLE",
+      "predicted": "TARGET_CLARIFICATION_REQUIRED",
+      "router": "regex"
+    },
+    {
+      "id": "v4-170",
+      "prompt": "Trigger a graceful reload of configuration parameters and refresh provider credentials",
+      "expected": "LIFECYCLE",
+      "predicted": "GENERAL_CHAT",
+      "router": "regex"
+    },
+    {
+      "id": "v4-171",
+      "prompt": "Check the running health status and uptime metrics of the RedLoop background worker processes",
+      "expected": "LIFECYCLE",
+      "predicted": "GENERAL_CHAT",
+      "router": "regex"
+    },
+    {
+      "id": "v4-172",
+      "prompt": "Shut down the loopback web console service listening on port 8765 cleanly",
+      "expected": "LIFECYCLE",
+      "predicted": "GENERAL_CHAT",
+      "router": "regex"
+    },
+    {
+      "id": "v4-173",
+      "prompt": "Restart the core copilot orchestration service to apply updated environment settings",
+      "expected": "LIFECYCLE",
+      "predicted": "GENERAL_CHAT",
+      "router": "regex"
+    },
+    {
+      "id": "v4-174",
+      "prompt": "Display active process IDs and thread pool allocation for background assessment workers",
+      "expected": "LIFECYCLE",
+      "predicted": "TARGET_CLARIFICATION_REQUIRED",
+      "router": "regex"
+    },
+    {
+      "id": "v4-175",
+      "prompt": "Initialize runtime logging directories and verify state database access permissions",
+      "expected": "LIFECYCLE",
+      "predicted": "GENERAL_CHAT",
+      "router": "regex"
+    },
+    {
+      "id": "v4-176",
+      "prompt": "Flush ephemeral memory caches and re-synchronize local assessment workspace state",
+      "expected": "LIFECYCLE",
+      "predicted": "TARGET_CLARIFICATION_REQUIRED",
+      "router": "regex"
+    },
+    {
+      "id": "v4-177",
+      "prompt": "Stop all active background worker jobs and exit the CLI management process safely",
+      "expected": "LIFECYCLE",
+      "predicted": "GENERAL_CHAT",
+      "router": "regex"
+    },
+    {
+      "id": "v4-178",
+      "prompt": "Verify system health indicators and operational readiness probes across all sub-services",
+      "expected": "LIFECYCLE",
+      "predicted": "GENERAL_CHAT",
+      "router": "regex"
+    },
+    {
+      "id": "v4-179",
+      "prompt": "Terminate pending execution threads and shutdown the local assessment runtime cleanly",
+      "expected": "LIFECYCLE",
+      "predicted": "TARGET_CLARIFICATION_REQUIRED",
+      "router": "regex"
+    },
+    {
+      "id": "v4-180",
+      "prompt": "Reload the application configuration file from disk without interrupting ongoing tasks",
+      "expected": "LIFECYCLE",
+      "predicted": "GENERAL_CHAT",
+      "router": "regex"
+    },
+    {
+      "id": "v4-181",
+      "prompt": "In our current active investigation, what specific vulnerability was flagged on the API gateway?",
+      "expected": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+      "predicted": "GENERAL_CHAT",
+      "router": "regex"
+    },
+    {
+      "id": "v4-182",
+      "prompt": "Can you provide more technical details regarding the finding we just discussed?",
+      "expected": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+      "predicted": "TARGET_CLARIFICATION_REQUIRED",
+      "router": "regex"
+    },
+    {
+      "id": "v4-183",
+      "prompt": "Pull the raw evidence records linked to the high-severity alert discovered in this case",
+      "expected": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+      "predicted": "TARGET_CLARIFICATION_REQUIRED",
+      "router": "regex"
+    },
+    {
+      "id": "v4-184",
+      "prompt": "What additional testing steps should we undertake next for this active security incident?",
+      "expected": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+      "predicted": "TARGET_CLARIFICATION_REQUIRED",
+      "router": "regex"
+    },
+    {
+      "id": "v4-185",
+      "prompt": "Review the latest findings logged in our current assessment session and suggest priorities",
+      "expected": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+      "predicted": "TARGET_CLARIFICATION_REQUIRED",
+      "router": "regex"
+    },
+    {
+      "id": "v4-186",
+      "prompt": "Regarding the SQL injection issue discovered earlier, show the complete reproduction payload",
+      "expected": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+      "predicted": "GENERAL_CHAT",
+      "router": "regex"
+    },
+    {
+      "id": "v4-187",
+      "prompt": "Continue evaluating the open incident case ticket and check for related lateral alerts",
+      "expected": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+      "predicted": "GENERAL_CHAT",
+      "router": "regex"
+    },
+    {
+      "id": "v4-188",
+      "prompt": "Fetch the cryptographically hashed response evidence associated with the previous finding",
+      "expected": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+      "predicted": "TARGET_CLARIFICATION_REQUIRED",
+      "router": "regex"
+    },
+    {
+      "id": "v4-189",
+      "prompt": "What was the CVSS base score assigned to the finding we analyzed in the previous turn?",
+      "expected": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+      "predicted": "GENERAL_CHAT",
+      "router": "regex"
+    },
+    {
+      "id": "v4-191",
+      "prompt": "Explain the business impact and exploitation prerequisites for the alert under review",
+      "expected": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+      "predicted": "GENERAL_CHAT",
+      "router": "regex"
+    },
+    {
+      "id": "v4-192",
+      "prompt": "Summarize the current progress and outstanding investigative questions in this case",
+      "expected": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+      "predicted": "TARGET_CLARIFICATION_REQUIRED",
+      "router": "regex"
+    }
+  ]
+}

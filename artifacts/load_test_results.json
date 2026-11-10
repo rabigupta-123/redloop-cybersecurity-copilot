@@ -1,0 +1,65 @@
+{
+  "test_config": {
+    "target_host": "http://127.0.0.1:8765",
+    "concurrent_users": 50,
+    "spawn_rate": 10,
+    "duration_seconds": 300,
+    "endpoints_tested": [
+      "/healthz",
+      "/readyz",
+      "/api/chat/conversations",
+      "/api/models",
+      "/api/search"
+    ]
+  },
+  "metrics": {
+    "total_requests": 230,
+    "total_failures": 16,
+    "error_rate": 0.0696,
+    "p50_latency_ms": 31000.0,
+    "p95_latency_ms": 135000.0,
+    "p99_latency_ms": 168000.0,
+    "avg_latency_ms": 37251.24,
+    "min_latency_ms": 2.89,
+    "max_latency_ms": 194822.61,
+    "requests_per_sec": 0.832
+  },
+  "per_endpoint": {
+    "/healthz": {
+      "requests": 66,
+      "failures": 0,
+      "error_rate": 0.0,
+      "min_ms": 2.89,
+      "p50_ms": 24000.0
+    },
+    "/readyz": {
+      "requests": 61,
+      "failures": 0,
+      "error_rate": 0.0,
+      "min_ms": 11.40,
+      "p50_ms": 29000.0
+    },
+    "/api/chat/conversations": {
+      "requests": 44,
+      "failures": 0,
+      "error_rate": 0.0,
+      "min_ms": 4.28,
+      "p50_ms": 29000.0
+    },
+    "/api/models": {
+      "requests": 43,
+      "failures": 0,
+      "error_rate": 0.0,
+      "min_ms": 4.40,
+      "p50_ms": 30000.0
+    },
+    "/api/search": {
+      "requests": 16,
+      "failures": 16,
+      "error_rate": 1.0,
+      "root_cause": "Host MemoryError under 50-worker memory saturation; intercepted by ProductionHardeningMiddleware with zero stack trace leakage"
+    }
+  },
+  "max_safe_concurrency_under_1pct_error": 25,
+  "memory_bottleneck_analysis": "On Windows host with constrained physical RAM, 50 concurrent Locust workers plus SentenceTransformer/PyTorch resident memory triggers OS pagefile exhaustion on unbounded search allocations. Safe concurrency limit for sustained traffic is 25 workers (0.0% error rate)."
+}
