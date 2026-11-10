@@ -129,7 +129,7 @@ Held-out dataset immutability is strictly enforced (`tests/fixtures/eval/intent_
 
 ## 5. Component Inventory
 
-Total inspected modules: **156**
+Total inspected modules: **157**
 
 | Module | Purpose / Docstring | Public API | Tests | Coverage |
 | :--- | :--- | :--- | :--- | :--- |
@@ -161,6 +161,7 @@ Total inspected modules: **156**
 | `src/redloop/assessment/exploit_simulator.py` | REDLOOP Offline Exploit Simulator. | `SimulationStep, ExploitSimulationResult, ExploitSimulator` | `tests/integration/ or suite` | 92.0% |
 | `src/redloop/assessment/file_engine.py` | Static File & Malware Triage Engine for RedLoop. | `FileTriageEngine, compute_entropy` | `tests/integration/ or suite` | 53.2% |
 | `src/redloop/assessment/finding_models.py` | Universal Finding Normalization & Data Models (Phase 4.1 Hardened). | `FindingSeverity, FindingType, VerificationStatus, OperationalPriority, FindingRemediation, FalsePositiveAnalysis...` | `tests/integration/ or suite` | 88.7% |
+| `src/redloop/assessment/findings_signer.py` | Cryptographically Signed Engagement Findings Exporter (Phase H.5). | `export_signed_findings, verify_signed_findings` | `tests/integration/ or suite` | N/A |
 | `src/redloop/assessment/host_engine.py` | Host security assessment engine for RedLoop. | `HostEngine, is_local_target` | `tests/integration/ or suite` | 64.4% |
 | `src/redloop/assessment/hunting_pivots.py` | REDLOOP Phase 10 — Threat-Hunting Multi-Hop Pivot Engine. | `PivotEntityType, PivotHop, PivotGraphResult, ThreatHuntingPivotEngine` | `tests/integration/ or suite` | 75.0% |
 | `src/redloop/assessment/hunting_query.py` | REDLOOP Phase 10 — Advanced Structured Threat Hunting Query AST & Execution Engine. | `HuntingOperator, LogicalOperator, QueryFieldCriteria, HuntingQueryAST, HuntingQueryResult, HuntingQueryEngine...` | `tests/integration/ or suite` | 66.7% |
@@ -294,7 +295,7 @@ Total inspected modules: **156**
 
 ## 6. Route Inventory (REST & WebSocket Endpoints)
 
-Total declared endpoints: **258**
+Total declared endpoints: **259**
 
 | Method | Path | Handler | Auth Requirements | Audit Trail |
 | :--- | :--- | :--- | :--- | :--- |
@@ -433,6 +434,7 @@ Total declared endpoints: **258**
 | `GET` | `/api/knowledge/diagnostics` | `get_knowledge_diagnostics` | Loopback Only | None |
 | `POST` | `/api/knowledge/feedback` | `record_knowledge_feedback` | Loopback Only | None |
 | `POST` | `/api/knowledge/lessons/review` | `review_knowledge_lesson` | Loopback Only | None |
+| `GET` | `/api/metrics/live` | `live_metrics` | Loopback Only | None |
 | `GET` | `/api/metrics/quality` | `get_quality_metrics_endpoint` | Loopback Only | None |
 | `GET` | `/api/metrics/soc` | `get_soc_operational_metrics_endpoint` | Loopback Only | None |
 | `GET` | `/api/models` | `list_models` | Loopback Only | None |

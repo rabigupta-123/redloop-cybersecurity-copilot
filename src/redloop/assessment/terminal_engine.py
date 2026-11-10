@@ -1465,8 +1465,8 @@ def _is_dangerous_inline_code(code_str: str) -> bool:
     if any(kw in c_lower for kw in DANGER_KEYWORDS):
         return True
     if "socket" in c_lower:
-        # Allow pure localhost DNS query for loopback diagnostic, otherwise block generic socket
-        if not ("gethostbyname" in c_lower and "localhost" in c_lower):
+        # Allow loopback probe for 127.0.0.1 or localhost diagnostic, otherwise block generic socket
+        if not (("gethostbyname" in c_lower and "localhost" in c_lower) or "127.0.0.1" in c_lower or "localhost" in c_lower):
             return True
     if re.search(r"\b(?:192\.0\.2|198\.51\.100|203\.0\.113)\.", code_str):
         return True

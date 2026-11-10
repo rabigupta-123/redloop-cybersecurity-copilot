@@ -876,19 +876,21 @@ class TaskOrchestrator:
                     "CTF_AND_CHALLENGE_ANALYSIS": "ctf_analysis",
                     "CODING_AND_RESEARCH": "coding_and_research",
                     "AUDIT_VERIFY": "audit_verify",
-                    "GRAPH_AND_INVESTIGATION": "graph_and_investigation",
-                    "REPORT_GENERATION": "report_generation",
-                    "KALI_COMMAND_ASSISTANCE": "kali_command_assistance",
+                    "GRAPH_AND_INVESTIGATION": "graph_investigation",
+                    "REPORT_GENERATION": "report_generate",
+                    "KALI_COMMAND_ASSISTANCE": "kali_copilot",
                     "FILE_METADATA_ANALYSIS": "file_metadata_analysis",
                     "TOOL_DETECTION": "tool_detection",
-                    "LIFECYCLE": "lifecycle",
-                    "FOLLOW_UP_ON_ACTIVE_INVESTIGATION": "follow_up",
+                    "LIFECYCLE": "lifecycle_pause",
+                    "FOLLOW_UP_ON_ACTIVE_INVESTIGATION": "follow_up_investigation",
                 }
                 act = action_map.get(predicted_intent, "general_chat")
                 return {
                     "action": act,
                     "intent": predicted_intent,
                     "target": target,
+                    "target_type": target_type,
+                    "resolution_source": resolution_source,
                     "confidence": confidence,
                     "router": "embedding_second_stage"
                 }

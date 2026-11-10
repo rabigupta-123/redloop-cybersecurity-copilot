@@ -10,7 +10,7 @@
 [![Safety Block Rate](https://img.shields.io/badge/SBR-1.0000_(0_Breaches)-2EA44F?style=for-the-badge)](#-empirical-benchmarks--verification-gates)
 [![False Block Rate](https://img.shields.io/badge/FBR-0.0000_(%E2%89%A4_0.05)-2EA44F?style=for-the-badge)](#-empirical-benchmarks--verification-gates)
 [![Automated Release](https://img.shields.io/badge/GitHub-Automated_Release-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/rabigupta-123/redloop-cybersecurity-copilot/releases)
-[![License: MIT](https://img.shields.io/badge/License-MIT-F59E0B?style=for-the-badge)](pyproject.toml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-F59E0B?style=for-the-badge)](LICENSE)
 
 *Cryptographically scope-enforced cybersecurity engineering platform, Model Context Protocol (MCP) server, and autonomous AI bug-bounty copilot for authorized penetration testing, threat hunting, OSINT correlation, and vulnerability research.*
 
@@ -273,6 +273,6 @@ python -m redloop.connectors.mcp_server
 
 ---
 
-## 📄 License
+## 📄 License: MIT
 
-Distributed under the MIT License. See [`pyproject.toml`](pyproject.toml) for details.
+Distributed under the MIT License. Copyright (c) 2026 Rabi Kumar Gupta. See [`LICENSE`](LICENSE) for full legal text.

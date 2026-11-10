@@ -1,0 +1,33 @@
+         19899 function calls (18904 primitive calls) in 15.728 seconds
+
+   Ordered by: cumulative time
+   List reduced from 396 to 25 due to restriction <25>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+       41    0.001    0.000   41.626    1.015 C:\Users\rabig\AppData\Local\Programs\Python\Python312\Lib\threading.py:323(wait)
+       25    0.000    0.000   41.581    1.663 C:\Users\rabig\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\_base.py:428(result)
+   206/99    0.006    0.000   31.412    0.317 {method 'acquire' of '_thread.lock' objects}
+       10    0.000    0.000   31.397    3.140 C:\Users\rabig\AppData\Local\Programs\Python\Python312\Lib\threading.py:1117(join)
+       10    0.000    0.000   31.396    3.140 C:\Users\rabig\AppData\Local\Programs\Python\Python312\Lib\threading.py:1155(_wait_for_tstate_lock)
+     25/2    0.001    0.000   25.944   12.972 C:\Users\rabig\AppData\Local\Programs\Python\Python312\Lib\http\client.py:1386(getresponse)
+     25/2    0.001    0.000   25.943   12.972 C:\Users\rabig\AppData\Local\Programs\Python\Python312\Lib\http\client.py:324(begin)
+     25/5    0.000    0.000   25.909    5.182 C:\Users\rabig\AppData\Local\Programs\Python\Python312\Lib\http\client.py:1015(close)
+     25/2    0.000    0.000   20.693   10.346 C:\Users\rabig\AppData\Local\Programs\Python\Python312\Lib\http\client.py:291(_read_status)
+     25/2    0.001    0.000   20.691   10.346 {method 'readline' of '_io.BufferedReader' objects}
+        1    0.001    0.001   15.720   15.720 C:\Users\rabig\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\_base.py:646(__exit__)
+        1    0.000    0.000   15.719   15.719 C:\Users\rabig\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py:220(shutdown)
+     10/1    0.008    0.001   15.718   15.718 C:\Users\rabig\AppData\Local\Programs\Python\Python312\Lib\threading.py:1018(_bootstrap)
+     10/1    0.000    0.000   15.710   15.710 C:\Users\rabig\AppData\Local\Programs\Python\Python312\Lib\threading.py:1058(_bootstrap_inner)
+     10/1    0.001    0.000   15.710   15.710 C:\Users\rabig\AppData\Local\Programs\Python\Python312\Lib\threading.py:1001(run)
+     10/1    0.003    0.000   15.710   15.710 C:\Users\rabig\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py:70(_worker)
+     10/1    0.008    0.001   15.710   15.710 {method 'get' of '_queue.SimpleQueue' objects}
+     25/2    0.001    0.000   15.670    7.835 C:\Users\rabig\AppData\Local\Programs\Python\Python312\Lib\socket.py:706(readinto)
+     25/1    0.001    0.000   15.669   15.669 C:\Users\rabig\AppData\Local\Programs\Python\Python312\Lib\concurrent\futures\thread.py:54(run)
+     25/1    0.001    0.000   15.667   15.667 C:\Users\rabig\OneDrive\Desktop\claude code project\my-new-project\scripts\profile_live_run.py:20(hit_endpoint)
+     25/1    0.001    0.000   15.667   15.667 C:\Users\rabig\AppData\Local\Programs\Python\Python312\Lib\urllib\request.py:138(urlopen)
+     25/1    0.000    0.000   15.667   15.667 C:\Users\rabig\AppData\Local\Programs\Python\Python312\Lib\urllib\request.py:496(open)
+     25/1    0.000    0.000   15.667   15.667 C:\Users\rabig\AppData\Local\Programs\Python\Python312\Lib\urllib\request.py:525(_open)
+     50/2    0.003    0.000   15.667    7.833 C:\Users\rabig\AppData\Local\Programs\Python\Python312\Lib\urllib\request.py:485(_call_chain)
+     25/1    0.000    0.000   15.667   15.667 C:\Users\rabig\AppData\Local\Programs\Python\Python312\Lib\urllib\request.py:1372(http_open)
+
+

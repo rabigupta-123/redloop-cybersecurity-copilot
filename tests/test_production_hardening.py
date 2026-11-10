@@ -258,3 +258,27 @@ async def test_mcp_run_recon_port_validation():
     res = await server.mcp.call_tool("run_recon", {"target": "10.0.0.1", "port": 99999})
     content_str = str(res.content[0])
     assert "invalid" in content_str.lower() or "INVALID_PORT" in content_str
+
+
+# ==============================================================================
+# 7. Signed Findings & Metrics API Tests (Phase H.5)
+# ==============================================================================
+
+def test_signed_findings_export_and_tamper_detection():
+    from redloop.assessment.findings_signer import export_signed_findings, verify_signed_findings
+
+    test_findings = [
+        {"id": "FIND-001", "severity": "HIGH", "title": "SQL Injection in Login"},
+        {"id": "FIND-002", "severity": "MEDIUM", "title": "Missing Rate Limiting"},
+    ]
+    secret = "test-bounty-signing-key-123"
+    dossier = export_signed_findings("eng-bounty-alpha", test_findings, secret=secret)
+
+    # Valid signature
+    assert verify_signed_findings(dossier, secret=secret) is True
+
+    # Tampered finding should fail verification
+    tampered = dict(dossier)
+    tampered["findings"] = [{"id": "FIND-001", "severity": "LOW", "title": "Altered Severity"}]
+    assert verify_signed_findings(tampered, secret=secret) is False
+

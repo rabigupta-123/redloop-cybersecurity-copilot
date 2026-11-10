@@ -63,3 +63,4 @@
   "max_safe_concurrency_under_1pct_error": 25,
   "memory_bottleneck_analysis": "On Windows host with constrained physical RAM, 50 concurrent Locust workers plus SentenceTransformer/PyTorch resident memory triggers OS pagefile exhaustion on unbounded search allocations. Safe concurrency limit for sustained traffic is 25 workers (0.0% error rate)."
 }
+

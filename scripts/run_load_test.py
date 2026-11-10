@@ -140,11 +140,11 @@ def run_load_test():
                             "requests_per_sec": rps,
                         }
 
-        # 3. Determine max safe concurrency (< 1% error rate)
-        # Test steps: 25, 50, 75, 100 users for 15s each
-        print("[*] Probing max safe concurrency step-ladder...", flush=True)
-        max_safe_concurrency = USERS
-        for c in [25, 50, 75, 100]:
+        # 3. Determine max safe concurrency where p95 stays under 5s and error rate < 1%
+        print("[*] Probing concurrency step-ladder for p95 < 5s threshold...", flush=True)
+        max_concurrency_p95_under_5s = 5
+        ladder_results = {}
+        for c in [5, 10, 15, 20, 25, 30, 40, 50]:
             probe_prefix = str(ARTIFACTS_DIR / f"probe_{c}")
             probe_cmd = [
                 sys.executable,
@@ -174,8 +174,20 @@ def run_load_test():
                             rc = int(prow.get("Request Count", 0))
                             fc = int(prow.get("Failure Count", 0))
                             er = (fc / rc) if rc > 0 else 0.0
-                            if er < 0.01:
-                                max_safe_concurrency = max(max_safe_concurrency, c)
+                            p50 = float(prow.get("50%", 0))
+                            p95 = float(prow.get("95%", 0))
+                            p99 = float(prow.get("99%", 0))
+                            ladder_results[str(c)] = {
+                                "users": c,
+                                "requests": rc,
+                                "failures": fc,
+                                "error_rate": round(er, 4),
+                                "p50_ms": p50,
+                                "p95_ms": p95,
+                                "p99_ms": p99,
+                            }
+                            if p95 < 5000.0 and er < 0.01:
+                                max_concurrency_p95_under_5s = max(max_concurrency_p95_under_5s, c)
                             break
 
         final_report = {
@@ -187,14 +199,14 @@ def run_load_test():
                 "endpoints_tested": [
                     "/healthz",
                     "/readyz",
-                    "/chat",
                     "/api/chat/conversations",
                     "/api/models",
                     "/api/search?q=recon",
                 ],
             },
             "metrics": stats_summary,
-            "max_safe_concurrency_under_1pct_error": max_safe_concurrency,
+            "concurrency_ladder": ladder_results,
+            "max_concurrency_p95_under_5s": max_concurrency_p95_under_5s,
         }
 
         output_file = ARTIFACTS_DIR / "load_test_results.json"

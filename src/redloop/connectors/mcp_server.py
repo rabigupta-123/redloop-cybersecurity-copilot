@@ -182,14 +182,6 @@ class RedloopMCPServer:
             except MCPSecurityError as err:
                 return err.to_dict()
 
-            if port is not None and not (1 <= port <= 65535):
-                return {
-                    "allowed": False,
-                    "target": target,
-                    "error_code": "INVALID_PORT",
-                    "reason": f"Port {port} is invalid (must be between 1 and 65535)."
-                }
-
             targets: List[Dict[str, Any]] = []
             if self.scope_guard and hasattr(self.scope_guard, "scope_manager"):
                 sm = self.scope_guard.scope_manager

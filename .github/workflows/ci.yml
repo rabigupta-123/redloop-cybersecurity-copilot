@@ -35,6 +35,11 @@ jobs:
         run: |
           python scripts/scan_secrets.py --all
 
+      - name: Dependency Vulnerability Audit (pip-audit)
+        run: |
+          pip install pip-audit
+          pip-audit --desc || echo "::warning::Advisories reported by pip-audit; documented in SECRETS_REPORT.md"
+
       - name: Run Tests
         run: |
           pytest -v

@@ -16,6 +16,8 @@ import numpy as np
 logger = logging.getLogger(__name__)
 
 _DEFAULT_TRAIN_PATH = Path(__file__).resolve().parent.parent.parent.parent / "tests" / "fixtures" / "eval" / "intent_train_v2.json"
+_WORKSPACE_MODEL_PATH = Path(__file__).resolve().parent.parent.parent.parent / "data" / "models" / "all-MiniLM-L6-v2"
+_CENTROIDS_CACHE_PATH = Path(__file__).resolve().parent.parent.parent.parent / "data" / "models" / "intent_centroids.npz"
 _EMBEDDING_MODEL_NAME = "all-MiniLM-L6-v2"
 
 
@@ -53,10 +55,11 @@ class EmbeddingIntentClassifier:
     def _initialize(self) -> None:
         try:
             from sentence_transformers import SentenceTransformer
+            model_target = str(_WORKSPACE_MODEL_PATH) if _WORKSPACE_MODEL_PATH.exists() else self.model_name
             try:
-                self.model = SentenceTransformer(self.model_name, local_files_only=True)
+                self.model = SentenceTransformer(model_target, local_files_only=True)
             except Exception:
-                self.model = SentenceTransformer(self.model_name)
+                self.model = SentenceTransformer(model_target)
         except Exception as e:
             logger.warning(f"Failed to load sentence_transformers ({e}). Embedding intent routing disabled.")
             self._is_initialized = False
@@ -66,6 +69,20 @@ class EmbeddingIntentClassifier:
             logger.warning(f"Training dataset not found at {self.train_path}")
             self._is_initialized = False
             return
+
+        # Check if precomputed centroids and embeddings cache exists
+        if _CENTROIDS_CACHE_PATH.exists():
+            try:
+                cached = np.load(_CENTROIDS_CACHE_PATH, allow_pickle=True)
+                self.centroids = cached["centroids"]
+                self.train_embeddings = cached["train_embeddings"]
+                self.intent_labels = list(cached["intent_labels"])
+                self.train_intents = list(cached["train_intents"])
+                self._is_initialized = True
+                logger.info(f"Loaded precomputed intent centroids ({len(self.intent_labels)} classes) from {_CENTROIDS_CACHE_PATH}.")
+                return
+            except Exception:
+                pass
 
         with open(self.train_path, "r", encoding="utf-8") as f:
             train_data = json.load(f)
@@ -94,6 +111,19 @@ class EmbeddingIntentClassifier:
 
         self.centroids = np.array(centroid_list)
         self._is_initialized = True
+
+        # Save cache for instant subsequent loading
+        try:
+            _CENTROIDS_CACHE_PATH.parent.mkdir(parents=True, exist_ok=True)
+            np.savez_compressed(
+                _CENTROIDS_CACHE_PATH,
+                centroids=self.centroids,
+                train_embeddings=self.train_embeddings,
+                intent_labels=np.array(self.intent_labels),
+                train_intents=np.array(self.train_intents),
+            )
+        except Exception:
+            pass
         logger.info(f"Initialized EmbeddingIntentClassifier with {len(self.intent_labels)} classes and {len(prompts)} exemplars.")
 
     def classify(self, prompt: str) -> tuple[str, float]:
@@ -121,10 +151,10 @@ class EmbeddingIntentClassifier:
 
             # If top exemplar is very high similarity (>=0.75), trust top exemplar's intent
             if top_sample_score >= 0.75:
-                return top_sample_intent, top_sample_score
+                return str(top_sample_intent), float(top_sample_score)
 
         if best_score < self.min_confidence:
-            return "GENERAL_CHAT", best_score
+            return "GENERAL_CHAT", float(best_score)
 
-        return predicted_class, best_score
+        return str(predicted_class), float(best_score)
 

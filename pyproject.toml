@@ -5,6 +5,7 @@ description = "Locally-run autonomous security testing agent for authorized pent
 readme = "README.md"
 requires-python = ">=3.11"
 authors = [{ name = "RedLoop" }]
+# SPDX-License-Identifier: MIT
 license = { text = "MIT" }
 keywords = ["security", "pentest", "agent", "ollama", "langgraph"]
 classifiers = [

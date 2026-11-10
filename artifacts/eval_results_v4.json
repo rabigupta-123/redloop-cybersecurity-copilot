@@ -1,18 +1,18 @@
 {
   "evaluation_version": "v4",
   "sample_size": 204,
-  "correct": 113,
-  "accuracy": 0.5539,
+  "correct": 125,
+  "accuracy": 0.6127,
   "wilson_ci_95": [
-    0.4853,
-    0.6205
+    0.5444,
+    0.6769
   ],
-  "macro_precision": 0.7146,
-  "macro_recall": 0.4956,
-  "macro_f1": 0.5378,
-  "cohen_kappa": 0.5302,
+  "macro_precision": 0.7538,
+  "macro_recall": 0.5482,
+  "macro_f1": 0.5961,
+  "cohen_kappa": 0.5907,
   "v3_accuracy": 0.5539,
-  "delta_vs_v3": 0.0,
+  "delta_vs_v3": 0.0588,
   "class_metrics": {
     "AUDIT_VERIFY": {
       "precision": 0.9,
@@ -39,9 +39,9 @@
       "support": 12
     },
     "FOLLOW_UP_ON_ACTIVE_INVESTIGATION": {
-      "precision": 0.5,
-      "recall": 0.0833,
-      "f1": 0.1429,
+      "precision": 0.8571,
+      "recall": 0.5,
+      "f1": 0.6316,
       "support": 12
     },
     "FORENSICS_AND_LOG_ANALYSIS": {
@@ -57,9 +57,9 @@
       "support": 12
     },
     "GRAPH_AND_INVESTIGATION": {
-      "precision": 0.75,
-      "recall": 0.25,
-      "f1": 0.375,
+      "precision": 0.8889,
+      "recall": 0.6667,
+      "f1": 0.7619,
       "support": 12
     },
     "KALI_COMMAND_ASSISTANCE": {
@@ -105,9 +105,9 @@
       "support": 12
     },
     "REPORT_GENERATION": {
-      "precision": 0.5,
-      "recall": 0.0833,
-      "f1": 0.1429,
+      "precision": 0.75,
+      "recall": 0.25,
+      "f1": 0.375,
       "support": 12
     },
     "TARGET_CLARIFICATION_REQUIRED": {
@@ -145,13 +145,6 @@
       "router": "regex"
     },
     {
-      "id": "v4-003",
-      "prompt": "Output a finalized penetration test writeup in formatted markdown for executive sponsors",
-      "expected": "REPORT_GENERATION",
-      "predicted": "TARGET_CLARIFICATION_REQUIRED",
-      "router": "regex"
-    },
-    {
       "id": "v4-004",
       "prompt": "Compile a risk mitigation brief summarizing critical severity deficiencies across scoped web services",
       "expected": "REPORT_GENERATION",
@@ -180,13 +173,6 @@
       "router": "regex"
     },
     {
-      "id": "v4-009",
-      "prompt": "Assemble a PDF executive debrief paper presenting prioritized vulnerability management items",
-      "expected": "REPORT_GENERATION",
-      "predicted": "TARGET_CLARIFICATION_REQUIRED",
-      "router": "regex"
-    },
-    {
       "id": "v4-010",
       "prompt": "Export an assessment deliverable ledger summarizing observed weaknesses across production endpoints",
       "expected": "REPORT_GENERATION",
@@ -208,34 +194,6 @@
       "router": "regex"
     },
     {
-      "id": "v4-013",
-      "prompt": "Plot an attack vector traversal chart connecting ingress perimeter nodes with core databases",
-      "expected": "GRAPH_AND_INVESTIGATION",
-      "predicted": "TARGET_CLARIFICATION_REQUIRED",
-      "router": "regex"
-    },
-    {
-      "id": "v4-014",
-      "prompt": "Construct a dependency link visualization tracking credential pivot routes across enterprise assets",
-      "expected": "GRAPH_AND_INVESTIGATION",
-      "predicted": "TARGET_CLARIFICATION_REQUIRED",
-      "router": "regex"
-    },
-    {
-      "id": "v4-015",
-      "prompt": "Map graph neighborhood relations outwards from infected endpoint workstation-finance-03",
-      "expected": "GRAPH_AND_INVESTIGATION",
-      "predicted": "TARGET_CLARIFICATION_REQUIRED",
-      "router": "regex"
-    },
-    {
-      "id": "v4-016",
-      "prompt": "Render an interactive node topology diagram illustrating microservice communication relationships",
-      "expected": "GRAPH_AND_INVESTIGATION",
-      "predicted": "TARGET_CLARIFICATION_REQUIRED",
-      "router": "regex"
-    },
-    {
       "id": "v4-017",
       "prompt": "Calculate centrality scores across the asset relational graph to pinpoint choke point servers",
       "expected": "GRAPH_AND_INVESTIGATION",
@@ -247,13 +205,6 @@
       "prompt": "Display an attack path visual schema demonstrating multi-stage privilege escalation chains",
       "expected": "GRAPH_AND_INVESTIGATION",
       "predicted": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
-      "router": "regex"
-    },
-    {
-      "id": "v4-020",
-      "prompt": "Draw an infrastructure layout network graph highlighting firewall boundary segmentation",
-      "expected": "GRAPH_AND_INVESTIGATION",
-      "predicted": "TARGET_CLARIFICATION_REQUIRED",
       "router": "regex"
     },
     {
@@ -698,27 +649,6 @@
       "router": "regex"
     },
     {
-      "id": "v4-182",
-      "prompt": "Can you provide more technical details regarding the finding we just discussed?",
-      "expected": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
-      "predicted": "TARGET_CLARIFICATION_REQUIRED",
-      "router": "regex"
-    },
-    {
-      "id": "v4-183",
-      "prompt": "Pull the raw evidence records linked to the high-severity alert discovered in this case",
-      "expected": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
-      "predicted": "TARGET_CLARIFICATION_REQUIRED",
-      "router": "regex"
-    },
-    {
-      "id": "v4-184",
-      "prompt": "What additional testing steps should we undertake next for this active security incident?",
-      "expected": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
-      "predicted": "TARGET_CLARIFICATION_REQUIRED",
-      "router": "regex"
-    },
-    {
       "id": "v4-185",
       "prompt": "Review the latest findings logged in our current assessment session and suggest priorities",
       "expected": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
@@ -740,13 +670,6 @@
       "router": "regex"
     },
     {
-      "id": "v4-188",
-      "prompt": "Fetch the cryptographically hashed response evidence associated with the previous finding",
-      "expected": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
-      "predicted": "TARGET_CLARIFICATION_REQUIRED",
-      "router": "regex"
-    },
-    {
       "id": "v4-189",
       "prompt": "What was the CVSS base score assigned to the finding we analyzed in the previous turn?",
       "expected": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
@@ -758,13 +681,6 @@
       "prompt": "Explain the business impact and exploitation prerequisites for the alert under review",
       "expected": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
       "predicted": "GENERAL_CHAT",
-      "router": "regex"
-    },
-    {
-      "id": "v4-192",
-      "prompt": "Summarize the current progress and outstanding investigative questions in this case",
-      "expected": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
-      "predicted": "TARGET_CLARIFICATION_REQUIRED",
       "router": "regex"
     }
   ]

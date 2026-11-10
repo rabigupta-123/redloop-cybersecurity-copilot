@@ -2685,9 +2685,17 @@ def register_chat_routes(
             },
         })
 
+    _search_cache: dict[str, tuple[float, list[dict[str, Any]]]] = {}
+    _search_cache_ttl: float = 60.0
+
     @router.get("/api/search")
     def global_search_api(q: str = Query(..., min_length=1, max_length=100)) -> JSONResponse:
         query = q.lower().strip()
+        now = time.monotonic()
+        cached = _search_cache.get(query)
+        if cached and (now - cached[0] < _search_cache_ttl):
+            return JSONResponse({"results": cached[1], "cached": True})
+
         results = []
         asmt_store = AssessmentStore()
         for a in asmt_store.list_all():
@@ -2720,7 +2728,9 @@ def register_chat_routes(
                             "subtitle": f"SHA-256: {h[:16]}..." if h else "Evidence artifact",
                             "url": f"/workbench?view=evidence&asmt={a['id']}&evidence={e.id}",
                         })
-        return JSONResponse({"results": results[:30]})
+        res_list = results[:30]
+        _search_cache[query] = (now, res_list)
+        return JSONResponse({"results": res_list, "cached": False})
 
     @router.get("/chat", response_class=HTMLResponse)
     def chat_page(request: Request) -> HTMLResponse:

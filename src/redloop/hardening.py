@@ -214,15 +214,35 @@ def check_readiness(db_path: str) -> dict[str, Any]:
 # ==============================================================================
 
 class ProductionHardeningMiddleware(BaseHTTPMiddleware):
-    """Enforces rate limiting, correlation IDs, and structured error responses without stack leaks."""
+    """Enforces rate limiting, queue depth caps, correlation IDs, and structured error responses."""
 
-    def __init__(self, app: Any, rate_limiter: RateLimiter | None = None) -> None:
+    def __init__(
+        self,
+        app: Any,
+        rate_limiter: RateLimiter | None = None,
+        max_concurrent: int = 35,
+    ) -> None:
         super().__init__(app)
         self.rate_limiter = rate_limiter or RateLimiter()
+        self.max_concurrent = int(os.getenv("REDLOOP_MAX_CONCURRENT_REQUESTS", str(max_concurrent)))
+        self._in_flight = 0
 
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
         corr_id = f"corr-{uuid.uuid4().hex[:12]}"
         request.state.correlation_id = corr_id
+
+        # Concurrency queue depth cap: shed load when concurrent requests exceed capacity
+        if self._in_flight >= self.max_concurrent:
+            return JSONResponse(
+                status_code=429,
+                content={
+                    "error_code": "QUEUE_CAPACITY_EXCEEDED",
+                    "message": "Server processing queue capacity reached. Please retry shortly.",
+                    "correlation_id": corr_id,
+                    "retry_after_seconds": 1.0,
+                },
+                headers={"Retry-After": "1", "X-Correlation-ID": corr_id},
+            )
 
         # Mutating and LLM calling paths apply rate limiting
         path = request.url.path
@@ -253,6 +273,7 @@ class ProductionHardeningMiddleware(BaseHTTPMiddleware):
                     headers={"Retry-After": str(int(math.ceil(retry_after)))}
                 )
 
+        self._in_flight += 1
         try:
             response = await call_next(request)
             response.headers["X-Correlation-ID"] = corr_id
@@ -274,5 +295,7 @@ class ProductionHardeningMiddleware(BaseHTTPMiddleware):
                 },
                 headers={"X-Correlation-ID": corr_id}
             )
+        finally:
+            self._in_flight -= 1
 
 
