@@ -1,7 +1,9 @@
 import json
 import urllib.request
 
-for run_id in [42787137469, 42787164359]:
+run_ids = [42841255939, 42841276251, 42841287351]
+
+for run_id in run_ids:
     url = f"https://api.github.com/repos/rabigupta-123/redloop-cybersecurity-copilot/actions/runs/{run_id}/jobs"
     req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
     try:
@@ -13,4 +15,3 @@ for run_id in [42787137469, 42787164359]:
                     print(f"   step '{s['name']}': status={s['status']}, conclusion={s['conclusion']}")
     except Exception as e:
         print(f"Error for {run_id}: {e}")
-
