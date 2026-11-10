@@ -9,6 +9,7 @@ from datetime import date
 from html import escape
 from ipaddress import ip_network
 from pathlib import Path
+from typing import Any
 from urllib.parse import urlencode, urlsplit
 
 from redloop.reporting import AuditReader, MAX_DASHBOARD_ROWS, MAX_REPORT_ROWS

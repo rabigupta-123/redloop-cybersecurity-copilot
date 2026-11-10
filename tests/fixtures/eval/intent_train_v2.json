@@ -4186,5 +4186,977 @@
     "category": "tools",
     "prompt": "List available security tools and execution adapters in RedLoop.",
     "id": "train-exp-0698"
+  },
+  {
+    "expected_intent": "LIFECYCLE",
+    "category": "lifecycle",
+    "prompt": "Halt all background worker routines and stop the daemon.",
+    "id": "train-phase-i-0699"
+  },
+  {
+    "expected_intent": "LIFECYCLE",
+    "category": "lifecycle",
+    "prompt": "Pause the active assessment execution pipeline.",
+    "id": "train-phase-i-0700"
+  },
+  {
+    "expected_intent": "LIFECYCLE",
+    "category": "lifecycle",
+    "prompt": "Resume the suspended assessment session.",
+    "id": "train-phase-i-0701"
+  },
+  {
+    "expected_intent": "LIFECYCLE",
+    "category": "lifecycle",
+    "prompt": "Abort and cancel the active testing process immediately.",
+    "id": "train-phase-i-0702"
+  },
+  {
+    "expected_intent": "LIFECYCLE",
+    "category": "lifecycle",
+    "prompt": "Check the status and uptime of the orchestrator service.",
+    "id": "train-phase-i-0703"
+  },
+  {
+    "expected_intent": "LIFECYCLE",
+    "category": "lifecycle",
+    "prompt": "Perform a clean shutdown of the security testing framework.",
+    "id": "train-phase-i-0704"
+  },
+  {
+    "expected_intent": "LIFECYCLE",
+    "category": "lifecycle",
+    "prompt": "Gracefully terminate the CLI runner and disconnect listeners.",
+    "id": "train-phase-i-0705"
+  },
+  {
+    "expected_intent": "LIFECYCLE",
+    "category": "lifecycle",
+    "prompt": "Restart the core background services and refresh state.",
+    "id": "train-phase-i-0706"
+  },
+  {
+    "expected_intent": "LIFECYCLE",
+    "category": "lifecycle",
+    "prompt": "Query daemon health metrics and active thread count.",
+    "id": "train-phase-i-0707"
+  },
+  {
+    "expected_intent": "LIFECYCLE",
+    "category": "lifecycle",
+    "prompt": "Spin down worker threads and save persistent workspace state.",
+    "id": "train-phase-i-0708"
+  },
+  {
+    "expected_intent": "LIFECYCLE",
+    "category": "lifecycle",
+    "prompt": "Cancel all queued assessment jobs and release locks.",
+    "id": "train-phase-i-0709"
+  },
+  {
+    "expected_intent": "LIFECYCLE",
+    "category": "lifecycle",
+    "prompt": "Kill the background scan tasks and flush temporary buffers.",
+    "id": "train-phase-i-0710"
+  },
+  {
+    "expected_intent": "LIFECYCLE",
+    "category": "lifecycle",
+    "prompt": "Inspect runtime resource usage and server process uptime.",
+    "id": "train-phase-i-0711"
+  },
+  {
+    "expected_intent": "LIFECYCLE",
+    "category": "lifecycle",
+    "prompt": "Reboot the assessment server instance without data loss.",
+    "id": "train-phase-i-0712"
+  },
+  {
+    "expected_intent": "LIFECYCLE",
+    "category": "lifecycle",
+    "prompt": "Halt execution and unload loaded plugins.",
+    "id": "train-phase-i-0713"
+  },
+  {
+    "expected_intent": "LIFECYCLE",
+    "category": "lifecycle",
+    "prompt": "Put the current assessment runner into standby mode.",
+    "id": "train-phase-i-0714"
+  },
+  {
+    "expected_intent": "LIFECYCLE",
+    "category": "lifecycle",
+    "prompt": "Stop the local proxy listener and teardown test services.",
+    "id": "train-phase-i-0715"
+  },
+  {
+    "expected_intent": "LIFECYCLE",
+    "category": "lifecycle",
+    "prompt": "Signal worker pool to complete in-flight tasks and exit.",
+    "id": "train-phase-i-0716"
+  },
+  {
+    "expected_intent": "KALI_COMMAND_ASSISTANCE",
+    "category": "kali",
+    "prompt": "How do I run a stealth SYN scan using nmap command line syntax?",
+    "id": "train-phase-i-0717"
+  },
+  {
+    "expected_intent": "KALI_COMMAND_ASSISTANCE",
+    "category": "kali",
+    "prompt": "What is the syntax for gobuster directory brute-forcing with a wordlist?",
+    "id": "train-phase-i-0718"
+  },
+  {
+    "expected_intent": "KALI_COMMAND_ASSISTANCE",
+    "category": "kali",
+    "prompt": "Provide the hashcat command to crack NTLM hashes with rockyou.txt.",
+    "id": "train-phase-i-0719"
+  },
+  {
+    "expected_intent": "KALI_COMMAND_ASSISTANCE",
+    "category": "kali",
+    "prompt": "Give me the hydra command line flags to brute force SSH logins.",
+    "id": "train-phase-i-0720"
+  },
+  {
+    "expected_intent": "KALI_COMMAND_ASSISTANCE",
+    "category": "kali",
+    "prompt": "What Kali command can I use to inspect wireless packets with airmon-ng?",
+    "id": "train-phase-i-0721"
+  },
+  {
+    "expected_intent": "KALI_COMMAND_ASSISTANCE",
+    "category": "kali",
+    "prompt": "Show me how to invoke sqlmap with custom tamper scripts.",
+    "id": "train-phase-i-0722"
+  },
+  {
+    "expected_intent": "KALI_COMMAND_ASSISTANCE",
+    "category": "kali",
+    "prompt": "What is the command line invocation for wpscan to enumerate plugins?",
+    "id": "train-phase-i-0723"
+  },
+  {
+    "expected_intent": "KALI_COMMAND_ASSISTANCE",
+    "category": "kali",
+    "prompt": "How to configure responder in Kali for LLMNR poisoning?",
+    "id": "train-phase-i-0724"
+  },
+  {
+    "expected_intent": "KALI_COMMAND_ASSISTANCE",
+    "category": "kali",
+    "prompt": "Show the nmap command to scan top 100 ports with version detection.",
+    "id": "train-phase-i-0725"
+  },
+  {
+    "expected_intent": "KALI_COMMAND_ASSISTANCE",
+    "category": "kali",
+    "prompt": "What command in Kali Linux performs arp spoofing using arpspoof?",
+    "id": "train-phase-i-0726"
+  },
+  {
+    "expected_intent": "KALI_COMMAND_ASSISTANCE",
+    "category": "kali",
+    "prompt": "Help me construct a tcpdump command filter for DNS traffic.",
+    "id": "train-phase-i-0727"
+  },
+  {
+    "expected_intent": "KALI_COMMAND_ASSISTANCE",
+    "category": "kali",
+    "prompt": "Show me syntax for ffuf fuzzing HTTP POST body parameters.",
+    "id": "train-phase-i-0728"
+  },
+  {
+    "expected_intent": "KALI_COMMAND_ASSISTANCE",
+    "category": "kali",
+    "prompt": "How do I run amass enum to find passive subdomains from terminal?",
+    "id": "train-phase-i-0729"
+  },
+  {
+    "expected_intent": "KALI_COMMAND_ASSISTANCE",
+    "category": "kali",
+    "prompt": "What CLI flags should I pass to nikto for tuning specific tests?",
+    "id": "train-phase-i-0730"
+  },
+  {
+    "expected_intent": "KALI_COMMAND_ASSISTANCE",
+    "category": "kali",
+    "prompt": "Show the smbclient command to connect anonymously to an SMB share.",
+    "id": "train-phase-i-0731"
+  },
+  {
+    "expected_intent": "KALI_COMMAND_ASSISTANCE",
+    "category": "kali",
+    "prompt": "Provide the john the ripper command format for /etc/shadow hashes.",
+    "id": "train-phase-i-0732"
+  },
+  {
+    "expected_intent": "KALI_COMMAND_ASSISTANCE",
+    "category": "kali",
+    "prompt": "How to use socat to set up an encrypted reverse shell relay?",
+    "id": "train-phase-i-0733"
+  },
+  {
+    "expected_intent": "KALI_COMMAND_ASSISTANCE",
+    "category": "kali",
+    "prompt": "Syntax for feroxbuster to perform recursive endpoint discovery.",
+    "id": "train-phase-i-0734"
+  },
+  {
+    "expected_intent": "REPORT_GENERATION",
+    "category": "report",
+    "prompt": "Export an HTML vulnerability assessment report for stakeholders.",
+    "id": "train-phase-i-0735"
+  },
+  {
+    "expected_intent": "REPORT_GENERATION",
+    "category": "report",
+    "prompt": "Generate a penetration test summary dossier with severity breakdowns.",
+    "id": "train-phase-i-0736"
+  },
+  {
+    "expected_intent": "REPORT_GENERATION",
+    "category": "report",
+    "prompt": "Compile all discovered vulnerabilities into a deliverable PDF brief.",
+    "id": "train-phase-i-0737"
+  },
+  {
+    "expected_intent": "REPORT_GENERATION",
+    "category": "report",
+    "prompt": "Produce an executive security briefing document from current findings.",
+    "id": "train-phase-i-0738"
+  },
+  {
+    "expected_intent": "REPORT_GENERATION",
+    "category": "report",
+    "prompt": "Create a technical audit report containing proof-of-concept steps.",
+    "id": "train-phase-i-0739"
+  },
+  {
+    "expected_intent": "REPORT_GENERATION",
+    "category": "report",
+    "prompt": "Build a markdown summary ledger detailing confirmed security issues.",
+    "id": "train-phase-i-0740"
+  },
+  {
+    "expected_intent": "REPORT_GENERATION",
+    "category": "report",
+    "prompt": "Export assessment observations into a presentation-ready executive report.",
+    "id": "train-phase-i-0741"
+  },
+  {
+    "expected_intent": "REPORT_GENERATION",
+    "category": "report",
+    "prompt": "Synthesize identified risk vectors into a comprehensive client report.",
+    "id": "train-phase-i-0742"
+  },
+  {
+    "expected_intent": "REPORT_GENERATION",
+    "category": "report",
+    "prompt": "Generate a remediation roadmap document based on discovered flaws.",
+    "id": "train-phase-i-0743"
+  },
+  {
+    "expected_intent": "REPORT_GENERATION",
+    "category": "report",
+    "prompt": "Prepare an executive findings report summarizing business risk exposure.",
+    "id": "train-phase-i-0744"
+  },
+  {
+    "expected_intent": "REPORT_GENERATION",
+    "category": "report",
+    "prompt": "Compile an engagement closeout report detailing all validated findings.",
+    "id": "train-phase-i-0745"
+  },
+  {
+    "expected_intent": "REPORT_GENERATION",
+    "category": "report",
+    "prompt": "Generate a compliance audit report linking findings to NIST controls.",
+    "id": "train-phase-i-0746"
+  },
+  {
+    "expected_intent": "REPORT_GENERATION",
+    "category": "report",
+    "prompt": "Produce a downloadable PDF vulnerability portfolio for our audit team.",
+    "id": "train-phase-i-0747"
+  },
+  {
+    "expected_intent": "REPORT_GENERATION",
+    "category": "report",
+    "prompt": "Format the security assessment results into a structured markdown report.",
+    "id": "train-phase-i-0748"
+  },
+  {
+    "expected_intent": "REPORT_GENERATION",
+    "category": "report",
+    "prompt": "Generate an executive summary slide deck or report of our test results.",
+    "id": "train-phase-i-0749"
+  },
+  {
+    "expected_intent": "REPORT_GENERATION",
+    "category": "report",
+    "prompt": "Assemble all logged vulnerabilities into a finalized assessment report.",
+    "id": "train-phase-i-0750"
+  },
+  {
+    "expected_intent": "REPORT_GENERATION",
+    "category": "report",
+    "prompt": "Draft a formal penetration test report covering identified ingress vectors.",
+    "id": "train-phase-i-0751"
+  },
+  {
+    "expected_intent": "REPORT_GENERATION",
+    "category": "report",
+    "prompt": "Export an executive overview report of our threat exposure and cvss scores.",
+    "id": "train-phase-i-0752"
+  },
+  {
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding",
+    "prompt": "Write a Python script to parse and extract emails from a text dump.",
+    "id": "train-phase-i-0753"
+  },
+  {
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding",
+    "prompt": "Explain how race condition vulnerabilities work in web applications.",
+    "id": "train-phase-i-0754"
+  },
+  {
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding",
+    "prompt": "Can you review this code snippet for SQL injection vulnerabilities?",
+    "id": "train-phase-i-0755"
+  },
+  {
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding",
+    "prompt": "Develop a regex pattern in Python to validate IPv6 addresses.",
+    "id": "train-phase-i-0756"
+  },
+  {
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding",
+    "prompt": "Explain the security implications of weak cryptographic salts in password hashing.",
+    "id": "train-phase-i-0757"
+  },
+  {
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding",
+    "prompt": "Write an async Python function to probe multiple HTTP endpoints concurrently.",
+    "id": "train-phase-i-0758"
+  },
+  {
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding",
+    "prompt": "Research the difference between blind SQL injection and error-based SQL injection.",
+    "id": "train-phase-i-0759"
+  },
+  {
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding",
+    "prompt": "How does prototype pollution occur in JavaScript applications?",
+    "id": "train-phase-i-0760"
+  },
+  {
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding",
+    "prompt": "Write a script to automate base64 decoding of multi-layered payloads.",
+    "id": "train-phase-i-0761"
+  },
+  {
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding",
+    "prompt": "Explain how memory corruption bugs like buffer overflows are mitigated by ASLR.",
+    "id": "train-phase-i-0762"
+  },
+  {
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding",
+    "prompt": "Provide a code example in Python for parsing pcap files using scapy.",
+    "id": "train-phase-i-0763"
+  },
+  {
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding",
+    "prompt": "What are the key security differences between OAuth 2.0 and SAML 2.0?",
+    "id": "train-phase-i-0764"
+  },
+  {
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding",
+    "prompt": "Write a custom parser in Python for CEF security syslog messages.",
+    "id": "train-phase-i-0765"
+  },
+  {
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding",
+    "prompt": "Explain how cross-site request forgery tokens prevent CSRF attacks.",
+    "id": "train-phase-i-0766"
+  },
+  {
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding",
+    "prompt": "Develop a Python helper to calculate SHA-256 and MD5 hashes of local files.",
+    "id": "train-phase-i-0767"
+  },
+  {
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding",
+    "prompt": "How does DOM-based XSS differ from reflected cross-site scripting?",
+    "id": "train-phase-i-0768"
+  },
+  {
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding",
+    "prompt": "Write a script to clean and deduplicate domain lists from OSINT queries.",
+    "id": "train-phase-i-0769"
+  },
+  {
+    "expected_intent": "CODING_AND_RESEARCH",
+    "category": "coding",
+    "prompt": "Explain the mechanism behind Kerberoasting attacks in Active Directory.",
+    "id": "train-phase-i-0770"
+  },
+  {
+    "expected_intent": "FILE_METADATA_ANALYSIS",
+    "category": "metadata",
+    "prompt": "Extract EXIF metadata from this uploaded JPEG image file.",
+    "id": "train-phase-i-0771"
+  },
+  {
+    "expected_intent": "FILE_METADATA_ANALYSIS",
+    "category": "metadata",
+    "prompt": "Inspect the embedded author and modification stamps in this Word document.",
+    "id": "train-phase-i-0772"
+  },
+  {
+    "expected_intent": "FILE_METADATA_ANALYSIS",
+    "category": "metadata",
+    "prompt": "Analyze this PDF file for hidden metadata tags, creator, and creation dates.",
+    "id": "train-phase-i-0773"
+  },
+  {
+    "expected_intent": "FILE_METADATA_ANALYSIS",
+    "category": "metadata",
+    "prompt": "Extract GPS location coordinates from the EXIF headers of this photo.",
+    "id": "train-phase-i-0774"
+  },
+  {
+    "expected_intent": "FILE_METADATA_ANALYSIS",
+    "category": "metadata",
+    "prompt": "Inspect the header structures and metadata fields of this binary artifact.",
+    "id": "train-phase-i-0775"
+  },
+  {
+    "expected_intent": "FILE_METADATA_ANALYSIS",
+    "category": "metadata",
+    "prompt": "Check this document file for revision history and user metadata leaks.",
+    "id": "train-phase-i-0776"
+  },
+  {
+    "expected_intent": "FILE_METADATA_ANALYSIS",
+    "category": "metadata",
+    "prompt": "Extract embedded thumbnail images and camera information from this graphic.",
+    "id": "train-phase-i-0777"
+  },
+  {
+    "expected_intent": "FILE_METADATA_ANALYSIS",
+    "category": "metadata",
+    "prompt": "Analyze the metadata of this XLSX spreadsheet for creator usernames.",
+    "id": "train-phase-i-0778"
+  },
+  {
+    "expected_intent": "FILE_METADATA_ANALYSIS",
+    "category": "metadata",
+    "prompt": "Read the PE file header timestamps and compile metadata from this executable.",
+    "id": "train-phase-i-0779"
+  },
+  {
+    "expected_intent": "FILE_METADATA_ANALYSIS",
+    "category": "metadata",
+    "prompt": "Inspect the EXIF tags of this file to determine device model and serial number.",
+    "id": "train-phase-i-0780"
+  },
+  {
+    "expected_intent": "FILE_METADATA_ANALYSIS",
+    "category": "metadata",
+    "prompt": "Check metadata of this PNG file for trailing data or steganographic chunks.",
+    "id": "train-phase-i-0781"
+  },
+  {
+    "expected_intent": "FILE_METADATA_ANALYSIS",
+    "category": "metadata",
+    "prompt": "Extract creation timestamp, author name, and application info from this document.",
+    "id": "train-phase-i-0782"
+  },
+  {
+    "expected_intent": "FILE_METADATA_ANALYSIS",
+    "category": "metadata",
+    "prompt": "Analyze this media file for id3 metadata tags and comment strings.",
+    "id": "train-phase-i-0783"
+  },
+  {
+    "expected_intent": "FILE_METADATA_ANALYSIS",
+    "category": "metadata",
+    "prompt": "Inspect PDF document catalog and info dictionary for sensitive strings.",
+    "id": "train-phase-i-0784"
+  },
+  {
+    "expected_intent": "FILE_METADATA_ANALYSIS",
+    "category": "metadata",
+    "prompt": "Extract file metadata attributes including mime type, magic bytes, and timestamps.",
+    "id": "train-phase-i-0785"
+  },
+  {
+    "expected_intent": "FILE_METADATA_ANALYSIS",
+    "category": "metadata",
+    "prompt": "Audit this image file to see if GPS longitude and latitude are recorded.",
+    "id": "train-phase-i-0786"
+  },
+  {
+    "expected_intent": "FILE_METADATA_ANALYSIS",
+    "category": "metadata",
+    "prompt": "Extract metadata properties from this presentation file.",
+    "id": "train-phase-i-0787"
+  },
+  {
+    "expected_intent": "FILE_METADATA_ANALYSIS",
+    "category": "metadata",
+    "prompt": "Inspect EXIF and XMP metadata streams in this digital photography file.",
+    "id": "train-phase-i-0788"
+  },
+  {
+    "expected_intent": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "category": "followup",
+    "prompt": "What were the findings on the secondary host from our earlier scan?",
+    "id": "train-phase-i-0789"
+  },
+  {
+    "expected_intent": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "category": "followup",
+    "prompt": "Can you elaborate further on the SQL injection vulnerability found earlier?",
+    "id": "train-phase-i-0790"
+  },
+  {
+    "expected_intent": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "category": "followup",
+    "prompt": "Pull the raw network logs associated with that high severity finding.",
+    "id": "train-phase-i-0791"
+  },
+  {
+    "expected_intent": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "category": "followup",
+    "prompt": "Review the next action items for the ongoing security assessment.",
+    "id": "train-phase-i-0792"
+  },
+  {
+    "expected_intent": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "category": "followup",
+    "prompt": "Regarding the previous open port discovery, what service was running on 8443?",
+    "id": "train-phase-i-0793"
+  },
+  {
+    "expected_intent": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "category": "followup",
+    "prompt": "Continue inspecting the open ports we discovered in the last task.",
+    "id": "train-phase-i-0794"
+  },
+  {
+    "expected_intent": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "category": "followup",
+    "prompt": "What is the current status of the findings logged in this investigation?",
+    "id": "train-phase-i-0795"
+  },
+  {
+    "expected_intent": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "category": "followup",
+    "prompt": "Drill down into the vulnerability details we captured in step 3.",
+    "id": "train-phase-i-0796"
+  },
+  {
+    "expected_intent": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "category": "followup",
+    "prompt": "Retrieve the stored evidence artifacts for the previous vulnerability alert.",
+    "id": "train-phase-i-0797"
+  },
+  {
+    "expected_intent": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "category": "followup",
+    "prompt": "Following up on the domain scan, did we verify the SPF record issue?",
+    "id": "train-phase-i-0798"
+  },
+  {
+    "expected_intent": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "category": "followup",
+    "prompt": "Check the previous task execution output and summarize remaining gaps.",
+    "id": "train-phase-i-0799"
+  },
+  {
+    "expected_intent": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "category": "followup",
+    "prompt": "Can we re-examine the response headers from the initial target probe?",
+    "id": "train-phase-i-0800"
+  },
+  {
+    "expected_intent": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "category": "followup",
+    "prompt": "Provide more context on the weak cipher suites identified in the last scan.",
+    "id": "train-phase-i-0801"
+  },
+  {
+    "expected_intent": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "category": "followup",
+    "prompt": "What additional reconnaissance should we perform on the discovered subdomains?",
+    "id": "train-phase-i-0802"
+  },
+  {
+    "expected_intent": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "category": "followup",
+    "prompt": "Proceed with the next step of the incident response workflow.",
+    "id": "train-phase-i-0803"
+  },
+  {
+    "expected_intent": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "category": "followup",
+    "prompt": "Review the evidence captured during our previous investigation phase.",
+    "id": "train-phase-i-0804"
+  },
+  {
+    "expected_intent": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "category": "followup",
+    "prompt": "Follow up on the anomalous HTTP status codes seen in our prior test.",
+    "id": "train-phase-i-0805"
+  },
+  {
+    "expected_intent": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "category": "followup",
+    "prompt": "What were the credential issues reported in our ongoing case?",
+    "id": "train-phase-i-0806"
+  },
+  {
+    "expected_intent": "TOOL_DETECTION",
+    "category": "tools",
+    "prompt": "Detect whether nmap and nikto are installed in the local path.",
+    "id": "train-phase-i-0807"
+  },
+  {
+    "expected_intent": "TOOL_DETECTION",
+    "category": "tools",
+    "prompt": "Scan the environment to check which security assessment tools are available.",
+    "id": "train-phase-i-0808"
+  },
+  {
+    "expected_intent": "TOOL_DETECTION",
+    "category": "tools",
+    "prompt": "Which vulnerability scanners and reconnaissance binaries are present?",
+    "id": "train-phase-i-0809"
+  },
+  {
+    "expected_intent": "TOOL_DETECTION",
+    "category": "tools",
+    "prompt": "Check if gobuster or dirb are installed on this system.",
+    "id": "train-phase-i-0810"
+  },
+  {
+    "expected_intent": "TOOL_DETECTION",
+    "category": "tools",
+    "prompt": "Verify if docker engine and sandbox CLI tools are accessible locally.",
+    "id": "train-phase-i-0811"
+  },
+  {
+    "expected_intent": "TOOL_DETECTION",
+    "category": "tools",
+    "prompt": "What command line utilities are currently installed for penetration testing?",
+    "id": "train-phase-i-0812"
+  },
+  {
+    "expected_intent": "TOOL_DETECTION",
+    "category": "tools",
+    "prompt": "Probe system PATH for the presence of curl, wget, and python interpreters.",
+    "id": "train-phase-i-0813"
+  },
+  {
+    "expected_intent": "TOOL_DETECTION",
+    "category": "tools",
+    "prompt": "Check if tshark or tcpdump packet analyzers are available in the runtime.",
+    "id": "train-phase-i-0814"
+  },
+  {
+    "expected_intent": "TOOL_DETECTION",
+    "category": "tools",
+    "prompt": "Audit the local machine for installed OSINT and reconnaissance binaries.",
+    "id": "train-phase-i-0815"
+  },
+  {
+    "expected_intent": "TOOL_DETECTION",
+    "category": "tools",
+    "prompt": "Detect installed security software tools and execution adapters.",
+    "id": "train-phase-i-0816"
+  },
+  {
+    "expected_intent": "TOOL_DETECTION",
+    "category": "tools",
+    "prompt": "Verify presence of nuclei, subfinder, and httpx in system PATH.",
+    "id": "train-phase-i-0817"
+  },
+  {
+    "expected_intent": "TOOL_DETECTION",
+    "category": "tools",
+    "prompt": "Check whether the required terminal assessment dependencies are installed.",
+    "id": "train-phase-i-0818"
+  },
+  {
+    "expected_intent": "TOOL_DETECTION",
+    "category": "tools",
+    "prompt": "List all detected security scanners and their version numbers.",
+    "id": "train-phase-i-0819"
+  },
+  {
+    "expected_intent": "TOOL_DETECTION",
+    "category": "tools",
+    "prompt": "Identify which penetration testing CLI utilities are installed on this host.",
+    "id": "train-phase-i-0820"
+  },
+  {
+    "expected_intent": "TOOL_DETECTION",
+    "category": "tools",
+    "prompt": "Check system environment to see if hashcat or john are installed.",
+    "id": "train-phase-i-0821"
+  },
+  {
+    "expected_intent": "TOOL_DETECTION",
+    "category": "tools",
+    "prompt": "Detect available network enumeration and port scanning binaries.",
+    "id": "train-phase-i-0822"
+  },
+  {
+    "expected_intent": "TOOL_DETECTION",
+    "category": "tools",
+    "prompt": "Verify if web application security testing tools are detected on this workstation.",
+    "id": "train-phase-i-0823"
+  },
+  {
+    "expected_intent": "TOOL_DETECTION",
+    "category": "tools",
+    "prompt": "Check which exploitation simulation tools are present in our environment.",
+    "id": "train-phase-i-0824"
+  },
+  {
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS",
+    "category": "forensics",
+    "prompt": "Analyze this auth.log file for brute-force SSH authentication attempts.",
+    "id": "train-phase-i-0825"
+  },
+  {
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS",
+    "category": "forensics",
+    "prompt": "Parse these web server access logs to identify automated directory scanners.",
+    "id": "train-phase-i-0826"
+  },
+  {
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS",
+    "category": "forensics",
+    "prompt": "Inspect the Windows event logs for suspicious service installation events.",
+    "id": "train-phase-i-0827"
+  },
+  {
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS",
+    "category": "forensics",
+    "prompt": "Analyze this pcap packet capture for beaconing C2 network communication.",
+    "id": "train-phase-i-0828"
+  },
+  {
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS",
+    "category": "forensics",
+    "prompt": "Review firewall logs for high-frequency connection attempts from foreign IPs.",
+    "id": "train-phase-i-0829"
+  },
+  {
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS",
+    "category": "forensics",
+    "prompt": "Search syslog records for privilege escalation attempts via sudo.",
+    "id": "train-phase-i-0830"
+  },
+  {
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS",
+    "category": "forensics",
+    "prompt": "Analyze this web application access log for SQL injection attack patterns.",
+    "id": "train-phase-i-0831"
+  },
+  {
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS",
+    "category": "forensics",
+    "prompt": "Examine these system audit logs for signs of log tampering or clearing.",
+    "id": "train-phase-i-0832"
+  },
+  {
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS",
+    "category": "forensics",
+    "prompt": "Perform timeline analysis on these extracted system event logs.",
+    "id": "train-phase-i-0833"
+  },
+  {
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS",
+    "category": "forensics",
+    "prompt": "Analyze DNS query logs for anomalous high-entropy domain lookups.",
+    "id": "train-phase-i-0834"
+  },
+  {
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS",
+    "category": "forensics",
+    "prompt": "Inspect these proxy logs for unauthorized data staging or exfiltration.",
+    "id": "train-phase-i-0835"
+  },
+  {
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS",
+    "category": "forensics",
+    "prompt": "Parse nginx error logs to identify application crashes and stack trace leaks.",
+    "id": "train-phase-i-0836"
+  },
+  {
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS",
+    "category": "forensics",
+    "prompt": "Identify suspicious outbound connections in this netflow capture.",
+    "id": "train-phase-i-0837"
+  },
+  {
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS",
+    "category": "forensics",
+    "prompt": "Analyze these bash history files for evidence of operator persistence.",
+    "id": "train-phase-i-0838"
+  },
+  {
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS",
+    "category": "forensics",
+    "prompt": "Examine Linux journal logs for anomalous systemd unit creations.",
+    "id": "train-phase-i-0839"
+  },
+  {
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS",
+    "category": "forensics",
+    "prompt": "Inspect packet capture file to identify cleartext credential transmissions.",
+    "id": "train-phase-i-0840"
+  },
+  {
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS",
+    "category": "forensics",
+    "prompt": "Extract HTTP user-agent strings from this server access log for anomaly scoring.",
+    "id": "train-phase-i-0841"
+  },
+  {
+    "expected_intent": "FORENSICS_AND_LOG_ANALYSIS",
+    "category": "forensics",
+    "prompt": "Search event logs for unusual logon type 3 network logons during off-hours.",
+    "id": "train-phase-i-0842"
+  },
+  {
+    "expected_intent": "OSINT_USERNAME",
+    "category": "osint",
+    "prompt": "Investigate the digital footprint for handle 'cyber_phantom_99'.",
+    "id": "train-phase-i-0843"
+  },
+  {
+    "expected_intent": "OSINT_USERNAME",
+    "category": "osint",
+    "prompt": "Search social media platforms and forums for username 'net_spectre'.",
+    "id": "train-phase-i-0844"
+  },
+  {
+    "expected_intent": "OSINT_USERNAME",
+    "category": "osint",
+    "prompt": "Find public accounts and online profiles registered under handle 'dark_hound'.",
+    "id": "train-phase-i-0845"
+  },
+  {
+    "expected_intent": "OSINT_USERNAME",
+    "category": "osint",
+    "prompt": "Lookup username 'crypto_wizard' across developer communities and code repos.",
+    "id": "train-phase-i-0846"
+  },
+  {
+    "expected_intent": "OSINT_USERNAME",
+    "category": "osint",
+    "prompt": "Check if handle 'null_operator' exists on Github, Twitter, or Reddit.",
+    "id": "train-phase-i-0847"
+  },
+  {
+    "expected_intent": "OSINT_USERNAME",
+    "category": "osint",
+    "prompt": "Perform OSINT reconnaissance on user handle 'ghost_shell_07'.",
+    "id": "train-phase-i-0848"
+  },
+  {
+    "expected_intent": "OSINT_USERNAME",
+    "category": "osint",
+    "prompt": "Query username directories for profile 'binary_reaper'.",
+    "id": "train-phase-i-0849"
+  },
+  {
+    "expected_intent": "OSINT_USERNAME",
+    "category": "osint",
+    "prompt": "Search for online footprint associated with username 'shadow_pilot'.",
+    "id": "train-phase-i-0850"
+  },
+  {
+    "expected_intent": "OSINT_USERNAME",
+    "category": "osint",
+    "prompt": "Look up public forums and discussions authored by alias 'byte_warrior'.",
+    "id": "train-phase-i-0851"
+  },
+  {
+    "expected_intent": "OSINT_USERNAME",
+    "category": "osint",
+    "prompt": "Check social network accounts and repositories for username 'red_vortex'.",
+    "id": "train-phase-i-0852"
+  },
+  {
+    "expected_intent": "OSINT_USERNAME",
+    "category": "osint",
+    "prompt": "Investigate online presence and code commits for handle 'cipher_mind'.",
+    "id": "train-phase-i-0853"
+  },
+  {
+    "expected_intent": "OSINT_USERNAME",
+    "category": "osint",
+    "prompt": "Find online identity and registration history for username 'apex_hunter'.",
+    "id": "train-phase-i-0854"
+  },
+  {
+    "expected_intent": "OSINT_USERNAME",
+    "category": "osint",
+    "prompt": "Locate user profiles and alias matches for 'zero_trace_9'.",
+    "id": "train-phase-i-0855"
+  },
+  {
+    "expected_intent": "OSINT_USERNAME",
+    "category": "osint",
+    "prompt": "Search for public profiles linked to developer username 'stack_overflow_guru'.",
+    "id": "train-phase-i-0856"
+  },
+  {
+    "expected_intent": "OSINT_USERNAME",
+    "category": "osint",
+    "prompt": "Perform an alias footprint search for username 'stealth_runner'.",
+    "id": "train-phase-i-0857"
+  },
+  {
+    "expected_intent": "OSINT_USERNAME",
+    "category": "osint",
+    "prompt": "Scan online communities to uncover accounts using nickname 'iron_sentry'.",
+    "id": "train-phase-i-0858"
+  },
+  {
+    "expected_intent": "OSINT_USERNAME",
+    "category": "osint",
+    "prompt": "Check whether username 'skyline_coder' is registered across known platforms.",
+    "id": "train-phase-i-0859"
+  },
+  {
+    "expected_intent": "OSINT_USERNAME",
+    "category": "osint",
+    "prompt": "Investigate developer profile and commit history for handle 'quantum_dev'.",
+    "id": "train-phase-i-0860"
   }
 ]

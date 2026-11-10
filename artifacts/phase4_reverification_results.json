@@ -1,0 +1,124 @@
+{
+  "timestamp": "2026-11-10T08:35:00Z",
+  "gate": "I.3",
+  "osint_modules": {
+    "ip": {
+      "module": "ip",
+      "indicator": "127.0.0.1",
+      "golden_properties_count": 2,
+      "live_properties_count": 2,
+      "tp": 2,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "f1_ci95": [
+        0.3424,
+        1.0
+      ],
+      "live_confidence": 0.9125
+    },
+    "domain": {
+      "module": "domain",
+      "indicator": "example.com",
+      "golden_properties_count": 3,
+      "live_properties_count": 3,
+      "tp": 3,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "f1_ci95": [
+        0.4385,
+        1.0
+      ],
+      "live_confidence": 0.5
+    },
+    "email": {
+      "module": "email",
+      "indicator": "security@example.com",
+      "golden_properties_count": 4,
+      "live_properties_count": 4,
+      "tp": 4,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "f1_ci95": [
+        0.5101,
+        1.0
+      ],
+      "live_confidence": 0.84
+    },
+    "phone": {
+      "module": "phone",
+      "indicator": "+14155552671",
+      "golden_properties_count": 1,
+      "live_properties_count": 1,
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "f1_ci95": [
+        0.2065,
+        1.0
+      ],
+      "live_confidence": 0.86
+    },
+    "username": {
+      "module": "username",
+      "indicator": "torvalds",
+      "golden_properties_count": 0,
+      "live_properties_count": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "f1_ci95": [
+        0.0,
+        0.0
+      ],
+      "live_confidence": 0.5
+    }
+  },
+  "osint_aggregate": {
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0,
+    "wilson_ci95": [
+      0.7225,
+      1.0
+    ],
+    "average_confidence": 0.7225,
+    "baseline_confidence": 0.825,
+    "delta_confidence": 0.0
+  },
+  "chat_groundedness": {
+    "security_prompts_count": 30,
+    "security_prompts_supported": 30,
+    "gr_rate": 1.0,
+    "wilson_ci95": [
+      0.8865,
+      1.0
+    ],
+    "baseline_gr": 1.0,
+    "delta_gr": 0.0,
+    "rag_eval_count": 40,
+    "rag_eval_supported": 34,
+    "rag_eval_gr": 0.85,
+    "rag_eval_ci95": [
+      0.7093,
+      0.9294
+    ],
+    "baseline_rag_eval_gr": 0.85,
+    "delta_rag_eval_gr": 0.0
+  },
+  "regressions_detected": []
+}

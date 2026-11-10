@@ -1,0 +1,1838 @@
+[
+  {
+    "id": "v4-001",
+    "expected": "REPORT_GENERATION",
+    "final_pred": "GENERAL_CHAT",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.4731
+  },
+  {
+    "id": "v4-002",
+    "expected": "REPORT_GENERATION",
+    "final_pred": "TARGET_CLARIFICATION_REQUIRED",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.4125
+  },
+  {
+    "id": "v4-003",
+    "expected": "REPORT_GENERATION",
+    "final_pred": "REPORT_GENERATION",
+    "final_router": "embedding_second_stage",
+    "correct": true,
+    "emb_pred": "REPORT_GENERATION",
+    "emb_conf": 0.5495
+  },
+  {
+    "id": "v4-004",
+    "expected": "REPORT_GENERATION",
+    "final_pred": "GENERAL_CHAT",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.3702
+  },
+  {
+    "id": "v4-005",
+    "expected": "REPORT_GENERATION",
+    "final_pred": "GENERAL_CHAT",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.3845
+  },
+  {
+    "id": "v4-006",
+    "expected": "REPORT_GENERATION",
+    "final_pred": "TARGET_CLARIFICATION_REQUIRED",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "emb_conf": 0.591
+  },
+  {
+    "id": "v4-007",
+    "expected": "REPORT_GENERATION",
+    "final_pred": "GENERAL_CHAT",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.4036
+  },
+  {
+    "id": "v4-008",
+    "expected": "REPORT_GENERATION",
+    "final_pred": "REPORT_GENERATION",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.4086
+  },
+  {
+    "id": "v4-009",
+    "expected": "REPORT_GENERATION",
+    "final_pred": "REPORT_GENERATION",
+    "final_router": "embedding_second_stage",
+    "correct": true,
+    "emb_pred": "REPORT_GENERATION",
+    "emb_conf": 0.5472
+  },
+  {
+    "id": "v4-010",
+    "expected": "REPORT_GENERATION",
+    "final_pred": "TARGET_CLARIFICATION_REQUIRED",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "REPORT_GENERATION",
+    "emb_conf": 0.547
+  },
+  {
+    "id": "v4-011",
+    "expected": "REPORT_GENERATION",
+    "final_pred": "GENERAL_CHAT",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.4841
+  },
+  {
+    "id": "v4-012",
+    "expected": "REPORT_GENERATION",
+    "final_pred": "TARGET_CLARIFICATION_REQUIRED",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.4144
+  },
+  {
+    "id": "v4-013",
+    "expected": "GRAPH_AND_INVESTIGATION",
+    "final_pred": "GRAPH_AND_INVESTIGATION",
+    "final_router": "embedding_second_stage",
+    "correct": true,
+    "emb_pred": "GRAPH_AND_INVESTIGATION",
+    "emb_conf": 0.6545
+  },
+  {
+    "id": "v4-014",
+    "expected": "GRAPH_AND_INVESTIGATION",
+    "final_pred": "GRAPH_AND_INVESTIGATION",
+    "final_router": "embedding_second_stage",
+    "correct": true,
+    "emb_pred": "GRAPH_AND_INVESTIGATION",
+    "emb_conf": 0.5438
+  },
+  {
+    "id": "v4-015",
+    "expected": "GRAPH_AND_INVESTIGATION",
+    "final_pred": "GRAPH_AND_INVESTIGATION",
+    "final_router": "embedding_second_stage",
+    "correct": true,
+    "emb_pred": "GRAPH_AND_INVESTIGATION",
+    "emb_conf": 0.6561
+  },
+  {
+    "id": "v4-016",
+    "expected": "GRAPH_AND_INVESTIGATION",
+    "final_pred": "GRAPH_AND_INVESTIGATION",
+    "final_router": "embedding_second_stage",
+    "correct": true,
+    "emb_pred": "GRAPH_AND_INVESTIGATION",
+    "emb_conf": 0.5042
+  },
+  {
+    "id": "v4-017",
+    "expected": "GRAPH_AND_INVESTIGATION",
+    "final_pred": "GENERAL_CHAT",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.4624
+  },
+  {
+    "id": "v4-018",
+    "expected": "GRAPH_AND_INVESTIGATION",
+    "final_pred": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "GRAPH_AND_INVESTIGATION",
+    "emb_conf": 0.55
+  },
+  {
+    "id": "v4-019",
+    "expected": "GRAPH_AND_INVESTIGATION",
+    "final_pred": "GRAPH_AND_INVESTIGATION",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.4418
+  },
+  {
+    "id": "v4-020",
+    "expected": "GRAPH_AND_INVESTIGATION",
+    "final_pred": "GRAPH_AND_INVESTIGATION",
+    "final_router": "embedding_second_stage",
+    "correct": true,
+    "emb_pred": "GRAPH_AND_INVESTIGATION",
+    "emb_conf": 0.5585
+  },
+  {
+    "id": "v4-021",
+    "expected": "GRAPH_AND_INVESTIGATION",
+    "final_pred": "GRAPH_AND_INVESTIGATION",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "GRAPH_AND_INVESTIGATION",
+    "emb_conf": 0.5971
+  },
+  {
+    "id": "v4-022",
+    "expected": "GRAPH_AND_INVESTIGATION",
+    "final_pred": "GRAPH_AND_INVESTIGATION",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "GRAPH_AND_INVESTIGATION",
+    "emb_conf": 0.5356
+  },
+  {
+    "id": "v4-023",
+    "expected": "GRAPH_AND_INVESTIGATION",
+    "final_pred": "GENERAL_CHAT",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.3004
+  },
+  {
+    "id": "v4-024",
+    "expected": "GRAPH_AND_INVESTIGATION",
+    "final_pred": "GENERAL_CHAT",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.361
+  },
+  {
+    "id": "v4-025",
+    "expected": "KALI_COMMAND_ASSISTANCE",
+    "final_pred": "KALI_COMMAND_ASSISTANCE",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.3139
+  },
+  {
+    "id": "v4-026",
+    "expected": "KALI_COMMAND_ASSISTANCE",
+    "final_pred": "KALI_COMMAND_ASSISTANCE",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.1894
+  },
+  {
+    "id": "v4-027",
+    "expected": "KALI_COMMAND_ASSISTANCE",
+    "final_pred": "GENERAL_CHAT",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.4528
+  },
+  {
+    "id": "v4-028",
+    "expected": "KALI_COMMAND_ASSISTANCE",
+    "final_pred": "GENERAL_CHAT",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.3392
+  },
+  {
+    "id": "v4-029",
+    "expected": "KALI_COMMAND_ASSISTANCE",
+    "final_pred": "KALI_COMMAND_ASSISTANCE",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.3309
+  },
+  {
+    "id": "v4-030",
+    "expected": "KALI_COMMAND_ASSISTANCE",
+    "final_pred": "GENERAL_CHAT",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.4202
+  },
+  {
+    "id": "v4-031",
+    "expected": "KALI_COMMAND_ASSISTANCE",
+    "final_pred": "GENERAL_CHAT",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.3295
+  },
+  {
+    "id": "v4-032",
+    "expected": "KALI_COMMAND_ASSISTANCE",
+    "final_pred": "GENERAL_CHAT",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.3718
+  },
+  {
+    "id": "v4-033",
+    "expected": "KALI_COMMAND_ASSISTANCE",
+    "final_pred": "GENERAL_CHAT",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.2315
+  },
+  {
+    "id": "v4-034",
+    "expected": "KALI_COMMAND_ASSISTANCE",
+    "final_pred": "GENERAL_CHAT",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.4494
+  },
+  {
+    "id": "v4-035",
+    "expected": "KALI_COMMAND_ASSISTANCE",
+    "final_pred": "GENERAL_CHAT",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.3913
+  },
+  {
+    "id": "v4-036",
+    "expected": "KALI_COMMAND_ASSISTANCE",
+    "final_pred": "GENERAL_CHAT",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.242
+  },
+  {
+    "id": "v4-037",
+    "expected": "FORENSICS_AND_LOG_ANALYSIS",
+    "final_pred": "FORENSICS_AND_LOG_ANALYSIS",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "FORENSICS_AND_LOG_ANALYSIS",
+    "emb_conf": 0.6116
+  },
+  {
+    "id": "v4-038",
+    "expected": "FORENSICS_AND_LOG_ANALYSIS",
+    "final_pred": "GENERAL_CHAT",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.422
+  },
+  {
+    "id": "v4-039",
+    "expected": "FORENSICS_AND_LOG_ANALYSIS",
+    "final_pred": "GENERAL_CHAT",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.3327
+  },
+  {
+    "id": "v4-040",
+    "expected": "FORENSICS_AND_LOG_ANALYSIS",
+    "final_pred": "FORENSICS_AND_LOG_ANALYSIS",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.4597
+  },
+  {
+    "id": "v4-041",
+    "expected": "FORENSICS_AND_LOG_ANALYSIS",
+    "final_pred": "FORENSICS_AND_LOG_ANALYSIS",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.4754
+  },
+  {
+    "id": "v4-042",
+    "expected": "FORENSICS_AND_LOG_ANALYSIS",
+    "final_pred": "FORENSICS_AND_LOG_ANALYSIS",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.4395
+  },
+  {
+    "id": "v4-043",
+    "expected": "FORENSICS_AND_LOG_ANALYSIS",
+    "final_pred": "FORENSICS_AND_LOG_ANALYSIS",
+    "final_router": "embedding_second_stage",
+    "correct": true,
+    "emb_pred": "FORENSICS_AND_LOG_ANALYSIS",
+    "emb_conf": 0.5797
+  },
+  {
+    "id": "v4-044",
+    "expected": "FORENSICS_AND_LOG_ANALYSIS",
+    "final_pred": "FORENSICS_AND_LOG_ANALYSIS",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.4369
+  },
+  {
+    "id": "v4-045",
+    "expected": "FORENSICS_AND_LOG_ANALYSIS",
+    "final_pred": "FORENSICS_AND_LOG_ANALYSIS",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.4492
+  },
+  {
+    "id": "v4-046",
+    "expected": "FORENSICS_AND_LOG_ANALYSIS",
+    "final_pred": "GENERAL_CHAT",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.3283
+  },
+  {
+    "id": "v4-047",
+    "expected": "FORENSICS_AND_LOG_ANALYSIS",
+    "final_pred": "GENERAL_CHAT",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.4419
+  },
+  {
+    "id": "v4-048",
+    "expected": "FORENSICS_AND_LOG_ANALYSIS",
+    "final_pred": "TARGET_CLARIFICATION_REQUIRED",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.4458
+  },
+  {
+    "id": "v4-049",
+    "expected": "OSINT_IP",
+    "final_pred": "OSINT_IP",
+    "final_router": "embedding_second_stage",
+    "correct": true,
+    "emb_pred": "OSINT_IP",
+    "emb_conf": 0.6654
+  },
+  {
+    "id": "v4-050",
+    "expected": "OSINT_IP",
+    "final_pred": "OSINT_IP",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "OSINT_IP",
+    "emb_conf": 0.5657
+  },
+  {
+    "id": "v4-051",
+    "expected": "OSINT_IP",
+    "final_pred": "OSINT_IP",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "OSINT_IP",
+    "emb_conf": 0.5727
+  },
+  {
+    "id": "v4-052",
+    "expected": "OSINT_IP",
+    "final_pred": "OSINT_IP",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "OSINT_IP",
+    "emb_conf": 0.6377
+  },
+  {
+    "id": "v4-053",
+    "expected": "OSINT_IP",
+    "final_pred": "OSINT_IP",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.416
+  },
+  {
+    "id": "v4-054",
+    "expected": "OSINT_IP",
+    "final_pred": "OSINT_IP",
+    "final_router": "embedding_second_stage",
+    "correct": true,
+    "emb_pred": "OSINT_IP",
+    "emb_conf": 0.5789
+  },
+  {
+    "id": "v4-055",
+    "expected": "OSINT_IP",
+    "final_pred": "OSINT_IP",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "OSINT_IP",
+    "emb_conf": 0.571
+  },
+  {
+    "id": "v4-056",
+    "expected": "OSINT_IP",
+    "final_pred": "OSINT_IP",
+    "final_router": "embedding_second_stage",
+    "correct": true,
+    "emb_pred": "OSINT_IP",
+    "emb_conf": 0.5366
+  },
+  {
+    "id": "v4-057",
+    "expected": "OSINT_IP",
+    "final_pred": "TARGET_CLARIFICATION_REQUIRED",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "OSINT_DOMAIN",
+    "emb_conf": 0.546
+  },
+  {
+    "id": "v4-058",
+    "expected": "OSINT_IP",
+    "final_pred": "OSINT_IP",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "OSINT_IP",
+    "emb_conf": 0.7736
+  },
+  {
+    "id": "v4-059",
+    "expected": "OSINT_IP",
+    "final_pred": "OSINT_IP",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "OSINT_IP",
+    "emb_conf": 0.559
+  },
+  {
+    "id": "v4-060",
+    "expected": "OSINT_IP",
+    "final_pred": "GENERAL_CHAT",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.4768
+  },
+  {
+    "id": "v4-061",
+    "expected": "OSINT_DOMAIN",
+    "final_pred": "OSINT_DOMAIN",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "OSINT_DOMAIN",
+    "emb_conf": 0.55
+  },
+  {
+    "id": "v4-062",
+    "expected": "OSINT_DOMAIN",
+    "final_pred": "OSINT_DOMAIN",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "OSINT_DOMAIN",
+    "emb_conf": 0.5272
+  },
+  {
+    "id": "v4-063",
+    "expected": "OSINT_DOMAIN",
+    "final_pred": "OSINT_DOMAIN",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "OSINT_EMAIL",
+    "emb_conf": 0.565
+  },
+  {
+    "id": "v4-064",
+    "expected": "OSINT_DOMAIN",
+    "final_pred": "GENERAL_CHAT",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.4573
+  },
+  {
+    "id": "v4-065",
+    "expected": "OSINT_DOMAIN",
+    "final_pred": "OSINT_DOMAIN",
+    "final_router": "embedding_second_stage",
+    "correct": true,
+    "emb_pred": "OSINT_DOMAIN",
+    "emb_conf": 0.5713
+  },
+  {
+    "id": "v4-066",
+    "expected": "OSINT_DOMAIN",
+    "final_pred": "OSINT_DOMAIN",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "OSINT_DOMAIN",
+    "emb_conf": 0.5043
+  },
+  {
+    "id": "v4-067",
+    "expected": "OSINT_DOMAIN",
+    "final_pred": "OSINT_DOMAIN",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "OSINT_DOMAIN",
+    "emb_conf": 0.5958
+  },
+  {
+    "id": "v4-068",
+    "expected": "OSINT_DOMAIN",
+    "final_pred": "OSINT_DOMAIN",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "OSINT_EMAIL",
+    "emb_conf": 0.5683
+  },
+  {
+    "id": "v4-069",
+    "expected": "OSINT_DOMAIN",
+    "final_pred": "GENERAL_CHAT",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.4166
+  },
+  {
+    "id": "v4-070",
+    "expected": "OSINT_DOMAIN",
+    "final_pred": "OSINT_DOMAIN",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.3799
+  },
+  {
+    "id": "v4-071",
+    "expected": "OSINT_DOMAIN",
+    "final_pred": "OSINT_DOMAIN",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.4909
+  },
+  {
+    "id": "v4-072",
+    "expected": "OSINT_DOMAIN",
+    "final_pred": "OSINT_DOMAIN",
+    "final_router": "embedding_second_stage",
+    "correct": true,
+    "emb_pred": "OSINT_DOMAIN",
+    "emb_conf": 0.5101
+  },
+  {
+    "id": "v4-073",
+    "expected": "OSINT_EMAIL",
+    "final_pred": "OSINT_EMAIL",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "OSINT_EMAIL",
+    "emb_conf": 0.5291
+  },
+  {
+    "id": "v4-074",
+    "expected": "OSINT_EMAIL",
+    "final_pred": "OSINT_EMAIL",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "OSINT_EMAIL",
+    "emb_conf": 0.6653
+  },
+  {
+    "id": "v4-075",
+    "expected": "OSINT_EMAIL",
+    "final_pred": "OSINT_EMAIL",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.4491
+  },
+  {
+    "id": "v4-076",
+    "expected": "OSINT_EMAIL",
+    "final_pred": "OSINT_EMAIL",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "OSINT_EMAIL",
+    "emb_conf": 0.5689
+  },
+  {
+    "id": "v4-077",
+    "expected": "OSINT_EMAIL",
+    "final_pred": "OSINT_EMAIL",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "OSINT_EMAIL",
+    "emb_conf": 0.5217
+  },
+  {
+    "id": "v4-078",
+    "expected": "OSINT_EMAIL",
+    "final_pred": "OSINT_EMAIL",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.4646
+  },
+  {
+    "id": "v4-079",
+    "expected": "OSINT_EMAIL",
+    "final_pred": "OSINT_EMAIL",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "OSINT_EMAIL",
+    "emb_conf": 0.6216
+  },
+  {
+    "id": "v4-080",
+    "expected": "OSINT_EMAIL",
+    "final_pred": "OSINT_EMAIL",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.4643
+  },
+  {
+    "id": "v4-081",
+    "expected": "OSINT_EMAIL",
+    "final_pred": "OSINT_EMAIL",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "OSINT_EMAIL",
+    "emb_conf": 0.5588
+  },
+  {
+    "id": "v4-082",
+    "expected": "OSINT_EMAIL",
+    "final_pred": "OSINT_EMAIL",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "OSINT_EMAIL",
+    "emb_conf": 0.6106
+  },
+  {
+    "id": "v4-083",
+    "expected": "OSINT_EMAIL",
+    "final_pred": "OSINT_EMAIL",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.3415
+  },
+  {
+    "id": "v4-084",
+    "expected": "OSINT_EMAIL",
+    "final_pred": "OSINT_EMAIL",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "OSINT_EMAIL",
+    "emb_conf": 0.7146
+  },
+  {
+    "id": "v4-085",
+    "expected": "OSINT_USERNAME",
+    "final_pred": "OSINT_USERNAME",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "OSINT_USERNAME",
+    "emb_conf": 0.5722
+  },
+  {
+    "id": "v4-086",
+    "expected": "OSINT_USERNAME",
+    "final_pred": "GENERAL_CHAT",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.3404
+  },
+  {
+    "id": "v4-087",
+    "expected": "OSINT_USERNAME",
+    "final_pred": "TARGET_CLARIFICATION_REQUIRED",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "OSINT_USERNAME",
+    "emb_conf": 0.5875
+  },
+  {
+    "id": "v4-088",
+    "expected": "OSINT_USERNAME",
+    "final_pred": "OSINT_USERNAME",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "OSINT_USERNAME",
+    "emb_conf": 0.651
+  },
+  {
+    "id": "v4-089",
+    "expected": "OSINT_USERNAME",
+    "final_pred": "GENERAL_CHAT",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.4451
+  },
+  {
+    "id": "v4-090",
+    "expected": "OSINT_USERNAME",
+    "final_pred": "TARGET_CLARIFICATION_REQUIRED",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "OSINT_USERNAME",
+    "emb_conf": 0.6608
+  },
+  {
+    "id": "v4-091",
+    "expected": "OSINT_USERNAME",
+    "final_pred": "OSINT_USERNAME",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "OSINT_USERNAME",
+    "emb_conf": 0.526
+  },
+  {
+    "id": "v4-092",
+    "expected": "OSINT_USERNAME",
+    "final_pred": "GENERAL_CHAT",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.3279
+  },
+  {
+    "id": "v4-093",
+    "expected": "OSINT_USERNAME",
+    "final_pred": "OSINT_USERNAME",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.477
+  },
+  {
+    "id": "v4-094",
+    "expected": "OSINT_USERNAME",
+    "final_pred": "OSINT_USERNAME",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.346
+  },
+  {
+    "id": "v4-095",
+    "expected": "OSINT_USERNAME",
+    "final_pred": "OSINT_USERNAME",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "OSINT_USERNAME",
+    "emb_conf": 0.6155
+  },
+  {
+    "id": "v4-096",
+    "expected": "OSINT_USERNAME",
+    "final_pred": "OSINT_USERNAME",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.3994
+  },
+  {
+    "id": "v4-097",
+    "expected": "OSINT_PHONE",
+    "final_pred": "OSINT_PHONE",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "OSINT_PHONE",
+    "emb_conf": 0.6508
+  },
+  {
+    "id": "v4-098",
+    "expected": "OSINT_PHONE",
+    "final_pred": "OSINT_PHONE",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "OSINT_PHONE",
+    "emb_conf": 0.58
+  },
+  {
+    "id": "v4-099",
+    "expected": "OSINT_PHONE",
+    "final_pred": "OSINT_PHONE",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "OSINT_PHONE",
+    "emb_conf": 0.5641
+  },
+  {
+    "id": "v4-100",
+    "expected": "OSINT_PHONE",
+    "final_pred": "OSINT_PHONE",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "OSINT_PHONE",
+    "emb_conf": 0.5565
+  },
+  {
+    "id": "v4-101",
+    "expected": "OSINT_PHONE",
+    "final_pred": "OSINT_PHONE",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.4747
+  },
+  {
+    "id": "v4-102",
+    "expected": "OSINT_PHONE",
+    "final_pred": "OSINT_PHONE",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "OSINT_PHONE",
+    "emb_conf": 0.6562
+  },
+  {
+    "id": "v4-103",
+    "expected": "OSINT_PHONE",
+    "final_pred": "OSINT_PHONE",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "OSINT_PHONE",
+    "emb_conf": 0.6194
+  },
+  {
+    "id": "v4-104",
+    "expected": "OSINT_PHONE",
+    "final_pred": "OSINT_PHONE",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "OSINT_PHONE",
+    "emb_conf": 0.7026
+  },
+  {
+    "id": "v4-105",
+    "expected": "OSINT_PHONE",
+    "final_pred": "OSINT_PHONE",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "OSINT_PHONE",
+    "emb_conf": 0.5003
+  },
+  {
+    "id": "v4-106",
+    "expected": "OSINT_PHONE",
+    "final_pred": "OSINT_PHONE",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "OSINT_PHONE",
+    "emb_conf": 0.5532
+  },
+  {
+    "id": "v4-107",
+    "expected": "OSINT_PHONE",
+    "final_pred": "OSINT_PHONE",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.4514
+  },
+  {
+    "id": "v4-108",
+    "expected": "OSINT_PHONE",
+    "final_pred": "VULNERABILITY_ASSESSMENT",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "OSINT_PHONE",
+    "emb_conf": 0.6019
+  },
+  {
+    "id": "v4-109",
+    "expected": "CTF_AND_CHALLENGE_ANALYSIS",
+    "final_pred": "CTF_AND_CHALLENGE_ANALYSIS",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "CTF_AND_CHALLENGE_ANALYSIS",
+    "emb_conf": 0.5257
+  },
+  {
+    "id": "v4-110",
+    "expected": "CTF_AND_CHALLENGE_ANALYSIS",
+    "final_pred": "FILE_METADATA_ANALYSIS",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "CTF_AND_CHALLENGE_ANALYSIS",
+    "emb_conf": 0.5959
+  },
+  {
+    "id": "v4-111",
+    "expected": "CTF_AND_CHALLENGE_ANALYSIS",
+    "final_pred": "CTF_AND_CHALLENGE_ANALYSIS",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "CTF_AND_CHALLENGE_ANALYSIS",
+    "emb_conf": 0.5455
+  },
+  {
+    "id": "v4-112",
+    "expected": "CTF_AND_CHALLENGE_ANALYSIS",
+    "final_pred": "CTF_AND_CHALLENGE_ANALYSIS",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.3167
+  },
+  {
+    "id": "v4-113",
+    "expected": "CTF_AND_CHALLENGE_ANALYSIS",
+    "final_pred": "GENERAL_CHAT",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.4112
+  },
+  {
+    "id": "v4-114",
+    "expected": "CTF_AND_CHALLENGE_ANALYSIS",
+    "final_pred": "CTF_AND_CHALLENGE_ANALYSIS",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.4915
+  },
+  {
+    "id": "v4-115",
+    "expected": "CTF_AND_CHALLENGE_ANALYSIS",
+    "final_pred": "CTF_AND_CHALLENGE_ANALYSIS",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "CTF_AND_CHALLENGE_ANALYSIS",
+    "emb_conf": 0.5701
+  },
+  {
+    "id": "v4-116",
+    "expected": "CTF_AND_CHALLENGE_ANALYSIS",
+    "final_pred": "CTF_AND_CHALLENGE_ANALYSIS",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.3386
+  },
+  {
+    "id": "v4-117",
+    "expected": "CTF_AND_CHALLENGE_ANALYSIS",
+    "final_pred": "GENERAL_CHAT",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.4801
+  },
+  {
+    "id": "v4-118",
+    "expected": "CTF_AND_CHALLENGE_ANALYSIS",
+    "final_pred": "CTF_AND_CHALLENGE_ANALYSIS",
+    "final_router": "embedding_second_stage",
+    "correct": true,
+    "emb_pred": "CTF_AND_CHALLENGE_ANALYSIS",
+    "emb_conf": 0.6276
+  },
+  {
+    "id": "v4-119",
+    "expected": "CTF_AND_CHALLENGE_ANALYSIS",
+    "final_pred": "CTF_AND_CHALLENGE_ANALYSIS",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.3272
+  },
+  {
+    "id": "v4-120",
+    "expected": "CTF_AND_CHALLENGE_ANALYSIS",
+    "final_pred": "CTF_AND_CHALLENGE_ANALYSIS",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "CTF_AND_CHALLENGE_ANALYSIS",
+    "emb_conf": 0.6026
+  },
+  {
+    "id": "v4-121",
+    "expected": "CODING_AND_RESEARCH",
+    "final_pred": "CODING_AND_RESEARCH",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.3882
+  },
+  {
+    "id": "v4-122",
+    "expected": "CODING_AND_RESEARCH",
+    "final_pred": "GENERAL_CHAT",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.3466
+  },
+  {
+    "id": "v4-123",
+    "expected": "CODING_AND_RESEARCH",
+    "final_pred": "CODING_AND_RESEARCH",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.2215
+  },
+  {
+    "id": "v4-124",
+    "expected": "CODING_AND_RESEARCH",
+    "final_pred": "CODING_AND_RESEARCH",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.3592
+  },
+  {
+    "id": "v4-125",
+    "expected": "CODING_AND_RESEARCH",
+    "final_pred": "GRAPH_AND_INVESTIGATION",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.335
+  },
+  {
+    "id": "v4-126",
+    "expected": "CODING_AND_RESEARCH",
+    "final_pred": "CODING_AND_RESEARCH",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.3606
+  },
+  {
+    "id": "v4-127",
+    "expected": "CODING_AND_RESEARCH",
+    "final_pred": "GENERAL_CHAT",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.2033
+  },
+  {
+    "id": "v4-128",
+    "expected": "CODING_AND_RESEARCH",
+    "final_pred": "GENERAL_CHAT",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.4
+  },
+  {
+    "id": "v4-129",
+    "expected": "CODING_AND_RESEARCH",
+    "final_pred": "GENERAL_CHAT",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.1781
+  },
+  {
+    "id": "v4-130",
+    "expected": "CODING_AND_RESEARCH",
+    "final_pred": "CODING_AND_RESEARCH",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.4244
+  },
+  {
+    "id": "v4-131",
+    "expected": "CODING_AND_RESEARCH",
+    "final_pred": "GENERAL_CHAT",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.3367
+  },
+  {
+    "id": "v4-132",
+    "expected": "CODING_AND_RESEARCH",
+    "final_pred": "CODING_AND_RESEARCH",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.3356
+  },
+  {
+    "id": "v4-133",
+    "expected": "AUDIT_VERIFY",
+    "final_pred": "AUDIT_VERIFY",
+    "final_router": "embedding_second_stage",
+    "correct": true,
+    "emb_pred": "AUDIT_VERIFY",
+    "emb_conf": 0.6449
+  },
+  {
+    "id": "v4-134",
+    "expected": "AUDIT_VERIFY",
+    "final_pred": "AUDIT_VERIFY",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "AUDIT_VERIFY",
+    "emb_conf": 0.6412
+  },
+  {
+    "id": "v4-135",
+    "expected": "AUDIT_VERIFY",
+    "final_pred": "AUDIT_VERIFY",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "AUDIT_VERIFY",
+    "emb_conf": 0.5523
+  },
+  {
+    "id": "v4-136",
+    "expected": "AUDIT_VERIFY",
+    "final_pred": "GENERAL_CHAT",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.4835
+  },
+  {
+    "id": "v4-137",
+    "expected": "AUDIT_VERIFY",
+    "final_pred": "AUDIT_VERIFY",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "AUDIT_VERIFY",
+    "emb_conf": 0.7296
+  },
+  {
+    "id": "v4-138",
+    "expected": "AUDIT_VERIFY",
+    "final_pred": "TARGET_CLARIFICATION_REQUIRED",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "AUDIT_VERIFY",
+    "emb_conf": 0.6788
+  },
+  {
+    "id": "v4-139",
+    "expected": "AUDIT_VERIFY",
+    "final_pred": "AUDIT_VERIFY",
+    "final_router": "embedding_second_stage",
+    "correct": true,
+    "emb_pred": "AUDIT_VERIFY",
+    "emb_conf": 0.5495
+  },
+  {
+    "id": "v4-140",
+    "expected": "AUDIT_VERIFY",
+    "final_pred": "AUDIT_VERIFY",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "AUDIT_VERIFY",
+    "emb_conf": 0.659
+  },
+  {
+    "id": "v4-141",
+    "expected": "AUDIT_VERIFY",
+    "final_pred": "REPORT_GENERATION",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "AUDIT_VERIFY",
+    "emb_conf": 0.8394
+  },
+  {
+    "id": "v4-142",
+    "expected": "AUDIT_VERIFY",
+    "final_pred": "AUDIT_VERIFY",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "AUDIT_VERIFY",
+    "emb_conf": 0.6812
+  },
+  {
+    "id": "v4-143",
+    "expected": "AUDIT_VERIFY",
+    "final_pred": "AUDIT_VERIFY",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "AUDIT_VERIFY",
+    "emb_conf": 0.7733
+  },
+  {
+    "id": "v4-144",
+    "expected": "AUDIT_VERIFY",
+    "final_pred": "AUDIT_VERIFY",
+    "final_router": "embedding_second_stage",
+    "correct": true,
+    "emb_pred": "AUDIT_VERIFY",
+    "emb_conf": 0.6868
+  },
+  {
+    "id": "v4-145",
+    "expected": "FILE_METADATA_ANALYSIS",
+    "final_pred": "GENERAL_CHAT",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.4239
+  },
+  {
+    "id": "v4-146",
+    "expected": "FILE_METADATA_ANALYSIS",
+    "final_pred": "FILE_METADATA_ANALYSIS",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "FILE_METADATA_ANALYSIS",
+    "emb_conf": 0.8501
+  },
+  {
+    "id": "v4-147",
+    "expected": "FILE_METADATA_ANALYSIS",
+    "final_pred": "FILE_METADATA_ANALYSIS",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "FILE_METADATA_ANALYSIS",
+    "emb_conf": 0.525
+  },
+  {
+    "id": "v4-148",
+    "expected": "FILE_METADATA_ANALYSIS",
+    "final_pred": "FILE_METADATA_ANALYSIS",
+    "final_router": "embedding_second_stage",
+    "correct": true,
+    "emb_pred": "FILE_METADATA_ANALYSIS",
+    "emb_conf": 0.5556
+  },
+  {
+    "id": "v4-149",
+    "expected": "FILE_METADATA_ANALYSIS",
+    "final_pred": "FILE_METADATA_ANALYSIS",
+    "final_router": "embedding_second_stage",
+    "correct": true,
+    "emb_pred": "FILE_METADATA_ANALYSIS",
+    "emb_conf": 0.6132
+  },
+  {
+    "id": "v4-150",
+    "expected": "FILE_METADATA_ANALYSIS",
+    "final_pred": "GENERAL_CHAT",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.4295
+  },
+  {
+    "id": "v4-151",
+    "expected": "FILE_METADATA_ANALYSIS",
+    "final_pred": "FILE_METADATA_ANALYSIS",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.381
+  },
+  {
+    "id": "v4-152",
+    "expected": "FILE_METADATA_ANALYSIS",
+    "final_pred": "GENERAL_CHAT",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.4028
+  },
+  {
+    "id": "v4-153",
+    "expected": "FILE_METADATA_ANALYSIS",
+    "final_pred": "GENERAL_CHAT",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.494
+  },
+  {
+    "id": "v4-154",
+    "expected": "FILE_METADATA_ANALYSIS",
+    "final_pred": "FILE_METADATA_ANALYSIS",
+    "final_router": "embedding_second_stage",
+    "correct": true,
+    "emb_pred": "FILE_METADATA_ANALYSIS",
+    "emb_conf": 0.5005
+  },
+  {
+    "id": "v4-155",
+    "expected": "FILE_METADATA_ANALYSIS",
+    "final_pred": "GENERAL_CHAT",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.3707
+  },
+  {
+    "id": "v4-156",
+    "expected": "FILE_METADATA_ANALYSIS",
+    "final_pred": "GENERAL_CHAT",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.4722
+  },
+  {
+    "id": "v4-157",
+    "expected": "TOOL_DETECTION",
+    "final_pred": "TARGET_CLARIFICATION_REQUIRED",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "TOOL_DETECTION",
+    "emb_conf": 0.6174
+  },
+  {
+    "id": "v4-158",
+    "expected": "TOOL_DETECTION",
+    "final_pred": "TOOL_DETECTION",
+    "final_router": "embedding_second_stage",
+    "correct": true,
+    "emb_pred": "TOOL_DETECTION",
+    "emb_conf": 0.726
+  },
+  {
+    "id": "v4-159",
+    "expected": "TOOL_DETECTION",
+    "final_pred": "TOOL_DETECTION",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.4403
+  },
+  {
+    "id": "v4-160",
+    "expected": "TOOL_DETECTION",
+    "final_pred": "AUDIT_VERIFY",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "TOOL_DETECTION",
+    "emb_conf": 0.5719
+  },
+  {
+    "id": "v4-161",
+    "expected": "TOOL_DETECTION",
+    "final_pred": "TOOL_DETECTION",
+    "final_router": "embedding_second_stage",
+    "correct": true,
+    "emb_pred": "TOOL_DETECTION",
+    "emb_conf": 0.5519
+  },
+  {
+    "id": "v4-162",
+    "expected": "TOOL_DETECTION",
+    "final_pred": "GENERAL_CHAT",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.4042
+  },
+  {
+    "id": "v4-163",
+    "expected": "TOOL_DETECTION",
+    "final_pred": "TOOL_DETECTION",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "TOOL_DETECTION",
+    "emb_conf": 0.5901
+  },
+  {
+    "id": "v4-164",
+    "expected": "TOOL_DETECTION",
+    "final_pred": "TOOL_DETECTION",
+    "final_router": "embedding_second_stage",
+    "correct": true,
+    "emb_pred": "TOOL_DETECTION",
+    "emb_conf": 0.5895
+  },
+  {
+    "id": "v4-165",
+    "expected": "TOOL_DETECTION",
+    "final_pred": "GENERAL_CHAT",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.418
+  },
+  {
+    "id": "v4-166",
+    "expected": "TOOL_DETECTION",
+    "final_pred": "FILE_METADATA_ANALYSIS",
+    "final_router": "embedding_second_stage",
+    "correct": false,
+    "emb_pred": "FILE_METADATA_ANALYSIS",
+    "emb_conf": 0.5289
+  },
+  {
+    "id": "v4-167",
+    "expected": "TOOL_DETECTION",
+    "final_pred": "TARGET_CLARIFICATION_REQUIRED",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "TOOL_DETECTION",
+    "emb_conf": 0.5753
+  },
+  {
+    "id": "v4-168",
+    "expected": "TOOL_DETECTION",
+    "final_pred": "TOOL_DETECTION",
+    "final_router": "embedding_second_stage",
+    "correct": true,
+    "emb_pred": "TOOL_DETECTION",
+    "emb_conf": 0.6437
+  },
+  {
+    "id": "v4-169",
+    "expected": "LIFECYCLE",
+    "final_pred": "TARGET_CLARIFICATION_REQUIRED",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "LIFECYCLE",
+    "emb_conf": 0.5157
+  },
+  {
+    "id": "v4-170",
+    "expected": "LIFECYCLE",
+    "final_pred": "GENERAL_CHAT",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.2112
+  },
+  {
+    "id": "v4-171",
+    "expected": "LIFECYCLE",
+    "final_pred": "GENERAL_CHAT",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.4331
+  },
+  {
+    "id": "v4-172",
+    "expected": "LIFECYCLE",
+    "final_pred": "GENERAL_CHAT",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.4555
+  },
+  {
+    "id": "v4-173",
+    "expected": "LIFECYCLE",
+    "final_pred": "GENERAL_CHAT",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.3388
+  },
+  {
+    "id": "v4-174",
+    "expected": "LIFECYCLE",
+    "final_pred": "TARGET_CLARIFICATION_REQUIRED",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.4412
+  },
+  {
+    "id": "v4-175",
+    "expected": "LIFECYCLE",
+    "final_pred": "GENERAL_CHAT",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.378
+  },
+  {
+    "id": "v4-176",
+    "expected": "LIFECYCLE",
+    "final_pred": "TARGET_CLARIFICATION_REQUIRED",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "LIFECYCLE",
+    "emb_conf": 0.5086
+  },
+  {
+    "id": "v4-177",
+    "expected": "LIFECYCLE",
+    "final_pred": "GENERAL_CHAT",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.3916
+  },
+  {
+    "id": "v4-178",
+    "expected": "LIFECYCLE",
+    "final_pred": "GENERAL_CHAT",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.3818
+  },
+  {
+    "id": "v4-179",
+    "expected": "LIFECYCLE",
+    "final_pred": "TARGET_CLARIFICATION_REQUIRED",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "LIFECYCLE",
+    "emb_conf": 0.5677
+  },
+  {
+    "id": "v4-180",
+    "expected": "LIFECYCLE",
+    "final_pred": "GENERAL_CHAT",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.3115
+  },
+  {
+    "id": "v4-181",
+    "expected": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "final_pred": "GENERAL_CHAT",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.4457
+  },
+  {
+    "id": "v4-182",
+    "expected": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "final_pred": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "final_router": "embedding_second_stage",
+    "correct": true,
+    "emb_pred": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "emb_conf": 0.5587
+  },
+  {
+    "id": "v4-183",
+    "expected": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "final_pred": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "final_router": "embedding_second_stage",
+    "correct": true,
+    "emb_pred": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "emb_conf": 0.6827
+  },
+  {
+    "id": "v4-184",
+    "expected": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "final_pred": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "final_router": "embedding_second_stage",
+    "correct": true,
+    "emb_pred": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "emb_conf": 0.592
+  },
+  {
+    "id": "v4-185",
+    "expected": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "final_pred": "TARGET_CLARIFICATION_REQUIRED",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "emb_conf": 0.785
+  },
+  {
+    "id": "v4-186",
+    "expected": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "final_pred": "GENERAL_CHAT",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.3179
+  },
+  {
+    "id": "v4-187",
+    "expected": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "final_pred": "GENERAL_CHAT",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.4925
+  },
+  {
+    "id": "v4-188",
+    "expected": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "final_pred": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "final_router": "embedding_second_stage",
+    "correct": true,
+    "emb_pred": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "emb_conf": 0.5079
+  },
+  {
+    "id": "v4-189",
+    "expected": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "final_pred": "GENERAL_CHAT",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.4819
+  },
+  {
+    "id": "v4-190",
+    "expected": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "final_pred": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "final_router": "embedding_second_stage",
+    "correct": true,
+    "emb_pred": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "emb_conf": 0.6164
+  },
+  {
+    "id": "v4-191",
+    "expected": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "final_pred": "GENERAL_CHAT",
+    "final_router": "regex",
+    "correct": false,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.4107
+  },
+  {
+    "id": "v4-192",
+    "expected": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "final_pred": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "final_router": "embedding_second_stage",
+    "correct": true,
+    "emb_pred": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+    "emb_conf": 0.6433
+  },
+  {
+    "id": "v4-193",
+    "expected": "GENERAL_CHAT",
+    "final_pred": "GENERAL_CHAT",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.3545
+  },
+  {
+    "id": "v4-194",
+    "expected": "GENERAL_CHAT",
+    "final_pred": "GENERAL_CHAT",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.4164
+  },
+  {
+    "id": "v4-195",
+    "expected": "GENERAL_CHAT",
+    "final_pred": "GENERAL_CHAT",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.8195
+  },
+  {
+    "id": "v4-196",
+    "expected": "GENERAL_CHAT",
+    "final_pred": "GENERAL_CHAT",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.4953
+  },
+  {
+    "id": "v4-197",
+    "expected": "GENERAL_CHAT",
+    "final_pred": "GENERAL_CHAT",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.4159
+  },
+  {
+    "id": "v4-198",
+    "expected": "GENERAL_CHAT",
+    "final_pred": "GENERAL_CHAT",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.8617
+  },
+  {
+    "id": "v4-199",
+    "expected": "GENERAL_CHAT",
+    "final_pred": "GENERAL_CHAT",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.4303
+  },
+  {
+    "id": "v4-200",
+    "expected": "GENERAL_CHAT",
+    "final_pred": "GENERAL_CHAT",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.3412
+  },
+  {
+    "id": "v4-201",
+    "expected": "GENERAL_CHAT",
+    "final_pred": "GENERAL_CHAT",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.3912
+  },
+  {
+    "id": "v4-202",
+    "expected": "GENERAL_CHAT",
+    "final_pred": "GENERAL_CHAT",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.3763
+  },
+  {
+    "id": "v4-203",
+    "expected": "GENERAL_CHAT",
+    "final_pred": "GENERAL_CHAT",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.7518
+  },
+  {
+    "id": "v4-204",
+    "expected": "GENERAL_CHAT",
+    "final_pred": "GENERAL_CHAT",
+    "final_router": "regex",
+    "correct": true,
+    "emb_pred": "GENERAL_CHAT",
+    "emb_conf": 0.3201
+  }
+]

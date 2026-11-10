@@ -33,14 +33,14 @@ def parse_scope_text(text: str, default_program_name: str = "BugBountyProgram") 
     try:
         data = yaml.safe_load(text)
         if isinstance(data, dict):
-            in_scope = data.get("in_scope") or data.get("targets") or []
-            out_of_scope = data.get("out_of_scope") or data.get("exclusions") or []
+            yaml_in_scope = data.get("in_scope") or data.get("targets") or []
+            yaml_out_of_scope = data.get("out_of_scope") or data.get("exclusions") or []
             return ProgramScopeDefinition(
                 program_name=data.get("program_name", default_program_name),
                 policy_url=data.get("policy_url", "https://example.com/bounty-policy"),
                 written_authorization=bool(data.get("written_authorization", False)),
-                in_scope=[str(x).strip() for x in in_scope],
-                out_of_scope=[str(x).strip() for x in out_of_scope],
+                in_scope=[str(x).strip() for x in yaml_in_scope],
+                out_of_scope=[str(x).strip() for x in yaml_out_of_scope],
                 allowed_methods=data.get("allowed_methods", ["GET", "POST", "HEAD"]),
                 rate_limit_rps=float(data.get("rate_limit_rps", 5.0)),
                 rules=data.get("rules", []),

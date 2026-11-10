@@ -908,7 +908,7 @@ class SOCCopilotEngine:
                 "requires_approval": False,
             })
 
-        if inc and inc.severity in (IncidentSeverity.HIGH, IncidentSeverity.CRITICAL):
+        if inc and inc.severity in (EventSeverity.HIGH, EventSeverity.CRITICAL):
             primary_h = inc.primary_host or (inc.affected_entities[0] if inc.affected_entities else "TARGET-HOST")
             recommendations.append({
                 "priority": "CRITICAL",

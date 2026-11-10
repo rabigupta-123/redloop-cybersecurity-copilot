@@ -1,0 +1,346 @@
+{
+  "evaluation_version": "v5",
+  "sample_size": 204,
+  "correct": 174,
+  "accuracy": 0.8529,
+  "wilson_ci_95": [
+    0.7978,
+    0.895
+  ],
+  "macro_precision": 0.8874,
+  "macro_recall": 0.8056,
+  "macro_f1": 0.8242,
+  "cohen_kappa": 0.8445,
+  "v4_accuracy": 0.6127,
+  "delta_vs_v4": 0.2402,
+  "v3_accuracy": 0.5539,
+  "delta_vs_v3": 0.299,
+  "router_breakdown": {
+    "embedding_count": 64,
+    "embedding_correct": 59,
+    "regex_count": 140,
+    "regex_correct": 115
+  },
+  "class_metrics": {
+    "AUDIT_VERIFY": {
+      "precision": 0.9231,
+      "recall": 1.0,
+      "f1": 0.96,
+      "support": 12
+    },
+    "CODING_AND_RESEARCH": {
+      "precision": 0.875,
+      "recall": 0.5833,
+      "f1": 0.7,
+      "support": 12
+    },
+    "CTF_AND_CHALLENGE_ANALYSIS": {
+      "precision": 1.0,
+      "recall": 0.75,
+      "f1": 0.8571,
+      "support": 12
+    },
+    "FILE_METADATA_ANALYSIS": {
+      "precision": 0.9091,
+      "recall": 0.8333,
+      "f1": 0.8696,
+      "support": 12
+    },
+    "FOLLOW_UP_ON_ACTIVE_INVESTIGATION": {
+      "precision": 0.9,
+      "recall": 0.75,
+      "f1": 0.8182,
+      "support": 12
+    },
+    "FORENSICS_AND_LOG_ANALYSIS": {
+      "precision": 0.9091,
+      "recall": 0.8333,
+      "f1": 0.8696,
+      "support": 12
+    },
+    "GENERAL_CHAT": {
+      "precision": 0.6111,
+      "recall": 0.9167,
+      "f1": 0.7333,
+      "support": 12
+    },
+    "GRAPH_AND_INVESTIGATION": {
+      "precision": 1.0,
+      "recall": 0.9167,
+      "f1": 0.9565,
+      "support": 12
+    },
+    "KALI_COMMAND_ASSISTANCE": {
+      "precision": 1.0,
+      "recall": 0.9167,
+      "f1": 0.9565,
+      "support": 12
+    },
+    "LIFECYCLE": {
+      "precision": 1.0,
+      "recall": 0.8333,
+      "f1": 0.9091,
+      "support": 12
+    },
+    "OSINT_DOMAIN": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 12
+    },
+    "OSINT_EMAIL": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 12
+    },
+    "OSINT_IP": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 12
+    },
+    "OSINT_PHONE": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 12
+    },
+    "OSINT_USERNAME": {
+      "precision": 1.0,
+      "recall": 0.1667,
+      "f1": 0.2857,
+      "support": 12
+    },
+    "REPORT_GENERATION": {
+      "precision": 0.9231,
+      "recall": 1.0,
+      "f1": 0.96,
+      "support": 12
+    },
+    "TARGET_CLARIFICATION_REQUIRED": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 0
+    },
+    "TOOL_DETECTION": {
+      "precision": 0.9231,
+      "recall": 1.0,
+      "f1": 0.96,
+      "support": 12
+    }
+  },
+  "mismatches": [
+    {
+      "id": "v5-024",
+      "prompt": "Display an attack path visualization for the privilege escalation steps observed.",
+      "expected": "GRAPH_AND_INVESTIGATION",
+      "predicted": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+      "router": "regex"
+    },
+    {
+      "id": "v5-042",
+      "prompt": "Look through this syslog file to find unauthorized sudo command executions.",
+      "expected": "FORENSICS_AND_LOG_ANALYSIS",
+      "predicted": "TOOL_DETECTION",
+      "router": "embedding_second_stage"
+    },
+    {
+      "id": "v5-047",
+      "prompt": "Analyze these mail server logs for evidence of spam relaying or account takeover.",
+      "expected": "FORENSICS_AND_LOG_ANALYSIS",
+      "predicted": "TARGET_CLARIFICATION_REQUIRED",
+      "router": "regex"
+    },
+    {
+      "id": "v5-085",
+      "prompt": "Search public forums and social platforms for accounts using username 'dark_spectre_99'.",
+      "expected": "OSINT_USERNAME",
+      "predicted": "TARGET_CLARIFICATION_REQUIRED",
+      "router": "regex"
+    },
+    {
+      "id": "v5-087",
+      "prompt": "Can you check if handle 'binary_phantom' is registered across Github, Reddit, and Twitter?",
+      "expected": "OSINT_USERNAME",
+      "predicted": "TARGET_CLARIFICATION_REQUIRED",
+      "router": "regex"
+    },
+    {
+      "id": "v5-088",
+      "prompt": "Perform an OSINT search for username 'cipher_wolf_88' to locate active profiles.",
+      "expected": "OSINT_USERNAME",
+      "predicted": "TARGET_CLARIFICATION_REQUIRED",
+      "router": "regex"
+    },
+    {
+      "id": "v5-089",
+      "prompt": "Look up discussion board posts and open-source contributions by nickname 'null_root_42'.",
+      "expected": "OSINT_USERNAME",
+      "predicted": "TARGET_CLARIFICATION_REQUIRED",
+      "router": "regex"
+    },
+    {
+      "id": "v5-090",
+      "prompt": "Find online presence and alias associations for operator 'stealth_hacker_7'.",
+      "expected": "OSINT_USERNAME",
+      "predicted": "TARGET_CLARIFICATION_REQUIRED",
+      "router": "regex"
+    },
+    {
+      "id": "v5-091",
+      "prompt": "Query developer platforms and paste sites for activity under username 'quantum_sec_dev'.",
+      "expected": "OSINT_USERNAME",
+      "predicted": "TARGET_CLARIFICATION_REQUIRED",
+      "router": "regex"
+    },
+    {
+      "id": "v5-092",
+      "prompt": "Check social networks and gaming forums for profiles matching username 'iron_sentinel_01'.",
+      "expected": "OSINT_USERNAME",
+      "predicted": "TARGET_CLARIFICATION_REQUIRED",
+      "router": "regex"
+    },
+    {
+      "id": "v5-093",
+      "prompt": "Search for public accounts and forum threads authored by alias 'byte_bandit_x'.",
+      "expected": "OSINT_USERNAME",
+      "predicted": "TARGET_CLARIFICATION_REQUIRED",
+      "router": "regex"
+    },
+    {
+      "id": "v5-095",
+      "prompt": "Investigate commit history and profile details for open-source username 'kernel_panic_9'.",
+      "expected": "OSINT_USERNAME",
+      "predicted": "TARGET_CLARIFICATION_REQUIRED",
+      "router": "regex"
+    },
+    {
+      "id": "v5-096",
+      "prompt": "Discover accounts and public profiles associated with user nickname 'silent_observer_33'.",
+      "expected": "OSINT_USERNAME",
+      "predicted": "TARGET_CLARIFICATION_REQUIRED",
+      "router": "regex"
+    },
+    {
+      "id": "v5-117",
+      "prompt": "Assist in assembling return-oriented programming gadgets to bypass NX protections in this challenge.",
+      "expected": "CTF_AND_CHALLENGE_ANALYSIS",
+      "predicted": "GENERAL_CHAT",
+      "router": "regex"
+    },
+    {
+      "id": "v5-119",
+      "prompt": "Analyze this format string vulnerability challenge in a 32-bit Linux ELF binary.",
+      "expected": "CTF_AND_CHALLENGE_ANALYSIS",
+      "predicted": "FILE_METADATA_ANALYSIS",
+      "router": "regex"
+    },
+    {
+      "id": "v5-120",
+      "prompt": "How to exploit this timing attack challenge on a cryptographic HMAC comparison routine?",
+      "expected": "CTF_AND_CHALLENGE_ANALYSIS",
+      "predicted": "AUDIT_VERIFY",
+      "router": "embedding_second_stage"
+    },
+    {
+      "id": "v5-126",
+      "prompt": "Check the metadata of this Excel spreadsheet to see which user account last edited it.",
+      "expected": "FILE_METADATA_ANALYSIS",
+      "predicted": "TARGET_CLARIFICATION_REQUIRED",
+      "router": "regex"
+    },
+    {
+      "id": "v5-130",
+      "prompt": "Check this PowerPoint presentation file for embedded revision history and creator usernames.",
+      "expected": "FILE_METADATA_ANALYSIS",
+      "predicted": "REPORT_GENERATION",
+      "router": "embedding_second_stage"
+    },
+    {
+      "id": "v5-138",
+      "prompt": "Show the terminal command for running Nikto with evasion mode enabled.",
+      "expected": "KALI_COMMAND_ASSISTANCE",
+      "predicted": "TARGET_CLARIFICATION_REQUIRED",
+      "router": "regex"
+    },
+    {
+      "id": "v5-146",
+      "prompt": "Explain the technical difference between reflected cross-site scripting and DOM-based XSS.",
+      "expected": "CODING_AND_RESEARCH",
+      "predicted": "GENERAL_CHAT",
+      "router": "regex"
+    },
+    {
+      "id": "v5-149",
+      "prompt": "Explain how the OAuth 2.0 PKCE flow protects against authorization code interception attacks.",
+      "expected": "CODING_AND_RESEARCH",
+      "predicted": "GENERAL_CHAT",
+      "router": "regex"
+    },
+    {
+      "id": "v5-151",
+      "prompt": "How does memory corruption like use-after-free occur in C++ memory management?",
+      "expected": "CODING_AND_RESEARCH",
+      "predicted": "GENERAL_CHAT",
+      "router": "regex"
+    },
+    {
+      "id": "v5-153",
+      "prompt": "Explain how Server-Side Request Forgery vulnerabilities can be used to pivot to cloud metadata APIs.",
+      "expected": "CODING_AND_RESEARCH",
+      "predicted": "GENERAL_CHAT",
+      "router": "regex"
+    },
+    {
+      "id": "v5-155",
+      "prompt": "Research and summarize how Content Security Policy headers mitigate modern XSS attacks.",
+      "expected": "CODING_AND_RESEARCH",
+      "predicted": "GENERAL_CHAT",
+      "router": "regex"
+    },
+    {
+      "id": "v5-177",
+      "prompt": "Display current server process status, memory footprint, and thread pool allocation.",
+      "expected": "LIFECYCLE",
+      "predicted": "GENERAL_CHAT",
+      "router": "regex"
+    },
+    {
+      "id": "v5-178",
+      "prompt": "Cease running the local web API process and unbind active listening sockets.",
+      "expected": "LIFECYCLE",
+      "predicted": "TARGET_CLARIFICATION_REQUIRED",
+      "router": "regex"
+    },
+    {
+      "id": "v5-182",
+      "prompt": "What were the open ports detected on the primary database server in our active case?",
+      "expected": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+      "predicted": "TARGET_CLARIFICATION_REQUIRED",
+      "router": "regex"
+    },
+    {
+      "id": "v5-186",
+      "prompt": "Can we look deeper into the anomalous DNS responses logged in step 4?",
+      "expected": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+      "predicted": "FORENSICS_AND_LOG_ANALYSIS",
+      "router": "embedding_second_stage"
+    },
+    {
+      "id": "v5-191",
+      "prompt": "Following up on that open port 8443, what application version was running behind TLS?",
+      "expected": "FOLLOW_UP_ON_ACTIVE_INVESTIGATION",
+      "predicted": "TARGET_CLARIFICATION_REQUIRED",
+      "router": "regex"
+    },
+    {
+      "id": "v5-204",
+      "prompt": "Could you write a short haiku about network packets traveling across the internet?",
+      "expected": "GENERAL_CHAT",
+      "predicted": "CODING_AND_RESEARCH",
+      "router": "embedding_second_stage"
+    }
+  ]
+}

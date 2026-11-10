@@ -1,0 +1,60 @@
+{
+  "dataset": "intent_train_v2.json",
+  "n_samples": 860,
+  "method": "5-fold stratified/shuffled cross-validation",
+  "grid": {
+    "0.3": {
+      "mean_accuracy": 0.8965,
+      "std": 0.0153
+    },
+    "0.32": {
+      "mean_accuracy": 0.8953,
+      "std": 0.016
+    },
+    "0.34": {
+      "mean_accuracy": 0.8919,
+      "std": 0.019
+    },
+    "0.36": {
+      "mean_accuracy": 0.8802,
+      "std": 0.0289
+    },
+    "0.38": {
+      "mean_accuracy": 0.8674,
+      "std": 0.0245
+    },
+    "0.4": {
+      "mean_accuracy": 0.8547,
+      "std": 0.0241
+    },
+    "0.42": {
+      "mean_accuracy": 0.8395,
+      "std": 0.0251
+    },
+    "0.44": {
+      "mean_accuracy": 0.8302,
+      "std": 0.0271
+    },
+    "0.46": {
+      "mean_accuracy": 0.8035,
+      "std": 0.0306
+    },
+    "0.48": {
+      "mean_accuracy": 0.7826,
+      "std": 0.0315
+    },
+    "0.5": {
+      "mean_accuracy": 0.7616,
+      "std": 0.0401
+    },
+    "0.52": {
+      "mean_accuracy": 0.7384,
+      "std": 0.0418
+    },
+    "0.55": {
+      "mean_accuracy": 0.6988,
+      "std": 0.0466
+    }
+  },
+  "optimal_threshold": 0.3
+}

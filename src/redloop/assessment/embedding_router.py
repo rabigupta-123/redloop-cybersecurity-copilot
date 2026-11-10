@@ -33,7 +33,7 @@ class EmbeddingIntentClassifier:
         self,
         train_path: Path | str | None = None,
         model_name: str = _EMBEDDING_MODEL_NAME,
-        min_confidence: float = 0.50,
+        min_confidence: float = 0.32,
     ) -> None:
         self.train_path = Path(train_path or _DEFAULT_TRAIN_PATH)
         self.model_name = model_name

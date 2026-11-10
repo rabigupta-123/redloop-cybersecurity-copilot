@@ -252,60 +252,61 @@ def test_06_low_confidence_review_queue_operations(tmp_path):
     assert 0.35 <= summary["average_confidence"] <= 0.45
 
 
-def test_07_dashboard_low_confidence_queue_endpoints(orch_env, tmp_path):
+@pytest.mark.asyncio
+async def test_07_dashboard_low_confidence_queue_endpoints(orch_env, tmp_path):
+    import httpx
     _, scope_mgr, audit_db = orch_env
     app = create_app(db_path=audit_db, scope_manager=scope_mgr)
-    client = TestClient(app, base_url="http://testserver")
+    async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://testserver") as client:
+        # Seed an item in review queue
+        rq = get_review_queue(tmp_path / "test_review_queue.sqlite")
+        test_id = rq.add(
+            item_type="intent",
+            prompt_or_summary="what about this unknown pattern?",
+            classified_as="GENERAL_CHAT",
+            confidence=0.45,
+            target="127.0.0.1",
+        )
 
-    # Seed an item in review queue
-    rq = get_review_queue()
-    test_id = rq.add(
-        item_type="intent",
-        prompt_or_summary="what about this unknown pattern?",
-        classified_as="GENERAL_CHAT",
-        confidence=0.45,
-        target="127.0.0.1",
-    )
+        # Test GET /api/system/low-confidence-queue
+        resp = await client.get("/api/system/low-confidence-queue")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert "summary" in data
+        assert "items" in data
+        assert any(it["id"] == test_id for it in data["items"])
 
-    # Test GET /api/system/low-confidence-queue
-    resp = client.get("/api/system/low-confidence-queue")
-    assert resp.status_code == 200
-    data = resp.json()
-    assert "summary" in data
-    assert "items" in data
-    assert any(it["id"] == test_id for it in data["items"])
+        # Test POST /api/system/low-confidence-queue/{id}/resolve
+        resolve_resp = await client.post(
+            f"/api/system/low-confidence-queue/{test_id}/resolve",
+            json={"status": "APPROVED", "notes": "Verified by test", "reviewed_by": "qa-lead"},
+            headers={"Origin": "http://testserver"},
+        )
+        assert resolve_resp.status_code == 200
+        assert resolve_resp.json()["success"] is True
 
-    # Test POST /api/system/low-confidence-queue/{id}/resolve
-    resolve_resp = client.post(
-        f"/api/system/low-confidence-queue/{test_id}/resolve",
-        json={"status": "APPROVED", "notes": "Verified by test", "reviewed_by": "qa-lead"},
-        headers={"Origin": "http://testserver"},
-    )
-    assert resolve_resp.status_code == 200
-    assert resolve_resp.json()["success"] is True
+        cross_origin = await client.post(
+            f"/api/system/low-confidence-queue/{test_id}/resolve",
+            json={"status": "APPROVED"},
+            headers={"Origin": "https://attacker.invalid"},
+        )
+        assert cross_origin.status_code == 403
 
-    cross_origin = client.post(
-        f"/api/system/low-confidence-queue/{test_id}/resolve",
-        json={"status": "APPROVED"},
-        headers={"Origin": "https://attacker.invalid"},
-    )
-    assert cross_origin.status_code == 403
+        missing_origin = await client.post(
+            f"/api/system/low-confidence-queue/{test_id}/resolve",
+            json={"status": "APPROVED"},
+        )
+        assert missing_origin.status_code == 403
 
-    missing_origin = client.post(
-        f"/api/system/low-confidence-queue/{test_id}/resolve",
-        json={"status": "APPROVED"},
-    )
-    assert missing_origin.status_code == 403
+        invalid_status = await client.post(
+            f"/api/system/low-confidence-queue/{test_id}/resolve",
+            json={"status": "NOT_A_REAL_STATUS"},
+            headers={"Origin": "http://testserver"},
+        )
+        assert invalid_status.status_code == 400
 
-    invalid_status = client.post(
-        f"/api/system/low-confidence-queue/{test_id}/resolve",
-        json={"status": "NOT_A_REAL_STATUS"},
-        headers={"Origin": "http://testserver"},
-    )
-    assert invalid_status.status_code == 400
-
-    # Verify resolution in GET response
-    resp_after = client.get("/api/system/low-confidence-queue?status=APPROVED")
-    assert resp_after.status_code == 200
-    items_approved = resp_after.json()["items"]
-    assert any(it["id"] == test_id for it in items_approved)
+        # Verify resolution in GET response
+        resp_after = await client.get("/api/system/low-confidence-queue?status=APPROVED")
+        assert resp_after.status_code == 200
+        items_approved = resp_after.json()["items"]
+        assert any(it["id"] == test_id for it in items_approved)

@@ -13,12 +13,12 @@ import json
 import logging
 import sqlite3
 import time
+import httpx
 import pytest
 from starlette.applications import Starlette
 from starlette.requests import Request
 from starlette.responses import JSONResponse
 from starlette.routing import Route
-from starlette.testclient import TestClient
 
 from redloop.hardening import (
     TokenBucket,
@@ -69,7 +69,8 @@ async def success_endpoint(request: Request):
     return JSONResponse({"status": "ok"})
 
 
-def test_production_hardening_middleware_error_handling():
+@pytest.mark.asyncio
+async def test_production_hardening_middleware_error_handling():
     app = Starlette(
         routes=[
             Route("/api/fail", endpoint=failing_endpoint, methods=["POST"]),
@@ -79,23 +80,25 @@ def test_production_hardening_middleware_error_handling():
     limiter = RateLimiter(rate=100.0, burst=100.0)
     app.add_middleware(ProductionHardeningMiddleware, rate_limiter=limiter)
 
-    client = TestClient(app, raise_server_exceptions=False)
-    resp = client.post("/api/fail")
+    transport = httpx.ASGITransport(app=app, raise_app_exceptions=False)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        resp = await client.post("/api/fail")
 
-    assert resp.status_code == 500
-    data = resp.json()
-    assert data["error_code"] == "INTERNAL_SERVER_ERROR"
-    assert "correlation_id" in data
-    assert resp.headers.get("X-Correlation-ID") == data["correlation_id"]
+        assert resp.status_code == 500
+        data = resp.json()
+        assert data["error_code"] == "INTERNAL_SERVER_ERROR"
+        assert "correlation_id" in data
+        assert resp.headers.get("X-Correlation-ID") == data["correlation_id"]
 
-    # CRITICAL: zero stack trace or exception text leaked in response body
-    raw_body = resp.text
-    assert "Traceback" not in raw_body
-    assert "SensitiveDatabaseConnectionException" not in raw_body
-    assert "SuperSecretPassword123" not in raw_body
+        # CRITICAL: zero stack trace or exception text leaked in response body
+        raw_body = resp.text
+        assert "Traceback" not in raw_body
+        assert "SensitiveDatabaseConnectionException" not in raw_body
+        assert "SuperSecretPassword123" not in raw_body
 
 
-def test_production_hardening_middleware_rate_limiting():
+@pytest.mark.asyncio
+async def test_production_hardening_middleware_rate_limiting():
     app = Starlette(
         routes=[
             Route("/api/chat", endpoint=success_endpoint, methods=["POST"]),
@@ -105,18 +108,19 @@ def test_production_hardening_middleware_rate_limiting():
     limiter = RateLimiter(rate=1.0, burst=3.0)
     app.add_middleware(ProductionHardeningMiddleware, rate_limiter=limiter)
 
-    client = TestClient(app)
-    for _ in range(3):
-        r = client.post("/api/chat")
-        assert r.status_code == 200
+    transport = httpx.ASGITransport(app=app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        for _ in range(3):
+            r = await client.post("/api/chat")
+            assert r.status_code == 200
 
-    # 4th request must be 429
-    r_limited = client.post("/api/chat")
-    assert r_limited.status_code == 429
-    data = r_limited.json()
-    assert data["error_code"] == "RATE_LIMIT_EXCEEDED"
-    assert "retry_after_seconds" in data
-    assert "Retry-After" in r_limited.headers
+        # 4th request must be 429
+        r_limited = await client.post("/api/chat")
+        assert r_limited.status_code == 429
+        data = r_limited.json()
+        assert data["error_code"] == "RATE_LIMIT_EXCEEDED"
+        assert "retry_after_seconds" in data
+        assert "Retry-After" in r_limited.headers
 
 
 # ==============================================================================

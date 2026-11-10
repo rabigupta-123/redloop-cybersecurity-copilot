@@ -20255,7 +20255,7 @@ def register_workbench_routes(
     # ==========================================================================
 
     @app.post("/api/hunting/query")
-    async def execute_hunting_query_endpoint(request: Request):
+    async def execute_hunting_query_v2_endpoint(request: Request):
         _require_same_origin(request)
         try:
             body = await request.json()

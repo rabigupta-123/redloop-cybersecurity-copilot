@@ -213,8 +213,8 @@ def check_readiness(db_path: str) -> dict[str, Any]:
 # 5. Production Hardening Middleware
 # ==============================================================================
 
-class ProductionHardeningMiddleware(BaseHTTPMiddleware):
-    """Enforces rate limiting, queue depth caps, correlation IDs, and structured error responses."""
+class ProductionHardeningMiddleware:
+    """Pure ASGI middleware enforcing rate limiting, queue caps, correlation IDs, and structured errors."""
 
     def __init__(
         self,
@@ -222,18 +222,22 @@ class ProductionHardeningMiddleware(BaseHTTPMiddleware):
         rate_limiter: RateLimiter | None = None,
         max_concurrent: int = 35,
     ) -> None:
-        super().__init__(app)
+        self.app = app
         self.rate_limiter = rate_limiter or RateLimiter()
         self.max_concurrent = int(os.getenv("REDLOOP_MAX_CONCURRENT_REQUESTS", str(max_concurrent)))
         self._in_flight = 0
 
-    async def dispatch(self, request: Request, call_next: Callable) -> Response:
+    async def __call__(self, scope: Any, receive: Any, send: Any) -> None:
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+
         corr_id = f"corr-{uuid.uuid4().hex[:12]}"
-        request.state.correlation_id = corr_id
+        scope["correlation_id"] = corr_id
 
         # Concurrency queue depth cap: shed load when concurrent requests exceed capacity
         if self._in_flight >= self.max_concurrent:
-            return JSONResponse(
+            response = JSONResponse(
                 status_code=429,
                 content={
                     "error_code": "QUEUE_CAPACITY_EXCEEDED",
@@ -243,10 +247,11 @@ class ProductionHardeningMiddleware(BaseHTTPMiddleware):
                 },
                 headers={"Retry-After": "1", "X-Correlation-ID": corr_id},
             )
+            await response(scope, receive, send)
+            return
 
-        # Mutating and LLM calling paths apply rate limiting
-        path = request.url.path
-        method = request.method.upper()
+        path = scope.get("path", "")
+        method = scope.get("method", "GET").upper()
         is_rate_limited_path = (
             method in ("POST", "PUT", "DELETE", "PATCH")
             or path.startswith("/api/chat")
@@ -255,47 +260,60 @@ class ProductionHardeningMiddleware(BaseHTTPMiddleware):
         )
 
         if is_rate_limited_path:
+            headers = dict(scope.get("headers", []))
+            operator_id = headers.get(b"x-operator-id", b"").decode("latin1")
+            forwarded = headers.get(b"x-forwarded-for", b"").decode("latin1")
+            client = scope.get("client")
             client_ip = (
-                request.headers.get("X-Operator-ID")
-                or (request.headers.get("X-Forwarded-For", "").split(",")[0].strip() if request.headers.get("X-Forwarded-For") else None)
-                or (request.client.host if request.client else "127.0.0.1")
+                operator_id
+                or (forwarded.split(",")[0].strip() if forwarded else None)
+                or (client[0] if client else "127.0.0.1")
             )
             allowed, retry_after = self.rate_limiter.is_allowed(client_ip)
             if not allowed:
-                return JSONResponse(
+                response = JSONResponse(
                     status_code=429,
                     content={
                         "error_code": "RATE_LIMIT_EXCEEDED",
                         "message": f"Rate limit exceeded. Please retry after {retry_after} seconds.",
                         "correlation_id": corr_id,
-                        "retry_after_seconds": retry_after
+                        "retry_after_seconds": retry_after,
                     },
-                    headers={"Retry-After": str(int(math.ceil(retry_after)))}
+                    headers={"Retry-After": str(int(math.ceil(retry_after))), "X-Correlation-ID": corr_id},
                 )
+                await response(scope, receive, send)
+                return
 
         self._in_flight += 1
+
+        async def send_wrapper(message: Any) -> None:
+            if message["type"] == "http.response.start":
+                h_list = list(message.get("headers", []))
+                h_list.append((b"x-correlation-id", corr_id.encode("latin1")))
+                message["headers"] = h_list
+            await send(message)
+
         try:
-            response = await call_next(request)
-            response.headers["X-Correlation-ID"] = corr_id
-            return response
+            await self.app(scope, receive, send_wrapper)
         except Exception as exc:
-            # Clean structured error response - ZERO raw stack trace to clients
             clean_err = redact_secrets(str(exc))
             logger.error(
                 f"Unhandled 500 error on {method} {path}: {clean_err}",
                 exc_info=True,
-                extra={"correlation_id": corr_id}
+                extra={"correlation_id": corr_id},
             )
-            return JSONResponse(
+            response = JSONResponse(
                 status_code=500,
                 content={
                     "error_code": "INTERNAL_SERVER_ERROR",
                     "message": "An internal error occurred while processing the request.",
-                    "correlation_id": corr_id
+                    "correlation_id": corr_id,
                 },
-                headers={"X-Correlation-ID": corr_id}
+                headers={"X-Correlation-ID": corr_id},
             )
+            await response(scope, receive, send)
         finally:
             self._in_flight -= 1
+
 
 

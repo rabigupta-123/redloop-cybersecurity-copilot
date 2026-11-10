@@ -18,6 +18,7 @@ import zipfile
 from collections import OrderedDict
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 from html import escape
 from html.parser import HTMLParser
 from pathlib import Path
@@ -1635,7 +1636,7 @@ class _ConversationStore:
         latency_ms: float | None = None,
         token_count: int | None = None,
         audit_event_id: str | None = None,
-        attachments: list[str] | tuple = (),
+        attachments: List[str] | tuple = (),
         attachment_context: str = "",
         effort: str | None = None,
         elapsed_seconds: float | None = None,

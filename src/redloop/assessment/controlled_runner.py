@@ -10,6 +10,7 @@ Enforces:
 from __future__ import annotations
 
 import hashlib
+import httpx
 import ipaddress
 import json
 import os

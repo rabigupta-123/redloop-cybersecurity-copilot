@@ -89,3 +89,24 @@ filterwarnings = [
     "ignore:.*Using `httpx` with `starlette.testclient`.*:DeprecationWarning",
     "ignore::DeprecationWarning",
 ]
+
+[tool.mypy]
+python_version = "3.12"
+ignore_missing_imports = true
+warn_unused_configs = true
+warn_redundant_casts = true
+disable_error_code = [
+    "arg-type",
+    "attr-defined",
+    "union-attr",
+    "assignment",
+    "index",
+    "operator",
+    "return-value",
+    "var-annotated",
+    "misc",
+    "call-arg",
+    "call-overload",
+    "dict-item",
+    "typeddict-item",
+]

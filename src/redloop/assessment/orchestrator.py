@@ -740,10 +740,11 @@ class TaskOrchestrator:
         if any(w in prompt_lower for w in ("dns scan", "zone transfer", "enumerate dns", "query nameserver")):
             return {"action": "tool_dns", "intent": "AUTHORIZED_RECONNAISSANCE", "target": target}
         if prompt_lower.startswith(("scan ", "probe ")) and not any(w in prompt_lower for w in ("whois", "rdap", "shodan")):
-            return {"action": "tool_ports", "intent": "AUTHORIZED_RECONNAISSANCE", "target": target}
+            if target:
+                return {"action": "tool_ports", "intent": "AUTHORIZED_RECONNAISSANCE", "target": target}
 
         # 13B. VULNERABILITY_ASSESSMENT
-        if has_assess_verb:
+        if has_assess_verb and target:
             depth = AssessmentDepth.STANDARD
             if "quick" in prompt_lower or "fast" in prompt_lower:
                 depth = AssessmentDepth.QUICK
@@ -863,7 +864,7 @@ class TaskOrchestrator:
             from redloop.assessment.embedding_router import EmbeddingIntentClassifier
             clf = EmbeddingIntentClassifier.get_instance()
             predicted_intent, confidence = clf.classify(prompt)
-            if predicted_intent != "GENERAL_CHAT" and confidence >= 0.50:
+            if predicted_intent != "GENERAL_CHAT" and confidence >= 0.32:
                 action_map = {
                     "AUTHORIZED_RECONNAISSANCE": "authorized_recon",
                     "VULNERABILITY_ASSESSMENT": "vulnerability_assessment",
