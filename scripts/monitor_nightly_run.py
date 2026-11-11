@@ -52,7 +52,7 @@ def get_job_log(job_id):
     except Exception as e:
         return f"Error fetching logs: {e}"
 
-def check_run(run_id=42964655352):
+def check_run(run_id=42965252896):
     run = api_get(f"https://api.github.com/repos/rabigupta-123/redloop-cybersecurity-copilot/actions/runs/{run_id}")
     print(f"Run ID: {run['id']}")
     print(f"URL: {run['html_url']}")
