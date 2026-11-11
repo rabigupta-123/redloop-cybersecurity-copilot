@@ -790,10 +790,10 @@ HOLEHE_PLATFORM_CATALOG: tuple[EmailPlatformSpec, ...] = (
     EmailPlatformSpec("gravatar", "Gravatar", "identity", "https://en.gravatar.com/{md5}.json", "GET", 2.0, (200,), ("\"entry\"",), (404,), ("User not found",)),
     EmailPlatformSpec("github_search", "GitHub Public Commits", "dev", "https://api.github.com/search/users?q={email}+in:email", "GET", 0.5, (200,), ("\"total_count\":1", "\"total_count\": 1", "\"login\""), (200, 404), ("\"total_count\":0", "\"total_count\": 0")),
     EmailPlatformSpec("gitlab", "GitLab", "dev", "https://gitlab.com/users?search={email}", "GET", 1.0, (200,), ("\"exists\":true", "\"id\":"), (404,), ("\"exists\":false", "[]")),
-    EmailPlatformSpec("bitbucket", "Bitbucket", "dev", "https://bitbucket.org/account/signup/?email={email}", "GET", 1.0, (200,), ("already registered", "taken"), (404,), ("available", "not found")),
+    EmailPlatformSpec("bitbucket", "Bitbucket", "dev", "https://bitbucket.org/account/signup/?email={email}", "GET", 1.0, (200,), ("already registered", "\"email_taken\":true", "\"taken\":true", "taken"), (200, 404), ("available", "not found", "free_to_register", "address_is_free_for_registration")),
     EmailPlatformSpec("dockerhub", "Docker Hub", "dev", "https://hub.docker.com/v2/users/signup-check/?email={email}", "GET", 1.0, (200, 400), ("already in use", "exists"), (200, 404), ("available", "not_found")),
     EmailPlatformSpec("pypi", "PyPI", "dev", "https://pypi.org/account/register/?email={email}", "GET", 1.0, (200, 400), ("email address is already", "exists"), (404,), ("available", "not found")),
-    EmailPlatformSpec("npmjs", "npm Registry", "dev", "https://www.npmjs.com/signup?email={email}", "GET", 1.0, (200, 400), ("already exists", "taken"), (404,), ("available", "not found")),
+    EmailPlatformSpec("npmjs", "npm Registry", "dev", "https://www.npmjs.com/signup?email={email}", "GET", 1.0, (200, 400), ("already exists", "\"email_taken\":true", "taken"), (200, 404), ("available", "not found", "free_to_register", "address_is_free_for_registration")),
     EmailPlatformSpec("rubygems", "RubyGems", "dev", "https://rubygems.org/api/v1/owners/{email}/gems.json", "GET", 1.0, (200,), ("\"name\":",), (404,), ("Owner could not be found", "not found")),
     EmailPlatformSpec("crates_io", "Crates.io", "dev", "https://crates.io/api/v1/users?email={email}", "GET", 1.0, (200,), ("\"users\":[{",), (404,), ("\"users\":[]", "not found")),
     EmailPlatformSpec("launchpad", "Ubuntu Launchpad", "dev", "https://api.launchpad.net/1.0/people/?ws.op=getByEmail&email={email}", "GET", 1.0, (200,), ("\"self_link\"", "\"name\""), (404,), ("null", "not found")),
@@ -813,7 +813,7 @@ HOLEHE_PLATFORM_CATALOG: tuple[EmailPlatformSpec, ...] = (
     EmailPlatformSpec("strava", "Strava", "fitness", "https://www.strava.com/athletes/email_unique?email={email}", "GET", 1.0, (200,), ("false", "taken"), (200, 404), ("true", "available")),
     EmailPlatformSpec("trello", "Trello", "productivity", "https://trello.com/1/search/members?query={email}", "GET", 1.0, (200,), ("\"id\":", "\"username\":"), (200, 404), ("[]",)),
     EmailPlatformSpec("protonmail", "Proton Mail Lookup", "security", "https://api.protonmail.ch/pks/lookup?op=get&search={email}", "GET", 1.0, (200,), ("-----BEGIN PGP PUBLIC KEY BLOCK-----",), (404,), ("No key found", "not found")),
-    EmailPlatformSpec("archive_org", "Internet Archive", "archive", "https://archive.org/ account/check_email?email={email}", "GET", 1.0, (200,), ("\"exists\":true", "taken"), (200, 404), ("\"exists\":false", "available")),
+    EmailPlatformSpec("archive_org", "Internet Archive", "archive", "https://archive.org/ account/check_email?email={email}", "GET", 1.0, (200,), ("\"exists\":true", "\"email_taken\":true", "taken"), (200, 404), ("\"exists\":false", "available", "free_to_register", "address_is_free_for_registration")),
     EmailPlatformSpec("issuu", "Issuu", "publishing", "https://issuu.com/call/signup/check-email/{email}", "GET", 1.0, (200,), ("\"status\":\"in_use\"",), (200, 404), ("\"status\":\"available\"",)),
 )
 
@@ -830,6 +830,9 @@ class EmailPlatformResult:
     reason: str = ""
     attempts: int = 1
     circuit_state: str = "CLOSED"
+    fast_path_latency_ms: float = 0.0
+    headless_fallback_used: bool = False
+    headless_latency_ms: float = 0.0
     timestamp: str = field(default_factory=_utc_now)
 
     def to_dict(self) -> dict[str, Any]:
@@ -837,19 +840,21 @@ class EmailPlatformResult:
 
 
 class HoleheEmailEnumerator:
-    """Read-only Holehe-style email account enumerator with L.0 scope gate, retry/backoff, and circuit breakers."""
+    """Read-only Holehe-style email account enumerator with L.0 scope gate, retry/backoff, circuit breakers, and CSR fallback."""
 
     def __init__(
         self,
         platforms: Iterable[EmailPlatformSpec] = HOLEHE_PLATFORM_CATALOG,
         person_scope_gate: Any = None,
         http_fetcher: Any = None,
+        headless_fallback: Any = None,
         max_retries: int = 2,
         backoff_base_sec: float = 0.05,
     ) -> None:
         self.platforms: list[EmailPlatformSpec] = list(platforms)
         self.person_scope_gate = person_scope_gate
         self.http_fetcher = http_fetcher
+        self.headless_fallback = headless_fallback
         self.max_retries = max_retries
         self.backoff_base_sec = backoff_base_sec
 
@@ -869,7 +874,17 @@ class HoleheEmailEnumerator:
 
         body_lower = (body or "").lower()
 
-        # Check explicit NOT_FOUND tokens first when status code is shared (e.g. 200 for both)
+        # Check explicit NOT_FOUND tokens first (including modernized registration availability tokens)
+        universal_nf_tokens = (
+            "free_to_register",
+            "address_is_free_for_registration",
+            "\"exists\":false",
+            "\"available\":true",
+        )
+        for u_nf in universal_nf_tokens:
+            if u_nf in body_lower:
+                return ACCOUNT_NOT_FOUND, f"Matched non-existence availability token '{u_nf}' (HTTP {status_code})"
+
         if status_code in spec.not_found_status_codes:
             if spec.not_found_body_tokens:
                 for tok in spec.not_found_body_tokens:
@@ -878,14 +893,22 @@ class HoleheEmailEnumerator:
             elif status_code not in spec.exists_status_codes:
                 return ACCOUNT_NOT_FOUND, f"HTTP {status_code} indicates account not found"
 
-        # Check explicit EXISTS tokens
+        # Strip negated help-text instructions ("not already taken", "not taken", "is not taken")
+        # before matching positive existence signatures so tooltip copy cannot cause false positives.
+        sanitized_for_exists = (
+            body_lower.replace("not already taken", "")
+            .replace("is not taken", "")
+            .replace("not taken", "")
+        )
+
+        # Check explicit EXISTS tokens (requiring positive identity-confirming signature)
         if status_code in spec.exists_status_codes:
             if spec.exists_body_tokens:
                 for tok in spec.exists_body_tokens:
-                    if tok.lower() in body_lower:
-                        return ACCOUNT_EXISTS, f"Matched existence body signature '{tok}' (HTTP {status_code})"
+                    if tok.lower() in sanitized_for_exists:
+                        return ACCOUNT_EXISTS, f"Matched positive existence signature '{tok}' (HTTP {status_code})"
                 # Status matched exists_status_codes, but neither exists nor not_found body tokens matched -> UNKNOWN
-                return ACCOUNT_UNKNOWN, f"HTTP {status_code} returned ambiguous body without known signature"
+                return ACCOUNT_UNKNOWN, f"HTTP {status_code} returned ambiguous body without positive signature"
             return ACCOUNT_EXISTS, f"HTTP {status_code} confirms account existence"
 
         if status_code in spec.not_found_status_codes:
@@ -894,7 +917,7 @@ class HoleheEmailEnumerator:
         return ACCOUNT_UNKNOWN, f"Ambiguous HTTP {status_code} response; refusing to guess"
 
     def check_platform(self, email: str, spec: EmailPlatformSpec) -> EmailPlatformResult:
-        """Check a single platform with rate limiting, circuit breaker, and retry/backoff."""
+        """Check a single platform with rate limiting, circuit breaker, retry/backoff, and CSR headless fallback."""
         breaker = self._breakers.setdefault(spec.platform_id, PlatformCircuitBreaker(spec.platform_id))
         limiter = self._limiters.setdefault(spec.platform_id, PlatformRateLimiter(spec.rate_limit_rps))
 
@@ -928,6 +951,7 @@ class HoleheEmailEnumerator:
         for attempt in range(1, self.max_retries + 2):
             attempts = attempt
             try:
+                t_fast = time.perf_counter()
                 if self.http_fetcher is not None:
                     status_code, body = self.http_fetcher(spec.platform_id, url, email)
                 else:
@@ -935,6 +959,7 @@ class HoleheEmailEnumerator:
                         resp = client.request(spec.method, url)
                         status_code = resp.status_code
                         body = resp.text[:4096]
+                fast_ms = round((time.perf_counter() - t_fast) * 1000.0, 3)
 
                 if status_code >= 500:
                     breaker.record_failure()
@@ -951,10 +976,26 @@ class HoleheEmailEnumerator:
                         reason=last_err,
                         attempts=attempts,
                         circuit_state=breaker.state,
+                        fast_path_latency_ms=fast_ms,
                     )
 
                 breaker.record_success()
                 state, reason = self._classify_response(spec, status_code, body)
+                headless_used = False
+                headless_ms = 0.0
+
+                if (
+                    state == ACCOUNT_UNKNOWN
+                    and self.headless_fallback is not None
+                    and self.headless_fallback.can_escalate(spec.platform_id, status_code, body)
+                ):
+                    hr = self.headless_fallback.render(spec.platform_id, url, email)
+                    headless_used = hr.triggered
+                    headless_ms = hr.latency_ms
+                    if hr.triggered and hr.rendered_body:
+                        state, reason = self._classify_response(spec, hr.status_code, hr.rendered_body)
+                        reason = f"{reason} [recovered via headless CSR fallback]"
+
                 return EmailPlatformResult(
                     platform_id=spec.platform_id,
                     platform_name=spec.name,
@@ -964,6 +1005,9 @@ class HoleheEmailEnumerator:
                     reason=reason,
                     attempts=attempts,
                     circuit_state=breaker.state,
+                    fast_path_latency_ms=fast_ms,
+                    headless_fallback_used=headless_used,
+                    headless_latency_ms=headless_ms,
                 )
             except Exception as exc:
                 breaker.record_failure()
@@ -1041,14 +1085,79 @@ class HoleheEmailEnumerator:
         }
 
 
+def compute_three_metric_accuracy(
+    *,
+    total: int,
+    correct: int,
+    wrong_resolved: int,
+    unknown_count: int,
+    rate_limited_count: int = 0,
+) -> dict[str, Any]:
+    """Compute Phase N.3 3-metric accuracy breakdown with Wilson 95% CIs (z=1.96).
+
+    1. resolved_accuracy = correct / (correct + wrong) EXCLUDING true UNKNOWN cases
+       (and also reported excluding both UNKNOWN and RATE_LIMITED non-answers).
+    2. coverage = (correct + wrong) / n (fraction of queries where the platform
+       allowed a definitive determination rather than blocking with UNKNOWN).
+    3. overall_accuracy = correct / n (legacy blended metric).
+    """
+    from redloop.assessment.metrics import wilson_score_interval
+
+    # Definition A: Excluding UNKNOWN only (where RATE_LIMITED, if any, is still in denominator)
+    denom_excl_unknown = total - unknown_count
+    resolved_acc = (correct / denom_excl_unknown) if denom_excl_unknown > 0 else 0.0
+    resolved_ci = (
+        wilson_score_interval(correct, denom_excl_unknown)
+        if denom_excl_unknown > 0
+        else (0.0, 0.0)
+    )
+    coverage = (denom_excl_unknown / total) if total > 0 else 0.0
+    coverage_ci = wilson_score_interval(denom_excl_unknown, total) if total > 0 else (0.0, 0.0)
+
+    # Definition B: Strictly answered (EXISTS or NOT_FOUND returned; excluding both UNKNOWN and RATE_LIMITED)
+    answered_denom = correct + wrong_resolved
+    answered_acc = (correct / answered_denom) if answered_denom > 0 else 0.0
+    answered_ci = (
+        wilson_score_interval(correct, answered_denom)
+        if answered_denom > 0
+        else (0.0, 0.0)
+    )
+    answered_coverage = (answered_denom / total) if total > 0 else 0.0
+    answered_cov_ci = wilson_score_interval(answered_denom, total) if total > 0 else (0.0, 0.0)
+
+    overall_acc = (correct / total) if total > 0 else 0.0
+    overall_ci = wilson_score_interval(correct, total) if total > 0 else (0.0, 0.0)
+
+    return {
+        "resolved_accuracy": round(resolved_acc, 4),
+        "resolved_accuracy_wilson_95_ci": [round(resolved_ci[0], 4), round(resolved_ci[1], 4)],
+        "resolved_k": correct,
+        "resolved_n": denom_excl_unknown,
+        "strict_answered_accuracy": round(answered_acc, 4),
+        "strict_answered_wilson_95_ci": [round(answered_ci[0], 4), round(answered_ci[1], 4)],
+        "strict_answered_n": answered_denom,
+        "coverage": round(coverage, 4),
+        "coverage_wilson_95_ci": [round(coverage_ci[0], 4), round(coverage_ci[1], 4)],
+        "strict_answered_coverage": round(answered_coverage, 4),
+        "strict_answered_coverage_wilson_95_ci": [round(answered_cov_ci[0], 4), round(answered_cov_ci[1], 4)],
+        "overall_accuracy": round(overall_acc, 4),
+        "overall_accuracy_wilson_95_ci": [round(overall_ci[0], 4), round(overall_ci[1], 4)],
+        "unknown_count": unknown_count,
+        "rate_limited_count": rate_limited_count,
+    }
+
+
 def evaluate_email_enumeration_benchmark(
     verified_pairs: Iterable[dict[str, Any]],
     enumerator: HoleheEmailEnumerator,
 ) -> dict[str, Any]:
-    """Evaluate precision, recall, F1, and Wilson 95% CIs (z=1.96) on verified (email, platform, expected_exists) pairs."""
+    """Evaluate precision, recall, F1, 3-metric accuracy, and Wilson 95% CIs (z=1.96) on verified pairs."""
     from redloop.assessment.metrics import wilson_score_interval
 
     tp = fp = fn = tn = 0
+    unknown_count = 0
+    rate_limited_count = 0
+    wrong_resolved = 0
     per_item_log: list[dict[str, Any]] = []
 
     specs_by_id = {p.platform_id: p for p in enumerator.platforms}
@@ -1060,15 +1169,22 @@ def evaluate_email_enumeration_benchmark(
 
         res = enumerator.check_platform(email, spec)
         predicted_exists = res.state == ACCOUNT_EXISTS
+        if res.state == ACCOUNT_UNKNOWN:
+            unknown_count += 1
+        elif res.state == ACCOUNT_RATE_LIMITED:
+            rate_limited_count += 1
 
         if expected_exists and predicted_exists:
             tp += 1
             outcome = "TP"
         elif not expected_exists and predicted_exists:
             fp += 1
+            wrong_resolved += 1
             outcome = "FP"
         elif expected_exists and not predicted_exists:
             fn += 1
+            if res.state == ACCOUNT_NOT_FOUND:
+                wrong_resolved += 1
             outcome = "FN"
         else:
             tn += 1
@@ -1082,17 +1198,29 @@ def evaluate_email_enumeration_benchmark(
                 "predicted_state": res.state,
                 "outcome": outcome,
                 "reason": res.reason,
+                "fast_path_latency_ms": res.fast_path_latency_ms,
+                "headless_fallback_used": res.headless_fallback_used,
+                "headless_latency_ms": res.headless_latency_ms,
             }
         )
 
+    total = len(per_item_log)
+    correct = tp + tn
     precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
     recall = tp / (tp + fn) if (tp + fn) > 0 else 0.0
     f1 = (2 * precision * recall / (precision + recall)) if (precision + recall) > 0 else 0.0
     p_ci = wilson_score_interval(tp, tp + fp) if (tp + fp) > 0 else (0.0, 0.0)
     r_ci = wilson_score_interval(tp, tp + fn) if (tp + fn) > 0 else (0.0, 0.0)
+    three_metrics = compute_three_metric_accuracy(
+        total=total,
+        correct=correct,
+        wrong_resolved=wrong_resolved,
+        unknown_count=unknown_count,
+        rate_limited_count=rate_limited_count,
+    )
 
     return {
-        "total_pairs": len(per_item_log),
+        "total_pairs": total,
         "tp": tp,
         "fp": fp,
         "fn": fn,
@@ -1102,6 +1230,7 @@ def evaluate_email_enumeration_benchmark(
         "recall": round(recall, 4),
         "recall_wilson_95_ci": [round(r_ci[0], 4), round(r_ci[1], 4)],
         "f1": round(f1, 4),
+        **three_metrics,
         "items": per_item_log,
     }
 

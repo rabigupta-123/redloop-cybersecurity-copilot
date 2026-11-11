@@ -217,10 +217,21 @@ $$\text{Upper Bound} = \frac{z^2}{n + z^2}$$
 | **Lab Noise Ratio** | 3 | 0 | **0.0000** | $[0.0000, 0.5615]$ | Ceiling $\le 0.3000$ | **PASS** |
 | **Chat Groundedness Rate** | 30 | 30 | **1.0000** | $[0.8865, 1.0000]$ | Floor $\ge 0.9000$ | **PASS** |
 | **Gate L.0 Person Scope Gate Enforcement** | 39 | 39 | **1.0000** | $[0.9103, 1.0000]$ | Must $= 1.0000$ | **PASS** |
-| **Gate L.1 Holehe Email Precision / Recall** | 11 | 11 | **1.0000** | $[0.7412, 1.0000]$ | P $\ge 0.85$, R $\ge 0.70$ | **PASS** |
-| **Gate L.2 Sherlock Username Precision / Recall** | 10 | 10 | **1.0000** | $[0.7225, 1.0000]$ | P $\ge 0.85$, R $\ge 0.70$ | **PASS** |
 | **Gate L.3 Phone E.164 & Line-Type Accuracy** | 12 | 12 | **1.0000** | $[0.7575, 1.0000]$ | 100% Source Attributed | **PASS** |
 | **Gate L.7 Local OpenAI (`llama.cpp`) Completion** | 30 | 30 | **1.0000** | $[0.8865, 1.0000]$ | 0 OOMs (RAM-Tiered) | **PASS** |
+
+### Three-Number OSINT Accuracy Standard (Separating "Got It Wrong" from "Can't Know")
+
+RedLoop never blends classifier errors (`FP` / wrong `NOT_FOUND`) with upstream anti-bot gates (`UNKNOWN` on Cloudflare Turnstile HTTP 403) into a single opaque number. Every OSINT enumeration module reports **three distinct metrics** (with Wilson 95% CIs, $z = 1.96$):
+
+1. **Resolved Accuracy** $= \frac{\text{correct}}{\text{correct} + \text{wrong}}$ (excluding `UNKNOWN` anti-bot blocks; and **Strict Answered Accuracy** excluding both `UNKNOWN` and `RATE_LIMITED` non-answers).
+2. **Coverage** $= \frac{\text{correct} + \text{wrong}}{n}$ (how often the platform allows an unauthenticated determination without an anti-bot block).
+3. **Overall Accuracy** $= \frac{\text{correct}}{n}$ (legacy blended rate across all $n$ probes).
+
+| OSINT Module | Holdout ($n$) | False Positives (`FP`) | Resolved Accuracy (Excl. `UNKNOWN`) | Strict Answered Accuracy (`EXISTS`/`NOT_FOUND`) | Coverage (Excl. `UNKNOWN`) | Overall Accuracy (Blended) |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: |
+| **`HoleheEmailEnumerator` (Email $\rightarrow$ Account)** | **56** | **0** | **0.9815** ($53/54$, CI $[0.9023, 0.9967]$) | **1.0000** ($53/53$, CI $[0.9324, 1.0000]$) | **0.9643** ($54/56$, CI $[0.8788, 0.9902]$) | **0.9464** ($53/56$, CI $[0.8539, 0.9816]$) |
+| **`SherlockUsernameEnumerator` (Username)** | **60** | **0** | **0.9828** ($57/58$, CI $[0.9086, 0.9970]$) | **1.0000** ($57/57$, CI $[0.9369, 1.0000]$) | **0.9667** ($58/60$, CI $[0.8864, 0.9908]$) | **0.9500** ($57/60$, CI $[0.8630, 0.9829]$) |
 
 ### Chat Latency Benchmarks (Linear Interpolation)
 

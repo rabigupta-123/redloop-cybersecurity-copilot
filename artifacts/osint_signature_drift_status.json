@@ -1,67 +1,19 @@
 {
-  "generated_at": "2026-11-11T09:30:19.479246+00:00",
+  "generated_at": "2026-11-11T10:20:22.254221+00:00",
   "total_platforms_checked": 113,
   "email_platforms_checked": 28,
   "username_platforms_checked": 85,
   "probes_per_platform": "2 known-true + 2 known-false (4 total)",
   "total_probes": 452,
-  "total_correct": 448,
-  "overall_accuracy": 0.9912,
+  "total_correct": 450,
+  "overall_accuracy": 0.9956,
   "overall_wilson_95_ci": [
-    0.9775,
-    0.9966
+    0.984,
+    0.9988
   ],
-  "drift_alerts_count": 4,
+  "drift_alerts_count": 2,
   "overall_status": "DRIFT_DETECTED",
   "drifted_platforms": [
-    {
-      "module": "email_footprint",
-      "platform_id": "bitbucket",
-      "platform_name": "Bitbucket",
-      "probes_run": 4,
-      "probes_correct": 3,
-      "accuracy": 0.75,
-      "wilson_95_ci": [
-        0.3006,
-        0.9544
-      ],
-      "status": "DRIFT_ALERT",
-      "drift_reason": "Bitbucket signup response changed available-email wording from 'available' to 'free_to_register' while including 'taken' in tooltip help copy (FP on known_false_2).",
-      "probes": [
-        {
-          "probe": "known_true_1",
-          "target": "rabi.operator@redloop.io",
-          "expected_state": "EXISTS",
-          "observed_state": "EXISTS",
-          "correct": true,
-          "reason": "Matched existence body signature 'already registered' (HTTP 200)"
-        },
-        {
-          "probe": "known_true_2",
-          "target": "alice.sec@redloop.io",
-          "expected_state": "EXISTS",
-          "observed_state": "EXISTS",
-          "correct": true,
-          "reason": "Matched existence body signature 'already registered' (HTTP 200)"
-        },
-        {
-          "probe": "known_false_1",
-          "target": "canary.nonexistent.alpha@redloop.io",
-          "expected_state": "NOT_FOUND",
-          "observed_state": "NOT_FOUND",
-          "correct": true,
-          "reason": "Matched not-found body signature 'available' (HTTP 404)"
-        },
-        {
-          "probe": "known_false_2",
-          "target": "canary.nonexistent.bravo@redloop.io",
-          "expected_state": "NOT_FOUND",
-          "observed_state": "EXISTS",
-          "correct": false,
-          "reason": "Matched existence body signature 'taken' (HTTP 200)"
-        }
-      ]
-    },
     {
       "module": "email_footprint",
       "platform_id": "vimeo",
@@ -82,7 +34,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'already associated' (HTTP 200)"
+          "reason": "Matched positive existence signature 'already associated' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -112,54 +64,6 @@
     },
     {
       "module": "username_footprint",
-      "platform_id": "medium",
-      "platform_name": "Medium",
-      "probes_run": 4,
-      "probes_correct": 3,
-      "accuracy": 0.75,
-      "wilson_95_ci": [
-        0.3006,
-        0.9544
-      ],
-      "status": "DRIFT_ALERT",
-      "drift_reason": "Medium deleted-user edge page returned soft-200 HTML shell containing 'medium.com' header signature without legacy '404' marker (FP on known_false_2).",
-      "probes": [
-        {
-          "probe": "known_true_1",
-          "target": "torvalds",
-          "expected_state": "EXISTS",
-          "observed_state": "EXISTS",
-          "correct": true,
-          "reason": "Matched existence body signature 'property=\"profile:username\"' (HTTP 200)"
-        },
-        {
-          "probe": "known_true_2",
-          "target": "rabi_sec_ops",
-          "expected_state": "EXISTS",
-          "observed_state": "EXISTS",
-          "correct": true,
-          "reason": "Matched existence body signature 'property=\"profile:username\"' (HTTP 200)"
-        },
-        {
-          "probe": "known_false_1",
-          "target": "redloop_nonexistent_canary_alpha",
-          "expected_state": "NOT_FOUND",
-          "observed_state": "NOT_FOUND",
-          "correct": true,
-          "reason": "Matched not-found body signature 'PAGE NOT FOUND' (HTTP 404)"
-        },
-        {
-          "probe": "known_false_2",
-          "target": "redloop_nonexistent_canary_bravo",
-          "expected_state": "NOT_FOUND",
-          "observed_state": "UNKNOWN",
-          "correct": false,
-          "reason": "HTTP 200 returned without matching existence body signature"
-        }
-      ]
-    },
-    {
-      "module": "username_footprint",
       "platform_id": "patreon",
       "platform_name": "Patreon",
       "probes_run": 4,
@@ -178,7 +82,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'patreon.com/{username}' (HTTP 200)"
+          "reason": "Matched positive identity signature 'patreon.com/{username}' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -186,7 +90,7 @@
           "expected_state": "EXISTS",
           "observed_state": "UNKNOWN",
           "correct": false,
-          "reason": "HTTP 200 returned without matching existence body signature"
+          "reason": "HTTP 200 returned without positive identity-confirming profile signature"
         },
         {
           "probe": "known_false_1",
@@ -228,7 +132,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"entry\"' (HTTP 200)"
+          "reason": "Matched positive existence signature '\"entry\"' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -236,7 +140,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"entry\"' (HTTP 200)"
+          "reason": "Matched positive existence signature '\"entry\"' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -276,7 +180,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"total_count\":1' (HTTP 200)"
+          "reason": "Matched positive existence signature '\"total_count\":1' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -284,7 +188,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"total_count\":1' (HTTP 200)"
+          "reason": "Matched positive existence signature '\"total_count\":1' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -324,7 +228,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"exists\":true' (HTTP 200)"
+          "reason": "Matched positive existence signature '\"exists\":true' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -332,7 +236,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"exists\":true' (HTTP 200)"
+          "reason": "Matched positive existence signature '\"exists\":true' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -340,7 +244,7 @@
           "expected_state": "NOT_FOUND",
           "observed_state": "NOT_FOUND",
           "correct": true,
-          "reason": "Matched not-found body signature '\"exists\":false' (HTTP 404)"
+          "reason": "Matched non-existence availability token '\"exists\":false' (HTTP 404)"
         },
         {
           "probe": "known_false_2",
@@ -348,7 +252,7 @@
           "expected_state": "NOT_FOUND",
           "observed_state": "NOT_FOUND",
           "correct": true,
-          "reason": "Matched not-found body signature '\"exists\":false' (HTTP 404)"
+          "reason": "Matched non-existence availability token '\"exists\":false' (HTTP 404)"
         }
       ]
     },
@@ -357,14 +261,14 @@
       "platform_id": "bitbucket",
       "platform_name": "Bitbucket",
       "probes_run": 4,
-      "probes_correct": 3,
-      "accuracy": 0.75,
+      "probes_correct": 4,
+      "accuracy": 1.0,
       "wilson_95_ci": [
-        0.3006,
-        0.9544
+        0.5101,
+        1.0
       ],
-      "status": "DRIFT_ALERT",
-      "drift_reason": "Bitbucket signup response changed available-email wording from 'available' to 'free_to_register' while including 'taken' in tooltip help copy (FP on known_false_2).",
+      "status": "PASS",
+      "drift_reason": null,
       "probes": [
         {
           "probe": "known_true_1",
@@ -372,7 +276,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'already registered' (HTTP 200)"
+          "reason": "Matched positive existence signature 'already registered' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -380,7 +284,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'already registered' (HTTP 200)"
+          "reason": "Matched positive existence signature 'already registered' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -388,15 +292,15 @@
           "expected_state": "NOT_FOUND",
           "observed_state": "NOT_FOUND",
           "correct": true,
-          "reason": "Matched not-found body signature 'available' (HTTP 404)"
+          "reason": "Matched not-found body signature 'available' (HTTP 200)"
         },
         {
           "probe": "known_false_2",
           "target": "canary.nonexistent.bravo@redloop.io",
           "expected_state": "NOT_FOUND",
-          "observed_state": "EXISTS",
-          "correct": false,
-          "reason": "Matched existence body signature 'taken' (HTTP 200)"
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched non-existence availability token 'free_to_register' (HTTP 200)"
         }
       ]
     },
@@ -420,7 +324,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'already in use' (HTTP 200)"
+          "reason": "Matched positive existence signature 'already in use' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -428,7 +332,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'already in use' (HTTP 200)"
+          "reason": "Matched positive existence signature 'already in use' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -468,7 +372,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'email address is already' (HTTP 200)"
+          "reason": "Matched positive existence signature 'email address is already' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -476,7 +380,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'email address is already' (HTTP 200)"
+          "reason": "Matched positive existence signature 'email address is already' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -516,7 +420,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'already exists' (HTTP 200)"
+          "reason": "Matched positive existence signature 'already exists' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -524,7 +428,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'already exists' (HTTP 200)"
+          "reason": "Matched positive existence signature 'already exists' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -532,7 +436,7 @@
           "expected_state": "NOT_FOUND",
           "observed_state": "NOT_FOUND",
           "correct": true,
-          "reason": "Matched not-found body signature 'available' (HTTP 404)"
+          "reason": "Matched not-found body signature 'available' (HTTP 200)"
         },
         {
           "probe": "known_false_2",
@@ -540,7 +444,7 @@
           "expected_state": "NOT_FOUND",
           "observed_state": "NOT_FOUND",
           "correct": true,
-          "reason": "Matched not-found body signature 'available' (HTTP 404)"
+          "reason": "Matched not-found body signature 'available' (HTTP 200)"
         }
       ]
     },
@@ -564,7 +468,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"name\":' (HTTP 200)"
+          "reason": "Matched positive existence signature '\"name\":' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -572,7 +476,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"name\":' (HTTP 200)"
+          "reason": "Matched positive existence signature '\"name\":' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -612,7 +516,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"users\":[{' (HTTP 200)"
+          "reason": "Matched positive existence signature '\"users\":[{' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -620,7 +524,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"users\":[{' (HTTP 200)"
+          "reason": "Matched positive existence signature '\"users\":[{' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -660,7 +564,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"self_link\"' (HTTP 200)"
+          "reason": "Matched positive existence signature '\"self_link\"' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -668,7 +572,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"self_link\"' (HTTP 200)"
+          "reason": "Matched positive existence signature '\"self_link\"' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -708,7 +612,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"passwordless\"' (HTTP 200)"
+          "reason": "Matched positive existence signature '\"passwordless\"' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -716,7 +620,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"passwordless\"' (HTTP 200)"
+          "reason": "Matched positive existence signature '\"passwordless\"' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -756,7 +660,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"exists\":true' (HTTP 200)"
+          "reason": "Matched positive existence signature '\"exists\":true' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -764,7 +668,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"exists\":true' (HTTP 200)"
+          "reason": "Matched positive existence signature '\"exists\":true' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -772,7 +676,7 @@
           "expected_state": "NOT_FOUND",
           "observed_state": "NOT_FOUND",
           "correct": true,
-          "reason": "Matched not-found body signature '\"exists\":false' (HTTP 200)"
+          "reason": "Matched non-existence availability token '\"exists\":false' (HTTP 200)"
         },
         {
           "probe": "known_false_2",
@@ -780,7 +684,7 @@
           "expected_state": "NOT_FOUND",
           "observed_state": "NOT_FOUND",
           "correct": true,
-          "reason": "Matched not-found body signature '\"exists\":false' (HTTP 200)"
+          "reason": "Matched non-existence availability token '\"exists\":false' (HTTP 200)"
         }
       ]
     },
@@ -804,7 +708,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"status\":20' (HTTP 200)"
+          "reason": "Matched positive existence signature '\"status\":20' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -812,7 +716,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"status\":20' (HTTP 200)"
+          "reason": "Matched positive existence signature '\"status\":20' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -852,7 +756,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"users\":[{' (HTTP 200)"
+          "reason": "Matched positive existence signature '\"users\":[{' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -860,7 +764,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"users\":[{' (HTTP 200)"
+          "reason": "Matched positive existence signature '\"users\":[{' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -900,7 +804,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'already associated' (HTTP 200)"
+          "reason": "Matched positive existence signature 'already associated' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -948,7 +852,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"them\":[{' (HTTP 200)"
+          "reason": "Matched positive existence signature '\"them\":[{' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -956,7 +860,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"them\":[{' (HTTP 200)"
+          "reason": "Matched positive existence signature '\"them\":[{' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -996,7 +900,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '-----BEGIN PGP PUBLIC KEY BLOCK-----' (HTTP 200)"
+          "reason": "Matched positive existence signature '-----BEGIN PGP PUBLIC KEY BLOCK-----' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -1004,7 +908,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '-----BEGIN PGP PUBLIC KEY BLOCK-----' (HTTP 200)"
+          "reason": "Matched positive existence signature '-----BEGIN PGP PUBLIC KEY BLOCK-----' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -1044,7 +948,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '-----BEGIN PGP PUBLIC KEY BLOCK-----' (HTTP 200)"
+          "reason": "Matched positive existence signature '-----BEGIN PGP PUBLIC KEY BLOCK-----' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -1052,7 +956,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '-----BEGIN PGP PUBLIC KEY BLOCK-----' (HTTP 200)"
+          "reason": "Matched positive existence signature '-----BEGIN PGP PUBLIC KEY BLOCK-----' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -1092,7 +996,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"exists\":true' (HTTP 200)"
+          "reason": "Matched positive existence signature '\"exists\":true' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -1100,7 +1004,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"exists\":true' (HTTP 200)"
+          "reason": "Matched positive existence signature '\"exists\":true' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -1108,7 +1012,7 @@
           "expected_state": "NOT_FOUND",
           "observed_state": "NOT_FOUND",
           "correct": true,
-          "reason": "Matched not-found body signature '\"exists\":false' (HTTP 404)"
+          "reason": "Matched non-existence availability token '\"exists\":false' (HTTP 404)"
         },
         {
           "probe": "known_false_2",
@@ -1116,7 +1020,7 @@
           "expected_state": "NOT_FOUND",
           "observed_state": "NOT_FOUND",
           "correct": true,
-          "reason": "Matched not-found body signature '\"exists\":false' (HTTP 404)"
+          "reason": "Matched non-existence availability token '\"exists\":false' (HTTP 404)"
         }
       ]
     },
@@ -1140,7 +1044,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"accountType\"' (HTTP 200)"
+          "reason": "Matched positive existence signature '\"accountType\"' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -1148,7 +1052,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"accountType\"' (HTTP 200)"
+          "reason": "Matched positive existence signature '\"accountType\"' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -1188,7 +1092,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"data\":true' (HTTP 200)"
+          "reason": "Matched positive existence signature '\"data\":true' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -1196,7 +1100,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"data\":true' (HTTP 200)"
+          "reason": "Matched positive existence signature '\"data\":true' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -1236,7 +1140,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'already registered' (HTTP 200)"
+          "reason": "Matched positive existence signature 'already registered' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -1244,7 +1148,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'already registered' (HTTP 200)"
+          "reason": "Matched positive existence signature 'already registered' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -1284,7 +1188,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"exists\":true' (HTTP 200)"
+          "reason": "Matched positive existence signature '\"exists\":true' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -1292,7 +1196,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"exists\":true' (HTTP 200)"
+          "reason": "Matched positive existence signature '\"exists\":true' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -1300,7 +1204,7 @@
           "expected_state": "NOT_FOUND",
           "observed_state": "NOT_FOUND",
           "correct": true,
-          "reason": "Matched not-found body signature '\"exists\":false' (HTTP 200)"
+          "reason": "Matched non-existence availability token '\"exists\":false' (HTTP 200)"
         },
         {
           "probe": "known_false_2",
@@ -1308,7 +1212,7 @@
           "expected_state": "NOT_FOUND",
           "observed_state": "NOT_FOUND",
           "correct": true,
-          "reason": "Matched not-found body signature '\"exists\":false' (HTTP 200)"
+          "reason": "Matched non-existence availability token '\"exists\":false' (HTTP 200)"
         }
       ]
     },
@@ -1332,7 +1236,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'false' (HTTP 200)"
+          "reason": "Matched positive existence signature 'false' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -1340,7 +1244,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'false' (HTTP 200)"
+          "reason": "Matched positive existence signature 'false' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -1380,7 +1284,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"id\":' (HTTP 200)"
+          "reason": "Matched positive existence signature '\"id\":' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -1388,7 +1292,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"id\":' (HTTP 200)"
+          "reason": "Matched positive existence signature '\"id\":' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -1428,7 +1332,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '-----BEGIN PGP PUBLIC KEY BLOCK-----' (HTTP 200)"
+          "reason": "Matched positive existence signature '-----BEGIN PGP PUBLIC KEY BLOCK-----' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -1436,7 +1340,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '-----BEGIN PGP PUBLIC KEY BLOCK-----' (HTTP 200)"
+          "reason": "Matched positive existence signature '-----BEGIN PGP PUBLIC KEY BLOCK-----' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -1476,7 +1380,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"exists\":true' (HTTP 200)"
+          "reason": "Matched positive existence signature '\"exists\":true' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -1484,7 +1388,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"exists\":true' (HTTP 200)"
+          "reason": "Matched positive existence signature '\"exists\":true' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -1492,7 +1396,7 @@
           "expected_state": "NOT_FOUND",
           "observed_state": "NOT_FOUND",
           "correct": true,
-          "reason": "Matched not-found body signature '\"exists\":false' (HTTP 200)"
+          "reason": "Matched non-existence availability token '\"exists\":false' (HTTP 200)"
         },
         {
           "probe": "known_false_2",
@@ -1500,7 +1404,7 @@
           "expected_state": "NOT_FOUND",
           "observed_state": "NOT_FOUND",
           "correct": true,
-          "reason": "Matched not-found body signature '\"exists\":false' (HTTP 200)"
+          "reason": "Matched non-existence availability token '\"exists\":false' (HTTP 200)"
         }
       ]
     },
@@ -1524,7 +1428,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"status\":\"in_use\"' (HTTP 200)"
+          "reason": "Matched positive existence signature '\"status\":\"in_use\"' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -1532,7 +1436,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"status\":\"in_use\"' (HTTP 200)"
+          "reason": "Matched positive existence signature '\"status\":\"in_use\"' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -1572,7 +1476,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'vcard-names' (HTTP 200)"
+          "reason": "Matched positive identity signature 'vcard-names' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -1580,7 +1484,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'vcard-names' (HTTP 200)"
+          "reason": "Matched positive identity signature 'vcard-names' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -1620,7 +1524,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'user-profile' (HTTP 200)"
+          "reason": "Matched positive identity signature 'user-profile' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -1628,7 +1532,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'user-profile' (HTTP 200)"
+          "reason": "Matched positive identity signature 'user-profile' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -1668,7 +1572,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'bitbucket.org' (HTTP 200)"
+          "reason": "Matched positive identity signature 'bitbucket.org' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -1676,7 +1580,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'bitbucket.org' (HTTP 200)"
+          "reason": "Matched positive identity signature 'bitbucket.org' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -1716,7 +1620,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"kind\": \"t2\"' (HTTP 200)"
+          "reason": "Matched positive identity signature '\"kind\": \"t2\"' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -1724,7 +1628,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"kind\": \"t2\"' (HTTP 200)"
+          "reason": "Matched positive identity signature '\"kind\": \"t2\"' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -1764,7 +1668,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"id\":' (HTTP 200)"
+          "reason": "Matched positive identity signature '\"id\":' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -1772,7 +1676,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"id\":' (HTTP 200)"
+          "reason": "Matched positive identity signature '\"id\":' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -1812,7 +1716,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'profile-heading' (HTTP 200)"
+          "reason": "Matched positive identity signature 'profile-heading' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -1820,7 +1724,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'profile-heading' (HTTP 200)"
+          "reason": "Matched positive identity signature 'profile-heading' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -1860,7 +1764,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"username\":' (HTTP 200)"
+          "reason": "Matched positive identity signature '\"username\":' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -1868,7 +1772,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"username\":' (HTTP 200)"
+          "reason": "Matched positive identity signature '\"username\":' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -1908,7 +1812,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'profile-section' (HTTP 200)"
+          "reason": "Matched positive identity signature 'profile-section' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -1916,7 +1820,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'profile-section' (HTTP 200)"
+          "reason": "Matched positive identity signature 'profile-section' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -1956,7 +1860,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '~{username}' (HTTP 200)"
+          "reason": "Matched positive identity signature '~{username}' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -1964,7 +1868,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '~{username}' (HTTP 200)"
+          "reason": "Matched positive identity signature '~{username}' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -2004,7 +1908,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'profile__header' (HTTP 200)"
+          "reason": "Matched positive identity signature 'profile__header' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -2012,7 +1916,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'profile__header' (HTTP 200)"
+          "reason": "Matched positive identity signature 'profile__header' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -2052,7 +1956,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"user\":' (HTTP 200)"
+          "reason": "Matched positive identity signature '\"user\":' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -2060,7 +1964,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"user\":' (HTTP 200)"
+          "reason": "Matched positive identity signature '\"user\":' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -2100,7 +2004,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'huggingface.co' (HTTP 200)"
+          "reason": "Matched positive identity signature 'huggingface.co' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -2108,7 +2012,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'huggingface.co' (HTTP 200)"
+          "reason": "Matched positive identity signature 'huggingface.co' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -2148,7 +2052,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'profile-header' (HTTP 200)"
+          "reason": "Matched positive identity signature 'profile-header' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -2156,7 +2060,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'profile-header' (HTTP 200)"
+          "reason": "Matched positive identity signature 'profile-header' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -2181,14 +2085,14 @@
       "platform_id": "medium",
       "platform_name": "Medium",
       "probes_run": 4,
-      "probes_correct": 3,
-      "accuracy": 0.75,
+      "probes_correct": 4,
+      "accuracy": 1.0,
       "wilson_95_ci": [
-        0.3006,
-        0.9544
+        0.5101,
+        1.0
       ],
-      "status": "DRIFT_ALERT",
-      "drift_reason": "Medium deleted-user edge page returned soft-200 HTML shell containing 'medium.com' header signature without legacy '404' marker (FP on known_false_2).",
+      "status": "PASS",
+      "drift_reason": null,
       "probes": [
         {
           "probe": "known_true_1",
@@ -2196,7 +2100,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'property=\"profile:username\"' (HTTP 200)"
+          "reason": "Matched positive identity signature 'property=\"profile:username\"' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -2204,7 +2108,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'property=\"profile:username\"' (HTTP 200)"
+          "reason": "Matched positive identity signature 'property=\"profile:username\"' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -2218,9 +2122,9 @@
           "probe": "known_false_2",
           "target": "redloop_nonexistent_canary_bravo",
           "expected_state": "NOT_FOUND",
-          "observed_state": "UNKNOWN",
-          "correct": false,
-          "reason": "HTTP 200 returned without matching existence body signature"
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched soft-404 non-existence copy 'writer profile is unavailable' (HTTP 200)"
         }
       ]
     },
@@ -2244,7 +2148,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'hashnode.com/@' (HTTP 200)"
+          "reason": "Matched positive identity signature 'hashnode.com/@' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -2252,7 +2156,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'hashnode.com/@' (HTTP 200)"
+          "reason": "Matched positive identity signature 'hashnode.com/@' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -2292,7 +2196,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'kaggle.com' (HTTP 200)"
+          "reason": "Matched positive identity signature 'kaggle.com' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -2300,7 +2204,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'kaggle.com' (HTTP 200)"
+          "reason": "Matched positive identity signature 'kaggle.com' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -2340,7 +2244,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'replit.com/@' (HTTP 200)"
+          "reason": "Matched positive identity signature 'replit.com/@' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -2348,7 +2252,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'replit.com/@' (HTTP 200)"
+          "reason": "Matched positive identity signature 'replit.com/@' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -2388,7 +2292,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'profile-username' (HTTP 200)"
+          "reason": "Matched positive identity signature 'profile-username' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -2396,7 +2300,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'profile-username' (HTTP 200)"
+          "reason": "Matched positive identity signature 'profile-username' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -2436,7 +2340,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"id\":' (HTTP 200)"
+          "reason": "Matched positive identity signature '\"id\":' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -2444,7 +2348,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"id\":' (HTTP 200)"
+          "reason": "Matched positive identity signature '\"id\":' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -2484,7 +2388,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'Personal Data' (HTTP 200)"
+          "reason": "Matched positive identity signature 'Personal Data' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -2492,7 +2396,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'Personal Data' (HTTP 200)"
+          "reason": "Matched positive identity signature 'Personal Data' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -2532,7 +2436,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'launchpad.net/~' (HTTP 200)"
+          "reason": "Matched positive identity signature 'launchpad.net/~' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -2540,7 +2444,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'launchpad.net/~' (HTTP 200)"
+          "reason": "Matched positive identity signature 'launchpad.net/~' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -2580,7 +2484,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'User profile' (HTTP 200)"
+          "reason": "Matched positive identity signature 'User profile' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -2588,7 +2492,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'User profile' (HTTP 200)"
+          "reason": "Matched positive identity signature 'User profile' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -2628,7 +2532,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'user-profile' (HTTP 200)"
+          "reason": "Matched positive identity signature 'user-profile' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -2636,7 +2540,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'user-profile' (HTTP 200)"
+          "reason": "Matched positive identity signature 'user-profile' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -2676,7 +2580,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'User:{username}' (HTTP 200)"
+          "reason": "Matched positive identity signature 'User:{username}' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -2684,7 +2588,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'User:{username}' (HTTP 200)"
+          "reason": "Matched positive identity signature 'User:{username}' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -2724,7 +2628,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'User:{username}' (HTTP 200)"
+          "reason": "Matched positive identity signature 'User:{username}' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -2732,7 +2636,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'User:{username}' (HTTP 200)"
+          "reason": "Matched positive identity signature 'User:{username}' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -2772,7 +2676,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'User Profile' (HTTP 200)"
+          "reason": "Matched positive identity signature 'User Profile' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -2780,7 +2684,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'User Profile' (HTTP 200)"
+          "reason": "Matched positive identity signature 'User Profile' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -2820,7 +2724,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'User:{username}' (HTTP 200)"
+          "reason": "Matched positive identity signature 'User:{username}' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -2828,7 +2732,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'User:{username}' (HTTP 200)"
+          "reason": "Matched positive identity signature 'User:{username}' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -2868,7 +2772,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'User:{username}' (HTTP 200)"
+          "reason": "Matched positive identity signature 'User:{username}' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -2876,7 +2780,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'User:{username}' (HTTP 200)"
+          "reason": "Matched positive identity signature 'User:{username}' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -2916,7 +2820,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '@{username}' (HTTP 200)"
+          "reason": "Matched positive identity signature '@{username}' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -2924,7 +2828,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '@{username}' (HTTP 200)"
+          "reason": "Matched positive identity signature '@{username}' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -2964,7 +2868,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'profile' (HTTP 200)"
+          "reason": "Matched positive identity signature 'profile' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -2972,7 +2876,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'profile' (HTTP 200)"
+          "reason": "Matched positive identity signature 'profile' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -3012,7 +2916,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"did\":' (HTTP 200)"
+          "reason": "Matched positive identity signature '\"did\":' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -3020,7 +2924,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"did\":' (HTTP 200)"
+          "reason": "Matched positive identity signature '\"did\":' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -3060,7 +2964,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'twitch.tv/{username}' (HTTP 200)"
+          "reason": "Matched positive identity signature 'twitch.tv/{username}' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -3068,7 +2972,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'twitch.tv/{username}' (HTTP 200)"
+          "reason": "Matched positive identity signature 'twitch.tv/{username}' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -3108,7 +3012,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'vimeo.com/{username}' (HTTP 200)"
+          "reason": "Matched positive identity signature 'vimeo.com/{username}' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -3116,7 +3020,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'vimeo.com/{username}' (HTTP 200)"
+          "reason": "Matched positive identity signature 'vimeo.com/{username}' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -3156,7 +3060,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'soundcloud.com/{username}' (HTTP 200)"
+          "reason": "Matched positive identity signature 'soundcloud.com/{username}' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -3164,7 +3068,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'soundcloud.com/{username}' (HTTP 200)"
+          "reason": "Matched positive identity signature 'soundcloud.com/{username}' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -3204,7 +3108,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'fan-bio' (HTTP 200)"
+          "reason": "Matched positive identity signature 'fan-bio' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -3212,7 +3116,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'fan-bio' (HTTP 200)"
+          "reason": "Matched positive identity signature 'fan-bio' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -3252,7 +3156,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"username\":' (HTTP 200)"
+          "reason": "Matched positive identity signature '\"username\":' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -3260,7 +3164,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"username\":' (HTTP 200)"
+          "reason": "Matched positive identity signature '\"username\":' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -3300,7 +3204,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'header-title' (HTTP 200)"
+          "reason": "Matched positive identity signature 'header-title' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -3308,7 +3212,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'header-title' (HTTP 200)"
+          "reason": "Matched positive identity signature 'header-title' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -3348,7 +3252,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'userProfileName' (HTTP 200)"
+          "reason": "Matched positive identity signature 'userProfileName' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -3356,7 +3260,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'userProfileName' (HTTP 200)"
+          "reason": "Matched positive identity signature 'userProfileName' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -3396,7 +3300,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'person-summary' (HTTP 200)"
+          "reason": "Matched positive identity signature 'person-summary' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -3404,7 +3308,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'person-summary' (HTTP 200)"
+          "reason": "Matched positive identity signature 'person-summary' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -3444,7 +3348,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'user-info' (HTTP 200)"
+          "reason": "Matched positive identity signature 'user-info' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -3452,7 +3356,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'user-info' (HTTP 200)"
+          "reason": "Matched positive identity signature 'user-info' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -3492,7 +3396,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'athlete-profile' (HTTP 200)"
+          "reason": "Matched positive identity signature 'athlete-profile' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -3500,7 +3404,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'athlete-profile' (HTTP 200)"
+          "reason": "Matched positive identity signature 'athlete-profile' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -3540,7 +3444,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"player_id\":' (HTTP 200)"
+          "reason": "Matched positive identity signature '\"player_id\":' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -3548,7 +3452,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"player_id\":' (HTTP 200)"
+          "reason": "Matched positive identity signature '\"player_id\":' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -3588,7 +3492,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"id\":' (HTTP 200)"
+          "reason": "Matched positive identity signature '\"id\":' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -3596,7 +3500,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"id\":' (HTTP 200)"
+          "reason": "Matched positive identity signature '\"id\":' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -3636,7 +3540,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'actual_persona_name' (HTTP 200)"
+          "reason": "Matched positive identity signature 'actual_persona_name' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -3644,7 +3548,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'actual_persona_name' (HTTP 200)"
+          "reason": "Matched positive identity signature 'actual_persona_name' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -3684,7 +3588,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"data\":' (HTTP 200)"
+          "reason": "Matched positive identity signature '\"data\":' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -3692,7 +3596,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"data\":' (HTTP 200)"
+          "reason": "Matched positive identity signature '\"data\":' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -3732,7 +3636,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'user_profile' (HTTP 200)"
+          "reason": "Matched positive identity signature 'user_profile' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -3740,7 +3644,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'user_profile' (HTTP 200)"
+          "reason": "Matched positive identity signature 'user_profile' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -3780,7 +3684,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'UserInfo' (HTTP 200)"
+          "reason": "Matched positive identity signature 'UserInfo' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -3788,7 +3692,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'UserInfo' (HTTP 200)"
+          "reason": "Matched positive identity signature 'UserInfo' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -3828,7 +3732,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'profile-masthead' (HTTP 200)"
+          "reason": "Matched positive identity signature 'profile-masthead' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -3836,7 +3740,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'profile-masthead' (HTTP 200)"
+          "reason": "Matched positive identity signature 'profile-masthead' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -3876,7 +3780,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'deviantart.com/{username}' (HTTP 200)"
+          "reason": "Matched positive identity signature 'deviantart.com/{username}' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -3884,7 +3788,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'deviantart.com/{username}' (HTTP 200)"
+          "reason": "Matched positive identity signature 'deviantart.com/{username}' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -3924,7 +3828,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"id\":' (HTTP 200)"
+          "reason": "Matched positive identity signature '\"id\":' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -3932,7 +3836,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"id\":' (HTTP 200)"
+          "reason": "Matched positive identity signature '\"id\":' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -3972,7 +3876,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'unsplash.com/@' (HTTP 200)"
+          "reason": "Matched positive identity signature 'unsplash.com/@' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -3980,7 +3884,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'unsplash.com/@' (HTTP 200)"
+          "reason": "Matched positive identity signature 'unsplash.com/@' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -4020,7 +3924,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'person-profile' (HTTP 200)"
+          "reason": "Matched positive identity signature 'person-profile' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -4028,7 +3932,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'person-profile' (HTTP 200)"
+          "reason": "Matched positive identity signature 'person-profile' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -4068,7 +3972,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"username\":\"{username}\"' (HTTP 200)"
+          "reason": "Matched positive identity signature '\"username\":\"{username}\"' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -4076,7 +3980,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"username\":\"{username}\"' (HTTP 200)"
+          "reason": "Matched positive identity signature '\"username\":\"{username}\"' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -4116,7 +4020,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'pexels.com/@' (HTTP 200)"
+          "reason": "Matched positive identity signature 'pexels.com/@' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -4124,7 +4028,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'pexels.com/@' (HTTP 200)"
+          "reason": "Matched positive identity signature 'pexels.com/@' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -4164,7 +4068,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'user_about' (HTTP 200)"
+          "reason": "Matched positive identity signature 'user_about' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -4172,7 +4076,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'user_about' (HTTP 200)"
+          "reason": "Matched positive identity signature 'user_about' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -4212,7 +4116,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'giphy.com/{username}' (HTTP 200)"
+          "reason": "Matched positive identity signature 'giphy.com/{username}' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -4220,7 +4124,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'giphy.com/{username}' (HTTP 200)"
+          "reason": "Matched positive identity signature 'giphy.com/{username}' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -4260,7 +4164,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"id\":' (HTTP 200)"
+          "reason": "Matched positive identity signature '\"id\":' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -4268,7 +4172,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"id\":' (HTTP 200)"
+          "reason": "Matched positive identity signature '\"id\":' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -4308,7 +4212,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"preferredUsername\":' (HTTP 200)"
+          "reason": "Matched positive identity signature '\"preferredUsername\":' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -4316,7 +4220,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"preferredUsername\":' (HTTP 200)"
+          "reason": "Matched positive identity signature '\"preferredUsername\":' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -4356,7 +4260,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'about.me/{username}' (HTTP 200)"
+          "reason": "Matched positive identity signature 'about.me/{username}' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -4364,7 +4268,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'about.me/{username}' (HTTP 200)"
+          "reason": "Matched positive identity signature 'about.me/{username}' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -4404,7 +4308,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'linktr.ee/{username}' (HTTP 200)"
+          "reason": "Matched positive identity signature 'linktr.ee/{username}' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -4412,7 +4316,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'linktr.ee/{username}' (HTTP 200)"
+          "reason": "Matched positive identity signature 'linktr.ee/{username}' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -4452,7 +4356,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '<title>' (HTTP 200)"
+          "reason": "Matched positive identity signature '<title>' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -4460,7 +4364,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '<title>' (HTTP 200)"
+          "reason": "Matched positive identity signature '<title>' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -4500,7 +4404,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'patreon.com/{username}' (HTTP 200)"
+          "reason": "Matched positive identity signature 'patreon.com/{username}' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -4508,7 +4412,7 @@
           "expected_state": "EXISTS",
           "observed_state": "UNKNOWN",
           "correct": false,
-          "reason": "HTTP 200 returned without matching existence body signature"
+          "reason": "HTTP 200 returned without positive identity-confirming profile signature"
         },
         {
           "probe": "known_false_1",
@@ -4548,7 +4452,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'ko-fi.com/{username}' (HTTP 200)"
+          "reason": "Matched positive identity signature 'ko-fi.com/{username}' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -4556,7 +4460,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'ko-fi.com/{username}' (HTTP 200)"
+          "reason": "Matched positive identity signature 'ko-fi.com/{username}' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -4596,7 +4500,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'buymeacoffee.com/{username}' (HTTP 200)"
+          "reason": "Matched positive identity signature 'buymeacoffee.com/{username}' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -4604,7 +4508,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'buymeacoffee.com/{username}' (HTTP 200)"
+          "reason": "Matched positive identity signature 'buymeacoffee.com/{username}' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -4644,7 +4548,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'producthunt.com/@' (HTTP 200)"
+          "reason": "Matched positive identity signature 'producthunt.com/@' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -4652,7 +4556,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'producthunt.com/@' (HTTP 200)"
+          "reason": "Matched positive identity signature 'producthunt.com/@' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -4692,7 +4596,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'slideshare.net/{username}' (HTTP 200)"
+          "reason": "Matched positive identity signature 'slideshare.net/{username}' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -4700,7 +4604,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'slideshare.net/{username}' (HTTP 200)"
+          "reason": "Matched positive identity signature 'slideshare.net/{username}' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -4740,7 +4644,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'speakerdeck.com/{username}' (HTTP 200)"
+          "reason": "Matched positive identity signature 'speakerdeck.com/{username}' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -4748,7 +4652,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'speakerdeck.com/{username}' (HTTP 200)"
+          "reason": "Matched positive identity signature 'speakerdeck.com/{username}' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -4788,7 +4692,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'scribd.com/{username}' (HTTP 200)"
+          "reason": "Matched positive identity signature 'scribd.com/{username}' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -4796,7 +4700,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'scribd.com/{username}' (HTTP 200)"
+          "reason": "Matched positive identity signature 'scribd.com/{username}' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -4836,7 +4740,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'issuu.com/{username}' (HTTP 200)"
+          "reason": "Matched positive identity signature 'issuu.com/{username}' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -4844,7 +4748,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'issuu.com/{username}' (HTTP 200)"
+          "reason": "Matched positive identity signature 'issuu.com/{username}' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -4884,7 +4788,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'academia.edu/{username}' (HTTP 200)"
+          "reason": "Matched positive identity signature 'academia.edu/{username}' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -4892,7 +4796,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'academia.edu/{username}' (HTTP 200)"
+          "reason": "Matched positive identity signature 'academia.edu/{username}' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -4932,7 +4836,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'researchgate.net/profile/' (HTTP 200)"
+          "reason": "Matched positive identity signature 'researchgate.net/profile/' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -4940,7 +4844,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'researchgate.net/profile/' (HTTP 200)"
+          "reason": "Matched positive identity signature 'researchgate.net/profile/' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -4980,7 +4884,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"name\":' (HTTP 200)"
+          "reason": "Matched positive identity signature '\"name\":' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -4988,7 +4892,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"name\":' (HTTP 200)"
+          "reason": "Matched positive identity signature '\"name\":' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -5028,7 +4932,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"status\":\"OK\"' (HTTP 200)"
+          "reason": "Matched positive identity signature '\"status\":\"OK\"' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -5036,7 +4940,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"status\":\"OK\"' (HTTP 200)"
+          "reason": "Matched positive identity signature '\"status\":\"OK\"' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -5076,7 +4980,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'leetcode.com' (HTTP 200)"
+          "reason": "Matched positive identity signature 'leetcode.com' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -5084,7 +4988,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'leetcode.com' (HTTP 200)"
+          "reason": "Matched positive identity signature 'leetcode.com' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -5124,7 +5028,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"model\":' (HTTP 200)"
+          "reason": "Matched positive identity signature '\"model\":' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -5132,7 +5036,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"model\":' (HTTP 200)"
+          "reason": "Matched positive identity signature '\"model\":' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -5172,7 +5076,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"username\":' (HTTP 200)"
+          "reason": "Matched positive identity signature '\"username\":' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -5180,7 +5084,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"username\":' (HTTP 200)"
+          "reason": "Matched positive identity signature '\"username\":' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -5220,7 +5124,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'exercism.org/profiles/' (HTTP 200)"
+          "reason": "Matched positive identity signature 'exercism.org/profiles/' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -5228,7 +5132,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'exercism.org/profiles/' (HTTP 200)"
+          "reason": "Matched positive identity signature 'exercism.org/profiles/' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -5268,7 +5172,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"success\":true' (HTTP 200)"
+          "reason": "Matched positive identity signature '\"success\":true' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -5276,7 +5180,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"success\":true' (HTTP 200)"
+          "reason": "Matched positive identity signature '\"success\":true' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -5316,7 +5220,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"user\":' (HTTP 200)"
+          "reason": "Matched positive identity signature '\"user\":' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -5324,7 +5228,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"user\":' (HTTP 200)"
+          "reason": "Matched positive identity signature '\"user\":' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -5364,7 +5268,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'bugcrowd.com/{username}' (HTTP 200)"
+          "reason": "Matched positive identity signature 'bugcrowd.com/{username}' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -5372,7 +5276,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'bugcrowd.com/{username}' (HTTP 200)"
+          "reason": "Matched positive identity signature 'bugcrowd.com/{username}' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -5412,7 +5316,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'hackerone.com/{username}' (HTTP 200)"
+          "reason": "Matched positive identity signature 'hackerone.com/{username}' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -5420,7 +5324,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'hackerone.com/{username}' (HTTP 200)"
+          "reason": "Matched positive identity signature 'hackerone.com/{username}' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -5460,7 +5364,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'User Profile' (HTTP 200)"
+          "reason": "Matched positive identity signature 'User Profile' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -5468,7 +5372,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'User Profile' (HTTP 200)"
+          "reason": "Matched positive identity signature 'User Profile' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -5508,7 +5412,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'wakatime.com/@' (HTTP 200)"
+          "reason": "Matched positive identity signature 'wakatime.com/@' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -5516,7 +5420,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'wakatime.com/@' (HTTP 200)"
+          "reason": "Matched positive identity signature 'wakatime.com/@' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -5556,7 +5460,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'packages' (HTTP 200)"
+          "reason": "Matched positive identity signature 'packages' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -5564,7 +5468,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature 'packages' (HTTP 200)"
+          "reason": "Matched positive identity signature 'packages' (HTTP 200)"
         },
         {
           "probe": "known_false_1",
@@ -5604,7 +5508,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"username\":' (HTTP 200)"
+          "reason": "Matched positive identity signature '\"username\":' (HTTP 200)"
         },
         {
           "probe": "known_true_2",
@@ -5612,7 +5516,7 @@
           "expected_state": "EXISTS",
           "observed_state": "EXISTS",
           "correct": true,
-          "reason": "Matched existence body signature '\"username\":' (HTTP 200)"
+          "reason": "Matched positive identity signature '\"username\":' (HTTP 200)"
         },
         {
           "probe": "known_false_1",

@@ -34,15 +34,17 @@ def test_gate_m1_scaled_email_and_username_eval_n_ge_50() -> None:
 
     assert email_report["total_pairs"] == 56
     assert email_report["novel_platforms_not_in_l1"] >= 8
-    assert 0.70 <= email_report["precision"] < 1.00
+    assert 0.70 <= email_report["precision"] <= 1.00
     assert 0.70 <= email_report["recall"] < 1.00
+    assert 0.70 <= email_report["accuracy"] < 1.00
     assert len(email_report["precision_wilson_95_ci"]) == 2
     assert len(email_report["recall_wilson_95_ci"]) == 2
 
     assert username_report["total_pairs"] == 60
     assert username_report["novel_platforms_not_in_l2"] >= 40
-    assert 0.70 <= username_report["precision"] < 1.00
+    assert 0.70 <= username_report["precision"] <= 1.00
     assert 0.70 <= username_report["recall"] < 1.00
+    assert 0.70 <= username_report["accuracy"] < 1.00
     assert len(username_report["precision_wilson_95_ci"]) == 2
     assert len(username_report["recall_wilson_95_ci"]) == 2
 
@@ -60,15 +62,13 @@ def test_gate_m2_signature_drift_monitor_passing_and_flagging() -> None:
     drift_summary = evaluate_signature_drift(include_observed_drift=True)
     assert drift_summary["total_platforms_checked"] == 113
     assert drift_summary["total_probes"] == 452
-    assert drift_summary["drift_alerts_count"] == 4
+    assert drift_summary["drift_alerts_count"] == 2
     assert drift_summary["overall_status"] == "DRIFT_DETECTED"
     flagged_ids = {
         f"{d['module']}:{d['platform_id']}" for d in drift_summary["drifted_platforms"]
     }
     assert flagged_ids == {
-        "email_footprint:bitbucket",
         "email_footprint:vimeo",
-        "username_footprint:medium",
         "username_footprint:patreon",
     }
 

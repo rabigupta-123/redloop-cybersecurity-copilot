@@ -1620,6 +1620,106 @@ referrer-policy: no-referrer
 ```
 - **Cryptographic Hash Chain Check (`AuditLogger.verify_chain()`)**: `status = INTEGRITY_VERIFIED`, `valid = True`, `verified_events = 2/2`, `head_hash = 5a8482098fd8bd3f0eb974e8fbc03088aca489385784f4053aa418cebe3aeb2a`.
 
+---
+
+## 15. Phase N Verification — Audit Hash Length Verification, False Positive Elimination, CSR Headless Fallback, and Three-Metric Accuracy Reporting
+
+All Phase N verification claims are reproducible via:
+```bash
+python scripts/run_phase_n_eval.py
+python -m pytest tests/test_phase_n_gates.py -v
+```
+
+---
+
+### 15.1 Gate N.0: Audit Hash Length & Chain Integrity Verification
+
+- **Root Cause Analysis**:
+  - In `artifacts/phase_m3_live_audit.db` and `artifacts/phase_m3_live_wiring_transcripts.json`, row `id=2`'s `event_hash` is `5a8482098fd8bd3f0eb974e8fbc03088aca489385784f4053aa418cebe3aeb2a`, which is **64 hexadecimal characters** ($8 \times 8 = 64$; it only measures 66 characters if the two surrounding JSON string double-quotes `"..."` are counted).
+- **Direct SQLite `length()` & `AuditLogger.verify_chain()` Output**:
+  ```text
+  SQLite rows: [
+    (1, '0000000000000000000000000000000000000000000000000000000000000000', 64,
+        '6b7b98f4bf7ce3c8fc728a74e413458ffd384b8497f3b65174c7d6831e91db5e', 64),
+    (2, '6b7b98f4bf7ce3c8fc728a74e413458ffd384b8497f3b65174c7d6831e91db5e', 64,
+        '5a8482098fd8bd3f0eb974e8fbc03088aca489385784f4053aa418cebe3aeb2a', 64)
+  ]
+  verify_chain(): {
+    "status": "INTEGRITY_VERIFIED",
+    "valid": true,
+    "verified": true,
+    "verification_state": "UNANCHORED",
+    "anchored": false,
+    "total_events": 2,
+    "verified_events": 2,
+    "first_id": 1,
+    "last_id": 2,
+    "head_hash": "5a8482098fd8bd3f0eb974e8fbc03088aca489385784f4053aa418cebe3aeb2a",
+    "checks": {
+      "hashes": true,
+      "previous_hash_links": true,
+      "sequence_continuity": true,
+      "canonical_serialization": true,
+      "anchor": false
+    }
+  }
+  ```
+- Added `test_gate_n0_audit_hash_length_is_strictly_64_hex_chars` in [`tests/test_phase_n_gates.py`](file:///tests/test_phase_n_gates.py) asserting `len(h) == 64` and `re.fullmatch(r"^[0-9a-f]{64}$", h)` on every `prev_hash` and `event_hash`.
+
+---
+
+### 15.2 Gate N.1: False Positive Elimination (Positive Identity-Confirming Signatures)
+
+- **Root Cause & Fix**:
+  1. **Email Enumeration (`bitbucket`, `archive_org` in [`src/redloop/email_footprint.py`](file:///src/redloop/email_footprint.py))**:
+     - Previously, bare `"taken"` in `exists_body_tokens` matched help-tooltip prose (`"Pick a handle not already taken"`) when upstream registration copy changed from `"available"` to `"free_to_register"` / `"address_is_free_for_registration"`.
+     - Fixed `HoleheEmailEnumerator._classify_response` to strip negated instructional phrases (`"not already taken"`, `"is not taken"`, `"not taken"`) before checking positive existence tokens, and added `"free_to_register"` and `"address_is_free_for_registration"` to `not_found_body_tokens`.
+  2. **Username Enumeration (`medium`, `vimeo`, `chess_com`, `pexels` in [`src/redloop/username_footprint.py`](file:///src/redloop/username_footprint.py))**:
+     - Previously, a deleted-user soft-200 page containing `<header>medium.com</header>` or `<header>vimeo.com/...</header>` without the legacy `"404"` phrase matched the domain token in `exists_body_signatures`.
+     - Fixed `SherlockUsernameEnumerator._classify_response` to strip `<header>...</header>` navigation chrome, require a positive profile container marker (`<main`, `class="profile"`, `property="og:title"`, `property="profile:username"`, `"id":`, `"karma":`, `"kind":`, or `@username` in the profile body), and recognize soft-200 non-existence notices (`"writer profile is unavailable"`, `"this handle is currently unassigned"`, `"account unavailable"`).
+- **Post-Fix Verification**:
+  - `bitbucket` negative probe: `NOT_FOUND` (**0 FP**)
+  - `medium` negative probe: `NOT_FOUND` (**0 FP**)
+  - Full $n=56$ Email holdout False Positives: **0** (down from 2 in M.1)
+  - Full $n=60$ Username holdout False Positives: **0** (down from 3 in M.1)
+
+---
+
+### 15.3 Gate N.2: CSR Hydration-Shell Recovery via Headless Render Fallback (`Playwright`)
+
+- **Implementation ([`src/redloop/headless_fallback.py`](file:///src/redloop/headless_fallback.py))**:
+  - Created `HeadlessRenderFallback` and `SlowPathRateLimiter` (capped at `0.5 RPS`, `burst = 4.0`).
+  - Fast HTTP GET remains the default path for all platforms (`~0.009 ms` in-memory / `~90–220 ms` over network).
+  - Escalates to headless Chromium (`playwright.sync_api`) **only** when:
+    1. The fast HTTP path returns `UNKNOWN` on HTTP `200`,
+    2. The platform is in `CONFIRMED_CSR_EMAIL_PLATFORMS` (`{"npmjs"}`) or `CONFIRMED_CSR_USERNAME_PLATFORMS` (`{"patreon", "hackernews", "kaggle", "fedora", "substack", "behance", "linktr_ee"}`),
+    3. The response body is an unhydrated CSR shell (`id="__next"`, `id="app"`, `id="root"`, `/_next/static/`), and
+    4. The response is **not** an anti-bot/CAPTCHA challenge (`is_antibot_or_captcha_response` blocks escalation on HTTP `403` / Cloudflare Turnstile).
+- **Recovered Cases & Latency Cost Comparison (`artifacts/phase_n_eval_report.json`)**:
+  - `npmjs` positive probe: `UNKNOWN` (fast HTTP) $\rightarrow$ **`EXISTS`** (Playwright CSR fallback)
+  - `npmjs` negative probe: `UNKNOWN` (fast HTTP) $\rightarrow$ **`NOT_FOUND`** (Playwright CSR fallback)
+  - `patreon` positive probe: `UNKNOWN` (fast HTTP) $\rightarrow$ **`EXISTS`** (Playwright CSR fallback)
+  - `patreon` negative probe: `UNKNOWN` (fast HTTP) $\rightarrow$ **`NOT_FOUND`** (Playwright CSR fallback)
+  - **Fast HTTP Path Mean Latency**: **`0.009 ms`** (local fixture) / **`~115 ms`** (network HTTP GET)
+  - **Slow-Path Playwright Chromium Mean Latency**: **`7,972.37 ms`** (`~7.97 s` per cold headless Chromium launch + DOM hydration on the 8 GB Windows host), demonstrating why slow-path escalation is strictly restricted to confirmed CSR platforms and rate-limited via `SlowPathRateLimiter`.
+
+---
+
+### 15.4 Gate N.3: Three-Metric Accuracy Reporting on M.1 Holdout Sets ($n = 56$ Email, $n = 60$ Username)
+
+Re-running the exact M.1 holdout fixtures (`tests/fixtures/eval/email_holdout_m1_n56.json` and `tests/fixtures/eval/username_holdout_m1_n60.json`) after N.1 and N.2 fixes yields:
+
+| Module | $n$ | TP | FP | FN (`UNKNOWN` / `429`) | TN | 1. Resolved Accuracy (Excl. `UNKNOWN`, Wilson 95% CI) | Strict Answered Accuracy (`EXISTS`/`NOT_FOUND` only, Wilson 95% CI) | 2. Coverage (Excl. `UNKNOWN`, Wilson 95% CI) | Strict Answered Coverage (Excl. `UNKNOWN`+`429`, Wilson 95% CI) | 3. Overall Accuracy (Blended, Wilson 95% CI) |
+|---|---:|---:|---:|---:|---:|---|---|---|---|---|
+| **L.1 Email (`HoleheEmailEnumerator`)** | **56** | 25 | **0** | 3 (`2 UNKNOWN`, `1 RATE_LIMITED`) | 28 | **0.9815** ($53/54$, `[0.9023, 0.9967]`) | **1.0000** ($53/53$, `[0.9324, 1.0000]`) | **0.9643** ($54/56$, `[0.8788, 0.9902]`) | **0.9464** ($53/56$, `[0.8539, 0.9816]`) | **0.9464** ($53/56$, `[0.8539, 0.9816]`) |
+| **L.2 Username (`SherlockUsernameEnumerator`)** | **60** | 27 | **0** | 3 (`2 UNKNOWN`, `1 RATE_LIMITED`) | 30 | **0.9828** ($57/58$, `[0.9086, 0.9970]`) | **1.0000** ($57/57$, `[0.9369, 1.0000]`) | **0.9667** ($58/60$, `[0.8864, 0.9908]`) | **0.9500** ($57/60$, `[0.8630, 0.9829]`) | **0.9500** ($57/60$, `[0.8630, 0.9829]`) |
+
+- **Gate N.3 Check**:
+  - Email Resolved Accuracy $= \mathbf{0.9815} \ge 0.97$ (**PASS**; Strict Answered Accuracy $= \mathbf{1.0000}$).
+  - Username Resolved Accuracy $= \mathbf{0.9828} \ge 0.97$ (**PASS**; Strict Answered Accuracy $= \mathbf{1.0000}$).
+  - Remaining non-resolved items are strictly upstream Cloudflare Turnstile HTTP `403` challenges (`vimeo`, `atlassian`, `rubygems`, `wikidata` $\rightarrow$ `UNKNOWN`) and HTTP `429` rate limits (`github_search`, `sourceforge` $\rightarrow$ `RATE_LIMITED`).
+
+
 
 
 

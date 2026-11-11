@@ -1,0 +1,1512 @@
+{
+  "gate_n0_audit_hash_verification": {
+    "db_path": "C:\\Users\\rabig\\OneDrive\\Desktop\\claude code project\\my-new-project\\artifacts\\phase_m3_live_audit.db",
+    "all_hashes_64_hex_chars": true,
+    "row_checks": [
+      {
+        "id": 1,
+        "target": "stranger@unscoped-external.org",
+        "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+        "prev_hash_len": 64,
+        "prev_hash_is_64_hex": true,
+        "event_hash": "6b7b98f4bf7ce3c8fc728a74e413458ffd384b8497f3b65174c7d6831e91db5e",
+        "event_hash_len": 64,
+        "event_hash_is_64_hex": true
+      },
+      {
+        "id": 2,
+        "target": "unscoped_target_handle_99",
+        "prev_hash": "6b7b98f4bf7ce3c8fc728a74e413458ffd384b8497f3b65174c7d6831e91db5e",
+        "prev_hash_len": 64,
+        "prev_hash_is_64_hex": true,
+        "event_hash": "5a8482098fd8bd3f0eb974e8fbc03088aca489385784f4053aa418cebe3aeb2a",
+        "event_hash_len": 64,
+        "event_hash_is_64_hex": true
+      }
+    ],
+    "verify_chain_output": {
+      "status": "INTEGRITY_VERIFIED",
+      "valid": true,
+      "verified": true,
+      "verification_state": "UNANCHORED",
+      "anchored": false,
+      "total_events": 2,
+      "verified_events": 2,
+      "expected_events": null,
+      "first_id": 1,
+      "last_id": 2,
+      "head_hash": "5a8482098fd8bd3f0eb974e8fbc03088aca489385784f4053aa418cebe3aeb2a",
+      "message": "All 2 events are internally consistent, but no trusted chain anchor exists, so truncation cannot be excluded.",
+      "error": null,
+      "broken_at_id": null,
+      "failure": null,
+      "checks": {
+        "hashes": true,
+        "previous_hash_links": true,
+        "sequence_continuity": true,
+        "canonical_serialization": true,
+        "anchor": false
+      },
+      "anchor": {
+        "present": false,
+        "status": "MISSING",
+        "head_hash": null,
+        "last_id": null,
+        "event_count": null,
+        "sealed_at": null
+      }
+    },
+    "explanation": "Both row id=1 ('6b7b98f4bf7ce3c8fc728a74e413458ffd384b8497f3b65174c7d6831e91db5e') and row id=2 ('5a8482098fd8bd3f0eb974e8fbc03088aca489385784f4053aa418cebe3aeb2a') are 64 hex characters in SQLite and JSON (66 chars only if surrounding JSON quotes are counted)."
+  },
+  "gate_n1_and_n2_targeted_verification": {
+    "gate_n1_false_positive_checks": {
+      "bitbucket_negative_probe_state": "NOT_FOUND",
+      "bitbucket_negative_probe_reason": "Matched non-existence availability token 'free_to_register' (HTTP 200)",
+      "medium_negative_probe_state": "NOT_FOUND",
+      "medium_negative_probe_reason": "Matched soft-404 non-existence copy 'writer profile is unavailable' (HTTP 200)",
+      "zero_fp_confirmed": true
+    },
+    "gate_n2_csr_headless_recovery": {
+      "npmjs_positive_recovered": {
+        "platform_id": "npmjs",
+        "platform_name": "npm Registry",
+        "category": "dev",
+        "state": "EXISTS",
+        "http_status": 200,
+        "reason": "Matched positive existence signature 'already exists' (HTTP 200) [recovered via headless CSR fallback]",
+        "attempts": 1,
+        "circuit_state": "CLOSED",
+        "fast_path_latency_ms": 0.002,
+        "headless_fallback_used": true,
+        "headless_latency_ms": 26497.441,
+        "timestamp": "2026-11-11T10:17:11.825244+00:00"
+      },
+      "npmjs_negative_recovered": {
+        "platform_id": "npmjs",
+        "platform_name": "npm Registry",
+        "category": "dev",
+        "state": "NOT_FOUND",
+        "http_status": 200,
+        "reason": "Matched non-existence availability token 'free_to_register' (HTTP 200) [recovered via headless CSR fallback]",
+        "attempts": 1,
+        "circuit_state": "CLOSED",
+        "fast_path_latency_ms": 0.011,
+        "headless_fallback_used": true,
+        "headless_latency_ms": 2738.684,
+        "timestamp": "2026-11-11T10:17:14.565300+00:00"
+      },
+      "patreon_positive_recovered": {
+        "platform_id": "patreon",
+        "platform_name": "Patreon",
+        "category": "creator",
+        "profile_url": "https://www.patreon.com/torvalds",
+        "state": "EXISTS",
+        "http_status": 200,
+        "reason": "Matched positive identity signature 'patreon.com/{username}' (HTTP 200) [recovered via headless CSR fallback]",
+        "fast_path_latency_ms": 0.02,
+        "headless_fallback_used": true,
+        "headless_latency_ms": 1469.19,
+        "timestamp": "2026-11-11T10:17:16.035583+00:00"
+      },
+      "patreon_negative_recovered": {
+        "platform_id": "patreon",
+        "platform_name": "Patreon",
+        "category": "creator",
+        "profile_url": "https://www.patreon.com/redloop_nonexistent_canary_bravo",
+        "state": "NOT_FOUND",
+        "http_status": 200,
+        "reason": "Matched soft-404 non-existence copy 'page not found' (HTTP 200) [recovered via headless CSR fallback]",
+        "fast_path_latency_ms": 0.001,
+        "headless_fallback_used": true,
+        "headless_latency_ms": 1184.157,
+        "timestamp": "2026-11-11T10:17:17.220580+00:00"
+      },
+      "fast_path_mean_latency_ms": 0.009,
+      "slow_path_playwright_mean_latency_ms": 7972.368,
+      "slow_path_playwright_latencies_ms": [
+        26497.441,
+        2738.684,
+        1469.19,
+        1184.157
+      ]
+    }
+  },
+  "gate_n3_three_metric_holdout_rescore": {
+    "email_n56": {
+      "total_pairs": 56,
+      "tp": 25,
+      "fp": 0,
+      "fn": 3,
+      "tn": 28,
+      "precision": 1.0,
+      "precision_wilson_95_ci": [
+        0.8668,
+        1.0
+      ],
+      "recall": 0.8929,
+      "recall_wilson_95_ci": [
+        0.728,
+        0.9629
+      ],
+      "f1": 0.9434,
+      "resolved_accuracy": 0.9815,
+      "resolved_accuracy_wilson_95_ci": [
+        0.9023,
+        0.9967
+      ],
+      "resolved_k": 53,
+      "resolved_n": 54,
+      "strict_answered_accuracy": 1.0,
+      "strict_answered_wilson_95_ci": [
+        0.9324,
+        1.0
+      ],
+      "strict_answered_n": 53,
+      "coverage": 0.9643,
+      "coverage_wilson_95_ci": [
+        0.8788,
+        0.9902
+      ],
+      "strict_answered_coverage": 0.9464,
+      "strict_answered_coverage_wilson_95_ci": [
+        0.8539,
+        0.9816
+      ],
+      "overall_accuracy": 0.9464,
+      "overall_accuracy_wilson_95_ci": [
+        0.8539,
+        0.9816
+      ],
+      "unknown_count": 2,
+      "rate_limited_count": 1,
+      "items": [
+        {
+          "email": "rabi.operator@redloop.io",
+          "platform_id": "gravatar",
+          "expected_exists": true,
+          "predicted_state": "EXISTS",
+          "outcome": "TP",
+          "reason": "Matched positive existence signature '\"entry\"' (HTTP 200)",
+          "fast_path_latency_ms": 0.003,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "email": "nonexistent.probe.100@redloop.io",
+          "platform_id": "gravatar",
+          "expected_exists": false,
+          "predicted_state": "NOT_FOUND",
+          "outcome": "TN",
+          "reason": "Matched not-found body signature 'User not found' (HTTP 404)",
+          "fast_path_latency_ms": 0.002,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "email": "alice.sec@redloop.io",
+          "platform_id": "github_search",
+          "expected_exists": true,
+          "predicted_state": "RATE_LIMITED",
+          "outcome": "FN",
+          "reason": "HTTP 429 rate limit returned by GitHub Public Commits",
+          "fast_path_latency_ms": 0.001,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "email": "nonexistent.probe.101@redloop.io",
+          "platform_id": "github_search",
+          "expected_exists": false,
+          "predicted_state": "NOT_FOUND",
+          "outcome": "TN",
+          "reason": "Matched not-found body signature '\"total_count\":0' (HTTP 200)",
+          "fast_path_latency_ms": 0.001,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "email": "rabi.operator@redloop.io",
+          "platform_id": "gitlab",
+          "expected_exists": true,
+          "predicted_state": "EXISTS",
+          "outcome": "TP",
+          "reason": "Matched positive existence signature '\"exists\":true' (HTTP 200)",
+          "fast_path_latency_ms": 0.001,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "email": "nonexistent.probe.102@redloop.io",
+          "platform_id": "gitlab",
+          "expected_exists": false,
+          "predicted_state": "NOT_FOUND",
+          "outcome": "TN",
+          "reason": "Matched non-existence availability token '\"exists\":false' (HTTP 404)",
+          "fast_path_latency_ms": 0.001,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "email": "alice.sec@redloop.io",
+          "platform_id": "bitbucket",
+          "expected_exists": true,
+          "predicted_state": "EXISTS",
+          "outcome": "TP",
+          "reason": "Matched positive existence signature 'already registered' (HTTP 200)",
+          "fast_path_latency_ms": 0.0,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "email": "nonexistent.probe.103@redloop.io",
+          "platform_id": "bitbucket",
+          "expected_exists": false,
+          "predicted_state": "NOT_FOUND",
+          "outcome": "TN",
+          "reason": "Matched non-existence availability token 'address_is_free_for_registration' (HTTP 200)",
+          "fast_path_latency_ms": 0.001,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "email": "rabi.operator@redloop.io",
+          "platform_id": "dockerhub",
+          "expected_exists": true,
+          "predicted_state": "EXISTS",
+          "outcome": "TP",
+          "reason": "Matched positive existence signature 'already in use' (HTTP 200)",
+          "fast_path_latency_ms": 0.001,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "email": "nonexistent.probe.104@redloop.io",
+          "platform_id": "dockerhub",
+          "expected_exists": false,
+          "predicted_state": "NOT_FOUND",
+          "outcome": "TN",
+          "reason": "Matched not-found body signature 'available' (HTTP 200)",
+          "fast_path_latency_ms": 0.0,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "email": "alice.sec@redloop.io",
+          "platform_id": "pypi",
+          "expected_exists": true,
+          "predicted_state": "EXISTS",
+          "outcome": "TP",
+          "reason": "Matched positive existence signature 'email address is already' (HTTP 200)",
+          "fast_path_latency_ms": 0.001,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "email": "nonexistent.probe.105@redloop.io",
+          "platform_id": "pypi",
+          "expected_exists": false,
+          "predicted_state": "NOT_FOUND",
+          "outcome": "TN",
+          "reason": "Matched not-found body signature 'available' (HTTP 404)",
+          "fast_path_latency_ms": 0.001,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "email": "rabi.operator@redloop.io",
+          "platform_id": "npmjs",
+          "expected_exists": true,
+          "predicted_state": "EXISTS",
+          "outcome": "TP",
+          "reason": "Matched positive existence signature 'already exists' (HTTP 200) [recovered via headless CSR fallback]",
+          "fast_path_latency_ms": 0.001,
+          "headless_fallback_used": true,
+          "headless_latency_ms": 15.261
+        },
+        {
+          "email": "nonexistent.probe.106@redloop.io",
+          "platform_id": "npmjs",
+          "expected_exists": false,
+          "predicted_state": "NOT_FOUND",
+          "outcome": "TN",
+          "reason": "Matched not-found body signature 'available' (HTTP 404)",
+          "fast_path_latency_ms": 0.002,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "email": "alice.sec@redloop.io",
+          "platform_id": "rubygems",
+          "expected_exists": true,
+          "predicted_state": "EXISTS",
+          "outcome": "TP",
+          "reason": "Matched positive existence signature '\"name\":' (HTTP 200)",
+          "fast_path_latency_ms": 0.001,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "email": "nonexistent.probe.107@redloop.io",
+          "platform_id": "rubygems",
+          "expected_exists": false,
+          "predicted_state": "NOT_FOUND",
+          "outcome": "TN",
+          "reason": "Matched not-found body signature 'Owner could not be found' (HTTP 404)",
+          "fast_path_latency_ms": 0.001,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "email": "rabi.operator@redloop.io",
+          "platform_id": "crates_io",
+          "expected_exists": true,
+          "predicted_state": "EXISTS",
+          "outcome": "TP",
+          "reason": "Matched positive existence signature '\"users\":[{' (HTTP 200)",
+          "fast_path_latency_ms": 0.0,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "email": "nonexistent.probe.108@redloop.io",
+          "platform_id": "crates_io",
+          "expected_exists": false,
+          "predicted_state": "NOT_FOUND",
+          "outcome": "TN",
+          "reason": "Matched not-found body signature '\"users\":[]' (HTTP 404)",
+          "fast_path_latency_ms": 0.0,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "email": "alice.sec@redloop.io",
+          "platform_id": "launchpad",
+          "expected_exists": true,
+          "predicted_state": "EXISTS",
+          "outcome": "TP",
+          "reason": "Matched positive existence signature '\"self_link\"' (HTTP 200)",
+          "fast_path_latency_ms": 0.0,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "email": "nonexistent.probe.109@redloop.io",
+          "platform_id": "launchpad",
+          "expected_exists": false,
+          "predicted_state": "NOT_FOUND",
+          "outcome": "TN",
+          "reason": "Matched not-found body signature 'null' (HTTP 404)",
+          "fast_path_latency_ms": 0.0,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "email": "rabi.operator@redloop.io",
+          "platform_id": "wordpress",
+          "expected_exists": true,
+          "predicted_state": "EXISTS",
+          "outcome": "TP",
+          "reason": "Matched positive existence signature '\"passwordless\"' (HTTP 200)",
+          "fast_path_latency_ms": 0.0,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "email": "nonexistent.probe.110@redloop.io",
+          "platform_id": "wordpress",
+          "expected_exists": false,
+          "predicted_state": "NOT_FOUND",
+          "outcome": "TN",
+          "reason": "Matched not-found body signature 'unknown_user' (HTTP 404)",
+          "fast_path_latency_ms": 0.0,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "email": "alice.sec@redloop.io",
+          "platform_id": "firefox_accounts",
+          "expected_exists": true,
+          "predicted_state": "EXISTS",
+          "outcome": "TP",
+          "reason": "Matched positive existence signature '\"exists\":true' (HTTP 200)",
+          "fast_path_latency_ms": 0.001,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "email": "nonexistent.probe.111@redloop.io",
+          "platform_id": "firefox_accounts",
+          "expected_exists": false,
+          "predicted_state": "NOT_FOUND",
+          "outcome": "TN",
+          "reason": "Matched non-existence availability token '\"exists\":false' (HTTP 200)",
+          "fast_path_latency_ms": 0.0,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "email": "rabi.operator@redloop.io",
+          "platform_id": "spotify",
+          "expected_exists": true,
+          "predicted_state": "EXISTS",
+          "outcome": "TP",
+          "reason": "Matched positive existence signature '\"status\":20' (HTTP 200)",
+          "fast_path_latency_ms": 0.0,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "email": "nonexistent.probe.112@redloop.io",
+          "platform_id": "spotify",
+          "expected_exists": false,
+          "predicted_state": "NOT_FOUND",
+          "outcome": "TN",
+          "reason": "Matched not-found body signature '\"status\":1' (HTTP 200)",
+          "fast_path_latency_ms": 0.002,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "email": "alice.sec@redloop.io",
+          "platform_id": "duolingo",
+          "expected_exists": true,
+          "predicted_state": "EXISTS",
+          "outcome": "TP",
+          "reason": "Matched positive existence signature '\"users\":[{' (HTTP 200)",
+          "fast_path_latency_ms": 0.001,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "email": "nonexistent.probe.113@redloop.io",
+          "platform_id": "duolingo",
+          "expected_exists": false,
+          "predicted_state": "NOT_FOUND",
+          "outcome": "TN",
+          "reason": "Matched not-found body signature '\"users\":[]' (HTTP 200)",
+          "fast_path_latency_ms": 0.001,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "email": "rabi.operator@redloop.io",
+          "platform_id": "vimeo",
+          "expected_exists": true,
+          "predicted_state": "UNKNOWN",
+          "outcome": "FN",
+          "reason": "Ambiguous HTTP 403 response; refusing to guess",
+          "fast_path_latency_ms": 0.001,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "email": "nonexistent.probe.114@redloop.io",
+          "platform_id": "vimeo",
+          "expected_exists": false,
+          "predicted_state": "NOT_FOUND",
+          "outcome": "TN",
+          "reason": "Matched not-found body signature 'available' (HTTP 404)",
+          "fast_path_latency_ms": 0.001,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "email": "alice.sec@redloop.io",
+          "platform_id": "keybase",
+          "expected_exists": true,
+          "predicted_state": "EXISTS",
+          "outcome": "TP",
+          "reason": "Matched positive existence signature '\"them\":[{' (HTTP 200)",
+          "fast_path_latency_ms": 0.001,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "email": "nonexistent.probe.115@redloop.io",
+          "platform_id": "keybase",
+          "expected_exists": false,
+          "predicted_state": "NOT_FOUND",
+          "outcome": "TN",
+          "reason": "Matched not-found body signature '\"them\":[]' (HTTP 200)",
+          "fast_path_latency_ms": 0.0,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "email": "rabi.operator@redloop.io",
+          "platform_id": "pgp_openpgp",
+          "expected_exists": true,
+          "predicted_state": "EXISTS",
+          "outcome": "TP",
+          "reason": "Matched positive existence signature '-----BEGIN PGP PUBLIC KEY BLOCK-----' (HTTP 200)",
+          "fast_path_latency_ms": 0.001,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "email": "nonexistent.probe.116@redloop.io",
+          "platform_id": "pgp_openpgp",
+          "expected_exists": false,
+          "predicted_state": "NOT_FOUND",
+          "outcome": "TN",
+          "reason": "Matched not-found body signature 'No key found' (HTTP 404)",
+          "fast_path_latency_ms": 0.0,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "email": "alice.sec@redloop.io",
+          "platform_id": "pgp_ubuntu",
+          "expected_exists": true,
+          "predicted_state": "EXISTS",
+          "outcome": "TP",
+          "reason": "Matched positive existence signature '-----BEGIN PGP PUBLIC KEY BLOCK-----' (HTTP 200)",
+          "fast_path_latency_ms": 0.0,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "email": "nonexistent.probe.117@redloop.io",
+          "platform_id": "pgp_ubuntu",
+          "expected_exists": false,
+          "predicted_state": "NOT_FOUND",
+          "outcome": "TN",
+          "reason": "Matched not-found body signature 'Not Found' (HTTP 404)",
+          "fast_path_latency_ms": 0.0,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "email": "rabi.operator@redloop.io",
+          "platform_id": "atlassian",
+          "expected_exists": true,
+          "predicted_state": "UNKNOWN",
+          "outcome": "FN",
+          "reason": "Ambiguous HTTP 403 response; refusing to guess",
+          "fast_path_latency_ms": 0.0,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "email": "nonexistent.probe.118@redloop.io",
+          "platform_id": "atlassian",
+          "expected_exists": false,
+          "predicted_state": "NOT_FOUND",
+          "outcome": "TN",
+          "reason": "Matched non-existence availability token '\"exists\":false' (HTTP 404)",
+          "fast_path_latency_ms": 0.003,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "email": "alice.sec@redloop.io",
+          "platform_id": "adobe",
+          "expected_exists": true,
+          "predicted_state": "EXISTS",
+          "outcome": "TP",
+          "reason": "Matched positive existence signature '\"accountType\"' (HTTP 200)",
+          "fast_path_latency_ms": 0.0,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "email": "nonexistent.probe.119@redloop.io",
+          "platform_id": "adobe",
+          "expected_exists": false,
+          "predicted_state": "NOT_FOUND",
+          "outcome": "TN",
+          "reason": "Matched not-found body signature '[]' (HTTP 200)",
+          "fast_path_latency_ms": 0.001,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "email": "rabi.operator@redloop.io",
+          "platform_id": "pinterest",
+          "expected_exists": true,
+          "predicted_state": "EXISTS",
+          "outcome": "TP",
+          "reason": "Matched positive existence signature '\"data\":true' (HTTP 200)",
+          "fast_path_latency_ms": 0.0,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "email": "nonexistent.probe.120@redloop.io",
+          "platform_id": "pinterest",
+          "expected_exists": false,
+          "predicted_state": "NOT_FOUND",
+          "outcome": "TN",
+          "reason": "Matched not-found body signature '\"data\":false' (HTTP 200)",
+          "fast_path_latency_ms": 0.0,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "email": "alice.sec@redloop.io",
+          "platform_id": "lastfm",
+          "expected_exists": true,
+          "predicted_state": "EXISTS",
+          "outcome": "TP",
+          "reason": "Matched positive existence signature 'already registered' (HTTP 200)",
+          "fast_path_latency_ms": 0.0,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "email": "nonexistent.probe.121@redloop.io",
+          "platform_id": "lastfm",
+          "expected_exists": false,
+          "predicted_state": "NOT_FOUND",
+          "outcome": "TN",
+          "reason": "Matched not-found body signature '\"valid\":true' (HTTP 200)",
+          "fast_path_latency_ms": 0.001,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "email": "rabi.operator@redloop.io",
+          "platform_id": "eventbrite",
+          "expected_exists": true,
+          "predicted_state": "EXISTS",
+          "outcome": "TP",
+          "reason": "Matched positive existence signature '\"exists\":true' (HTTP 200)",
+          "fast_path_latency_ms": 0.001,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "email": "nonexistent.probe.122@redloop.io",
+          "platform_id": "eventbrite",
+          "expected_exists": false,
+          "predicted_state": "NOT_FOUND",
+          "outcome": "TN",
+          "reason": "Matched non-existence availability token '\"exists\":false' (HTTP 200)",
+          "fast_path_latency_ms": 0.0,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "email": "alice.sec@redloop.io",
+          "platform_id": "strava",
+          "expected_exists": true,
+          "predicted_state": "EXISTS",
+          "outcome": "TP",
+          "reason": "Matched positive existence signature 'false' (HTTP 200)",
+          "fast_path_latency_ms": 0.0,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "email": "nonexistent.probe.123@redloop.io",
+          "platform_id": "strava",
+          "expected_exists": false,
+          "predicted_state": "NOT_FOUND",
+          "outcome": "TN",
+          "reason": "Matched not-found body signature 'true' (HTTP 200)",
+          "fast_path_latency_ms": 0.0,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "email": "rabi.operator@redloop.io",
+          "platform_id": "trello",
+          "expected_exists": true,
+          "predicted_state": "EXISTS",
+          "outcome": "TP",
+          "reason": "Matched positive existence signature '\"id\":' (HTTP 200)",
+          "fast_path_latency_ms": 0.0,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "email": "nonexistent.probe.124@redloop.io",
+          "platform_id": "trello",
+          "expected_exists": false,
+          "predicted_state": "NOT_FOUND",
+          "outcome": "TN",
+          "reason": "Matched not-found body signature '[]' (HTTP 200)",
+          "fast_path_latency_ms": 0.001,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "email": "alice.sec@redloop.io",
+          "platform_id": "protonmail",
+          "expected_exists": true,
+          "predicted_state": "EXISTS",
+          "outcome": "TP",
+          "reason": "Matched positive existence signature '-----BEGIN PGP PUBLIC KEY BLOCK-----' (HTTP 200)",
+          "fast_path_latency_ms": 0.0,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "email": "nonexistent.probe.125@redloop.io",
+          "platform_id": "protonmail",
+          "expected_exists": false,
+          "predicted_state": "NOT_FOUND",
+          "outcome": "TN",
+          "reason": "Matched not-found body signature 'No key found' (HTTP 404)",
+          "fast_path_latency_ms": 0.0,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "email": "rabi.operator@redloop.io",
+          "platform_id": "archive_org",
+          "expected_exists": true,
+          "predicted_state": "EXISTS",
+          "outcome": "TP",
+          "reason": "Matched positive existence signature '\"exists\":true' (HTTP 200)",
+          "fast_path_latency_ms": 0.001,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "email": "nonexistent.probe.126@redloop.io",
+          "platform_id": "archive_org",
+          "expected_exists": false,
+          "predicted_state": "NOT_FOUND",
+          "outcome": "TN",
+          "reason": "Matched non-existence availability token 'address_is_free_for_registration' (HTTP 200)",
+          "fast_path_latency_ms": 0.0,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "email": "alice.sec@redloop.io",
+          "platform_id": "issuu",
+          "expected_exists": true,
+          "predicted_state": "EXISTS",
+          "outcome": "TP",
+          "reason": "Matched positive existence signature '\"status\":\"in_use\"' (HTTP 200)",
+          "fast_path_latency_ms": 0.0,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "email": "nonexistent.probe.127@redloop.io",
+          "platform_id": "issuu",
+          "expected_exists": false,
+          "predicted_state": "NOT_FOUND",
+          "outcome": "TN",
+          "reason": "Matched not-found body signature '\"status\":\"available\"' (HTTP 200)",
+          "fast_path_latency_ms": 0.0,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        }
+      ]
+    },
+    "username_n60": {
+      "total_pairs": 60,
+      "tp": 27,
+      "fp": 0,
+      "fn": 3,
+      "tn": 30,
+      "precision": 1.0,
+      "precision_wilson_95_ci": [
+        0.8754,
+        1.0
+      ],
+      "recall": 0.9,
+      "recall_wilson_95_ci": [
+        0.7438,
+        0.9654
+      ],
+      "f1": 0.9474,
+      "resolved_accuracy": 0.9828,
+      "resolved_accuracy_wilson_95_ci": [
+        0.9086,
+        0.997
+      ],
+      "resolved_k": 57,
+      "resolved_n": 58,
+      "strict_answered_accuracy": 1.0,
+      "strict_answered_wilson_95_ci": [
+        0.9369,
+        1.0
+      ],
+      "strict_answered_n": 57,
+      "coverage": 0.9667,
+      "coverage_wilson_95_ci": [
+        0.8864,
+        0.9908
+      ],
+      "strict_answered_coverage": 0.95,
+      "strict_answered_coverage_wilson_95_ci": [
+        0.863,
+        0.9829
+      ],
+      "overall_accuracy": 0.95,
+      "overall_accuracy_wilson_95_ci": [
+        0.863,
+        0.9829
+      ],
+      "unknown_count": 2,
+      "rate_limited_count": 1,
+      "items": [
+        {
+          "username": "torvalds",
+          "platform_id": "github",
+          "expected_exists": true,
+          "predicted_state": "EXISTS",
+          "outcome": "TP",
+          "reason": "Matched positive identity signature 'vcard-names' (HTTP 200)",
+          "fast_path_latency_ms": 0.002,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "username": "rabi_sec_ops",
+          "platform_id": "gitlab",
+          "expected_exists": true,
+          "predicted_state": "EXISTS",
+          "outcome": "TP",
+          "reason": "Matched positive identity signature 'user-profile' (HTTP 200)",
+          "fast_path_latency_ms": 0.001,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "username": "torvalds",
+          "platform_id": "bitbucket",
+          "expected_exists": true,
+          "predicted_state": "EXISTS",
+          "outcome": "TP",
+          "reason": "Matched positive identity signature 'bitbucket.org' (HTTP 200)",
+          "fast_path_latency_ms": 0.001,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "username": "rabi_sec_ops",
+          "platform_id": "reddit",
+          "expected_exists": true,
+          "predicted_state": "EXISTS",
+          "outcome": "TP",
+          "reason": "Matched positive identity signature '\"kind\": \"t2\"' (HTTP 200)",
+          "fast_path_latency_ms": 0.0,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "username": "torvalds",
+          "platform_id": "hackernews",
+          "expected_exists": true,
+          "predicted_state": "EXISTS",
+          "outcome": "TP",
+          "reason": "Matched positive identity signature '\"id\":' (HTTP 200) [recovered via headless CSR fallback]",
+          "fast_path_latency_ms": 0.0,
+          "headless_fallback_used": true,
+          "headless_latency_ms": 15.397
+        },
+        {
+          "username": "rabi_sec_ops",
+          "platform_id": "keybase",
+          "expected_exists": true,
+          "predicted_state": "EXISTS",
+          "outcome": "TP",
+          "reason": "Matched positive identity signature 'profile-heading' (HTTP 200)",
+          "fast_path_latency_ms": 0.004,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "username": "torvalds",
+          "platform_id": "dockerhub",
+          "expected_exists": true,
+          "predicted_state": "EXISTS",
+          "outcome": "TP",
+          "reason": "Matched positive identity signature '\"username\":' (HTTP 200)",
+          "fast_path_latency_ms": 0.001,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "username": "rabi_sec_ops",
+          "platform_id": "pypi",
+          "expected_exists": true,
+          "predicted_state": "EXISTS",
+          "outcome": "TP",
+          "reason": "Matched positive identity signature 'profile-section' (HTTP 200)",
+          "fast_path_latency_ms": 0.001,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "username": "torvalds",
+          "platform_id": "npmjs",
+          "expected_exists": true,
+          "predicted_state": "EXISTS",
+          "outcome": "TP",
+          "reason": "Matched positive identity signature '~{username}' (HTTP 200)",
+          "fast_path_latency_ms": 0.001,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "username": "rabi_sec_ops",
+          "platform_id": "rubygems",
+          "expected_exists": true,
+          "predicted_state": "UNKNOWN",
+          "outcome": "FN",
+          "reason": "Ambiguous HTTP 403; refusing to guess",
+          "fast_path_latency_ms": 0.001,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "username": "torvalds",
+          "platform_id": "crates_io",
+          "expected_exists": true,
+          "predicted_state": "EXISTS",
+          "outcome": "TP",
+          "reason": "Matched positive identity signature '\"user\":' (HTTP 200)",
+          "fast_path_latency_ms": 0.001,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "username": "rabi_sec_ops",
+          "platform_id": "huggingface",
+          "expected_exists": true,
+          "predicted_state": "EXISTS",
+          "outcome": "TP",
+          "reason": "Matched positive identity signature 'huggingface.co' (HTTP 200)",
+          "fast_path_latency_ms": 0.001,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "username": "torvalds",
+          "platform_id": "devto",
+          "expected_exists": true,
+          "predicted_state": "EXISTS",
+          "outcome": "TP",
+          "reason": "Matched positive identity signature 'profile-header' (HTTP 200)",
+          "fast_path_latency_ms": 0.0,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "username": "rabi_sec_ops",
+          "platform_id": "medium",
+          "expected_exists": true,
+          "predicted_state": "EXISTS",
+          "outcome": "TP",
+          "reason": "Matched positive identity signature 'property=\"profile:username\"' (HTTP 200)",
+          "fast_path_latency_ms": 0.001,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "username": "torvalds",
+          "platform_id": "hashnode",
+          "expected_exists": true,
+          "predicted_state": "EXISTS",
+          "outcome": "TP",
+          "reason": "Matched positive identity signature 'hashnode.com/@' (HTTP 200)",
+          "fast_path_latency_ms": 0.001,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "username": "rabi_sec_ops",
+          "platform_id": "kaggle",
+          "expected_exists": true,
+          "predicted_state": "EXISTS",
+          "outcome": "TP",
+          "reason": "Matched positive identity signature 'kaggle.com' (HTTP 200) [recovered via headless CSR fallback]",
+          "fast_path_latency_ms": 0.001,
+          "headless_fallback_used": true,
+          "headless_latency_ms": 15.273
+        },
+        {
+          "username": "torvalds",
+          "platform_id": "replit",
+          "expected_exists": true,
+          "predicted_state": "EXISTS",
+          "outcome": "TP",
+          "reason": "Matched positive identity signature 'replit.com/@' (HTTP 200)",
+          "fast_path_latency_ms": 0.003,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "username": "rabi_sec_ops",
+          "platform_id": "codepen",
+          "expected_exists": true,
+          "predicted_state": "EXISTS",
+          "outcome": "TP",
+          "reason": "Matched positive identity signature 'profile-username' (HTTP 200)",
+          "fast_path_latency_ms": 0.001,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "username": "torvalds",
+          "platform_id": "glitch",
+          "expected_exists": true,
+          "predicted_state": "EXISTS",
+          "outcome": "TP",
+          "reason": "Matched positive identity signature '\"id\":' (HTTP 200)",
+          "fast_path_latency_ms": 0.001,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "username": "rabi_sec_ops",
+          "platform_id": "sourceforge",
+          "expected_exists": true,
+          "predicted_state": "RATE_LIMITED",
+          "outcome": "FN",
+          "reason": "HTTP 429 rate limit on SourceForge",
+          "fast_path_latency_ms": 0.001,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "username": "torvalds",
+          "platform_id": "launchpad",
+          "expected_exists": true,
+          "predicted_state": "EXISTS",
+          "outcome": "TP",
+          "reason": "Matched positive identity signature 'launchpad.net/~' (HTTP 200)",
+          "fast_path_latency_ms": 0.0,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "username": "rabi_sec_ops",
+          "platform_id": "archlinux",
+          "expected_exists": true,
+          "predicted_state": "EXISTS",
+          "outcome": "TP",
+          "reason": "Matched positive identity signature 'User profile' (HTTP 200)",
+          "fast_path_latency_ms": 0.001,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "username": "torvalds",
+          "platform_id": "debian_salsa",
+          "expected_exists": true,
+          "predicted_state": "EXISTS",
+          "outcome": "TP",
+          "reason": "Matched positive identity signature 'user-profile' (HTTP 200)",
+          "fast_path_latency_ms": 0.0,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "username": "rabi_sec_ops",
+          "platform_id": "fedora",
+          "expected_exists": true,
+          "predicted_state": "EXISTS",
+          "outcome": "TP",
+          "reason": "Matched positive identity signature 'User:{username}' (HTTP 200) [recovered via headless CSR fallback]",
+          "fast_path_latency_ms": 0.001,
+          "headless_fallback_used": true,
+          "headless_latency_ms": 15.377
+        },
+        {
+          "username": "torvalds",
+          "platform_id": "gentoo",
+          "expected_exists": true,
+          "predicted_state": "EXISTS",
+          "outcome": "TP",
+          "reason": "Matched positive identity signature 'User:{username}' (HTTP 200)",
+          "fast_path_latency_ms": 0.003,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "username": "rabi_sec_ops",
+          "platform_id": "freebsd",
+          "expected_exists": true,
+          "predicted_state": "EXISTS",
+          "outcome": "TP",
+          "reason": "Matched positive identity signature 'User Profile' (HTTP 200)",
+          "fast_path_latency_ms": 0.001,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "username": "torvalds",
+          "platform_id": "wikipedia",
+          "expected_exists": true,
+          "predicted_state": "EXISTS",
+          "outcome": "TP",
+          "reason": "Matched positive identity signature 'User:{username}' (HTTP 200)",
+          "fast_path_latency_ms": 0.0,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "username": "rabi_sec_ops",
+          "platform_id": "wikidata",
+          "expected_exists": true,
+          "predicted_state": "UNKNOWN",
+          "outcome": "FN",
+          "reason": "Ambiguous HTTP 403; refusing to guess",
+          "fast_path_latency_ms": 0.001,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "username": "torvalds",
+          "platform_id": "archive_org",
+          "expected_exists": true,
+          "predicted_state": "EXISTS",
+          "outcome": "TP",
+          "reason": "Matched positive identity signature '@{username}' (HTTP 200)",
+          "fast_path_latency_ms": 0.0,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "username": "rabi_sec_ops",
+          "platform_id": "mastodon_social",
+          "expected_exists": true,
+          "predicted_state": "EXISTS",
+          "outcome": "TP",
+          "reason": "Matched positive identity signature 'profile' (HTTP 200)",
+          "fast_path_latency_ms": 0.001,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "username": "unregistered_handle_m1_30",
+          "platform_id": "bluesky",
+          "expected_exists": false,
+          "predicted_state": "NOT_FOUND",
+          "outcome": "TN",
+          "reason": "Matched not-found body signature 'Profile not found' (HTTP 200)",
+          "fast_path_latency_ms": 0.001,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "username": "unregistered_handle_m1_31",
+          "platform_id": "twitch",
+          "expected_exists": false,
+          "predicted_state": "NOT_FOUND",
+          "outcome": "TN",
+          "reason": "Matched not-found body signature 'time machine' (HTTP 404)",
+          "fast_path_latency_ms": 0.001,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "username": "unregistered_handle_m1_32",
+          "platform_id": "vimeo",
+          "expected_exists": false,
+          "predicted_state": "NOT_FOUND",
+          "outcome": "TN",
+          "reason": "Matched soft-404 non-existence copy 'this handle is currently unassigned' (HTTP 200)",
+          "fast_path_latency_ms": 0.0,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "username": "unregistered_handle_m1_33",
+          "platform_id": "soundcloud",
+          "expected_exists": false,
+          "predicted_state": "NOT_FOUND",
+          "outcome": "TN",
+          "reason": "Matched not-found body signature 'We can't find that user' (HTTP 404)",
+          "fast_path_latency_ms": 0.0,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "username": "unregistered_handle_m1_34",
+          "platform_id": "bandcamp",
+          "expected_exists": false,
+          "predicted_state": "NOT_FOUND",
+          "outcome": "TN",
+          "reason": "Matched not-found body signature 'Sorry, that something isn't here' (HTTP 404)",
+          "fast_path_latency_ms": 0.001,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "username": "unregistered_handle_m1_35",
+          "platform_id": "mixcloud",
+          "expected_exists": false,
+          "predicted_state": "NOT_FOUND",
+          "outcome": "TN",
+          "reason": "Matched not-found body signature '\"type\": \"UserNotFoundException\"' (HTTP 200)",
+          "fast_path_latency_ms": 0.0,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "username": "unregistered_handle_m1_36",
+          "platform_id": "lastfm",
+          "expected_exists": false,
+          "predicted_state": "NOT_FOUND",
+          "outcome": "TN",
+          "reason": "Matched not-found body signature 'Page Not Found' (HTTP 404)",
+          "fast_path_latency_ms": 0.0,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "username": "unregistered_handle_m1_37",
+          "platform_id": "goodreads",
+          "expected_exists": false,
+          "predicted_state": "NOT_FOUND",
+          "outcome": "TN",
+          "reason": "Matched not-found body signature 'Page not found' (HTTP 404)",
+          "fast_path_latency_ms": 0.0,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "username": "unregistered_handle_m1_38",
+          "platform_id": "letterboxd",
+          "expected_exists": false,
+          "predicted_state": "NOT_FOUND",
+          "outcome": "TN",
+          "reason": "Matched not-found body signature 'Sorry, we can't find the page' (HTTP 404)",
+          "fast_path_latency_ms": 0.0,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "username": "unregistered_handle_m1_39",
+          "platform_id": "untappd",
+          "expected_exists": false,
+          "predicted_state": "NOT_FOUND",
+          "outcome": "TN",
+          "reason": "Matched not-found body signature 'We couldn't find that page' (HTTP 404)",
+          "fast_path_latency_ms": 0.0,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "username": "unregistered_handle_m1_40",
+          "platform_id": "strava",
+          "expected_exists": false,
+          "predicted_state": "NOT_FOUND",
+          "outcome": "TN",
+          "reason": "Matched not-found body signature 'Page Not Found' (HTTP 200)",
+          "fast_path_latency_ms": 0.0,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "username": "unregistered_handle_m1_41",
+          "platform_id": "chess_com",
+          "expected_exists": false,
+          "predicted_state": "NOT_FOUND",
+          "outcome": "TN",
+          "reason": "Matched soft-404 non-existence copy 'this handle is currently unassigned' (HTTP 200)",
+          "fast_path_latency_ms": 0.0,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "username": "unregistered_handle_m1_42",
+          "platform_id": "lichess",
+          "expected_exists": false,
+          "predicted_state": "NOT_FOUND",
+          "outcome": "TN",
+          "reason": "Matched not-found body signature 'Not found' (HTTP 404)",
+          "fast_path_latency_ms": 0.001,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "username": "unregistered_handle_m1_43",
+          "platform_id": "steam",
+          "expected_exists": false,
+          "predicted_state": "NOT_FOUND",
+          "outcome": "TN",
+          "reason": "Matched not-found body signature 'The specified profile could not be found' (HTTP 200)",
+          "fast_path_latency_ms": 0.0,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "username": "unregistered_handle_m1_44",
+          "platform_id": "speedrun",
+          "expected_exists": false,
+          "predicted_state": "NOT_FOUND",
+          "outcome": "TN",
+          "reason": "Matched not-found body signature 'could not be found' (HTTP 404)",
+          "fast_path_latency_ms": 0.0,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "username": "unregistered_handle_m1_45",
+          "platform_id": "itch_io",
+          "expected_exists": false,
+          "predicted_state": "NOT_FOUND",
+          "outcome": "TN",
+          "reason": "Matched not-found body signature 'Couldn't find that page' (HTTP 200)",
+          "fast_path_latency_ms": 0.0,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "username": "unregistered_handle_m1_46",
+          "platform_id": "behance",
+          "expected_exists": false,
+          "predicted_state": "NOT_FOUND",
+          "outcome": "TN",
+          "reason": "Matched not-found body signature 'Oops! We can't find that page' (HTTP 404)",
+          "fast_path_latency_ms": 0.0,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "username": "unregistered_handle_m1_47",
+          "platform_id": "dribbble",
+          "expected_exists": false,
+          "predicted_state": "NOT_FOUND",
+          "outcome": "TN",
+          "reason": "Matched not-found body signature 'Whoops, that page is gone' (HTTP 404)",
+          "fast_path_latency_ms": 0.0,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "username": "unregistered_handle_m1_48",
+          "platform_id": "deviantart",
+          "expected_exists": false,
+          "predicted_state": "NOT_FOUND",
+          "outcome": "TN",
+          "reason": "Matched not-found body signature 'Page Not Found' (HTTP 404)",
+          "fast_path_latency_ms": 0.0,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "username": "unregistered_handle_m1_49",
+          "platform_id": "artstation",
+          "expected_exists": false,
+          "predicted_state": "NOT_FOUND",
+          "outcome": "TN",
+          "reason": "Matched not-found body signature '404' (HTTP 404)",
+          "fast_path_latency_ms": 0.0,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "username": "unregistered_handle_m1_50",
+          "platform_id": "unsplash",
+          "expected_exists": false,
+          "predicted_state": "NOT_FOUND",
+          "outcome": "TN",
+          "reason": "Matched not-found body signature 'Page not found' (HTTP 200)",
+          "fast_path_latency_ms": 0.0,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "username": "unregistered_handle_m1_51",
+          "platform_id": "flickr",
+          "expected_exists": false,
+          "predicted_state": "NOT_FOUND",
+          "outcome": "TN",
+          "reason": "Matched not-found body signature 'This is not the page you're looking for' (HTTP 404)",
+          "fast_path_latency_ms": 0.0,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "username": "unregistered_handle_m1_52",
+          "platform_id": "500px",
+          "expected_exists": false,
+          "predicted_state": "NOT_FOUND",
+          "outcome": "TN",
+          "reason": "Matched not-found body signature '\"users\":[]' (HTTP 404)",
+          "fast_path_latency_ms": 0.001,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "username": "unregistered_handle_m1_53",
+          "platform_id": "pexels",
+          "expected_exists": false,
+          "predicted_state": "NOT_FOUND",
+          "outcome": "TN",
+          "reason": "Matched soft-404 non-existence copy 'this handle is currently unassigned' (HTTP 200)",
+          "fast_path_latency_ms": 0.0,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "username": "unregistered_handle_m1_54",
+          "platform_id": "pixabay",
+          "expected_exists": false,
+          "predicted_state": "NOT_FOUND",
+          "outcome": "TN",
+          "reason": "Matched not-found body signature 'Page not found' (HTTP 404)",
+          "fast_path_latency_ms": 0.0,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "username": "unregistered_handle_m1_55",
+          "platform_id": "giphy",
+          "expected_exists": false,
+          "predicted_state": "NOT_FOUND",
+          "outcome": "TN",
+          "reason": "Matched not-found body signature 'Oops! There's nothing here' (HTTP 200)",
+          "fast_path_latency_ms": 0.0,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "username": "unregistered_handle_m1_56",
+          "platform_id": "imgur",
+          "expected_exists": false,
+          "predicted_state": "NOT_FOUND",
+          "outcome": "TN",
+          "reason": "Matched not-found body signature '\"errors\":' (HTTP 404)",
+          "fast_path_latency_ms": 0.0,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "username": "unregistered_handle_m1_57",
+          "platform_id": "gravatar",
+          "expected_exists": false,
+          "predicted_state": "NOT_FOUND",
+          "outcome": "TN",
+          "reason": "Matched not-found body signature 'User not found' (HTTP 404)",
+          "fast_path_latency_ms": 0.001,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "username": "unregistered_handle_m1_58",
+          "platform_id": "aboutme",
+          "expected_exists": false,
+          "predicted_state": "NOT_FOUND",
+          "outcome": "TN",
+          "reason": "Matched not-found body signature 'Page Not Found' (HTTP 404)",
+          "fast_path_latency_ms": 0.0,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        },
+        {
+          "username": "unregistered_handle_m1_59",
+          "platform_id": "linktree",
+          "expected_exists": false,
+          "predicted_state": "NOT_FOUND",
+          "outcome": "TN",
+          "reason": "Matched not-found body signature 'The page you\u2019re looking for doesn\u2019t exist' (HTTP 404)",
+          "fast_path_latency_ms": 0.001,
+          "headless_fallback_used": false,
+          "headless_latency_ms": 0.0
+        }
+      ]
+    }
+  }
+}
