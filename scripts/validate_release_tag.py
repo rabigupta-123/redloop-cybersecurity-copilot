@@ -47,8 +47,8 @@ def get_pyproject_version(root_dir: Optional[Path] = None) -> str:
     return str(data.get("project", {}).get("version", "0.2.0"))
 
 
-def get_latest_git_tag() -> str:
-    """Retrieve the highest valid release tag from git tags."""
+def get_latest_git_tag(exclude_tag: Optional[str] = None) -> str:
+    """Retrieve the highest valid release tag from git tags, optionally excluding a specific candidate tag."""
     try:
         proc = subprocess.run(
             ["git", "tag", "-l", "v*"],
@@ -60,8 +60,10 @@ def get_latest_git_tag() -> str:
         valid_tags = []
         for t in tags:
             t = t.strip()
-            # Ignore legacy corrupted jumps if encountered
+            # Ignore legacy corrupted jumps if encountered or explicitly excluded tag
             if not t or t == "v10.0.0":
+                continue
+            if exclude_tag and t == exclude_tag.strip():
                 continue
             try:
                 parsed = parse_semver(t)
@@ -135,7 +137,7 @@ def main() -> int:
     parser.add_argument("--compute-next", action="store_true", help="Print next safe patch tag")
     args = parser.parse_args()
 
-    current = args.current or get_latest_git_tag()
+    current = args.current or get_latest_git_tag(exclude_tag=args.candidate)
     base_ver = get_pyproject_version()
 
     # Align current with pyproject if computing next and git tag is behind
