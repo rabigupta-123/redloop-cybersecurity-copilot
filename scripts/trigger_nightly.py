@@ -55,3 +55,4 @@ if __name__ == '__main__':
     if len(sys.argv) > 1 and sys.argv[1] == '--dispatch':
         ref = sys.argv[2] if len(sys.argv) > 2 else "feat/connectors-bounty"
         trigger_workflow("nightly_full_suite.yml", ref=ref)
+

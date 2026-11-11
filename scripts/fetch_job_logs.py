@@ -73,3 +73,4 @@ def fetch_logs(job_id=130338945276):
 if __name__ == '__main__':
     job_id = int(sys.argv[1]) if len(sys.argv) > 1 else 130338945276
     fetch_logs(job_id)
+

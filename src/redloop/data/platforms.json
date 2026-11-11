@@ -1,0 +1,1650 @@
+{
+  "version": "2.0",
+  "count": 85,
+  "platforms": [
+    {
+      "platform_id": "github",
+      "name": "GitHub",
+      "category": "dev",
+      "url_template": "https://github.com/{username}",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "vcard-names",
+        "js-profile-editable-area",
+        "og:title"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "Not Found",
+        "page doesn't exist"
+      ]
+    },
+    {
+      "platform_id": "gitlab",
+      "name": "GitLab",
+      "category": "dev",
+      "url_template": "https://gitlab.com/{username}",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "user-profile",
+        "gl-avatar"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "404: Page not found"
+      ]
+    },
+    {
+      "platform_id": "bitbucket",
+      "name": "Bitbucket",
+      "category": "dev",
+      "url_template": "https://bitbucket.org/{username}/",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "bitbucket.org",
+        "profile"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "Repository not found",
+        "Page not found"
+      ]
+    },
+    {
+      "platform_id": "reddit",
+      "name": "Reddit",
+      "category": "social",
+      "url_template": "https://www.reddit.com/user/{username}/about.json",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "\"kind\": \"t2\"",
+        "\"name\":"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "\"error\": 404",
+        "Not Found"
+      ]
+    },
+    {
+      "platform_id": "hackernews",
+      "name": "Hacker News",
+      "category": "tech",
+      "url_template": "https://hacker-news.firebaseio.com/v0/user/{username}.json",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "\"id\":",
+        "\"karma\":"
+      ],
+      "not_found_status_codes": [
+        200,
+        404
+      ],
+      "not_found_body_signatures": [
+        "null"
+      ]
+    },
+    {
+      "platform_id": "keybase",
+      "name": "Keybase",
+      "category": "security",
+      "url_template": "https://keybase.io/{username}",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "profile-heading",
+        "keybase.io"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "404: user not found"
+      ]
+    },
+    {
+      "platform_id": "dockerhub",
+      "name": "Docker Hub",
+      "category": "dev",
+      "url_template": "https://hub.docker.com/v2/users/{username}/",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "\"username\":",
+        "\"id\":"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "\"message\": \"User not found\"",
+        "Not Found"
+      ]
+    },
+    {
+      "platform_id": "pypi",
+      "name": "PyPI",
+      "category": "dev",
+      "url_template": "https://pypi.org/user/{username}/",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "profile-section",
+        "Author"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "We looked everywhere"
+      ]
+    },
+    {
+      "platform_id": "npmjs",
+      "name": "npm",
+      "category": "dev",
+      "url_template": "https://www.npmjs.com/~{username}",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "~{username}",
+        "packages"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "Not Found",
+        "404"
+      ]
+    },
+    {
+      "platform_id": "rubygems",
+      "name": "RubyGems",
+      "category": "dev",
+      "url_template": "https://rubygems.org/profiles/{username}",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "profile__header",
+        "gems"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "Page not found"
+      ]
+    },
+    {
+      "platform_id": "crates_io",
+      "name": "Crates.io",
+      "category": "dev",
+      "url_template": "https://crates.io/api/v1/users/{username}",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "\"user\":",
+        "\"login\":"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "\"errors\":"
+      ]
+    },
+    {
+      "platform_id": "huggingface",
+      "name": "Hugging Face",
+      "category": "ai",
+      "url_template": "https://huggingface.co/{username}",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "huggingface.co",
+        "models"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "404",
+        "Sorry, we can't find"
+      ]
+    },
+    {
+      "platform_id": "devto",
+      "name": "DEV Community",
+      "category": "dev",
+      "url_template": "https://dev.to/{username}",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "profile-header",
+        "dev.to"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "This page does not exist"
+      ]
+    },
+    {
+      "platform_id": "medium",
+      "name": "Medium",
+      "category": "publishing",
+      "url_template": "https://medium.com/@{username}",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "property=\"profile:username\"",
+        "@{username}"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "PAGE NOT FOUND",
+        "404"
+      ]
+    },
+    {
+      "platform_id": "hashnode",
+      "name": "Hashnode",
+      "category": "dev",
+      "url_template": "https://hashnode.com/@{username}",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "hashnode.com/@",
+        "followers"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "404",
+        "User not found"
+      ]
+    },
+    {
+      "platform_id": "kaggle",
+      "name": "Kaggle",
+      "category": "ai",
+      "url_template": "https://www.kaggle.com/{username}",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "kaggle.com",
+        "profile"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "404",
+        "Not Found"
+      ]
+    },
+    {
+      "platform_id": "replit",
+      "name": "Replit",
+      "category": "dev",
+      "url_template": "https://replit.com/@{username}",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "replit.com/@",
+        "profile"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "404",
+        "Not found"
+      ]
+    },
+    {
+      "platform_id": "codepen",
+      "name": "CodePen",
+      "category": "dev",
+      "url_template": "https://codepen.io/{username}",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "profile-username",
+        "codepen.io"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "404",
+        "Page Not Found"
+      ]
+    },
+    {
+      "platform_id": "glitch",
+      "name": "Glitch",
+      "category": "dev",
+      "url_template": "https://api.glitch.com/v1/users/by/login?login={username}",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "\"id\":",
+        "\"login\":"
+      ],
+      "not_found_status_codes": [
+        200,
+        404
+      ],
+      "not_found_body_signatures": [
+        "{}",
+        "null"
+      ]
+    },
+    {
+      "platform_id": "sourceforge",
+      "name": "SourceForge",
+      "category": "dev",
+      "url_template": "https://sourceforge.net/u/{username}/profile",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "Personal Data",
+        "Profile"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "404",
+        "Whoops"
+      ]
+    },
+    {
+      "platform_id": "launchpad",
+      "name": "Launchpad",
+      "category": "dev",
+      "url_template": "https://launchpad.net/~{username}",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "launchpad.net/~",
+        "Karma"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "Lost something?"
+      ]
+    },
+    {
+      "platform_id": "archlinux",
+      "name": "Arch Linux Forums",
+      "category": "linux",
+      "url_template": "https://bbs.archlinux.org/profile.php?user={username}",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "User profile",
+        "Registered:"
+      ],
+      "not_found_status_codes": [
+        200,
+        404
+      ],
+      "not_found_body_signatures": [
+        "Bad request",
+        "Info"
+      ]
+    },
+    {
+      "platform_id": "debian_salsa",
+      "name": "Debian Salsa",
+      "category": "linux",
+      "url_template": "https://salsa.debian.org/{username}",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "user-profile",
+        "salsa.debian.org"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "404: Page not found"
+      ]
+    },
+    {
+      "platform_id": "fedora",
+      "name": "Fedora Accounts",
+      "category": "linux",
+      "url_template": "https://fedoraproject.org/wiki/User:{username}",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "User:{username}",
+        "Fedora"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "There is currently no text in this page"
+      ]
+    },
+    {
+      "platform_id": "gentoo",
+      "name": "Gentoo Wiki",
+      "category": "linux",
+      "url_template": "https://wiki.gentoo.org/wiki/User:{username}",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "User:{username}",
+        "Gentoo"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "There is currently no text"
+      ]
+    },
+    {
+      "platform_id": "freebsd",
+      "name": "FreeBSD Bugzilla",
+      "category": "bsd",
+      "url_template": "https://bugs.freebsd.org/bugzilla/user_profile?login={username}",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "User Profile",
+        "freebsd"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "not found",
+        "Invalid"
+      ]
+    },
+    {
+      "platform_id": "wikipedia",
+      "name": "Wikipedia",
+      "category": "knowledge",
+      "url_template": "https://en.wikipedia.org/wiki/User:{username}",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "User:{username}",
+        "mw-content-text"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "Wikipedia does not have a user page"
+      ]
+    },
+    {
+      "platform_id": "wikidata",
+      "name": "Wikidata",
+      "category": "knowledge",
+      "url_template": "https://www.wikidata.org/wiki/User:{username}",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "User:{username}",
+        "wikidata"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "does not have a user page"
+      ]
+    },
+    {
+      "platform_id": "archive_org",
+      "name": "Internet Archive",
+      "category": "archive",
+      "url_template": "https://archive.org/details/@{username}",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "@{username}",
+        "uploads"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "Item cannot be found"
+      ]
+    },
+    {
+      "platform_id": "mastodon_social",
+      "name": "Mastodon.social",
+      "category": "social",
+      "url_template": "https://mastodon.social/@{username}",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "profile",
+        "@{username}"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "The page you are looking for isn't here"
+      ]
+    },
+    {
+      "platform_id": "bluesky",
+      "name": "Bluesky",
+      "category": "social",
+      "url_template": "https://public.api.bsky.app/xrpc/app.bsky.actor.getProfile?actor={username}.bsky.social",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "\"did\":",
+        "\"handle\":"
+      ],
+      "not_found_status_codes": [
+        400,
+        404
+      ],
+      "not_found_body_signatures": [
+        "Profile not found",
+        "InvalidRequest"
+      ]
+    },
+    {
+      "platform_id": "twitch",
+      "name": "Twitch",
+      "category": "streaming",
+      "url_template": "https://www.twitch.tv/{username}",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "twitch.tv/{username}",
+        "og:title"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "time machine",
+        "unavailable"
+      ]
+    },
+    {
+      "platform_id": "vimeo",
+      "name": "Vimeo",
+      "category": "video",
+      "url_template": "https://vimeo.com/{username}",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "vimeo.com/{username}",
+        "profile"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "Sorry, we couldn't find that page"
+      ]
+    },
+    {
+      "platform_id": "soundcloud",
+      "name": "SoundCloud",
+      "category": "audio",
+      "url_template": "https://soundcloud.com/{username}",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "soundcloud.com/{username}",
+        "followers"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "We can't find that user"
+      ]
+    },
+    {
+      "platform_id": "bandcamp",
+      "name": "Bandcamp",
+      "category": "audio",
+      "url_template": "https://bandcamp.com/{username}",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "fan-bio",
+        "bandcamp.com/{username}"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "Sorry, that something isn't here"
+      ]
+    },
+    {
+      "platform_id": "mixcloud",
+      "name": "Mixcloud",
+      "category": "audio",
+      "url_template": "https://api.mixcloud.com/{username}/",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "\"username\":",
+        "\"key\":"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "\"type\": \"UserNotFoundException\""
+      ]
+    },
+    {
+      "platform_id": "lastfm",
+      "name": "Last.fm",
+      "category": "audio",
+      "url_template": "https://www.last.fm/user/{username}",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "header-title",
+        "scrobbles"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "Page Not Found"
+      ]
+    },
+    {
+      "platform_id": "goodreads",
+      "name": "Goodreads",
+      "category": "books",
+      "url_template": "https://www.goodreads.com/{username}",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "userProfileName",
+        "bookshelves"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "Page not found"
+      ]
+    },
+    {
+      "platform_id": "letterboxd",
+      "name": "Letterboxd",
+      "category": "film",
+      "url_template": "https://letterboxd.com/{username}/",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "person-summary",
+        "letterboxd.com"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "Sorry, we can't find the page"
+      ]
+    },
+    {
+      "platform_id": "untappd",
+      "name": "Untappd",
+      "category": "lifestyle",
+      "url_template": "https://untappd.com/user/{username}",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "user-info",
+        "Total Beers"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "We couldn't find that page"
+      ]
+    },
+    {
+      "platform_id": "strava",
+      "name": "Strava",
+      "category": "fitness",
+      "url_template": "https://www.strava.com/athletes/{username}",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "athlete-profile",
+        "strava"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "Page Not Found"
+      ]
+    },
+    {
+      "platform_id": "chess_com",
+      "name": "Chess.com",
+      "category": "gaming",
+      "url_template": "https://api.chess.com/pub/player/{username}",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "\"player_id\":",
+        "\"username\":"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "\"code\": 0",
+        "not found"
+      ]
+    },
+    {
+      "platform_id": "lichess",
+      "name": "Lichess",
+      "category": "gaming",
+      "url_template": "https://lichess.org/api/user/{username}",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "\"id\":",
+        "\"username\":"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "Not found"
+      ]
+    },
+    {
+      "platform_id": "steam",
+      "name": "Steam Community",
+      "category": "gaming",
+      "url_template": "https://steamcommunity.com/id/{username}",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "actual_persona_name",
+        "profile_header"
+      ],
+      "not_found_status_codes": [
+        200,
+        404
+      ],
+      "not_found_body_signatures": [
+        "The specified profile could not be found"
+      ]
+    },
+    {
+      "platform_id": "speedrun",
+      "name": "Speedrun.com",
+      "category": "gaming",
+      "url_template": "https://www.speedrun.com/api/v1/users/{username}",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "\"data\":",
+        "\"names\":"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "could not be found"
+      ]
+    },
+    {
+      "platform_id": "itch_io",
+      "name": "itch.io",
+      "category": "gaming",
+      "url_template": "https://{username}.itch.io/",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "user_profile",
+        "itch.io"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "Couldn't find that page"
+      ]
+    },
+    {
+      "platform_id": "behance",
+      "name": "Behance",
+      "category": "design",
+      "url_template": "https://www.behance.net/{username}",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "UserInfo",
+        "behance.net"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "Oops! We can't find that page"
+      ]
+    },
+    {
+      "platform_id": "dribbble",
+      "name": "Dribbble",
+      "category": "design",
+      "url_template": "https://dribbble.com/{username}",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "profile-masthead",
+        "dribbble"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "Whoops, that page is gone"
+      ]
+    },
+    {
+      "platform_id": "deviantart",
+      "name": "DeviantArt",
+      "category": "design",
+      "url_template": "https://www.deviantart.com/{username}",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "deviantart.com/{username}",
+        "Watch"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "Page Not Found"
+      ]
+    },
+    {
+      "platform_id": "artstation",
+      "name": "ArtStation",
+      "category": "design",
+      "url_template": "https://www.artstation.com/users/{username}/quick.json",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "\"id\":",
+        "\"username\":"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "404",
+        "Not Found"
+      ]
+    },
+    {
+      "platform_id": "unsplash",
+      "name": "Unsplash",
+      "category": "photo",
+      "url_template": "https://unsplash.com/@{username}",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "unsplash.com/@",
+        "Photos"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "Page not found"
+      ]
+    },
+    {
+      "platform_id": "flickr",
+      "name": "Flickr",
+      "category": "photo",
+      "url_template": "https://www.flickr.com/people/{username}/",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "person-profile",
+        "Joined"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "This is not the page you're looking for"
+      ]
+    },
+    {
+      "platform_id": "500px",
+      "name": "500px",
+      "category": "photo",
+      "url_template": "https://api.500px.com/v1/users/search?term={username}",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "\"username\":\"{username}\"",
+        "\"users\":["
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "\"users\":[]"
+      ]
+    },
+    {
+      "platform_id": "pexels",
+      "name": "Pexels",
+      "category": "photo",
+      "url_template": "https://www.pexels.com/@{username}/",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "pexels.com/@",
+        "Total Views"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "Page Not Found"
+      ]
+    },
+    {
+      "platform_id": "pixabay",
+      "name": "Pixabay",
+      "category": "photo",
+      "url_template": "https://pixabay.com/en/users/{username}/",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "user_about",
+        "pixabay"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "Page not found"
+      ]
+    },
+    {
+      "platform_id": "giphy",
+      "name": "GIPHY",
+      "category": "media",
+      "url_template": "https://giphy.com/{username}",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "giphy.com/{username}",
+        "GIFs"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "Oops! There's nothing here"
+      ]
+    },
+    {
+      "platform_id": "imgur",
+      "name": "Imgur",
+      "category": "media",
+      "url_template": "https://api.imgur.com/account/v1/accounts/{username}?client_id=546c25a59c58ad7",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "\"id\":",
+        "\"username\":"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "\"errors\":"
+      ]
+    },
+    {
+      "platform_id": "gravatar",
+      "name": "Gravatar Profile",
+      "category": "identity",
+      "url_template": "https://en.gravatar.com/{username}.json",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "\"preferredUsername\":",
+        "\"entry\":"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "User not found"
+      ]
+    },
+    {
+      "platform_id": "aboutme",
+      "name": "about.me",
+      "category": "identity",
+      "url_template": "https://about.me/{username}",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "about.me/{username}",
+        "bio"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "Page Not Found"
+      ]
+    },
+    {
+      "platform_id": "linktree",
+      "name": "Linktree",
+      "category": "identity",
+      "url_template": "https://linktr.ee/{username}",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "linktr.ee/{username}",
+        "__NEXT_DATA__"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "The page you\u2019re looking for doesn\u2019t exist"
+      ]
+    },
+    {
+      "platform_id": "carrd",
+      "name": "Carrd",
+      "category": "identity",
+      "url_template": "https://{username}.carrd.co/",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "<title>",
+        "carrd"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "Page not found"
+      ]
+    },
+    {
+      "platform_id": "patreon",
+      "name": "Patreon",
+      "category": "creator",
+      "url_template": "https://www.patreon.com/{username}",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "patreon.com/{username}",
+        "creator"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "This page is no longer available"
+      ]
+    },
+    {
+      "platform_id": "kofi",
+      "name": "Ko-fi",
+      "category": "creator",
+      "url_template": "https://ko-fi.com/{username}",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "ko-fi.com/{username}",
+        "Support"
+      ],
+      "not_found_status_codes": [
+        200,
+        404
+      ],
+      "not_found_body_signatures": [
+        "Page Not Found",
+        "404"
+      ]
+    },
+    {
+      "platform_id": "buymeacoffee",
+      "name": "Buy Me a Coffee",
+      "category": "creator",
+      "url_template": "https://www.buymeacoffee.com/{username}",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "buymeacoffee.com/{username}",
+        "supporters"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "Page not found"
+      ]
+    },
+    {
+      "platform_id": "producthunt",
+      "name": "Product Hunt",
+      "category": "startup",
+      "url_template": "https://www.producthunt.com/@{username}",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "producthunt.com/@",
+        "Upvoted"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "We seem to have lost this page"
+      ]
+    },
+    {
+      "platform_id": "slideshare",
+      "name": "SlideShare",
+      "category": "publishing",
+      "url_template": "https://www.slideshare.net/{username}",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "slideshare.net/{username}",
+        "Presentations"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "Could not find that page"
+      ]
+    },
+    {
+      "platform_id": "speakerdeck",
+      "name": "Speaker Deck",
+      "category": "publishing",
+      "url_template": "https://speakerdeck.com/{username}",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "speakerdeck.com/{username}",
+        "Decks"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "Page Not Found"
+      ]
+    },
+    {
+      "platform_id": "scribd",
+      "name": "Scribd",
+      "category": "publishing",
+      "url_template": "https://www.scribd.com/{username}",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "scribd.com/{username}",
+        "Documents"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "The page you were looking for doesn't exist"
+      ]
+    },
+    {
+      "platform_id": "issuu",
+      "name": "Issuu",
+      "category": "publishing",
+      "url_template": "https://issuu.com/{username}",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "issuu.com/{username}",
+        "Publications"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "Page not found"
+      ]
+    },
+    {
+      "platform_id": "academia",
+      "name": "Academia.edu",
+      "category": "research",
+      "url_template": "https://independent.academia.edu/{username}",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "academia.edu/{username}",
+        "Papers"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "Page Not Found"
+      ]
+    },
+    {
+      "platform_id": "researchgate",
+      "name": "ResearchGate",
+      "category": "research",
+      "url_template": "https://www.researchgate.net/profile/{username}",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "researchgate.net/profile/",
+        "Publications"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "Page not found"
+      ]
+    },
+    {
+      "platform_id": "orcid",
+      "name": "ORCID",
+      "category": "research",
+      "url_template": "https://pub.orcid.org/v3.0/{username}/person",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "\"name\":",
+        "orcid-identifier"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "404 Not Found"
+      ]
+    },
+    {
+      "platform_id": "codeforces",
+      "name": "Codeforces",
+      "category": "competitive",
+      "url_template": "https://codeforces.com/api/user.info?handles={username}",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "\"status\":\"OK\"",
+        "\"handle\":"
+      ],
+      "not_found_status_codes": [
+        200,
+        400,
+        404
+      ],
+      "not_found_body_signatures": [
+        "\"status\":\"FAILED\""
+      ]
+    },
+    {
+      "platform_id": "leetcode",
+      "name": "LeetCode",
+      "category": "competitive",
+      "url_template": "https://leetcode.com/u/{username}/",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "leetcode.com",
+        "{username}"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "Page Not Found"
+      ]
+    },
+    {
+      "platform_id": "hackerrank",
+      "name": "HackerRank",
+      "category": "competitive",
+      "url_template": "https://www.hackerrank.com/rest/contests/master/hackers/{username}/profile",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "\"model\":",
+        "\"username\":"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "Not Found"
+      ]
+    },
+    {
+      "platform_id": "codewars",
+      "name": "Codewars",
+      "category": "competitive",
+      "url_template": "https://www.codewars.com/api/v1/users/{username}",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "\"username\":",
+        "\"honor\":"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "\"reason\":\"not found\""
+      ]
+    },
+    {
+      "platform_id": "exercism",
+      "name": "Exercism",
+      "category": "dev",
+      "url_template": "https://exercism.org/profiles/{username}",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "exercism.org/profiles/",
+        "reputation"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "Page not found"
+      ]
+    },
+    {
+      "platform_id": "tryhackme",
+      "name": "TryHackMe",
+      "category": "security",
+      "url_template": "https://tryhackme.com/api/user/exist/{username}",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "\"success\":true"
+      ],
+      "not_found_status_codes": [
+        200,
+        404
+      ],
+      "not_found_body_signatures": [
+        "\"success\":false"
+      ]
+    },
+    {
+      "platform_id": "hackthebox",
+      "name": "HackTheBox Forums",
+      "category": "security",
+      "url_template": "https://forum.hackthebox.com/u/{username}.json",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "\"user\":",
+        "\"username\":"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "\"errors\":"
+      ]
+    },
+    {
+      "platform_id": "bugcrowd",
+      "name": "Bugcrowd",
+      "category": "security",
+      "url_template": "https://bugcrowd.com/{username}",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "bugcrowd.com/{username}",
+        "Points"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "The page you were looking for doesn't exist"
+      ]
+    },
+    {
+      "platform_id": "hackerone",
+      "name": "HackerOne",
+      "category": "security",
+      "url_template": "https://hackerone.com/{username}",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "hackerone.com/{username}",
+        "Reputation"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "Page not found"
+      ]
+    },
+    {
+      "platform_id": "packetstorm",
+      "name": "PacketStorm",
+      "category": "security",
+      "url_template": "https://packetstormsecurity.com/users/view/{username}",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "User Profile",
+        "{username}"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "Page Not Found"
+      ]
+    },
+    {
+      "platform_id": "wakatime",
+      "name": "WakaTime",
+      "category": "dev",
+      "url_template": "https://wakatime.com/@{username}",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "wakatime.com/@",
+        "Coding Activity"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "404 - Page Not Found"
+      ]
+    },
+    {
+      "platform_id": "packagist",
+      "name": "Packagist",
+      "category": "dev",
+      "url_template": "https://packagist.org/users/{username}/",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "packages",
+        "packagist.org"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "Not Found"
+      ]
+    },
+    {
+      "platform_id": "hex_pm",
+      "name": "Hex.pm",
+      "category": "dev",
+      "url_template": "https://hex.pm/api/users/{username}",
+      "exists_status_codes": [
+        200
+      ],
+      "exists_body_signatures": [
+        "\"username\":",
+        "\"url\":"
+      ],
+      "not_found_status_codes": [
+        404
+      ],
+      "not_found_body_signatures": [
+        "\"status\":404"
+      ]
+    }
+  ]
+}

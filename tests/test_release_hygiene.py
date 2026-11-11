@@ -95,3 +95,4 @@ class TestTagProgressionGuards:
         assert latest == "v0.2.0"
         next_tag = calculate_next_tag(latest, "patch")
         assert next_tag == "v0.2.1"
+

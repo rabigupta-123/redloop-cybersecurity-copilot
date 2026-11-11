@@ -15,3 +15,4 @@ def list_releases():
 
 if __name__ == '__main__':
     list_releases()
+

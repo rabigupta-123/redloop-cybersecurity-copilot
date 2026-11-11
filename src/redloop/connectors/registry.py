@@ -117,6 +117,18 @@ class ConnectorRegistry:
         )
         self.register(shodan_manifest)
 
+        # 3. SpiderFoot Isolated OSINT Service (Gate L.4)
+        from redloop.connectors.spiderfoot_connector import get_spiderfoot_manifest
+        self.register(get_spiderfoot_manifest())
+
+        # 4. Kali Remote SSH Executor (Gate L.5)
+        from redloop.connectors.kali_ssh_connector import get_kali_ssh_manifest
+        self.register(get_kali_ssh_manifest())
+
+        # 5. Air-Gapped Reverse Engineering Connector (Gate L.6)
+        from redloop.connectors.re_connector import get_re_connector_manifest
+        self.register(get_re_connector_manifest())
+
     def register(self, manifest: ConnectorManifest) -> ConnectorManifest:
         """Registers a connector manifest. Generates ID if missing."""
         if not manifest.id:

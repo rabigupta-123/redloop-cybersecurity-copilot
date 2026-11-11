@@ -1,0 +1,909 @@
+{
+  "tested_numbers_count": 12,
+  "all_fields_carry_source_and_confidence": true,
+  "results": [
+    {
+      "raw_input": "+14155552671",
+      "valid": true,
+      "possible": true,
+      "authorization_basis": "self_lookup",
+      "why_this_result_is_shown": "Why this result is shown: Self-lookup authorized (target '+14155552671' matches operator's verified phone identifier; logged to audit ledger).",
+      "fields": {
+        "e164_format": {
+          "value": "+14155552671",
+          "source": "libphonenumber:format_number(E164)",
+          "confidence": 1.0
+        },
+        "international_format": {
+          "value": "+1 415-555-2671",
+          "source": "libphonenumber:format_number(INTERNATIONAL)",
+          "confidence": 1.0
+        },
+        "national_format": {
+          "value": "(415) 555-2671",
+          "source": "libphonenumber:format_number(NATIONAL)",
+          "confidence": 1.0
+        },
+        "country_code": {
+          "value": 1,
+          "source": "libphonenumber:country_code",
+          "confidence": 1.0
+        },
+        "iso_region": {
+          "value": "US",
+          "source": "libphonenumber:region_code_for_number",
+          "confidence": 0.98
+        },
+        "geographic_region": {
+          "value": "San Francisco, CA",
+          "source": "libphonenumber.geocoder:description_for_number",
+          "confidence": 0.9,
+          "note": "Derived from ITU/national numbering plan prefix allocation."
+        },
+        "carrier": {
+          "value": "Unknown / Fixed-Line",
+          "source": "libphonenumber.carrier:name_for_number",
+          "confidence": 0.4,
+          "note": "Original block allocation carrier; subject to Mobile Number Portability (MNP)."
+        },
+        "line_type": {
+          "value": "FIXED_LINE_OR_MOBILE",
+          "source": "libphonenumber:number_type",
+          "confidence": 0.95
+        },
+        "timezones": {
+          "value": [
+            "America/Los_Angeles"
+          ],
+          "source": "libphonenumber.timezone:time_zones_for_number",
+          "confidence": 0.9
+        },
+        "breach_exposure": {
+          "value": null,
+          "source": "breach_correlator:not_configured",
+          "confidence": 0.0,
+          "note": "No external breach API configured; refusing to synthesize or guess."
+        }
+      },
+      "limitations": [
+        "Prefix carrier reflects original numbering-plan block assignment and does not reflect real-time HLR/MNP porting.",
+        "Geographic region reflects numbering-plan registration area, not live GPS or cell-tower location.",
+        "No subscriber identity is ever guessed or fabricated."
+      ],
+      "timestamp": "2026-11-11T08:40:30.143153+00:00",
+      "evidence_hash": "b8d982ecf468fc10965c03a16847e48528304253f8b21078cc2bdfb3f9042e94"
+    },
+    {
+      "raw_input": "+18004444444",
+      "valid": true,
+      "possible": true,
+      "authorization_basis": "self_lookup",
+      "why_this_result_is_shown": "Why this result is shown: Self-lookup authorized (target '+18004444444' matches operator's verified phone identifier; logged to audit ledger).",
+      "fields": {
+        "e164_format": {
+          "value": "+18004444444",
+          "source": "libphonenumber:format_number(E164)",
+          "confidence": 1.0
+        },
+        "international_format": {
+          "value": "+1 800-444-4444",
+          "source": "libphonenumber:format_number(INTERNATIONAL)",
+          "confidence": 1.0
+        },
+        "national_format": {
+          "value": "(800) 444-4444",
+          "source": "libphonenumber:format_number(NATIONAL)",
+          "confidence": 1.0
+        },
+        "country_code": {
+          "value": 1,
+          "source": "libphonenumber:country_code",
+          "confidence": 1.0
+        },
+        "iso_region": {
+          "value": "US",
+          "source": "libphonenumber:region_code_for_number",
+          "confidence": 0.98
+        },
+        "geographic_region": {
+          "value": "Unknown",
+          "source": "libphonenumber.geocoder:description_for_number",
+          "confidence": 0.3,
+          "note": "Derived from ITU/national numbering plan prefix allocation."
+        },
+        "carrier": {
+          "value": "Unknown / Fixed-Line",
+          "source": "libphonenumber.carrier:name_for_number",
+          "confidence": 0.4,
+          "note": "Original block allocation carrier; subject to Mobile Number Portability (MNP)."
+        },
+        "line_type": {
+          "value": "TOLL_FREE",
+          "source": "libphonenumber:number_type",
+          "confidence": 0.95
+        },
+        "timezones": {
+          "value": [
+            "America/Adak",
+            "America/Anchorage",
+            "America/Anguilla",
+            "America/Antigua",
+            "America/Barbados",
+            "America/Boise",
+            "America/Cayman",
+            "America/Chicago",
+            "America/Denver",
+            "America/Dominica",
+            "America/Edmonton",
+            "America/Fort_Nelson",
+            "America/Grand_Turk",
+            "America/Grenada",
+            "America/Halifax",
+            "America/Jamaica",
+            "America/Juneau",
+            "America/Los_Angeles",
+            "America/Lower_Princes",
+            "America/Montserrat",
+            "America/Nassau",
+            "America/New_York",
+            "America/North_Dakota/Center",
+            "America/Phoenix",
+            "America/Port_of_Spain",
+            "America/Puerto_Rico",
+            "America/Regina",
+            "America/Santo_Domingo",
+            "America/St_Johns",
+            "America/St_Kitts",
+            "America/St_Lucia",
+            "America/St_Thomas",
+            "America/St_Vincent",
+            "America/Toronto",
+            "America/Tortola",
+            "America/Vancouver",
+            "America/Winnipeg",
+            "Atlantic/Bermuda",
+            "Pacific/Guam",
+            "Pacific/Honolulu",
+            "Pacific/Pago_Pago",
+            "Pacific/Saipan"
+          ],
+          "source": "libphonenumber.timezone:time_zones_for_number",
+          "confidence": 0.9
+        },
+        "breach_exposure": {
+          "value": null,
+          "source": "breach_correlator:not_configured",
+          "confidence": 0.0,
+          "note": "No external breach API configured; refusing to synthesize or guess."
+        }
+      },
+      "limitations": [
+        "Prefix carrier reflects original numbering-plan block assignment and does not reflect real-time HLR/MNP porting.",
+        "Geographic region reflects numbering-plan registration area, not live GPS or cell-tower location.",
+        "No subscriber identity is ever guessed or fabricated."
+      ],
+      "timestamp": "2026-11-11T08:40:30.161160+00:00",
+      "evidence_hash": "fd4f0dabf0a73689e5e3588f0367510f5ff2a4f014894218f0e6106f2dfe7ed8"
+    },
+    {
+      "raw_input": "+447400123456",
+      "valid": true,
+      "possible": true,
+      "authorization_basis": "self_lookup",
+      "why_this_result_is_shown": "Why this result is shown: Self-lookup authorized (target '+447400123456' matches operator's verified phone identifier; logged to audit ledger).",
+      "fields": {
+        "e164_format": {
+          "value": "+447400123456",
+          "source": "libphonenumber:format_number(E164)",
+          "confidence": 1.0
+        },
+        "international_format": {
+          "value": "+44 7400 123456",
+          "source": "libphonenumber:format_number(INTERNATIONAL)",
+          "confidence": 1.0
+        },
+        "national_format": {
+          "value": "07400 123456",
+          "source": "libphonenumber:format_number(NATIONAL)",
+          "confidence": 1.0
+        },
+        "country_code": {
+          "value": 44,
+          "source": "libphonenumber:country_code",
+          "confidence": 1.0
+        },
+        "iso_region": {
+          "value": "GB",
+          "source": "libphonenumber:region_code_for_number",
+          "confidence": 0.98
+        },
+        "geographic_region": {
+          "value": "United Kingdom",
+          "source": "libphonenumber.geocoder:description_for_number",
+          "confidence": 0.9,
+          "note": "Derived from ITU/national numbering plan prefix allocation."
+        },
+        "carrier": {
+          "value": "Three",
+          "source": "libphonenumber.carrier:name_for_number",
+          "confidence": 0.85,
+          "note": "Original block allocation carrier; subject to Mobile Number Portability (MNP)."
+        },
+        "line_type": {
+          "value": "MOBILE",
+          "source": "libphonenumber:number_type",
+          "confidence": 0.95
+        },
+        "timezones": {
+          "value": [
+            "Europe/Guernsey",
+            "Europe/Isle_of_Man",
+            "Europe/Jersey",
+            "Europe/London"
+          ],
+          "source": "libphonenumber.timezone:time_zones_for_number",
+          "confidence": 0.9
+        },
+        "breach_exposure": {
+          "value": null,
+          "source": "breach_correlator:not_configured",
+          "confidence": 0.0,
+          "note": "No external breach API configured; refusing to synthesize or guess."
+        }
+      },
+      "limitations": [
+        "Prefix carrier reflects original numbering-plan block assignment and does not reflect real-time HLR/MNP porting.",
+        "Geographic region reflects numbering-plan registration area, not live GPS or cell-tower location.",
+        "No subscriber identity is ever guessed or fabricated."
+      ],
+      "timestamp": "2026-11-11T08:40:30.204518+00:00",
+      "evidence_hash": "647b9e268e9a8c4adf95f94244e16dc08874f3137612ef05ff73ad03c14851e5"
+    },
+    {
+      "raw_input": "+442079460000",
+      "valid": true,
+      "possible": true,
+      "authorization_basis": "self_lookup",
+      "why_this_result_is_shown": "Why this result is shown: Self-lookup authorized (target '+442079460000' matches operator's verified phone identifier; logged to audit ledger).",
+      "fields": {
+        "e164_format": {
+          "value": "+442079460000",
+          "source": "libphonenumber:format_number(E164)",
+          "confidence": 1.0
+        },
+        "international_format": {
+          "value": "+44 20 7946 0000",
+          "source": "libphonenumber:format_number(INTERNATIONAL)",
+          "confidence": 1.0
+        },
+        "national_format": {
+          "value": "020 7946 0000",
+          "source": "libphonenumber:format_number(NATIONAL)",
+          "confidence": 1.0
+        },
+        "country_code": {
+          "value": 44,
+          "source": "libphonenumber:country_code",
+          "confidence": 1.0
+        },
+        "iso_region": {
+          "value": "GB",
+          "source": "libphonenumber:region_code_for_number",
+          "confidence": 0.98
+        },
+        "geographic_region": {
+          "value": "London",
+          "source": "libphonenumber.geocoder:description_for_number",
+          "confidence": 0.9,
+          "note": "Derived from ITU/national numbering plan prefix allocation."
+        },
+        "carrier": {
+          "value": "Unknown / Fixed-Line",
+          "source": "libphonenumber.carrier:name_for_number",
+          "confidence": 0.4,
+          "note": "Original block allocation carrier; subject to Mobile Number Portability (MNP)."
+        },
+        "line_type": {
+          "value": "FIXED_LINE",
+          "source": "libphonenumber:number_type",
+          "confidence": 0.95
+        },
+        "timezones": {
+          "value": [
+            "Europe/London"
+          ],
+          "source": "libphonenumber.timezone:time_zones_for_number",
+          "confidence": 0.9
+        },
+        "breach_exposure": {
+          "value": null,
+          "source": "breach_correlator:not_configured",
+          "confidence": 0.0,
+          "note": "No external breach API configured; refusing to synthesize or guess."
+        }
+      },
+      "limitations": [
+        "Prefix carrier reflects original numbering-plan block assignment and does not reflect real-time HLR/MNP porting.",
+        "Geographic region reflects numbering-plan registration area, not live GPS or cell-tower location.",
+        "No subscriber identity is ever guessed or fabricated."
+      ],
+      "timestamp": "2026-11-11T08:40:30.218629+00:00",
+      "evidence_hash": "5d15488cbdd35ec5999ffae8f5b837b4e3c1add4e334fea20e1279f41b7463f8"
+    },
+    {
+      "raw_input": "+919876543210",
+      "valid": true,
+      "possible": true,
+      "authorization_basis": "self_lookup",
+      "why_this_result_is_shown": "Why this result is shown: Self-lookup authorized (target '+919876543210' matches operator's verified phone identifier; logged to audit ledger).",
+      "fields": {
+        "e164_format": {
+          "value": "+919876543210",
+          "source": "libphonenumber:format_number(E164)",
+          "confidence": 1.0
+        },
+        "international_format": {
+          "value": "+91 98765 43210",
+          "source": "libphonenumber:format_number(INTERNATIONAL)",
+          "confidence": 1.0
+        },
+        "national_format": {
+          "value": "098765 43210",
+          "source": "libphonenumber:format_number(NATIONAL)",
+          "confidence": 1.0
+        },
+        "country_code": {
+          "value": 91,
+          "source": "libphonenumber:country_code",
+          "confidence": 1.0
+        },
+        "iso_region": {
+          "value": "IN",
+          "source": "libphonenumber:region_code_for_number",
+          "confidence": 0.98
+        },
+        "geographic_region": {
+          "value": "India",
+          "source": "libphonenumber.geocoder:description_for_number",
+          "confidence": 0.9,
+          "note": "Derived from ITU/national numbering plan prefix allocation."
+        },
+        "carrier": {
+          "value": "Airtel",
+          "source": "libphonenumber.carrier:name_for_number",
+          "confidence": 0.85,
+          "note": "Original block allocation carrier; subject to Mobile Number Portability (MNP)."
+        },
+        "line_type": {
+          "value": "MOBILE",
+          "source": "libphonenumber:number_type",
+          "confidence": 0.95
+        },
+        "timezones": {
+          "value": [
+            "Asia/Calcutta"
+          ],
+          "source": "libphonenumber.timezone:time_zones_for_number",
+          "confidence": 0.9
+        },
+        "breach_exposure": {
+          "value": null,
+          "source": "breach_correlator:not_configured",
+          "confidence": 0.0,
+          "note": "No external breach API configured; refusing to synthesize or guess."
+        }
+      },
+      "limitations": [
+        "Prefix carrier reflects original numbering-plan block assignment and does not reflect real-time HLR/MNP porting.",
+        "Geographic region reflects numbering-plan registration area, not live GPS or cell-tower location.",
+        "No subscriber identity is ever guessed or fabricated."
+      ],
+      "timestamp": "2026-11-11T08:40:30.242633+00:00",
+      "evidence_hash": "03facab4d266edbde9610909a742e461a258c7ee8f8777ef33d30bdedff1551f"
+    },
+    {
+      "raw_input": "+4915123456789",
+      "valid": true,
+      "possible": true,
+      "authorization_basis": "self_lookup",
+      "why_this_result_is_shown": "Why this result is shown: Self-lookup authorized (target '+4915123456789' matches operator's verified phone identifier; logged to audit ledger).",
+      "fields": {
+        "e164_format": {
+          "value": "+4915123456789",
+          "source": "libphonenumber:format_number(E164)",
+          "confidence": 1.0
+        },
+        "international_format": {
+          "value": "+49 1512 3456789",
+          "source": "libphonenumber:format_number(INTERNATIONAL)",
+          "confidence": 1.0
+        },
+        "national_format": {
+          "value": "01512 3456789",
+          "source": "libphonenumber:format_number(NATIONAL)",
+          "confidence": 1.0
+        },
+        "country_code": {
+          "value": 49,
+          "source": "libphonenumber:country_code",
+          "confidence": 1.0
+        },
+        "iso_region": {
+          "value": "DE",
+          "source": "libphonenumber:region_code_for_number",
+          "confidence": 0.98
+        },
+        "geographic_region": {
+          "value": "Germany",
+          "source": "libphonenumber.geocoder:description_for_number",
+          "confidence": 0.9,
+          "note": "Derived from ITU/national numbering plan prefix allocation."
+        },
+        "carrier": {
+          "value": "T-Mobile",
+          "source": "libphonenumber.carrier:name_for_number",
+          "confidence": 0.85,
+          "note": "Original block allocation carrier; subject to Mobile Number Portability (MNP)."
+        },
+        "line_type": {
+          "value": "MOBILE",
+          "source": "libphonenumber:number_type",
+          "confidence": 0.95
+        },
+        "timezones": {
+          "value": [
+            "Europe/Berlin"
+          ],
+          "source": "libphonenumber.timezone:time_zones_for_number",
+          "confidence": 0.9
+        },
+        "breach_exposure": {
+          "value": null,
+          "source": "breach_correlator:not_configured",
+          "confidence": 0.0,
+          "note": "No external breach API configured; refusing to synthesize or guess."
+        }
+      },
+      "limitations": [
+        "Prefix carrier reflects original numbering-plan block assignment and does not reflect real-time HLR/MNP porting.",
+        "Geographic region reflects numbering-plan registration area, not live GPS or cell-tower location.",
+        "No subscriber identity is ever guessed or fabricated."
+      ],
+      "timestamp": "2026-11-11T08:40:30.261183+00:00",
+      "evidence_hash": "a29cfc540ae66a8377761678a2cf035b81126df63bc5054bf68ee18e3273a348"
+    },
+    {
+      "raw_input": "+33612345678",
+      "valid": true,
+      "possible": true,
+      "authorization_basis": "self_lookup",
+      "why_this_result_is_shown": "Why this result is shown: Self-lookup authorized (target '+33612345678' matches operator's verified phone identifier; logged to audit ledger).",
+      "fields": {
+        "e164_format": {
+          "value": "+33612345678",
+          "source": "libphonenumber:format_number(E164)",
+          "confidence": 1.0
+        },
+        "international_format": {
+          "value": "+33 6 12 34 56 78",
+          "source": "libphonenumber:format_number(INTERNATIONAL)",
+          "confidence": 1.0
+        },
+        "national_format": {
+          "value": "06 12 34 56 78",
+          "source": "libphonenumber:format_number(NATIONAL)",
+          "confidence": 1.0
+        },
+        "country_code": {
+          "value": 33,
+          "source": "libphonenumber:country_code",
+          "confidence": 1.0
+        },
+        "iso_region": {
+          "value": "FR",
+          "source": "libphonenumber:region_code_for_number",
+          "confidence": 0.98
+        },
+        "geographic_region": {
+          "value": "France",
+          "source": "libphonenumber.geocoder:description_for_number",
+          "confidence": 0.9,
+          "note": "Derived from ITU/national numbering plan prefix allocation."
+        },
+        "carrier": {
+          "value": "SFR",
+          "source": "libphonenumber.carrier:name_for_number",
+          "confidence": 0.85,
+          "note": "Original block allocation carrier; subject to Mobile Number Portability (MNP)."
+        },
+        "line_type": {
+          "value": "MOBILE",
+          "source": "libphonenumber:number_type",
+          "confidence": 0.95
+        },
+        "timezones": {
+          "value": [
+            "Europe/Paris"
+          ],
+          "source": "libphonenumber.timezone:time_zones_for_number",
+          "confidence": 0.9
+        },
+        "breach_exposure": {
+          "value": null,
+          "source": "breach_correlator:not_configured",
+          "confidence": 0.0,
+          "note": "No external breach API configured; refusing to synthesize or guess."
+        }
+      },
+      "limitations": [
+        "Prefix carrier reflects original numbering-plan block assignment and does not reflect real-time HLR/MNP porting.",
+        "Geographic region reflects numbering-plan registration area, not live GPS or cell-tower location.",
+        "No subscriber identity is ever guessed or fabricated."
+      ],
+      "timestamp": "2026-11-11T08:40:30.275772+00:00",
+      "evidence_hash": "236fac9ade0424262fef4ab2aeb14ddebb89c48a393a8d46b0086498ef5472fd"
+    },
+    {
+      "raw_input": "+61412345678",
+      "valid": true,
+      "possible": true,
+      "authorization_basis": "self_lookup",
+      "why_this_result_is_shown": "Why this result is shown: Self-lookup authorized (target '+61412345678' matches operator's verified phone identifier; logged to audit ledger).",
+      "fields": {
+        "e164_format": {
+          "value": "+61412345678",
+          "source": "libphonenumber:format_number(E164)",
+          "confidence": 1.0
+        },
+        "international_format": {
+          "value": "+61 412 345 678",
+          "source": "libphonenumber:format_number(INTERNATIONAL)",
+          "confidence": 1.0
+        },
+        "national_format": {
+          "value": "0412 345 678",
+          "source": "libphonenumber:format_number(NATIONAL)",
+          "confidence": 1.0
+        },
+        "country_code": {
+          "value": 61,
+          "source": "libphonenumber:country_code",
+          "confidence": 1.0
+        },
+        "iso_region": {
+          "value": "AU",
+          "source": "libphonenumber:region_code_for_number",
+          "confidence": 0.98
+        },
+        "geographic_region": {
+          "value": "Unknown",
+          "source": "libphonenumber.geocoder:description_for_number",
+          "confidence": 0.3,
+          "note": "Derived from ITU/national numbering plan prefix allocation."
+        },
+        "carrier": {
+          "value": "Optus",
+          "source": "libphonenumber.carrier:name_for_number",
+          "confidence": 0.85,
+          "note": "Original block allocation carrier; subject to Mobile Number Portability (MNP)."
+        },
+        "line_type": {
+          "value": "MOBILE",
+          "source": "libphonenumber:number_type",
+          "confidence": 0.95
+        },
+        "timezones": {
+          "value": [
+            "Australia/Adelaide",
+            "Australia/Brisbane",
+            "Australia/Eucla",
+            "Australia/Lord_Howe",
+            "Australia/Perth",
+            "Australia/Sydney",
+            "Indian/Christmas",
+            "Indian/Cocos"
+          ],
+          "source": "libphonenumber.timezone:time_zones_for_number",
+          "confidence": 0.9
+        },
+        "breach_exposure": {
+          "value": null,
+          "source": "breach_correlator:not_configured",
+          "confidence": 0.0,
+          "note": "No external breach API configured; refusing to synthesize or guess."
+        }
+      },
+      "limitations": [
+        "Prefix carrier reflects original numbering-plan block assignment and does not reflect real-time HLR/MNP porting.",
+        "Geographic region reflects numbering-plan registration area, not live GPS or cell-tower location.",
+        "No subscriber identity is ever guessed or fabricated."
+      ],
+      "timestamp": "2026-11-11T08:40:30.301877+00:00",
+      "evidence_hash": "85f8ece8cce2d7d985a8ce062fe9ab79aa9de203b0843edfb235ed703b551326"
+    },
+    {
+      "raw_input": "+819012345678",
+      "valid": true,
+      "possible": true,
+      "authorization_basis": "self_lookup",
+      "why_this_result_is_shown": "Why this result is shown: Self-lookup authorized (target '+819012345678' matches operator's verified phone identifier; logged to audit ledger).",
+      "fields": {
+        "e164_format": {
+          "value": "+819012345678",
+          "source": "libphonenumber:format_number(E164)",
+          "confidence": 1.0
+        },
+        "international_format": {
+          "value": "+81 90-1234-5678",
+          "source": "libphonenumber:format_number(INTERNATIONAL)",
+          "confidence": 1.0
+        },
+        "national_format": {
+          "value": "090-1234-5678",
+          "source": "libphonenumber:format_number(NATIONAL)",
+          "confidence": 1.0
+        },
+        "country_code": {
+          "value": 81,
+          "source": "libphonenumber:country_code",
+          "confidence": 1.0
+        },
+        "iso_region": {
+          "value": "JP",
+          "source": "libphonenumber:region_code_for_number",
+          "confidence": 0.98
+        },
+        "geographic_region": {
+          "value": "Japan",
+          "source": "libphonenumber.geocoder:description_for_number",
+          "confidence": 0.9,
+          "note": "Derived from ITU/national numbering plan prefix allocation."
+        },
+        "carrier": {
+          "value": "KDDI",
+          "source": "libphonenumber.carrier:name_for_number",
+          "confidence": 0.85,
+          "note": "Original block allocation carrier; subject to Mobile Number Portability (MNP)."
+        },
+        "line_type": {
+          "value": "MOBILE",
+          "source": "libphonenumber:number_type",
+          "confidence": 0.95
+        },
+        "timezones": {
+          "value": [
+            "Asia/Tokyo"
+          ],
+          "source": "libphonenumber.timezone:time_zones_for_number",
+          "confidence": 0.9
+        },
+        "breach_exposure": {
+          "value": null,
+          "source": "breach_correlator:not_configured",
+          "confidence": 0.0,
+          "note": "No external breach API configured; refusing to synthesize or guess."
+        }
+      },
+      "limitations": [
+        "Prefix carrier reflects original numbering-plan block assignment and does not reflect real-time HLR/MNP porting.",
+        "Geographic region reflects numbering-plan registration area, not live GPS or cell-tower location.",
+        "No subscriber identity is ever guessed or fabricated."
+      ],
+      "timestamp": "2026-11-11T08:40:30.333094+00:00",
+      "evidence_hash": "59cc4ef65a8e482125cc264469f5617cc9ef7d3f22ddf3e280c35901f0a5e3fd"
+    },
+    {
+      "raw_input": "+41446681800",
+      "valid": true,
+      "possible": true,
+      "authorization_basis": "self_lookup",
+      "why_this_result_is_shown": "Why this result is shown: Self-lookup authorized (target '+41446681800' matches operator's verified phone identifier; logged to audit ledger).",
+      "fields": {
+        "e164_format": {
+          "value": "+41446681800",
+          "source": "libphonenumber:format_number(E164)",
+          "confidence": 1.0
+        },
+        "international_format": {
+          "value": "+41 44 668 18 00",
+          "source": "libphonenumber:format_number(INTERNATIONAL)",
+          "confidence": 1.0
+        },
+        "national_format": {
+          "value": "044 668 18 00",
+          "source": "libphonenumber:format_number(NATIONAL)",
+          "confidence": 1.0
+        },
+        "country_code": {
+          "value": 41,
+          "source": "libphonenumber:country_code",
+          "confidence": 1.0
+        },
+        "iso_region": {
+          "value": "CH",
+          "source": "libphonenumber:region_code_for_number",
+          "confidence": 0.98
+        },
+        "geographic_region": {
+          "value": "Zurich",
+          "source": "libphonenumber.geocoder:description_for_number",
+          "confidence": 0.9,
+          "note": "Derived from ITU/national numbering plan prefix allocation."
+        },
+        "carrier": {
+          "value": "Unknown / Fixed-Line",
+          "source": "libphonenumber.carrier:name_for_number",
+          "confidence": 0.4,
+          "note": "Original block allocation carrier; subject to Mobile Number Portability (MNP)."
+        },
+        "line_type": {
+          "value": "FIXED_LINE",
+          "source": "libphonenumber:number_type",
+          "confidence": 0.95
+        },
+        "timezones": {
+          "value": [
+            "Europe/Zurich"
+          ],
+          "source": "libphonenumber.timezone:time_zones_for_number",
+          "confidence": 0.9
+        },
+        "breach_exposure": {
+          "value": null,
+          "source": "breach_correlator:not_configured",
+          "confidence": 0.0,
+          "note": "No external breach API configured; refusing to synthesize or guess."
+        }
+      },
+      "limitations": [
+        "Prefix carrier reflects original numbering-plan block assignment and does not reflect real-time HLR/MNP porting.",
+        "Geographic region reflects numbering-plan registration area, not live GPS or cell-tower location.",
+        "No subscriber identity is ever guessed or fabricated."
+      ],
+      "timestamp": "2026-11-11T08:40:30.351164+00:00",
+      "evidence_hash": "c0899b6b7b404a764c49ca5c4a93834f69c490e9dd0168f7ff1da935d6131ac8"
+    },
+    {
+      "raw_input": "+5511987654321",
+      "valid": true,
+      "possible": true,
+      "authorization_basis": "self_lookup",
+      "why_this_result_is_shown": "Why this result is shown: Self-lookup authorized (target '+5511987654321' matches operator's verified phone identifier; logged to audit ledger).",
+      "fields": {
+        "e164_format": {
+          "value": "+5511987654321",
+          "source": "libphonenumber:format_number(E164)",
+          "confidence": 1.0
+        },
+        "international_format": {
+          "value": "+55 11 98765-4321",
+          "source": "libphonenumber:format_number(INTERNATIONAL)",
+          "confidence": 1.0
+        },
+        "national_format": {
+          "value": "(11) 98765-4321",
+          "source": "libphonenumber:format_number(NATIONAL)",
+          "confidence": 1.0
+        },
+        "country_code": {
+          "value": 55,
+          "source": "libphonenumber:country_code",
+          "confidence": 1.0
+        },
+        "iso_region": {
+          "value": "BR",
+          "source": "libphonenumber:region_code_for_number",
+          "confidence": 0.98
+        },
+        "geographic_region": {
+          "value": "S\u00e3o Paulo",
+          "source": "libphonenumber.geocoder:description_for_number",
+          "confidence": 0.9,
+          "note": "Derived from ITU/national numbering plan prefix allocation."
+        },
+        "carrier": {
+          "value": "TIM",
+          "source": "libphonenumber.carrier:name_for_number",
+          "confidence": 0.85,
+          "note": "Original block allocation carrier; subject to Mobile Number Portability (MNP)."
+        },
+        "line_type": {
+          "value": "MOBILE",
+          "source": "libphonenumber:number_type",
+          "confidence": 0.95
+        },
+        "timezones": {
+          "value": [
+            "America/Sao_Paulo"
+          ],
+          "source": "libphonenumber.timezone:time_zones_for_number",
+          "confidence": 0.9
+        },
+        "breach_exposure": {
+          "value": null,
+          "source": "breach_correlator:not_configured",
+          "confidence": 0.0,
+          "note": "No external breach API configured; refusing to synthesize or guess."
+        }
+      },
+      "limitations": [
+        "Prefix carrier reflects original numbering-plan block assignment and does not reflect real-time HLR/MNP porting.",
+        "Geographic region reflects numbering-plan registration area, not live GPS or cell-tower location.",
+        "No subscriber identity is ever guessed or fabricated."
+      ],
+      "timestamp": "2026-11-11T08:40:30.373840+00:00",
+      "evidence_hash": "f6d2ab319508d18280559d22a36e3f475030e0e79080eaaa1c7cda92942c27e1"
+    },
+    {
+      "raw_input": "+6581234567",
+      "valid": true,
+      "possible": true,
+      "authorization_basis": "self_lookup",
+      "why_this_result_is_shown": "Why this result is shown: Self-lookup authorized (target '+6581234567' matches operator's verified phone identifier; logged to audit ledger).",
+      "fields": {
+        "e164_format": {
+          "value": "+6581234567",
+          "source": "libphonenumber:format_number(E164)",
+          "confidence": 1.0
+        },
+        "international_format": {
+          "value": "+65 8123 4567",
+          "source": "libphonenumber:format_number(INTERNATIONAL)",
+          "confidence": 1.0
+        },
+        "national_format": {
+          "value": "8123 4567",
+          "source": "libphonenumber:format_number(NATIONAL)",
+          "confidence": 1.0
+        },
+        "country_code": {
+          "value": 65,
+          "source": "libphonenumber:country_code",
+          "confidence": 1.0
+        },
+        "iso_region": {
+          "value": "SG",
+          "source": "libphonenumber:region_code_for_number",
+          "confidence": 0.98
+        },
+        "geographic_region": {
+          "value": "Singapore",
+          "source": "libphonenumber.geocoder:description_for_number",
+          "confidence": 0.9,
+          "note": "Derived from ITU/national numbering plan prefix allocation."
+        },
+        "carrier": {
+          "value": "SingTel",
+          "source": "libphonenumber.carrier:name_for_number",
+          "confidence": 0.85,
+          "note": "Original block allocation carrier; subject to Mobile Number Portability (MNP)."
+        },
+        "line_type": {
+          "value": "MOBILE",
+          "source": "libphonenumber:number_type",
+          "confidence": 0.95
+        },
+        "timezones": {
+          "value": [
+            "Asia/Singapore"
+          ],
+          "source": "libphonenumber.timezone:time_zones_for_number",
+          "confidence": 0.9
+        },
+        "breach_exposure": {
+          "value": null,
+          "source": "breach_correlator:not_configured",
+          "confidence": 0.0,
+          "note": "No external breach API configured; refusing to synthesize or guess."
+        }
+      },
+      "limitations": [
+        "Prefix carrier reflects original numbering-plan block assignment and does not reflect real-time HLR/MNP porting.",
+        "Geographic region reflects numbering-plan registration area, not live GPS or cell-tower location.",
+        "No subscriber identity is ever guessed or fabricated."
+      ],
+      "timestamp": "2026-11-11T08:40:30.390530+00:00",
+      "evidence_hash": "2de3caaf9e1513494f3a7ed8ccf07601f2501933f0a28530a81c5f5c56940f73"
+    }
+  ]
+}

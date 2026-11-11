@@ -18,6 +18,10 @@ from typing import Any, Dict, List, Optional
 from mcp.server.mcpserver import MCPServer
 from mcp.types import TextContent
 
+from redloop.assessment.person_scope_gate import (
+    PersonScopeGate,
+    PersonScopeRequiredError,
+)
 from redloop.assessment.scope_guard import AssessmentScopeGuard, ScopeBlockedError
 from redloop.assessment.terminal_engine import (
     ExecutionResult,
@@ -57,6 +61,7 @@ class RedloopMCPServer:
         scope_guard: Optional[AssessmentScopeGuard] = None,
         terminal_engine: Optional[UnifiedTerminalEngine] = None,
         audit_ledger: Optional[AuditLogger] = None,
+        person_scope_gate: Optional[PersonScopeGate] = None,
         max_steps: int = DEFAULT_MAX_STEPS,
         rate_limit: int = DEFAULT_RATE_LIMIT,
         name: str = "redloop-mcp",
@@ -65,6 +70,10 @@ class RedloopMCPServer:
         self.scope_guard = scope_guard
         self.terminal_engine = terminal_engine
         self.audit_ledger = audit_ledger
+        self.person_scope_gate = person_scope_gate or PersonScopeGate(
+            scope_guard=scope_guard,
+            audit_logger=audit_ledger,
+        )
         self.max_steps = max_steps
         self.rate_limit = rate_limit
 
@@ -266,16 +275,43 @@ class RedloopMCPServer:
         # 4. osint_lookup
         @self.mcp.tool(
             name="osint_lookup",
-            description="Lookup threat intelligence and reputation for an IP or domain.",
+            description="Lookup threat intelligence and reputation for an IP, domain, or person-identifying handle.",
         )
         async def osint_lookup(
             query: str,
             query_type: str = "domain",
+            operator_identifier: Optional[str] = None,
             client_token: str = "default",
         ) -> Dict[str, Any]:
             self._check_client_limits(client_token)
 
-            # Scope check
+            qtype_norm = (query_type or "domain").strip().lower()
+            if qtype_norm in ("email", "phone", "username", "person"):
+                try:
+                    decision = self.person_scope_gate.enforce(
+                        target=query,
+                        identifier_type=qtype_norm if qtype_norm != "person" else "auto",
+                        entry_point="mcp",
+                        operator_identifier=operator_identifier,
+                    )
+                except PersonScopeRequiredError as exc:
+                    err_payload = exc.to_response_dict()
+                    self._log_audit("osint_lookup", query, "BLOCKED_SCOPE_REQUIRED", err_payload)
+                    return err_payload
+
+                res = {
+                    "status": "success",
+                    "http_status": 200,
+                    "query": decision.normalized_target,
+                    "query_type": decision.identifier_type,
+                    "authorization_basis": decision.authorization_basis,
+                    "why_this_result_is_shown": decision.why_this_result_is_shown,
+                    "last_seen": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+                }
+                self._log_audit("osint_lookup", query, "SUCCESS", res)
+                return res
+
+            # Scope check for network targets (IP / domain)
             if self.scope_guard:
                 try:
                     auth = self.scope_guard.is_target_authorized(query, action="recon")

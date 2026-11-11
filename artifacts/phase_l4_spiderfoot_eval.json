@@ -1,0 +1,172 @@
+{
+  "scan_id": "sf-scan-2026-001",
+  "target": "authorized-bounty.org",
+  "scan_status": "FINISHED",
+  "events_count": 3,
+  "evidence_ids": [
+    "ev-sf-2ad0efce1fae",
+    "ev-sf-379ad59c3a8d",
+    "ev-sf-b455b784a012"
+  ],
+  "findings": [
+    {
+      "id": "RL-SF-2AD0EFCE1FAE",
+      "title": "Subdomain / Internet Hostname Discovered: api.authorized-bounty.org",
+      "category": "osint:internet_name",
+      "severity": "INFO",
+      "confidence": "CONFIRMED",
+      "asset": "authorized-bounty.org",
+      "target": "authorized-bounty.org",
+      "port": null,
+      "protocol": "tcp",
+      "endpoint": null,
+      "description": "SpiderFoot module 'sfp_crt' reported INTERNET_NAME for target 'authorized-bounty.org': api.authorized-bounty.org. Linked to verified Evidence ID 'ev-sf-2ad0efce1fae'.",
+      "evidence": [
+        {
+          "id": "ev-sf-2ad0efce1fae",
+          "timestamp": "2026-11-11T08:40:30.476018+00:00",
+          "operation_id": "sf-scan-sf-scan-2026-001",
+          "target": "authorized-bounty.org",
+          "provenance": "FRESH",
+          "source": "spiderfoot:sfp_crt",
+          "source_task_id": "sf-scan-2026-001",
+          "request_metadata": {
+            "connector_id": "builtin-spiderfoot",
+            "scan_id": "sf-scan-2026-001",
+            "event_type": "INTERNET_NAME"
+          },
+          "response_metadata": {
+            "module": "sfp_crt",
+            "sanitized": true
+          },
+          "response_excerpt": "api.authorized-bounty.org",
+          "tool_output": "{\"data\": \"api.authorized-bounty.org\", \"module\": \"sfp_crt\", \"type\": \"INTERNET_NAME\"}",
+          "parser_result": {
+            "event_type": "INTERNET_NAME",
+            "data": "api.authorized-bounty.org",
+            "module": "sfp_crt"
+          },
+          "sha256_hash": "98e6544172da10500802bfbdbf7a6bdfd836df55a820818a6f519bed47b414ee"
+        }
+      ],
+      "detection_method": "spiderfoot_connector:sfp_crt",
+      "impact": "",
+      "remediation": "",
+      "references": [],
+      "first_seen": "2026-11-11T08:40:30.476018+00:00",
+      "last_seen": "2026-11-11T08:40:30.476018+00:00",
+      "source_operation_id": "sf-scan-sf-scan-2026-001",
+      "status": "VERIFIED",
+      "cvss_score": null,
+      "cvss_vector": null,
+      "risk_score": 0.0,
+      "risk_explanation": ""
+    },
+    {
+      "id": "RL-SF-379AD59C3A8D",
+      "title": "Open TCP Port Observed by SpiderFoot: 10.20.30.40:443",
+      "category": "osint:tcp_port_open",
+      "severity": "LOW",
+      "confidence": "CONFIRMED",
+      "asset": "authorized-bounty.org",
+      "target": "authorized-bounty.org",
+      "port": null,
+      "protocol": "tcp",
+      "endpoint": null,
+      "description": "SpiderFoot module 'sfp_portscan_tcp' reported TCP_PORT_OPEN for target 'authorized-bounty.org': 10.20.30.40:443. Linked to verified Evidence ID 'ev-sf-379ad59c3a8d'.",
+      "evidence": [
+        {
+          "id": "ev-sf-379ad59c3a8d",
+          "timestamp": "2026-11-11T08:40:30.477017+00:00",
+          "operation_id": "sf-scan-sf-scan-2026-001",
+          "target": "authorized-bounty.org",
+          "provenance": "FRESH",
+          "source": "spiderfoot:sfp_portscan_tcp",
+          "source_task_id": "sf-scan-2026-001",
+          "request_metadata": {
+            "connector_id": "builtin-spiderfoot",
+            "scan_id": "sf-scan-2026-001",
+            "event_type": "TCP_PORT_OPEN"
+          },
+          "response_metadata": {
+            "module": "sfp_portscan_tcp",
+            "sanitized": true
+          },
+          "response_excerpt": "10.20.30.40:443",
+          "tool_output": "{\"data\": \"10.20.30.40:443\", \"module\": \"sfp_portscan_tcp\", \"type\": \"TCP_PORT_OPEN\"}",
+          "parser_result": {
+            "event_type": "TCP_PORT_OPEN",
+            "data": "10.20.30.40:443",
+            "module": "sfp_portscan_tcp"
+          },
+          "sha256_hash": "cc04fe01a7fcccd443f6cb1b7bac3627c4140f448962035e84d3a5942cf278c0"
+        }
+      ],
+      "detection_method": "spiderfoot_connector:sfp_portscan_tcp",
+      "impact": "",
+      "remediation": "",
+      "references": [],
+      "first_seen": "2026-11-11T08:40:30.477017+00:00",
+      "last_seen": "2026-11-11T08:40:30.477017+00:00",
+      "source_operation_id": "sf-scan-sf-scan-2026-001",
+      "status": "VERIFIED",
+      "cvss_score": null,
+      "cvss_vector": null,
+      "risk_score": 0.0,
+      "risk_explanation": ""
+    },
+    {
+      "id": "RL-SF-B455B784A012",
+      "title": "High-Severity CVE Exposure Identified via OSINT: CVE-2024-99999",
+      "category": "osint:vulnerability_cve_high",
+      "severity": "HIGH",
+      "confidence": "HIGH",
+      "asset": "authorized-bounty.org",
+      "target": "authorized-bounty.org",
+      "port": null,
+      "protocol": "tcp",
+      "endpoint": null,
+      "description": "SpiderFoot module 'sfp_vuln' reported VULNERABILITY_CVE_HIGH for target 'authorized-bounty.org': CVE-2024-99999. Linked to verified Evidence ID 'ev-sf-b455b784a012'.",
+      "evidence": [
+        {
+          "id": "ev-sf-b455b784a012",
+          "timestamp": "2026-11-11T08:40:30.477017+00:00",
+          "operation_id": "sf-scan-sf-scan-2026-001",
+          "target": "authorized-bounty.org",
+          "provenance": "FRESH",
+          "source": "spiderfoot:sfp_vuln",
+          "source_task_id": "sf-scan-2026-001",
+          "request_metadata": {
+            "connector_id": "builtin-spiderfoot",
+            "scan_id": "sf-scan-2026-001",
+            "event_type": "VULNERABILITY_CVE_HIGH"
+          },
+          "response_metadata": {
+            "module": "sfp_vuln",
+            "sanitized": true
+          },
+          "response_excerpt": "CVE-2024-99999",
+          "tool_output": "{\"data\": \"CVE-2024-99999\", \"module\": \"sfp_vuln\", \"type\": \"VULNERABILITY_CVE_HIGH\"}",
+          "parser_result": {
+            "event_type": "VULNERABILITY_CVE_HIGH",
+            "data": "CVE-2024-99999",
+            "module": "sfp_vuln"
+          },
+          "sha256_hash": "845a93b4f1ee6fd32c7697aac7824242b366a7348f95442feea2c8be9df5872b"
+        }
+      ],
+      "detection_method": "spiderfoot_connector:sfp_vuln",
+      "impact": "",
+      "remediation": "",
+      "references": [],
+      "first_seen": "2026-11-11T08:40:30.478019+00:00",
+      "last_seen": "2026-11-11T08:40:30.478019+00:00",
+      "source_operation_id": "sf-scan-sf-scan-2026-001",
+      "status": "VERIFIED",
+      "cvss_score": null,
+      "cvss_vector": null,
+      "risk_score": 0.0,
+      "risk_explanation": ""
+    }
+  ]
+}

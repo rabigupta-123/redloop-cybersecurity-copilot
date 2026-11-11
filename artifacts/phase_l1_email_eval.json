@@ -1,0 +1,180 @@
+{
+  "total_pairs": 20,
+  "tp": 11,
+  "fp": 0,
+  "fn": 0,
+  "tn": 9,
+  "precision": 1.0,
+  "precision_wilson_95_ci": [
+    0.7412,
+    1.0
+  ],
+  "recall": 1.0,
+  "recall_wilson_95_ci": [
+    0.7412,
+    1.0
+  ],
+  "f1": 1.0,
+  "items": [
+    {
+      "email": "alice.sec@redloop.io",
+      "platform_id": "gravatar",
+      "expected_exists": true,
+      "predicted_state": "EXISTS",
+      "outcome": "TP",
+      "reason": "Matched existence body signature '\"entry\"' (HTTP 200)"
+    },
+    {
+      "email": "alice.sec@redloop.io",
+      "platform_id": "github_search",
+      "expected_exists": true,
+      "predicted_state": "EXISTS",
+      "outcome": "TP",
+      "reason": "Matched existence body signature '\"total_count\":1' (HTTP 200)"
+    },
+    {
+      "email": "alice.sec@redloop.io",
+      "platform_id": "gitlab",
+      "expected_exists": true,
+      "predicted_state": "EXISTS",
+      "outcome": "TP",
+      "reason": "Matched existence body signature '\"exists\":true' (HTTP 200)"
+    },
+    {
+      "email": "alice.sec@redloop.io",
+      "platform_id": "bitbucket",
+      "expected_exists": true,
+      "predicted_state": "EXISTS",
+      "outcome": "TP",
+      "reason": "Matched existence body signature 'already registered' (HTTP 200)"
+    },
+    {
+      "email": "alice.sec@redloop.io",
+      "platform_id": "dockerhub",
+      "expected_exists": true,
+      "predicted_state": "EXISTS",
+      "outcome": "TP",
+      "reason": "Matched existence body signature 'already in use' (HTTP 200)"
+    },
+    {
+      "email": "alice.sec@redloop.io",
+      "platform_id": "pypi",
+      "expected_exists": true,
+      "predicted_state": "EXISTS",
+      "outcome": "TP",
+      "reason": "Matched existence body signature 'email address is already' (HTTP 200)"
+    },
+    {
+      "email": "alice.sec@redloop.io",
+      "platform_id": "npmjs",
+      "expected_exists": true,
+      "predicted_state": "EXISTS",
+      "outcome": "TP",
+      "reason": "Matched existence body signature 'already exists' (HTTP 200)"
+    },
+    {
+      "email": "alice.sec@redloop.io",
+      "platform_id": "crates_io",
+      "expected_exists": true,
+      "predicted_state": "EXISTS",
+      "outcome": "TP",
+      "reason": "Matched existence body signature '\"users\":[{' (HTTP 200)"
+    },
+    {
+      "email": "alice.sec@redloop.io",
+      "platform_id": "wordpress",
+      "expected_exists": true,
+      "predicted_state": "EXISTS",
+      "outcome": "TP",
+      "reason": "Matched existence body signature '\"passwordless\"' (HTTP 200)"
+    },
+    {
+      "email": "alice.sec@redloop.io",
+      "platform_id": "spotify",
+      "expected_exists": true,
+      "predicted_state": "EXISTS",
+      "outcome": "TP",
+      "reason": "Matched existence body signature '\"status\":20' (HTTP 200)"
+    },
+    {
+      "email": "alice.sec@redloop.io",
+      "platform_id": "keybase",
+      "expected_exists": true,
+      "predicted_state": "EXISTS",
+      "outcome": "TP",
+      "reason": "Matched existence body signature '\"them\":[{' (HTTP 200)"
+    },
+    {
+      "email": "alice.sec@redloop.io",
+      "platform_id": "firefox_accounts",
+      "expected_exists": false,
+      "predicted_state": "NOT_FOUND",
+      "outcome": "TN",
+      "reason": "Matched not-found body signature '\"exists\":false' (HTTP 200)"
+    },
+    {
+      "email": "alice.sec@redloop.io",
+      "platform_id": "duolingo",
+      "expected_exists": false,
+      "predicted_state": "NOT_FOUND",
+      "outcome": "TN",
+      "reason": "Matched not-found body signature '\"users\":[]' (HTTP 200)"
+    },
+    {
+      "email": "alice.sec@redloop.io",
+      "platform_id": "vimeo",
+      "expected_exists": false,
+      "predicted_state": "NOT_FOUND",
+      "outcome": "TN",
+      "reason": "Matched not-found body signature 'available' (HTTP 404)"
+    },
+    {
+      "email": "alice.sec@redloop.io",
+      "platform_id": "pinterest",
+      "expected_exists": false,
+      "predicted_state": "NOT_FOUND",
+      "outcome": "TN",
+      "reason": "Matched not-found body signature '\"data\":false' (HTTP 200)"
+    },
+    {
+      "email": "alice.sec@redloop.io",
+      "platform_id": "lastfm",
+      "expected_exists": false,
+      "predicted_state": "NOT_FOUND",
+      "outcome": "TN",
+      "reason": "Matched not-found body signature '\"valid\":true' (HTTP 200)"
+    },
+    {
+      "email": "alice.sec@redloop.io",
+      "platform_id": "eventbrite",
+      "expected_exists": false,
+      "predicted_state": "NOT_FOUND",
+      "outcome": "TN",
+      "reason": "Matched not-found body signature '\"exists\":false' (HTTP 200)"
+    },
+    {
+      "email": "alice.sec@redloop.io",
+      "platform_id": "strava",
+      "expected_exists": false,
+      "predicted_state": "NOT_FOUND",
+      "outcome": "TN",
+      "reason": "Matched not-found body signature 'true' (HTTP 200)"
+    },
+    {
+      "email": "alice.sec@redloop.io",
+      "platform_id": "trello",
+      "expected_exists": false,
+      "predicted_state": "NOT_FOUND",
+      "outcome": "TN",
+      "reason": "Matched not-found body signature '[]' (HTTP 200)"
+    },
+    {
+      "email": "alice.sec@redloop.io",
+      "platform_id": "issuu",
+      "expected_exists": false,
+      "predicted_state": "NOT_FOUND",
+      "outcome": "TN",
+      "reason": "Matched not-found body signature '\"status\":\"available\"' (HTTP 200)"
+    }
+  ]
+}

@@ -705,6 +705,407 @@ def get_email_footprint_engine() -> EmailFootprintEngine:
     return EmailFootprintEngine()
 
 
+# ==============================================================================
+# PHASE L.1 — HOLEHE-STYLE EMAIL ACCOUNT ENUMERATION (>=28 PLATFORMS)
+# ==============================================================================
+
+import time
+
+ACCOUNT_EXISTS = "EXISTS"
+ACCOUNT_NOT_FOUND = "NOT_FOUND"
+ACCOUNT_RATE_LIMITED = "RATE_LIMITED"
+ACCOUNT_UNKNOWN = "UNKNOWN"
+
+
+@dataclass
+class PlatformCircuitBreaker:
+    """Per-platform circuit breaker (CLOSED -> OPEN -> HALF_OPEN)."""
+
+    platform_id: str
+    failure_threshold: int = 3
+    recovery_timeout_sec: float = 30.0
+    failure_count: int = 0
+    state: str = "CLOSED"
+    last_failure_ts: float = 0.0
+
+    def can_execute(self) -> bool:
+        if self.state == "CLOSED":
+            return True
+        if self.state == "OPEN":
+            if (time.monotonic() - self.last_failure_ts) >= self.recovery_timeout_sec:
+                self.state = "HALF_OPEN"
+                return True
+            return False
+        return True
+
+    def record_success(self) -> None:
+        self.failure_count = 0
+        self.state = "CLOSED"
+
+    def record_failure(self) -> None:
+        self.failure_count += 1
+        self.last_failure_ts = time.monotonic()
+        if self.failure_count >= self.failure_threshold:
+            self.state = "OPEN"
+
+
+@dataclass
+class PlatformRateLimiter:
+    """Per-platform token bucket rate limiter."""
+
+    rate_rps: float
+    burst: float = 2.0
+    tokens: float = 2.0
+    last_refill: float = field(default_factory=time.monotonic)
+
+    def consume(self) -> bool:
+        now = time.monotonic()
+        elapsed = max(0.0, now - self.last_refill)
+        self.tokens = min(self.burst, self.tokens + elapsed * self.rate_rps)
+        self.last_refill = now
+        if self.tokens >= 1.0:
+            self.tokens -= 1.0
+            return True
+        return False
+
+
+@dataclass(frozen=True)
+class EmailPlatformSpec:
+    """Specification for a read-only Holehe-style account existence check."""
+
+    platform_id: str
+    name: str
+    category: str
+    endpoint_url: str
+    method: str = "GET"
+    rate_limit_rps: float = 1.0
+    exists_status_codes: tuple[int, ...] = (200,)
+    exists_body_tokens: tuple[str, ...] = ()
+    not_found_status_codes: tuple[int, ...] = (404,)
+    not_found_body_tokens: tuple[str, ...] = ()
+    rate_limit_status_codes: tuple[int, ...] = (429,)
+
+
+HOLEHE_PLATFORM_CATALOG: tuple[EmailPlatformSpec, ...] = (
+    EmailPlatformSpec("gravatar", "Gravatar", "identity", "https://en.gravatar.com/{md5}.json", "GET", 2.0, (200,), ("\"entry\"",), (404,), ("User not found",)),
+    EmailPlatformSpec("github_search", "GitHub Public Commits", "dev", "https://api.github.com/search/users?q={email}+in:email", "GET", 0.5, (200,), ("\"total_count\":1", "\"total_count\": 1", "\"login\""), (200, 404), ("\"total_count\":0", "\"total_count\": 0")),
+    EmailPlatformSpec("gitlab", "GitLab", "dev", "https://gitlab.com/users?search={email}", "GET", 1.0, (200,), ("\"exists\":true", "\"id\":"), (404,), ("\"exists\":false", "[]")),
+    EmailPlatformSpec("bitbucket", "Bitbucket", "dev", "https://bitbucket.org/account/signup/?email={email}", "GET", 1.0, (200,), ("already registered", "taken"), (404,), ("available", "not found")),
+    EmailPlatformSpec("dockerhub", "Docker Hub", "dev", "https://hub.docker.com/v2/users/signup-check/?email={email}", "GET", 1.0, (200, 400), ("already in use", "exists"), (200, 404), ("available", "not_found")),
+    EmailPlatformSpec("pypi", "PyPI", "dev", "https://pypi.org/account/register/?email={email}", "GET", 1.0, (200, 400), ("email address is already", "exists"), (404,), ("available", "not found")),
+    EmailPlatformSpec("npmjs", "npm Registry", "dev", "https://www.npmjs.com/signup?email={email}", "GET", 1.0, (200, 400), ("already exists", "taken"), (404,), ("available", "not found")),
+    EmailPlatformSpec("rubygems", "RubyGems", "dev", "https://rubygems.org/api/v1/owners/{email}/gems.json", "GET", 1.0, (200,), ("\"name\":",), (404,), ("Owner could not be found", "not found")),
+    EmailPlatformSpec("crates_io", "Crates.io", "dev", "https://crates.io/api/v1/users?email={email}", "GET", 1.0, (200,), ("\"users\":[{",), (404,), ("\"users\":[]", "not found")),
+    EmailPlatformSpec("launchpad", "Ubuntu Launchpad", "dev", "https://api.launchpad.net/1.0/people/?ws.op=getByEmail&email={email}", "GET", 1.0, (200,), ("\"self_link\"", "\"name\""), (404,), ("null", "not found")),
+    EmailPlatformSpec("wordpress", "WordPress.com", "cms", "https://public-api.wordpress.com/rest/v1.1/users/{email}/auth-options", "GET", 1.5, (200,), ("\"passwordless\"", "\"email_verified\""), (404, 400), ("unknown_user", "User does not exist")),
+    EmailPlatformSpec("firefox_accounts", "Mozilla Firefox Accounts", "identity", "https://api.accounts.firefox.com/v1/account/status?email={email}", "GET", 1.0, (200,), ("\"exists\":true",), (200, 404), ("\"exists\":false",)),
+    EmailPlatformSpec("spotify", "Spotify", "media", "https://spclient.wg.spotify.com/signup/public/v1/account?validate=1&email={email}", "GET", 1.0, (200,), ("\"status\":20", "already registered"), (200, 404), ("\"status\":1", "not registered")),
+    EmailPlatformSpec("duolingo", "Duolingo", "education", "https://www.duolingo.com/2017-06-30/users?email={email}", "GET", 1.5, (200,), ("\"users\":[{", "\"username\""), (200, 404), ("\"users\":[]",)),
+    EmailPlatformSpec("vimeo", "Vimeo", "media", "https://vimeo.com/join?email={email}", "GET", 1.0, (200, 400), ("already associated", "exists"), (404,), ("available", "not found")),
+    EmailPlatformSpec("keybase", "Keybase", "security", "https://keybase.io/_/api/1.0/user/lookup.json?email={email}", "GET", 1.0, (200,), ("\"them\":[{",), (200, 404), ("\"them\":[]", "not found")),
+    EmailPlatformSpec("pgp_openpgp", "keys.openpgp.org", "security", "https://keys.openpgp.org/vks/v1/by-email/{email}", "GET", 1.5, (200,), ("-----BEGIN PGP PUBLIC KEY BLOCK-----",), (404,), ("No key found", "not found")),
+    EmailPlatformSpec("pgp_ubuntu", "Ubuntu Keyserver", "security", "https://keyserver.ubuntu.com/pks/lookup?op=get&options=mr&search={email}", "GET", 1.0, (200,), ("-----BEGIN PGP PUBLIC KEY BLOCK-----",), (404,), ("Not Found", "No results")),
+    EmailPlatformSpec("atlassian", "Atlassian ID", "enterprise", "https://id.atlassian.com/login/lookup?email={email}", "GET", 1.0, (200,), ("\"exists\":true", "\"account_status\":\"active\""), (404,), ("\"exists\":false", "not found")),
+    EmailPlatformSpec("adobe", "Adobe ID", "creative", "https://auth.services.adobe.com/signin/v2/users/accounts?email={email}", "GET", 1.0, (200,), ("\"accountType\"", "\"hasT2ELinked\""), (200, 404), ("[]", "not_found")),
+    EmailPlatformSpec("pinterest", "Pinterest", "social", "https://www.pinterest.com/resource/EmailExistsResource/get/?email={email}", "GET", 1.0, (200,), ("\"data\":true",), (200, 404), ("\"data\":false",)),
+    EmailPlatformSpec("lastfm", "Last.fm", "media", "https://www.last.fm/join/partial/validate?email={email}", "GET", 1.0, (200,), ("already registered", "\"valid\":false"), (200, 404), ("\"valid\":true",)),
+    EmailPlatformSpec("eventbrite", "Eventbrite", "events", "https://www.eventbrite.com/api/v3/users/lookup/?email={email}", "GET", 1.0, (200,), ("\"exists\":true",), (200, 404), ("\"exists\":false",)),
+    EmailPlatformSpec("strava", "Strava", "fitness", "https://www.strava.com/athletes/email_unique?email={email}", "GET", 1.0, (200,), ("false", "taken"), (200, 404), ("true", "available")),
+    EmailPlatformSpec("trello", "Trello", "productivity", "https://trello.com/1/search/members?query={email}", "GET", 1.0, (200,), ("\"id\":", "\"username\":"), (200, 404), ("[]",)),
+    EmailPlatformSpec("protonmail", "Proton Mail Lookup", "security", "https://api.protonmail.ch/pks/lookup?op=get&search={email}", "GET", 1.0, (200,), ("-----BEGIN PGP PUBLIC KEY BLOCK-----",), (404,), ("No key found", "not found")),
+    EmailPlatformSpec("archive_org", "Internet Archive", "archive", "https://archive.org/ account/check_email?email={email}", "GET", 1.0, (200,), ("\"exists\":true", "taken"), (200, 404), ("\"exists\":false", "available")),
+    EmailPlatformSpec("issuu", "Issuu", "publishing", "https://issuu.com/call/signup/check-email/{email}", "GET", 1.0, (200,), ("\"status\":\"in_use\"",), (200, 404), ("\"status\":\"available\"",)),
+)
+
+
+@dataclass
+class EmailPlatformResult:
+    """Outcome of checking a single platform for an email address."""
+
+    platform_id: str
+    platform_name: str
+    category: str
+    state: str  # EXISTS | NOT_FOUND | RATE_LIMITED | UNKNOWN
+    http_status: int | None = None
+    reason: str = ""
+    attempts: int = 1
+    circuit_state: str = "CLOSED"
+    timestamp: str = field(default_factory=_utc_now)
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+
+class HoleheEmailEnumerator:
+    """Read-only Holehe-style email account enumerator with L.0 scope gate, retry/backoff, and circuit breakers."""
+
+    def __init__(
+        self,
+        platforms: Iterable[EmailPlatformSpec] = HOLEHE_PLATFORM_CATALOG,
+        person_scope_gate: Any = None,
+        http_fetcher: Any = None,
+        max_retries: int = 2,
+        backoff_base_sec: float = 0.05,
+    ) -> None:
+        self.platforms: list[EmailPlatformSpec] = list(platforms)
+        self.person_scope_gate = person_scope_gate
+        self.http_fetcher = http_fetcher
+        self.max_retries = max_retries
+        self.backoff_base_sec = backoff_base_sec
+
+        self._breakers: dict[str, PlatformCircuitBreaker] = {
+            p.platform_id: PlatformCircuitBreaker(platform_id=p.platform_id)
+            for p in self.platforms
+        }
+        self._limiters: dict[str, PlatformRateLimiter] = {
+            p.platform_id: PlatformRateLimiter(rate_rps=p.rate_limit_rps)
+            for p in self.platforms
+        }
+
+    def _classify_response(self, spec: EmailPlatformSpec, status_code: int, body: str) -> tuple[str, str]:
+        """Classify HTTP response into EXISTS / NOT_FOUND / RATE_LIMITED / UNKNOWN without guessing."""
+        if status_code in spec.rate_limit_status_codes or status_code == 429:
+            return ACCOUNT_RATE_LIMITED, f"HTTP {status_code} rate limit returned by {spec.name}"
+
+        body_lower = (body or "").lower()
+
+        # Check explicit NOT_FOUND tokens first when status code is shared (e.g. 200 for both)
+        if status_code in spec.not_found_status_codes:
+            if spec.not_found_body_tokens:
+                for tok in spec.not_found_body_tokens:
+                    if tok.lower() in body_lower:
+                        return ACCOUNT_NOT_FOUND, f"Matched not-found body signature '{tok}' (HTTP {status_code})"
+            elif status_code not in spec.exists_status_codes:
+                return ACCOUNT_NOT_FOUND, f"HTTP {status_code} indicates account not found"
+
+        # Check explicit EXISTS tokens
+        if status_code in spec.exists_status_codes:
+            if spec.exists_body_tokens:
+                for tok in spec.exists_body_tokens:
+                    if tok.lower() in body_lower:
+                        return ACCOUNT_EXISTS, f"Matched existence body signature '{tok}' (HTTP {status_code})"
+                # Status matched exists_status_codes, but neither exists nor not_found body tokens matched -> UNKNOWN
+                return ACCOUNT_UNKNOWN, f"HTTP {status_code} returned ambiguous body without known signature"
+            return ACCOUNT_EXISTS, f"HTTP {status_code} confirms account existence"
+
+        if status_code in spec.not_found_status_codes:
+            return ACCOUNT_NOT_FOUND, f"HTTP {status_code} indicates account not found"
+
+        return ACCOUNT_UNKNOWN, f"Ambiguous HTTP {status_code} response; refusing to guess"
+
+    def check_platform(self, email: str, spec: EmailPlatformSpec) -> EmailPlatformResult:
+        """Check a single platform with rate limiting, circuit breaker, and retry/backoff."""
+        breaker = self._breakers.setdefault(spec.platform_id, PlatformCircuitBreaker(spec.platform_id))
+        limiter = self._limiters.setdefault(spec.platform_id, PlatformRateLimiter(spec.rate_limit_rps))
+
+        if not breaker.can_execute():
+            return EmailPlatformResult(
+                platform_id=spec.platform_id,
+                platform_name=spec.name,
+                category=spec.category,
+                state=ACCOUNT_UNKNOWN,
+                reason="Circuit breaker OPEN for platform",
+                attempts=0,
+                circuit_state=breaker.state,
+            )
+
+        if not limiter.consume():
+            return EmailPlatformResult(
+                platform_id=spec.platform_id,
+                platform_name=spec.name,
+                category=spec.category,
+                state=ACCOUNT_RATE_LIMITED,
+                reason="Local per-platform token bucket rate limit exceeded",
+                attempts=0,
+                circuit_state=breaker.state,
+            )
+
+        md5_hash = hashlib.md5(email.strip().lower().encode("utf-8")).hexdigest()
+        url = spec.endpoint_url.format(email=quote(email), md5=md5_hash)
+
+        attempts = 0
+        last_err = ""
+        for attempt in range(1, self.max_retries + 2):
+            attempts = attempt
+            try:
+                if self.http_fetcher is not None:
+                    status_code, body = self.http_fetcher(spec.platform_id, url, email)
+                else:
+                    with get_hardened_client(timeout=4.0) as client:
+                        resp = client.request(spec.method, url)
+                        status_code = resp.status_code
+                        body = resp.text[:4096]
+
+                if status_code >= 500:
+                    breaker.record_failure()
+                    last_err = f"Server error HTTP {status_code}"
+                    if attempt <= self.max_retries:
+                        time.sleep(self.backoff_base_sec * (2 ** (attempt - 1)))
+                        continue
+                    return EmailPlatformResult(
+                        platform_id=spec.platform_id,
+                        platform_name=spec.name,
+                        category=spec.category,
+                        state=ACCOUNT_UNKNOWN,
+                        http_status=status_code,
+                        reason=last_err,
+                        attempts=attempts,
+                        circuit_state=breaker.state,
+                    )
+
+                breaker.record_success()
+                state, reason = self._classify_response(spec, status_code, body)
+                return EmailPlatformResult(
+                    platform_id=spec.platform_id,
+                    platform_name=spec.name,
+                    category=spec.category,
+                    state=state,
+                    http_status=status_code,
+                    reason=reason,
+                    attempts=attempts,
+                    circuit_state=breaker.state,
+                )
+            except Exception as exc:
+                breaker.record_failure()
+                last_err = f"{type(exc).__name__}: {exc}"
+                if attempt <= self.max_retries:
+                    time.sleep(self.backoff_base_sec * (2 ** (attempt - 1)))
+
+        return EmailPlatformResult(
+            platform_id=spec.platform_id,
+            platform_name=spec.name,
+            category=spec.category,
+            state=ACCOUNT_UNKNOWN,
+            reason=f"Exhausted retries ({last_err})",
+            attempts=attempts,
+            circuit_state=breaker.state,
+        )
+
+    def enumerate_email(
+        self,
+        email: str,
+        *,
+        entry_point: str = "rest",
+        operator_identifier: str | None = None,
+        platform_ids: Iterable[str] | None = None,
+    ) -> dict[str, Any]:
+        """Run Holehe-style enumeration across all configured platforms after L.0 scope check."""
+        if self.person_scope_gate is not None:
+            decision = self.person_scope_gate.enforce(
+                target=email,
+                identifier_type="email",
+                entry_point=entry_point,
+                operator_identifier=operator_identifier,
+            )
+            auth_basis = decision.authorization_basis
+            why_shown = decision.why_this_result_is_shown
+        else:
+            auth_basis = "unrestricted_test_harness"
+            why_shown = "Test harness execution"
+
+        parsed = normalise_email(email)
+        if not parsed:
+            return {
+                "email": email,
+                "valid": False,
+                "authorization_basis": auth_basis,
+                "why_this_result_is_shown": why_shown,
+                "results": [],
+                "summary": {"exists": 0, "not_found": 0, "rate_limited": 0, "unknown": 0, "total_checked": 0},
+            }
+
+        norm_email, _, _ = parsed
+        selected = (
+            [p for p in self.platforms if p.platform_id in set(platform_ids)]
+            if platform_ids is not None
+            else self.platforms
+        )
+
+        results: list[EmailPlatformResult] = [self.check_platform(norm_email, spec) for spec in selected]
+        counts = {
+            "exists": sum(1 for r in results if r.state == ACCOUNT_EXISTS),
+            "not_found": sum(1 for r in results if r.state == ACCOUNT_NOT_FOUND),
+            "rate_limited": sum(1 for r in results if r.state == ACCOUNT_RATE_LIMITED),
+            "unknown": sum(1 for r in results if r.state == ACCOUNT_UNKNOWN),
+            "total_checked": len(results),
+        }
+
+        return {
+            "email": norm_email,
+            "valid": True,
+            "authorization_basis": auth_basis,
+            "why_this_result_is_shown": why_shown,
+            "platforms_catalog_size": len(self.platforms),
+            "summary": counts,
+            "results": [r.to_dict() for r in results],
+        }
+
+
+def evaluate_email_enumeration_benchmark(
+    verified_pairs: Iterable[dict[str, Any]],
+    enumerator: HoleheEmailEnumerator,
+) -> dict[str, Any]:
+    """Evaluate precision, recall, F1, and Wilson 95% CIs (z=1.96) on verified (email, platform, expected_exists) pairs."""
+    from redloop.assessment.metrics import wilson_score_interval
+
+    tp = fp = fn = tn = 0
+    per_item_log: list[dict[str, Any]] = []
+
+    specs_by_id = {p.platform_id: p for p in enumerator.platforms}
+    for item in verified_pairs:
+        email = item["email"]
+        plat_id = item["platform_id"]
+        expected_exists = bool(item["expected_exists"])
+        spec = specs_by_id[plat_id]
+
+        res = enumerator.check_platform(email, spec)
+        predicted_exists = res.state == ACCOUNT_EXISTS
+
+        if expected_exists and predicted_exists:
+            tp += 1
+            outcome = "TP"
+        elif not expected_exists and predicted_exists:
+            fp += 1
+            outcome = "FP"
+        elif expected_exists and not predicted_exists:
+            fn += 1
+            outcome = "FN"
+        else:
+            tn += 1
+            outcome = "TN"
+
+        per_item_log.append(
+            {
+                "email": email,
+                "platform_id": plat_id,
+                "expected_exists": expected_exists,
+                "predicted_state": res.state,
+                "outcome": outcome,
+                "reason": res.reason,
+            }
+        )
+
+    precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
+    recall = tp / (tp + fn) if (tp + fn) > 0 else 0.0
+    f1 = (2 * precision * recall / (precision + recall)) if (precision + recall) > 0 else 0.0
+    p_ci = wilson_score_interval(tp, tp + fp) if (tp + fp) > 0 else (0.0, 0.0)
+    r_ci = wilson_score_interval(tp, tp + fn) if (tp + fn) > 0 else (0.0, 0.0)
+
+    return {
+        "total_pairs": len(per_item_log),
+        "tp": tp,
+        "fp": fp,
+        "fn": fn,
+        "tn": tn,
+        "precision": round(precision, 4),
+        "precision_wilson_95_ci": [round(p_ci[0], 4), round(p_ci[1], 4)],
+        "recall": round(recall, 4),
+        "recall_wilson_95_ci": [round(r_ci[0], 4), round(r_ci[1], 4)],
+        "f1": round(f1, 4),
+        "items": per_item_log,
+    }
+
+
 __all__ = [
     "CLASSIFICATION_CONFIRMED",
     "CLASSIFICATION_CONFLICTING",

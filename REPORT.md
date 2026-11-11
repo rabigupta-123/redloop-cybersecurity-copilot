@@ -1317,6 +1317,174 @@ In accordance with Phase K rules of absolute evidence integrity, the following i
    - *Impact*: Requests past the concurrency queue depth (35) are shed with HTTP 429 (`QUEUE_CAPACITY_EXCEEDED`) rather than letting latency balloon unbounded.
    - *Status*: Multi-worker deployment (e.g. `gunicorn -w 4 -k uvicorn.workers.UvicornWorker`) or Redis-backed task queue recommended for production enterprise scale.
 
+---
+
+## 13. Phase L — Deep OSINT, SpiderFoot Connector, Kali Remote Execution, Reverse-Engineering Tooling & Local Model Flexibility
+
+### 13.0 Gate L.0: Scope Gate for Person-Identifying Lookups (`PersonScopeGate`)
+
+#### 1. Implementation & Enforcement Choke Point
+- Created [`src/redloop/assessment/person_scope_gate.py`](file:///src/redloop/assessment/person_scope_gate.py) implementing `PersonScopeGate`, `PersonScopeDecision`, and `PersonScopeRequiredError`.
+- Every person-identifying lookup (`email`, `phone`, `username`) across **REST** (`handle_rest_person_lookup`), **Chat** (`handle_chat_person_lookup`), and **MCP** (`handle_mcp_person_lookup` / `RedloopMCPServer.osint_lookup`) must satisfy one of:
+  1. **Self-Lookup (`self_lookup`)**: `normalized_target` matches one of the operator's own verified identifiers (`operator_identifiers` / `REDLOOP_OPERATOR_IDENTIFIERS`). Logged to the tamper-evident SQLite `AuditLogger` with `why_this_result_is_shown`.
+  2. **Signed Engagement Authorization (`engagement_authorized`)**: `normalized_target` (or parent `@domain`) is explicitly covered by an active, unexpired, cryptographically signed `EngagementScope` (`ScopeManager` / `AssessmentScopeGuard`). Logged to `AuditLogger` with `why_this_result_is_shown`.
+- Any lookup satisfying neither condition raises `PersonScopeRequiredError` (`HTTP 403`, `error_code: "SCOPE_REQUIRED"`) and records an immutable `BLOCKED` row in `audit_log`.
+
+#### 2. Verification Metrics (`tests/test_person_scope_gate_l0.py`)
+- **Reproducible Command**:
+  ```bash
+  python -m pytest tests/test_person_scope_gate_l0.py -v
+  ```
+- **Results**:
+  - **Total Unit Tests**: **39 passed** (`k = 39, n = 39`, pass rate $= 1.0000$, Wilson 95% CI $[0.9103, 1.0000]$).
+  - **Unauthorized Lookup Block Rate across REST, Chat, and MCP**: $k = 14, n = 14$ ($100.00\%$, Wilson 95% CI $[0.7847, 1.0000]$, 0 bypasses).
+
+---
+
+### 13.1 Gate L.1: Email $\rightarrow$ Account Enumeration (Holehe-Style, 28 Platforms)
+
+#### 1. Implementation
+- Extended [`src/redloop/email_footprint.py`](file:///src/redloop/email_footprint.py) with `HOLEHE_PLATFORM_CATALOG` (**28 platforms**: Gravatar, GitHub Search, GitLab, Bitbucket, Docker Hub, PyPI, npmjs, RubyGems, Crates.io, Ubuntu Launchpad, WordPress.com, Firefox Accounts, Spotify, Duolingo, Vimeo, Keybase, keys.openpgp.org, Ubuntu Keyserver, Atlassian ID, Adobe ID, Pinterest, Last.fm, Eventbrite, Strava, Trello, Proton Mail Lookup, Internet Archive, Issuu).
+- Implements `HoleheEmailEnumerator` with per-platform token bucket rate limiters (`PlatformRateLimiter`), exponential backoff retries, per-platform circuit breakers (`PlatformCircuitBreaker`), and strict four-state classification (`EXISTS`, `NOT_FOUND`, `RATE_LIMITED`, `UNKNOWN` — never guessing on ambiguous responses).
+
+#### 2. Field-Level Precision, Recall & Wilson 95% CI (`artifacts/phase_l1_email_eval.json`)
+- **Reproducible Command**:
+  ```bash
+  python -m pytest tests/test_phase_l_gates.py -k "gate_l1" -v
+  ```
+- **Verified Ground-Truth Set ($n = 20$ email/platform pairs: $11$ `EXISTS`, $9$ `NOT_FOUND`)**:
+  - **True Positives ($TP$)**: $11$ | **False Positives ($FP$)**: $0$ | **False Negatives ($FN$)**: $0$ | **True Negatives ($TN$)**: $9$
+  - **Precision**: **1.0000** ($k = 11, n = 11$, Wilson 95% CI $[0.7412, 1.0000]$) — meets $\ge 0.85$ gate.
+  - **Recall**: **1.0000** ($k = 11, n = 11$, Wilson 95% CI $[0.7412, 1.0000]$) — meets $\ge 0.70$ gate.
+  - **F1 Score**: **1.0000**.
+
+---
+
+### 13.2 Gate L.2: Username Enumeration (Sherlock-Style, 85 Platforms)
+
+#### 1. Implementation
+- Expanded [`src/redloop/data/platforms.json`](file:///src/redloop/data/platforms.json) (generated via [`scripts/generate_platforms_json.py`](file:///scripts/generate_platforms_json.py)) to **85 platforms** across developer, security/CTF, social, blogging, gaming, academic, and finance categories.
+- Created [`src/redloop/username_footprint.py`](file:///src/redloop/username_footprint.py) (`SherlockUsernameEnumerator`, `GlobalRateLimiter`):
+  - Every platform entry defines both `exists_status_codes` + `exists_body_signatures` and `not_found_status_codes` + `not_found_body_signatures`.
+  - Explicitly checks `not_found_body_signatures` first on HTTP 200 responses to eliminate soft-404 false positives, and returns `UNKNOWN` if HTTP 200 is returned without a matching existence body signature.
+
+#### 2. Precision, Recall & Wilson 95% CI (`artifacts/phase_l2_username_eval.json`)
+- **Reproducible Command**:
+  ```bash
+  python -m pytest tests/test_phase_l_gates.py -k "gate_l2" -v
+  ```
+- **Verified Ground-Truth Set ($n = 20$ username/platform pairs across `torvalds` and `octocat`, including soft-200 not-found pages)**:
+  - **True Positives ($TP$)**: $10$ | **False Positives ($FP$)**: $0$ | **False Negatives ($FN$)**: $0$ | **True Negatives ($TN$)**: $10$
+  - **Precision**: **1.0000** ($k = 10, n = 10$, Wilson 95% CI $[0.7225, 1.0000]$) — meets $\ge 0.85$ gate.
+  - **Recall**: **1.0000** ($k = 10, n = 10$, Wilson 95% CI $[0.7225, 1.0000]$) — meets $\ge 0.70$ gate.
+  - **F1 Score**: **1.0000**.
+
+---
+
+### 13.3 Gate L.3: Phone Number OSINT (`libphonenumber` Metadata & Source Attribution)
+
+#### 1. Implementation
+- Created [`src/redloop/phone_footprint.py`](file:///src/redloop/phone_footprint.py) (`PhoneFootprintEngine`, `PhoneFootprintReport`, `PhoneFieldEvidence`) powered by `phonenumbers` (`libphonenumber` v9.0.41).
+- Every returned attribute (`e164_format`, `international_format`, `national_format`, `country_code`, `iso_region`, `geographic_region`, `carrier`, `line_type`, `timezones`, `breach_exposure`) is wrapped in `PhoneFieldEvidence(value, source, confidence, note)`.
+- Zero synthesized subscriber names or fabricated live HLR claims; includes explicit Mobile Number Portability (MNP) caveats.
+
+#### 2. Verification Metrics (`artifacts/phase_l3_phone_eval.json`)
+- **Reproducible Command**:
+  ```bash
+  python -m pytest tests/test_phase_l_gates.py -k "gate_l3" -v
+  ```
+- **Results**:
+  - **Tested International Number Formats**: **12 numbers** (`US` fixed/mobile, `US` toll-free `+18004444444`, `GB` mobile `+447400123456`, `GB` London fixed-line `+442079460000`, `IN` mobile, `DE` mobile, `FR` mobile, `AU` mobile, `JP` mobile, `CH` Zurich fixed-line, `BR` mobile, `SG` mobile).
+  - **Format, ISO Region & Line-Type Accuracy**: $12 / 12$ ($100.00\%$, Wilson 95% CI $[0.7575, 1.0000]$).
+  - **Source & Confidence Attribution Coverage**: $120 / 120$ fields ($100.00\%$, 0 unattributed fields).
+
+---
+
+### 13.4 Gate L.4: SpiderFoot Integration (Isolated GPL-3.0 Service Connector)
+
+#### 1. License Isolation & Documentation
+- Created [`docs/THIRD_PARTY.md`](file:///docs/THIRD_PARTY.md) documenting SpiderFoot (`GPL-3.0`, upstream `https://github.com/smicallef/spiderfoot`) as an isolated out-of-process REST service. Zero GPL-3.0 source files are copied or linked into the MIT-licensed REDLOOP repository.
+- Created [`src/redloop/connectors/spiderfoot_connector.py`](file:///src/redloop/connectors/spiderfoot_connector.py) (`SpiderFootConnector`) and registered `builtin-spiderfoot` in `ConnectorRegistry` ([`src/redloop/connectors/registry.py`](file:///src/redloop/connectors/registry.py)).
+- Implements `start_scan`, `poll_status`, `pull_results`, and `map_to_redloop_evidence_and_findings` with untrusted output sanitization (`process_untrusted_output`) and SHA-256 `Evidence` / `Finding` linkage.
+
+#### 2. End-to-End Round-Trip Verification (`artifacts/phase_l4_spiderfoot_eval.json`)
+- **Reproducible Command**:
+  ```bash
+  python -m pytest tests/test_phase_l_gates.py -k "gate_l4" -v
+  ```
+- **Results**: Verified `start_scan` $\rightarrow$ `poll_status` (`FINISHED`) $\rightarrow$ `pull_results` $\rightarrow$ `Evidence` (`ev-sf-*`) and `Finding` (`RL-SF-*`) ingestion into `RedloopMCPServer` (`3/3` events mapped and verified).
+
+---
+
+### 13.5 Gate L.5: Kali Remote Execution (SSH Connector + 24-Tool Cached `--help` Schemas)
+
+#### 1. Implementation
+- Generated [`src/redloop/data/kali_tool_help_cache.json`](file:///src/redloop/data/kali_tool_help_cache.json) via [`scripts/generate_kali_help_cache.py`](file:///scripts/generate_kali_help_cache.py) containing captured `--help` flag schemas and version citations for **24 Kali tools**: `nmap`, `gobuster`, `ffuf`, `nikto`, `sqlmap`, `whatweb`, `masscan`, `hydra`, `john`, `hashcat`, `tcpdump`, `tshark`, `nc`, `socat`, `curl`, `dig`, `whois`, `dnsrecon`, `subfinder`, `httpx`, `nuclei`, `feroxbuster`, `wpscan`, `enum4linux`.
+- Created [`src/redloop/connectors/kali_ssh_connector.py`](file:///src/redloop/connectors/kali_ssh_connector.py) (`KaliSSHConnector`, `KaliToolHelpKnowledgeBase`, `ValidatedCommand`):
+  1. Rejects shell metacharacters/chaining (`;`, `|`, `&&`, `$()`, backticks) with `400 INVALID_COMMAND` before SSH.
+  2. Rejects any unknown/hallucinated CLI flag not present in `kali_tool_help_cache.json` with `422 UNKNOWN_TOOL_FLAG` before SSH.
+  3. Verifies the target IP/domain/URL against the signed `ScopeManager` / `AssessmentScopeGuard` BEFORE SSH dispatch; out-of-scope targets are blocked with `403 SCOPE_VIOLATION` and logged to `AuditLogger` with 0 SSH packets sent.
+  4. Dispatches authorized commands over SSH and maps output to `Evidence` (`ev-kali-*`) and `Finding` records with per-flag `--help` citations.
+
+#### 2. Verification (`artifacts/phase_l5_kali_ssh_eval.json`)
+- **Reproducible Command**:
+  ```bash
+  python -m pytest tests/test_phase_l_gates.py -k "gate_l5" -v
+  ```
+- **Results**: Hallucinated flag `--hallucinated-ai-flag` blocked pre-SSH (`422 UNKNOWN_TOOL_FLAG`); out-of-scope `8.8.8.8` blocked pre-SSH (`403 SCOPE_VIOLATION`); shell injection `10.20.30.15; id` blocked pre-SSH (`400 INVALID_COMMAND`); in-scope `nmap -sV -Pn -p 22,443 10.20.30.15` executed over SSH producing 3 verified flag citations, 1 `Evidence` record, and 2 `Finding` records.
+
+---
+
+### 13.6 Gate L.6: Reverse-Engineering Tooling (Air-Gapped `radare2` / Ghidra Connector)
+
+#### 1. Implementation
+- Created [`src/redloop/connectors/re_connector.py`](file:///src/redloop/connectors/re_connector.py) (`ReverseEngineeringConnector`, `UploadedBinaryRegistry`, `build_test_crackme_elf`) and registered `builtin-re-radare2` in `ConnectorRegistry`.
+- **Upload-Only & Air-Gapped Sandbox**:
+  - Rejects any network target (URLs, IPs, domains) with `403 NETWORK_TARGET_FORBIDDEN` and any unregistered host file path with `403 UPLOAD_ONLY_REQUIRED`.
+  - Operates strictly on files registered in `UploadedBinaryRegistry` inside an isolated air-gapped directory (`REDLOOP_AIRGAPPED_SANDBOX=1`), verifying SHA-256 integrity prior to analysis.
+- Implements `extract_strings` (`izj` schema), `list_functions` (`aflj` schema), `disassemble_view` (`pdfj` schema), and `static_triage` (ELF64/PE32+/Mach-O header detection, overall & per-section Shannon entropy, and UPX/VMProtect/Themida/high-entropy packer detection).
+
+#### 2. Crackme Round-Trip Verification (`artifacts/phase_l6_re_eval.json`)
+- **Reproducible Command**:
+  ```bash
+  python -m pytest tests/test_phase_l_gates.py -k "gate_l6" -v
+  ```
+- **Results**: Compiled deterministic x86_64 ELF64 crackme (`tests/fixtures/binaries/redloop_crackme.elf`), verified upload-and-analyze round-trip (`strings`, `sym.main` & `sym.check_serial` function table, x86_64 disassembly opcodes, section entropy, UPX packer detection) matching `r2` reference JSON output (`izj`, `aflj`, `pdfj`) with **0 diff**.
+
+---
+
+### 13.7 Gate L.7: Local Model Flexibility (Non-Ollama OpenAI-Compatible Endpoints)
+
+#### 1. Implementation
+- Created [`src/redloop/local_openai_adapter.py`](file:///src/redloop/local_openai_adapter.py) (`LocalOpenAIClient`, `LocalOpenAIEndpointConfig`, `select_resource_aware_local_openai_model`, `run_local_openai_30_prompt_benchmark`) and integrated `Provider.LOCAL_OPENAI` (`local_openai`) into [`src/redloop/llm.py`](file:///src/redloop/llm.py) (`LLMSettings`, `LLMClient`).
+- Supports any OpenAI-compatible local inference server (`llama.cpp` HTTP server, `LM Studio`, `vLLM`) via `REDLOOP_LOCAL_OPENAI_BASE_URL` while preserving Phase C resource-aware RAM tiering (`get_system_ram_gb()`).
+- On the 7.70 GB RAM host (0.58–0.82 GB free headroom), requesting `qwen2.5-coder-7b-instruct-q4_k_m.gguf` automatically down-tiers to `qwen2.5-0.5b-instruct-q4_k_m.gguf` with a logged `RESOURCE WARNING`, preventing OOM.
+
+#### 2. 30-Prompt Benchmark Results (`artifacts/phase_l7_local_model_benchmark.json`)
+- **Reproducible Command**:
+  ```bash
+  python -m pytest tests/test_phase_l_gates.py -k "gate_l7" -v
+  ```
+- **Results (`llama.cpp` `/v1/chat/completions` local server, $n = 30$ prompts)**:
+  - **Completed Prompts**: **30 / 30** ($100.00\%$, Wilson 95% CI $[0.8865, 1.0000]$)
+  - **OOM Errors**: **0**
+  - **Latency**: $p50 = 1,078.0\text{ ms}$, $p95 = 2,562.0\text{ ms}$, $p99 = 2,844.0\text{ ms}$, $\text{mean} = 1,297.4\text{ ms}$.
+
+---
+
+### 13.8 Updated Current Known Issues (Post-Phase L)
+
+1. **Live External Platform Anti-Bot / CAPTCHA Defenses (Gates L.1 & L.2)**:
+   - *Description*: While `HoleheEmailEnumerator` (28 platforms) and `SherlockUsernameEnumerator` (85 platforms) achieve $1.0000$ precision/recall against deterministic response fixtures, live unauthenticated queries against certain commercial platforms (e.g., Twitter/X, Instagram, Adobe) may encounter Cloudflare Turnstile or HTTP 429 rate-limiting depending on egress IP reputation.
+   - *Impact*: When a platform returns a CAPTCHA page or HTTP 429, RedLoop's classifier conservatively returns `RATE_LIMITED` or `UNKNOWN` rather than guessing `EXISTS` or `NOT_FOUND`, and never attempts to bypass anti-bot challenges.
+2. **Optional Local Binary Dependencies for External RE / Kali Tools (Gates L.4, L.5, L.6)**:
+   - *Description*: `SpiderFootConnector` requires an external SpiderFoot container (`127.0.0.1:5001`), `KaliSSHConnector` requires an reachable SSH daemon on the operator's Kali host/container (`127.0.0.1:2222`), and `ReverseEngineeringConnector` uses `radare2`/`analyzeHeadless` when installed on `PATH` (falling back to the built-in deterministic ELF64/PE32+/x86_64 static engine when the CLI binaries are absent).
+3. **Excluded Full-Suite Tests (Integration & Optional Media Packages)**:
+   - *Description*: As documented in Section 12.2, 17 tests in the 1,304-test nightly corpus require live cloud API keys or optional media packages (`reportlab`, `python-pptx`, `Pillow`). Fast blocking CI runs 143 deterministic gate tests (including the 47 new Phase L tests) on every push and PR.
+4. **Windows Sandbox Proactor Loopback Restriction**:
+   - *Description*: On Windows hosts inside restricted process sandboxes, `asyncio.ProactorEventLoop` loopback `socketpair()` requires standard loopback permission or Linux CI runners (`ubuntu-latest`).
+
+
 
 
 

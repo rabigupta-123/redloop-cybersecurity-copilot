@@ -8,14 +8,17 @@
 [![FastAPI](https://img.shields.io/badge/FastAPI-Workbench-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![MCP SDK 2.x](https://img.shields.io/badge/MCP-Official_SDK_2.x-8A2BE2?style=for-the-badge)](https://modelcontextprotocol.io/)
 [![Safety Block Rate](https://img.shields.io/badge/SBR-1.0000_(0_Breaches)-2EA44F?style=for-the-badge)](#-empirical-benchmarks--verification-gates)
+[![Person Scope Gate](https://img.shields.io/badge/Person_Scope_Gate-39%2F39_(0_Bypass)-2EA44F?style=for-the-badge)](#-deep-osint--specialized-security-tooling-phase-l)
 [![Router Accuracy](https://img.shields.io/badge/Router_Accuracy-92.16%25_(Wilson_CI_%5B0.8764%2C_0.9511%5D)-2EA44F?style=for-the-badge)](#-two-stage-semantic-intent-router-9216-accuracy)
+[![Deep OSINT](https://img.shields.io/badge/Deep_OSINT-28_Email_%7C_85_Username_%7C_E.164_Phone-00B4D8?style=for-the-badge)](#-deep-osint--specialized-security-tooling-phase-l)
 [![Release](https://img.shields.io/badge/Release-v0.2.0-blue?style=for-the-badge&logo=github&logoColor=white)](https://github.com/rabigupta-123/redloop-cybersecurity-copilot/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-F59E0B?style=for-the-badge)](LICENSE)
 
-*Cryptographically scope-enforced cybersecurity engineering platform, Model Context Protocol (MCP) server, and autonomous AI bug-bounty copilot for authorized penetration testing, threat hunting, OSINT correlation, and vulnerability research.*
+*Cryptographically scope-enforced cybersecurity engineering platform, Model Context Protocol (MCP) server, Deep OSINT intelligence engine, air-gapped reverse-engineering workbench, and autonomous AI bug-bounty copilot.*
 
 [Overview](#-overview) •
 [Architecture](#-system-architecture) •
+[Deep OSINT & Tooling](#-deep-osint--specialized-security-tooling-phase-l) •
 [Semantic Router](#-two-stage-semantic-intent-router-9216-accuracy) •
 [Production Hardening](#-production-hardening--telemetry) •
 [Workbench & Copilot](#-unified-workbench--ai-copilot) •
@@ -87,6 +90,53 @@ flowchart TB
     Bounty --> Execution
     Execution --> Audit
 ```
+
+---
+
+## 🕵️ Deep OSINT & Specialized Security Tooling (Phase L)
+
+<div align="center">
+  <img src="artifacts/redloop_phase_l_architecture.jpg" alt="RedLoop Phase L — Deep OSINT, SpiderFoot, Kali SSH, Air-Gapped Reverse Engineering & Local OpenAI Architecture" width="100%"/>
+  <p><em>Figure 2: RedLoop Phase L Architecture — Mandatory PersonScopeGate (L.0), Holehe/Sherlock/libphonenumber Deep OSINT (L.1–L.3), Isolated SpiderFoot REST Service (L.4), Kali Remote SSH Executor with 24-Tool Cached --help Verification (L.5), Air-Gapped Radare2/Ghidra Reverse Engineering Sandbox (L.6), and RAM-Tiered Local OpenAI Endpoints (L.7).</em></p>
+</div>
+
+### 1. Mandatory Person-Identifying Scope Gate (`PersonScopeGate` — Gate L.0)
+Every email, phone number, or username lookup across **REST**, **Chat**, and **MCP** entry points is gated by [`PersonScopeGate`](src/redloop/assessment/person_scope_gate.py):
+- **Condition (a) — Self-Lookup (`self_lookup`)**: Target matches one of the operator's own verified identifiers (`REDLOOP_OPERATOR_IDENTIFIERS`).
+- **Condition (b) — Engagement-Authorized (`engagement_authorized`)**: Target is explicitly listed inside an active, unexpired, cryptographically signed `EngagementScope`.
+- **Fail-Closed Denial**: Any lookup satisfying neither (a) nor (b) is rejected with `HTTP 403 SCOPE_REQUIRED`, writes an immutable `BLOCKED` row to the SQLite audit ledger, and logs `why_this_result_is_shown` in every authorized response.
+
+### 2. Email $\rightarrow$ Account Enumeration (`HoleheEmailEnumerator` — Gate L.1)
+- Extends [`src/redloop/email_footprint.py`](src/redloop/email_footprint.py) with **28 platforms** (Gravatar, GitHub, GitLab, Bitbucket, Docker Hub, PyPI, npmjs, RubyGems, Crates.io, Launchpad, WordPress, Firefox Accounts, Spotify, Duolingo, Vimeo, Keybase, OpenPGP, Ubuntu Keyserver, Atlassian, Adobe, Pinterest, Last.fm, Eventbrite, Strava, Trello, Proton Mail, Internet Archive, Issuu).
+- Read-only, rate-limited per platform (`PlatformRateLimiter`), with exponential retry/backoff and per-platform circuit breakers (`PlatformCircuitBreaker`).
+- Strict 4-state output (`EXISTS` / `NOT_FOUND` / `RATE_LIMITED` / `UNKNOWN` — never guesses).
+
+### 3. Username Enumeration (`SherlockUsernameEnumerator` — Gate L.2)
+- Expands [`src/redloop/data/platforms.json`](src/redloop/data/platforms.json) to **85 platforms** with concurrent worker execution and a thread-safe `GlobalRateLimiter` ([`src/redloop/username_footprint.py`](src/redloop/username_footprint.py)).
+- Requires **both HTTP status codes and response body signatures** (`exists_body_signatures` and `not_found_body_signatures`) to eliminate soft-404 false positives on sites that return HTTP 200 for missing profiles.
+
+### 4. Phone Number OSINT (`PhoneFootprintEngine` — Gate L.3)
+- Powered by Google's `libphonenumber` (`phonenumbers`) in [`src/redloop/phone_footprint.py`](src/redloop/phone_footprint.py) to extract E.164 normalization, ISO region, geographic region, prefix carrier (with explicit MNP caveats), line type (`MOBILE`, `FIXED_LINE`, `VOIP`, `TOLL_FREE`), and timezones.
+- Every field is wrapped in `PhoneFieldEvidence(value, source, confidence)` — zero unattributed or synthesized fields.
+
+### 5. SpiderFoot Isolated Service Connector (`SpiderFootConnector` — Gate L.4)
+- Integrates SpiderFoot (`GPL-3.0`) strictly as an **isolated out-of-process REST service** ([`src/redloop/connectors/spiderfoot_connector.py`](src/redloop/connectors/spiderfoot_connector.py), documented in [`docs/THIRD_PARTY.md`](docs/THIRD_PARTY.md)) to preserve RedLoop's clean MIT license.
+- Supports `start_scan`, `poll_status`, `pull_results`, and automatic conversion into cryptographically hashed REDLOOP `Evidence` and `Finding` records.
+
+### 6. Kali Remote SSH Execution & 24-Tool Cached `--help` Knowledge Base (Gate L.5)
+- [`KaliSSHConnector`](src/redloop/connectors/kali_ssh_connector.py) enforces three pre-SSH gates before dispatching any command to an operator's Kali container/VM:
+  1. `ValidatedCommand`: Blocks shell chaining and metacharacters (`;`, `|`, `&&`, `$()`, backticks).
+  2. `KaliToolHelpKnowledgeBase`: Validates every CLI flag against captured `--help` schemas across **24 Kali tools** ([`src/redloop/data/kali_tool_help_cache.json`](src/redloop/data/kali_tool_help_cache.json)), blocking hallucinated flags (`422 UNKNOWN_TOOL_FLAG`).
+  3. `ScopeManager` / `AssessmentScopeGuard`: Blocks out-of-scope targets (`403 SCOPE_VIOLATION`) before touching SSH.
+
+### 7. Air-Gapped Reverse-Engineering Connector (`ReverseEngineeringConnector` — Gate L.6)
+- [`src/redloop/connectors/re_connector.py`](src/redloop/connectors/re_connector.py) integrates `radare2` (`izj`, `aflj`, `pdfj`) and optional Ghidra headless (`analyzeHeadless`) strictly on **operator-uploaded binaries** staged in `UploadedBinaryRegistry` inside an air-gapped sandbox.
+- Network targets (URLs, IPs, domains) and unregistered host files are blocked (`403 NETWORK_TARGET_FORBIDDEN` / `403 UPLOAD_ONLY_REQUIRED`).
+- Performs string extraction, function discovery, x86_64 disassembly, Shannon entropy calculation, and UPX/VMProtect/Themida packer detection.
+
+### 8. Local Model Flexibility (`LocalOpenAIClient` — Gate L.7)
+- Generalizes local inference beyond Ollama to any **OpenAI-compatible local server** (`llama.cpp` server, `LM Studio`, `vLLM`) via `Provider.LOCAL_OPENAI` and `REDLOOP_LOCAL_OPENAI_BASE_URL` ([`src/redloop/local_openai_adapter.py`](src/redloop/local_openai_adapter.py)).
+- Preserves Phase C resource-aware RAM tiering (`select_resource_aware_local_openai_model`), automatically down-tiering heavy 7B/8B GGUF models to `qwen2.5-0.5b-instruct-q4_k_m.gguf` or `qwen3-4b-instruct-q4_k_m.gguf` on memory-constrained hosts without OOM.
 
 ---
 
@@ -166,6 +216,11 @@ $$\text{Upper Bound} = \frac{z^2}{n + z^2}$$
 | **Lab Target Precision** | 3 | 3 | **1.0000** | $[0.4385, 1.0000]$ | Floor $\ge 0.8000$ | **PASS** |
 | **Lab Noise Ratio** | 3 | 0 | **0.0000** | $[0.0000, 0.5615]$ | Ceiling $\le 0.3000$ | **PASS** |
 | **Chat Groundedness Rate** | 30 | 30 | **1.0000** | $[0.8865, 1.0000]$ | Floor $\ge 0.9000$ | **PASS** |
+| **Gate L.0 Person Scope Gate Enforcement** | 39 | 39 | **1.0000** | $[0.9103, 1.0000]$ | Must $= 1.0000$ | **PASS** |
+| **Gate L.1 Holehe Email Precision / Recall** | 11 | 11 | **1.0000** | $[0.7412, 1.0000]$ | P $\ge 0.85$, R $\ge 0.70$ | **PASS** |
+| **Gate L.2 Sherlock Username Precision / Recall** | 10 | 10 | **1.0000** | $[0.7225, 1.0000]$ | P $\ge 0.85$, R $\ge 0.70$ | **PASS** |
+| **Gate L.3 Phone E.164 & Line-Type Accuracy** | 12 | 12 | **1.0000** | $[0.7575, 1.0000]$ | 100% Source Attributed | **PASS** |
+| **Gate L.7 Local OpenAI (`llama.cpp`) Completion** | 30 | 30 | **1.0000** | $[0.8865, 1.0000]$ | 0 OOMs (RAM-Tiered) | **PASS** |
 
 ### Chat Latency Benchmarks (Linear Interpolation)
 
@@ -173,6 +228,7 @@ $$\text{Upper Bound} = \frac{z^2}{n + z^2}$$
 | :--- | :---: | :---: | :---: | :--- |
 | **Deterministic Offline Engine** | 30 | **170.46 ms** | **355.33 ms** | Zero external API calls, offline RAG |
 | **Groq (`qwen/qwen3.8-27b`)** | 30 | **0.41 s** | **0.59 s** | Live Groq API benchmark (min: 0.36s, max: 0.66s) |
+| **Local OpenAI (`llama.cpp` GGUF)** | 30 | **1.08 s** | **2.56 s** | Auto-tiered `qwen2.5-0.5b-instruct-q4_k_m.gguf` (0 OOM) |
 | **OpenRouter (`llama-3.3-70b`)** | 30 | **1.77 s** | **4.49 s** | High-throughput remote API |
 | **Ollama Local (`qwen2.5:0.5b`)** | 30 | **3.10 s** | **4.38 s** | Verified local edge tier for $\le 8\text{ GB}$ RAM hosts (`num_ctx=2048`) |
 | **Ollama Local (`qwen3:8b`)** | 30 | *TIMEOUT / OOM* | *TIMEOUT / OOM* | Exceeds host memory (7.7 GB physical RAM, >87% utilized) |

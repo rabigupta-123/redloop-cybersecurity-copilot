@@ -1,0 +1,274 @@
+{
+  "upload_id": "re-upload-6ae81a270ba1",
+  "sha256": "6ae81a270ba1c4dcd7331ac2a350833d67ea84421432c04cb43f4ec3e874f7b1",
+  "triage": {
+    "upload_id": "re-upload-6ae81a270ba1",
+    "filename": "redloop_crackme.elf",
+    "sha256": "6ae81a270ba1c4dcd7331ac2a350833d67ea84421432c04cb43f4ec3e874f7b1",
+    "size_bytes": 759,
+    "binary_format": "ELF64",
+    "architecture": "x86_64",
+    "overall_entropy": 2.9615,
+    "is_packed": false,
+    "packer_detected": "NONE",
+    "sections": [
+      {
+        "name": ".text",
+        "vaddr": 4198400,
+        "paddr": 64,
+        "size": 43,
+        "entropy": 4.1116
+      },
+      {
+        "name": ".rodata",
+        "vaddr": 4202496,
+        "paddr": 107,
+        "size": 105,
+        "entropy": 4.9367
+      },
+      {
+        "name": ".symtab",
+        "vaddr": 0,
+        "paddr": 212,
+        "size": 96,
+        "entropy": 1.277
+      },
+      {
+        "name": ".strtab",
+        "vaddr": 0,
+        "paddr": 308,
+        "size": 26,
+        "entropy": 3.8253
+      },
+      {
+        "name": ".shstrtab",
+        "vaddr": 0,
+        "paddr": 334,
+        "size": 41,
+        "entropy": 3.4005
+      }
+    ],
+    "airgapped_sandbox": true,
+    "network_Execution_allowed": false
+  },
+  "strings": [
+    {
+      "vaddr": 4202496,
+      "paddr": 107,
+      "ordinal": 0,
+      "size": 19,
+      "length": 18,
+      "section": ".rodata",
+      "type": "ascii",
+      "string": "REDLOOP_CRACKME_V1"
+    },
+    {
+      "vaddr": 4202515,
+      "paddr": 126,
+      "ordinal": 1,
+      "size": 19,
+      "length": 18,
+      "section": ".rodata",
+      "type": "ascii",
+      "string": "Enter serial key: "
+    },
+    {
+      "vaddr": 4202534,
+      "paddr": 145,
+      "ordinal": 2,
+      "size": 37,
+      "length": 36,
+      "section": ".rodata",
+      "type": "ascii",
+      "string": "FLAG{r2_static_triage_verified_2026}"
+    },
+    {
+      "vaddr": 4202571,
+      "paddr": 182,
+      "ordinal": 3,
+      "size": 30,
+      "length": 29,
+      "section": ".rodata",
+      "type": "ascii",
+      "string": "Access Denied: Invalid Serial"
+    },
+    {
+      "vaddr": 1,
+      "paddr": 309,
+      "ordinal": 4,
+      "size": 5,
+      "length": 4,
+      "section": ".strtab",
+      "type": "ascii",
+      "string": "main"
+    },
+    {
+      "vaddr": 6,
+      "paddr": 314,
+      "ordinal": 5,
+      "size": 13,
+      "length": 12,
+      "section": ".strtab",
+      "type": "ascii",
+      "string": "check_serial"
+    },
+    {
+      "vaddr": 19,
+      "paddr": 327,
+      "ordinal": 6,
+      "size": 7,
+      "length": 6,
+      "section": ".strtab",
+      "type": "ascii",
+      "string": "entry0"
+    },
+    {
+      "vaddr": 1,
+      "paddr": 335,
+      "ordinal": 7,
+      "size": 6,
+      "length": 5,
+      "section": ".shstrtab",
+      "type": "ascii",
+      "string": ".text"
+    },
+    {
+      "vaddr": 7,
+      "paddr": 341,
+      "ordinal": 8,
+      "size": 8,
+      "length": 7,
+      "section": ".shstrtab",
+      "type": "ascii",
+      "string": ".rodata"
+    },
+    {
+      "vaddr": 15,
+      "paddr": 349,
+      "ordinal": 9,
+      "size": 8,
+      "length": 7,
+      "section": ".shstrtab",
+      "type": "ascii",
+      "string": ".symtab"
+    },
+    {
+      "vaddr": 23,
+      "paddr": 357,
+      "ordinal": 10,
+      "size": 8,
+      "length": 7,
+      "section": ".shstrtab",
+      "type": "ascii",
+      "string": ".strtab"
+    },
+    {
+      "vaddr": 31,
+      "paddr": 365,
+      "ordinal": 11,
+      "size": 10,
+      "length": 9,
+      "section": ".shstrtab",
+      "type": "ascii",
+      "string": ".shstrtab"
+    }
+  ],
+  "functions": [
+    {
+      "offset": 4198400,
+      "name": "entry0",
+      "size": 28,
+      "nbbs": 1,
+      "edges": 0,
+      "signature": "entry0 ();"
+    },
+    {
+      "offset": 4198400,
+      "name": "sym.main",
+      "size": 28,
+      "nbbs": 2,
+      "edges": 2,
+      "signature": "sym.main ();"
+    },
+    {
+      "offset": 4198428,
+      "name": "sym.check_serial",
+      "size": 15,
+      "nbbs": 1,
+      "edges": 0,
+      "signature": "sym.check_serial ();"
+    }
+  ],
+  "disassembly": {
+    "name": "sym.main",
+    "addr": 4198400,
+    "size": 28,
+    "ops": [
+      {
+        "offset": 4198400,
+        "bytes": "f30f1efa",
+        "opcode": "endbr64",
+        "type": "nop",
+        "size": 4
+      },
+      {
+        "offset": 4198404,
+        "bytes": "55",
+        "opcode": "push rbp",
+        "type": "upush",
+        "size": 1
+      },
+      {
+        "offset": 4198405,
+        "bytes": "4889e5",
+        "opcode": "mov rbp, rsp",
+        "type": "mov",
+        "size": 3
+      },
+      {
+        "offset": 4198408,
+        "bytes": "4883ec10",
+        "opcode": "sub rsp, 0x10",
+        "type": "sub",
+        "size": 4
+      },
+      {
+        "offset": 4198412,
+        "bytes": "488d3d10000000",
+        "opcode": "lea rdi, [rip + 0x10]",
+        "type": "lea",
+        "size": 7
+      },
+      {
+        "offset": 4198419,
+        "bytes": "e807000000",
+        "opcode": "call sym.check_serial",
+        "type": "call",
+        "size": 5
+      },
+      {
+        "offset": 4198424,
+        "bytes": "31c0",
+        "opcode": "xor eax, eax",
+        "type": "xor",
+        "size": 2
+      },
+      {
+        "offset": 4198426,
+        "bytes": "c9",
+        "opcode": "leave",
+        "type": "leave",
+        "size": 1
+      },
+      {
+        "offset": 4198427,
+        "bytes": "c3",
+        "opcode": "ret",
+        "type": "ret",
+        "size": 1
+      }
+    ]
+  },
+  "matches_r2_cli_reference": true,
+  "upx_packer_detection_verified": true
+}

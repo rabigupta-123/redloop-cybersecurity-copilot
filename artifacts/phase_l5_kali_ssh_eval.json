@@ -1,0 +1,192 @@
+{
+  "cached_tools_count": 24,
+  "cached_tools": [
+    "curl",
+    "dig",
+    "dnsrecon",
+    "enum4linux",
+    "feroxbuster",
+    "ffuf",
+    "gobuster",
+    "hashcat",
+    "httpx",
+    "hydra",
+    "john",
+    "masscan",
+    "nc",
+    "nikto",
+    "nmap",
+    "nuclei",
+    "socat",
+    "sqlmap",
+    "subfinder",
+    "tcpdump",
+    "tshark",
+    "whatweb",
+    "whois",
+    "wpscan"
+  ],
+  "hallucinated_flag_blocked_pre_ssh": {
+    "allowed": false,
+    "status_code": 422,
+    "command": "nmap -sV --hallucinated-ai-flag 10.20.30.15",
+    "argv": [
+      "nmap",
+      "-sV",
+      "--hallucinated-ai-flag",
+      "10.20.30.15"
+    ],
+    "target": null,
+    "ssh_dispatched": false,
+    "exit_code": -1,
+    "stdout": "",
+    "stderr": "UNKNOWN_TOOL_FLAG: Flag(s) ['--hallucinated-ai-flag'] do not exist in captured 'nmap --help (Nmap 7.94SVN official --help output)' schema. Hallucinated or unverified flags are blocked.",
+    "duration_ms": 16.0,
+    "help_validation": {
+      "allowed": false,
+      "tool_name": "nmap",
+      "version_captured": "Nmap 7.94SVN",
+      "source_citation": "nmap --help (Nmap 7.94SVN official --help output)",
+      "citations": [
+        {
+          "tool_name": "nmap",
+          "flag": "-sV",
+          "description": "Probe open ports to determine service/version info",
+          "source_citation": "nmap --help (Nmap 7.94SVN official --help output)",
+          "version_captured": "Nmap 7.94SVN"
+        }
+      ],
+      "unknown_flags": [
+        "--hallucinated-ai-flag"
+      ],
+      "reason": "UNKNOWN_TOOL_FLAG: Flag(s) ['--hallucinated-ai-flag'] do not exist in captured 'nmap --help (Nmap 7.94SVN official --help output)' schema. Hallucinated or unverified flags are blocked."
+    },
+    "scope_decision": null,
+    "evidence_id": null,
+    "findings_count": 0,
+    "error_code": "UNKNOWN_TOOL_FLAG",
+    "reason": "UNKNOWN_TOOL_FLAG: Flag(s) ['--hallucinated-ai-flag'] do not exist in captured 'nmap --help (Nmap 7.94SVN official --help output)' schema. Hallucinated or unverified flags are blocked."
+  },
+  "out_of_scope_blocked_pre_ssh": {
+    "allowed": false,
+    "status_code": 403,
+    "command": "nmap -sV -Pn -p 22,443 8.8.8.8",
+    "argv": [
+      "nmap",
+      "-sV",
+      "-Pn",
+      "-p",
+      "22,443",
+      "8.8.8.8"
+    ],
+    "target": "8.8.8.8",
+    "ssh_dispatched": false,
+    "exit_code": -1,
+    "stdout": "",
+    "stderr": "SCOPE_VIOLATION: Target '8.8.8.8' is not present in signed scope (ENG-PHASE-L-2026)",
+    "duration_ms": 16.0,
+    "help_validation": {
+      "allowed": true,
+      "tool_name": "nmap",
+      "version_captured": "Nmap 7.94SVN",
+      "source_citation": "nmap --help (Nmap 7.94SVN official --help output)",
+      "citations": [
+        {
+          "tool_name": "nmap",
+          "flag": "-sV",
+          "description": "Probe open ports to determine service/version info",
+          "source_citation": "nmap --help (Nmap 7.94SVN official --help output)",
+          "version_captured": "Nmap 7.94SVN"
+        },
+        {
+          "tool_name": "nmap",
+          "flag": "-Pn",
+          "description": "Treat all hosts as online -- skip host discovery",
+          "source_citation": "nmap --help (Nmap 7.94SVN official --help output)",
+          "version_captured": "Nmap 7.94SVN"
+        },
+        {
+          "tool_name": "nmap",
+          "flag": "-p",
+          "description": "Only scan specified port ranges",
+          "source_citation": "nmap --help (Nmap 7.94SVN official --help output)",
+          "version_captured": "Nmap 7.94SVN"
+        }
+      ],
+      "unknown_flags": [],
+      "reason": "All 3 flag(s) verified against nmap --help (Nmap 7.94SVN official --help output)."
+    },
+    "scope_decision": {
+      "allowed": false,
+      "target": "8.8.8.8",
+      "normalized_target": "8.8.8.8",
+      "matched_rule": "",
+      "reason": "SCOPE_VIOLATION: Target '8.8.8.8' is not present in signed scope (ENG-PHASE-L-2026)"
+    },
+    "evidence_id": null,
+    "findings_count": 0,
+    "error_code": "SCOPE_VIOLATION",
+    "reason": "SCOPE_VIOLATION: Target '8.8.8.8' is not present in signed scope (ENG-PHASE-L-2026)"
+  },
+  "in_scope_ssh_roundtrip": {
+    "allowed": true,
+    "status_code": 200,
+    "command": "nmap -sV -Pn -p 22,443 10.20.30.15",
+    "argv": [
+      "nmap",
+      "-sV",
+      "-Pn",
+      "-p",
+      "22,443",
+      "10.20.30.15"
+    ],
+    "target": "10.20.30.15",
+    "ssh_dispatched": true,
+    "exit_code": 0,
+    "stdout": "Starting Nmap 7.94SVN ( https://nmap.org )\nNmap scan report for 10.20.30.15\nPORT    STATE SERVICE VERSION\n22/tcp  open  ssh     OpenSSH 9.6p1 Debian 4\n443/tcp open  ssl/http nginx 1.24.0\n",
+    "stderr": "",
+    "duration_ms": 0.0,
+    "help_validation": {
+      "allowed": true,
+      "tool_name": "nmap",
+      "version_captured": "Nmap 7.94SVN",
+      "source_citation": "nmap --help (Nmap 7.94SVN official --help output)",
+      "citations": [
+        {
+          "tool_name": "nmap",
+          "flag": "-sV",
+          "description": "Probe open ports to determine service/version info",
+          "source_citation": "nmap --help (Nmap 7.94SVN official --help output)",
+          "version_captured": "Nmap 7.94SVN"
+        },
+        {
+          "tool_name": "nmap",
+          "flag": "-Pn",
+          "description": "Treat all hosts as online -- skip host discovery",
+          "source_citation": "nmap --help (Nmap 7.94SVN official --help output)",
+          "version_captured": "Nmap 7.94SVN"
+        },
+        {
+          "tool_name": "nmap",
+          "flag": "-p",
+          "description": "Only scan specified port ranges",
+          "source_citation": "nmap --help (Nmap 7.94SVN official --help output)",
+          "version_captured": "Nmap 7.94SVN"
+        }
+      ],
+      "unknown_flags": [],
+      "reason": "All 3 flag(s) verified against nmap --help (Nmap 7.94SVN official --help output)."
+    },
+    "scope_decision": {
+      "allowed": true,
+      "target": "10.20.30.15",
+      "normalized_target": "10.20.30.15",
+      "matched_rule": "signed_scope:ENG-PHASE-L-2026",
+      "reason": "Target '10.20.30.15' verified against signed ScopeManager (ENG-PHASE-L-2026)."
+    },
+    "evidence_id": "ev-kali-77f9bce0ea02",
+    "findings_count": 2,
+    "error_code": null,
+    "reason": "Executed via Kali SSH with 3 verified flag citation(s)."
+  }
+}

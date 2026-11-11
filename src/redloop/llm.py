@@ -10,9 +10,12 @@ import time
 from enum import Enum
 from typing import Any, TypedDict
 
-import litellm
-litellm.suppress_debug_info = True
-litellm.drop_params = True
+try:
+    import litellm
+    litellm.suppress_debug_info = True
+    litellm.drop_params = True
+except ImportError:
+    litellm = None  # type: ignore[assignment]
 
 from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -25,6 +28,7 @@ def _env_names(field_name: str) -> AliasChoices:
 
 class Provider(str, Enum):
     OLLAMA = "ollama"
+    LOCAL_OPENAI = "local_openai"
     OPENROUTER = "openrouter"
     ANTHROPIC = "anthropic"
     GROQ = "groq"
@@ -100,6 +104,10 @@ CHAT_MODEL_CATALOG: dict[Provider, tuple[tuple[str, str], ...]] = {
     ),
     Provider.OLLAMA: (
         ("xploiter/pentester:latest", "Xploiter Pentester 2.8B (Local)"),
+    ),
+    Provider.LOCAL_OPENAI: (
+        ("qwen2.5-0.5b-instruct-q4_k_m.gguf", "Qwen 2.5 0.5B Instruct GGUF (llama.cpp / LM Studio)"),
+        ("qwen3-4b-instruct-q4_k_m.gguf", "Qwen 3 4B Instruct GGUF (llama.cpp / LM Studio)"),
     ),
     Provider.APINEX: (
         ("deepseek-reasoner", "DeepSeek R1 (Cybersecurity Reasoning)"),
@@ -309,6 +317,18 @@ class LLMSettings(BaseSettings):
         default="http://localhost:11434",
         validation_alias=_env_names("ollama_base_url"),
     )
+    local_openai_base_url: str = Field(
+        default="http://127.0.0.1:8080/v1",
+        validation_alias=_env_names("local_openai_base_url"),
+    )
+    local_openai_model: str = Field(
+        default="qwen2.5-0.5b-instruct-q4_k_m.gguf",
+        validation_alias=_env_names("local_openai_model"),
+    )
+    local_openai_api_key: str = Field(
+        default="local-no-key-required",
+        validation_alias=_env_names("local_openai_api_key"),
+    )
     ollama_safe_ram_threshold_gb: float = Field(
         default=6.0,
         validation_alias=_env_names("ollama_safe_ram_threshold_gb"),
@@ -424,14 +444,15 @@ class LLMClient:
 
     def __init__(self, settings: LLMSettings | None = None):
         self.settings = settings or LLMSettings()
-        litellm.drop_params = True
+        if litellm is not None:
+            litellm.drop_params = True
 
     @property
     def default_provider(self) -> Provider:
         return self._coerce_provider(self.settings.llm_provider)
 
     def is_provider_configured(self, provider: Provider) -> bool:
-        if provider == Provider.OLLAMA:
+        if provider in (Provider.OLLAMA, Provider.LOCAL_OPENAI):
             return True
         return bool(self._api_key(provider))
 
@@ -476,6 +497,18 @@ class LLMClient:
                 import logging
                 logging.getLogger("redloop.llm").warning(warning)
             return f"ollama/{chosen_model}"
+        if selected == Provider.LOCAL_OPENAI:
+            from redloop.local_openai_adapter import select_resource_aware_local_openai_model
+            raw_model = model_override or s.local_openai_model or s.llm_model
+            chosen_model, warning = select_resource_aware_local_openai_model(
+                raw_model,
+                safe_ram_threshold_gb=s.ollama_safe_ram_threshold_gb,
+                allow_insufficient_ram_override=s.allow_insufficient_ram_override,
+            )
+            if warning:
+                import logging
+                logging.getLogger("redloop.llm").warning(warning)
+            return f"openai/{chosen_model}"
         if model_override is not None:
             if selected in (Provider.GROQ, Provider.GEMINI, Provider.NVIDIA):
                 return f"{selected.value}/{model_override}"
@@ -514,6 +547,36 @@ class LLMClient:
     ) -> CompletionResult:
         """Call one provider and return text, provider identity, and wall time."""
         selected = self._coerce_provider(provider or self.settings.llm_provider)
+        if selected == Provider.LOCAL_OPENAI:
+            from redloop.local_openai_adapter import LocalOpenAIClient, LocalOpenAIEndpointConfig
+            cfg = LocalOpenAIEndpointConfig(
+                base_url=self.settings.local_openai_base_url,
+                requested_model=model_override or self.settings.local_openai_model,
+                api_key=self.settings.local_openai_api_key,
+                safe_ram_threshold_gb=self.settings.ollama_safe_ram_threshold_gb,
+                allow_insufficient_ram_override=self.settings.allow_insufficient_ram_override,
+                timeout_s=float(kwargs.pop("timeout", 15.0)),
+                max_tokens=max_tokens if max_tokens is not None else self.settings.max_tokens,
+                temperature=temperature if temperature is not None else self.settings.temperature,
+            )
+            res = LocalOpenAIClient(cfg).complete(
+                system_prompt=system_prompt,
+                user_prompt=user_prompt,
+                model_override=model_override,
+                temperature=temperature,
+                max_tokens=max_tokens,
+            )
+            return {
+                "text": res.text,
+                "provider": Provider.LOCAL_OPENAI.value,
+                "elapsed_seconds": round(res.elapsed_ms / 1000.0, 3),
+                "model": f"openai/{res.effective_model}",
+                "prompt_tokens": res.prompt_tokens,
+                "completion_tokens": res.completion_tokens,
+                "total_tokens": res.total_tokens,
+                "token_usage_reported": res.total_tokens > 0,
+            }
+
         api_key = self._api_key(selected)
         if selected != Provider.OLLAMA and not api_key:
             raise ProviderNotConfiguredError(
@@ -659,6 +722,36 @@ class LLMClient:
     ) -> dict[str, Any]:
         """Call a provider asynchronously so cancelling a chat can close its request."""
         selected = self._coerce_provider(provider or self.settings.llm_provider)
+        if selected == Provider.LOCAL_OPENAI:
+            from redloop.local_openai_adapter import LocalOpenAIClient, LocalOpenAIEndpointConfig
+            cfg = LocalOpenAIEndpointConfig(
+                base_url=self.settings.local_openai_base_url,
+                requested_model=model_override or self.settings.local_openai_model,
+                api_key=self.settings.local_openai_api_key,
+                safe_ram_threshold_gb=self.settings.ollama_safe_ram_threshold_gb,
+                allow_insufficient_ram_override=self.settings.allow_insufficient_ram_override,
+                timeout_s=float(kwargs.pop("timeout", 15.0)),
+                max_tokens=max_tokens if max_tokens is not None else self.settings.max_tokens,
+                temperature=temperature if temperature is not None else self.settings.temperature,
+            )
+            res = LocalOpenAIClient(cfg).complete(
+                system_prompt=system_prompt,
+                user_prompt=user_prompt,
+                model_override=model_override,
+                temperature=temperature,
+                max_tokens=max_tokens,
+            )
+            return {
+                "text": res.text,
+                "provider": Provider.LOCAL_OPENAI.value,
+                "elapsed_seconds": round(res.elapsed_ms / 1000.0, 3),
+                "model": f"openai/{res.effective_model}",
+                "prompt_tokens": res.prompt_tokens,
+                "completion_tokens": res.completion_tokens,
+                "total_tokens": res.total_tokens,
+                "token_usage_reported": res.total_tokens > 0,
+            }
+
         api_key = self._api_key(selected)
         if selected != Provider.OLLAMA and not api_key:
             raise ProviderNotConfiguredError(
