@@ -889,10 +889,17 @@ def create_app(
     scope_manager: ScopeManager | None = None,
     assessment_store: Any = None,
     bind_host: str = "127.0.0.1",
+    operator_identifiers: list[str] | None = None,
+    engagement_scope: list[str] | None = None,
 ):
     try:
         from fastapi import FastAPI, Query, Request
         from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse, Response
+        from redloop.assessment.person_scope_gate import (
+            PersonScopeGate,
+            PersonScopeRequiredError,
+        )
+        from redloop.audit import AuditLogger
         from redloop.chat import CHAT_SCRIPT_CSP_HASH, register_chat_routes
         from redloop.workbench import (
             WORKBENCH_SCRIPT_CSP_HASH,
@@ -938,7 +945,14 @@ def create_app(
 
     token_usage = TokenUsageStore(f"{db_path}.chats.sqlite")
     app = FastAPI(title="RedLoop Console", docs_url=None, redoc_url=None)
-    register_chat_routes(app, db_path, scope_manager=scope_manager)
+    person_gate = PersonScopeGate(
+        operator_identifiers=operator_identifiers,
+        scope_manager=scope_manager,
+        engagement_scope=engagement_scope,
+        audit_logger=AuditLogger(db_path),
+    )
+    app.state.person_scope_gate = person_gate
+    register_chat_routes(app, db_path, scope_manager=scope_manager, person_scope_gate=person_gate)
     register_workbench_routes(app, db_path, scope_manager)
 
     from redloop.hardening import (

@@ -1,0 +1,5443 @@
+{
+  "generated_at": "2026-11-11T09:34:41.107570+00:00",
+  "total_platforms_checked": 113,
+  "email_platforms_checked": 28,
+  "username_platforms_checked": 85,
+  "probes_per_platform": "2 known-true + 2 known-false (4 total)",
+  "total_probes": 452,
+  "total_correct": 452,
+  "overall_accuracy": 1.0,
+  "overall_wilson_95_ci": [
+    0.9916,
+    1.0
+  ],
+  "drift_alerts_count": 0,
+  "overall_status": "ALL_SIGNATURES_HEALTHY",
+  "drifted_platforms": [],
+  "platforms": [
+    {
+      "module": "email_footprint",
+      "platform_id": "gravatar",
+      "platform_name": "Gravatar",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "rabi.operator@redloop.io",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"entry\"' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "alice.sec@redloop.io",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"entry\"' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "canary.nonexistent.alpha@redloop.io",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'User not found' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "canary.nonexistent.bravo@redloop.io",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'User not found' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "email_footprint",
+      "platform_id": "github_search",
+      "platform_name": "GitHub Public Commits",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "rabi.operator@redloop.io",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"total_count\":1' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "alice.sec@redloop.io",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"total_count\":1' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "canary.nonexistent.alpha@redloop.io",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '\"total_count\":0' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "canary.nonexistent.bravo@redloop.io",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '\"total_count\":0' (HTTP 200)"
+        }
+      ]
+    },
+    {
+      "module": "email_footprint",
+      "platform_id": "gitlab",
+      "platform_name": "GitLab",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "rabi.operator@redloop.io",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"exists\":true' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "alice.sec@redloop.io",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"exists\":true' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "canary.nonexistent.alpha@redloop.io",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '\"exists\":false' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "canary.nonexistent.bravo@redloop.io",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '\"exists\":false' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "email_footprint",
+      "platform_id": "bitbucket",
+      "platform_name": "Bitbucket",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "rabi.operator@redloop.io",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'already registered' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "alice.sec@redloop.io",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'already registered' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "canary.nonexistent.alpha@redloop.io",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'available' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "canary.nonexistent.bravo@redloop.io",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'available' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "email_footprint",
+      "platform_id": "dockerhub",
+      "platform_name": "Docker Hub",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "rabi.operator@redloop.io",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'already in use' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "alice.sec@redloop.io",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'already in use' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "canary.nonexistent.alpha@redloop.io",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'available' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "canary.nonexistent.bravo@redloop.io",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'available' (HTTP 200)"
+        }
+      ]
+    },
+    {
+      "module": "email_footprint",
+      "platform_id": "pypi",
+      "platform_name": "PyPI",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "rabi.operator@redloop.io",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'email address is already' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "alice.sec@redloop.io",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'email address is already' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "canary.nonexistent.alpha@redloop.io",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'available' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "canary.nonexistent.bravo@redloop.io",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'available' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "email_footprint",
+      "platform_id": "npmjs",
+      "platform_name": "npm Registry",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "rabi.operator@redloop.io",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'already exists' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "alice.sec@redloop.io",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'already exists' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "canary.nonexistent.alpha@redloop.io",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'available' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "canary.nonexistent.bravo@redloop.io",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'available' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "email_footprint",
+      "platform_id": "rubygems",
+      "platform_name": "RubyGems",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "rabi.operator@redloop.io",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"name\":' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "alice.sec@redloop.io",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"name\":' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "canary.nonexistent.alpha@redloop.io",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Owner could not be found' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "canary.nonexistent.bravo@redloop.io",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Owner could not be found' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "email_footprint",
+      "platform_id": "crates_io",
+      "platform_name": "Crates.io",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "rabi.operator@redloop.io",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"users\":[{' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "alice.sec@redloop.io",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"users\":[{' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "canary.nonexistent.alpha@redloop.io",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '\"users\":[]' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "canary.nonexistent.bravo@redloop.io",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '\"users\":[]' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "email_footprint",
+      "platform_id": "launchpad",
+      "platform_name": "Ubuntu Launchpad",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "rabi.operator@redloop.io",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"self_link\"' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "alice.sec@redloop.io",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"self_link\"' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "canary.nonexistent.alpha@redloop.io",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'null' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "canary.nonexistent.bravo@redloop.io",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'null' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "email_footprint",
+      "platform_id": "wordpress",
+      "platform_name": "WordPress.com",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "rabi.operator@redloop.io",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"passwordless\"' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "alice.sec@redloop.io",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"passwordless\"' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "canary.nonexistent.alpha@redloop.io",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'unknown_user' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "canary.nonexistent.bravo@redloop.io",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'unknown_user' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "email_footprint",
+      "platform_id": "firefox_accounts",
+      "platform_name": "Mozilla Firefox Accounts",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "rabi.operator@redloop.io",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"exists\":true' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "alice.sec@redloop.io",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"exists\":true' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "canary.nonexistent.alpha@redloop.io",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '\"exists\":false' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "canary.nonexistent.bravo@redloop.io",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '\"exists\":false' (HTTP 200)"
+        }
+      ]
+    },
+    {
+      "module": "email_footprint",
+      "platform_id": "spotify",
+      "platform_name": "Spotify",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "rabi.operator@redloop.io",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"status\":20' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "alice.sec@redloop.io",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"status\":20' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "canary.nonexistent.alpha@redloop.io",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '\"status\":1' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "canary.nonexistent.bravo@redloop.io",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '\"status\":1' (HTTP 200)"
+        }
+      ]
+    },
+    {
+      "module": "email_footprint",
+      "platform_id": "duolingo",
+      "platform_name": "Duolingo",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "rabi.operator@redloop.io",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"users\":[{' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "alice.sec@redloop.io",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"users\":[{' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "canary.nonexistent.alpha@redloop.io",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '\"users\":[]' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "canary.nonexistent.bravo@redloop.io",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '\"users\":[]' (HTTP 200)"
+        }
+      ]
+    },
+    {
+      "module": "email_footprint",
+      "platform_id": "vimeo",
+      "platform_name": "Vimeo",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "rabi.operator@redloop.io",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'already associated' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "alice.sec@redloop.io",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'already associated' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "canary.nonexistent.alpha@redloop.io",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'available' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "canary.nonexistent.bravo@redloop.io",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'available' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "email_footprint",
+      "platform_id": "keybase",
+      "platform_name": "Keybase",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "rabi.operator@redloop.io",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"them\":[{' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "alice.sec@redloop.io",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"them\":[{' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "canary.nonexistent.alpha@redloop.io",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '\"them\":[]' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "canary.nonexistent.bravo@redloop.io",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '\"them\":[]' (HTTP 200)"
+        }
+      ]
+    },
+    {
+      "module": "email_footprint",
+      "platform_id": "pgp_openpgp",
+      "platform_name": "keys.openpgp.org",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "rabi.operator@redloop.io",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '-----BEGIN PGP PUBLIC KEY BLOCK-----' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "alice.sec@redloop.io",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '-----BEGIN PGP PUBLIC KEY BLOCK-----' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "canary.nonexistent.alpha@redloop.io",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'No key found' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "canary.nonexistent.bravo@redloop.io",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'No key found' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "email_footprint",
+      "platform_id": "pgp_ubuntu",
+      "platform_name": "Ubuntu Keyserver",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "rabi.operator@redloop.io",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '-----BEGIN PGP PUBLIC KEY BLOCK-----' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "alice.sec@redloop.io",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '-----BEGIN PGP PUBLIC KEY BLOCK-----' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "canary.nonexistent.alpha@redloop.io",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Not Found' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "canary.nonexistent.bravo@redloop.io",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Not Found' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "email_footprint",
+      "platform_id": "atlassian",
+      "platform_name": "Atlassian ID",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "rabi.operator@redloop.io",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"exists\":true' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "alice.sec@redloop.io",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"exists\":true' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "canary.nonexistent.alpha@redloop.io",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '\"exists\":false' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "canary.nonexistent.bravo@redloop.io",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '\"exists\":false' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "email_footprint",
+      "platform_id": "adobe",
+      "platform_name": "Adobe ID",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "rabi.operator@redloop.io",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"accountType\"' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "alice.sec@redloop.io",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"accountType\"' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "canary.nonexistent.alpha@redloop.io",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '[]' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "canary.nonexistent.bravo@redloop.io",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '[]' (HTTP 200)"
+        }
+      ]
+    },
+    {
+      "module": "email_footprint",
+      "platform_id": "pinterest",
+      "platform_name": "Pinterest",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "rabi.operator@redloop.io",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"data\":true' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "alice.sec@redloop.io",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"data\":true' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "canary.nonexistent.alpha@redloop.io",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '\"data\":false' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "canary.nonexistent.bravo@redloop.io",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '\"data\":false' (HTTP 200)"
+        }
+      ]
+    },
+    {
+      "module": "email_footprint",
+      "platform_id": "lastfm",
+      "platform_name": "Last.fm",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "rabi.operator@redloop.io",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'already registered' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "alice.sec@redloop.io",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'already registered' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "canary.nonexistent.alpha@redloop.io",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '\"valid\":true' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "canary.nonexistent.bravo@redloop.io",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '\"valid\":true' (HTTP 200)"
+        }
+      ]
+    },
+    {
+      "module": "email_footprint",
+      "platform_id": "eventbrite",
+      "platform_name": "Eventbrite",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "rabi.operator@redloop.io",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"exists\":true' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "alice.sec@redloop.io",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"exists\":true' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "canary.nonexistent.alpha@redloop.io",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '\"exists\":false' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "canary.nonexistent.bravo@redloop.io",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '\"exists\":false' (HTTP 200)"
+        }
+      ]
+    },
+    {
+      "module": "email_footprint",
+      "platform_id": "strava",
+      "platform_name": "Strava",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "rabi.operator@redloop.io",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'false' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "alice.sec@redloop.io",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'false' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "canary.nonexistent.alpha@redloop.io",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'true' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "canary.nonexistent.bravo@redloop.io",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'true' (HTTP 200)"
+        }
+      ]
+    },
+    {
+      "module": "email_footprint",
+      "platform_id": "trello",
+      "platform_name": "Trello",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "rabi.operator@redloop.io",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"id\":' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "alice.sec@redloop.io",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"id\":' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "canary.nonexistent.alpha@redloop.io",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '[]' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "canary.nonexistent.bravo@redloop.io",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '[]' (HTTP 200)"
+        }
+      ]
+    },
+    {
+      "module": "email_footprint",
+      "platform_id": "protonmail",
+      "platform_name": "Proton Mail Lookup",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "rabi.operator@redloop.io",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '-----BEGIN PGP PUBLIC KEY BLOCK-----' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "alice.sec@redloop.io",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '-----BEGIN PGP PUBLIC KEY BLOCK-----' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "canary.nonexistent.alpha@redloop.io",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'No key found' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "canary.nonexistent.bravo@redloop.io",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'No key found' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "email_footprint",
+      "platform_id": "archive_org",
+      "platform_name": "Internet Archive",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "rabi.operator@redloop.io",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"exists\":true' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "alice.sec@redloop.io",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"exists\":true' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "canary.nonexistent.alpha@redloop.io",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '\"exists\":false' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "canary.nonexistent.bravo@redloop.io",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '\"exists\":false' (HTTP 200)"
+        }
+      ]
+    },
+    {
+      "module": "email_footprint",
+      "platform_id": "issuu",
+      "platform_name": "Issuu",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "rabi.operator@redloop.io",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"status\":\"in_use\"' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "alice.sec@redloop.io",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"status\":\"in_use\"' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "canary.nonexistent.alpha@redloop.io",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '\"status\":\"available\"' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "canary.nonexistent.bravo@redloop.io",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '\"status\":\"available\"' (HTTP 200)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "github",
+      "platform_name": "GitHub",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'vcard-names' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'vcard-names' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Not Found' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Not Found' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "gitlab",
+      "platform_name": "GitLab",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'user-profile' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'user-profile' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '404: Page not found' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '404: Page not found' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "bitbucket",
+      "platform_name": "Bitbucket",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'bitbucket.org' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'bitbucket.org' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Repository not found' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Repository not found' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "reddit",
+      "platform_name": "Reddit",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"kind\": \"t2\"' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"kind\": \"t2\"' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '\"error\": 404' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '\"error\": 404' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "hackernews",
+      "platform_name": "Hacker News",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"id\":' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"id\":' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'null' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'null' (HTTP 200)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "keybase",
+      "platform_name": "Keybase",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'profile-heading' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'profile-heading' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '404: user not found' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '404: user not found' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "dockerhub",
+      "platform_name": "Docker Hub",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"username\":' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"username\":' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '\"message\": \"User not found\"' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '\"message\": \"User not found\"' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "pypi",
+      "platform_name": "PyPI",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'profile-section' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'profile-section' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'We looked everywhere' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'We looked everywhere' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "npmjs",
+      "platform_name": "npm",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '~{username}' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '~{username}' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Not Found' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Not Found' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "rubygems",
+      "platform_name": "RubyGems",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'profile__header' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'profile__header' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Page not found' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Page not found' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "crates_io",
+      "platform_name": "Crates.io",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"user\":' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"user\":' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '\"errors\":' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '\"errors\":' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "huggingface",
+      "platform_name": "Hugging Face",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'huggingface.co' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'huggingface.co' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '404' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '404' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "devto",
+      "platform_name": "DEV Community",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'profile-header' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'profile-header' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'This page does not exist' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'This page does not exist' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "medium",
+      "platform_name": "Medium",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'property=\"profile:username\"' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'property=\"profile:username\"' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'PAGE NOT FOUND' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'PAGE NOT FOUND' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "hashnode",
+      "platform_name": "Hashnode",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'hashnode.com/@' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'hashnode.com/@' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '404' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '404' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "kaggle",
+      "platform_name": "Kaggle",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'kaggle.com' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'kaggle.com' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '404' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '404' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "replit",
+      "platform_name": "Replit",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'replit.com/@' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'replit.com/@' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '404' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '404' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "codepen",
+      "platform_name": "CodePen",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'profile-username' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'profile-username' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '404' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '404' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "glitch",
+      "platform_name": "Glitch",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"id\":' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"id\":' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '{}' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '{}' (HTTP 200)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "sourceforge",
+      "platform_name": "SourceForge",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'Personal Data' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'Personal Data' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '404' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '404' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "launchpad",
+      "platform_name": "Launchpad",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'launchpad.net/~' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'launchpad.net/~' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Lost something?' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Lost something?' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "archlinux",
+      "platform_name": "Arch Linux Forums",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'User profile' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'User profile' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Bad request' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Bad request' (HTTP 200)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "debian_salsa",
+      "platform_name": "Debian Salsa",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'user-profile' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'user-profile' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '404: Page not found' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '404: Page not found' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "fedora",
+      "platform_name": "Fedora Accounts",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'User:{username}' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'User:{username}' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'There is currently no text in this page' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'There is currently no text in this page' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "gentoo",
+      "platform_name": "Gentoo Wiki",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'User:{username}' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'User:{username}' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'There is currently no text' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'There is currently no text' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "freebsd",
+      "platform_name": "FreeBSD Bugzilla",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'User Profile' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'User Profile' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'not found' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'not found' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "wikipedia",
+      "platform_name": "Wikipedia",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'User:{username}' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'User:{username}' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Wikipedia does not have a user page' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Wikipedia does not have a user page' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "wikidata",
+      "platform_name": "Wikidata",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'User:{username}' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'User:{username}' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'does not have a user page' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'does not have a user page' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "archive_org",
+      "platform_name": "Internet Archive",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '@{username}' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '@{username}' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Item cannot be found' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Item cannot be found' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "mastodon_social",
+      "platform_name": "Mastodon.social",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'profile' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'profile' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'The page you are looking for isn't here' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'The page you are looking for isn't here' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "bluesky",
+      "platform_name": "Bluesky",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"did\":' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"did\":' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Profile not found' (HTTP 400)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Profile not found' (HTTP 400)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "twitch",
+      "platform_name": "Twitch",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'twitch.tv/{username}' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'twitch.tv/{username}' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'time machine' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'time machine' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "vimeo",
+      "platform_name": "Vimeo",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'vimeo.com/{username}' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'vimeo.com/{username}' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Sorry, we couldn't find that page' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Sorry, we couldn't find that page' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "soundcloud",
+      "platform_name": "SoundCloud",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'soundcloud.com/{username}' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'soundcloud.com/{username}' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'We can't find that user' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'We can't find that user' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "bandcamp",
+      "platform_name": "Bandcamp",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'fan-bio' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'fan-bio' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Sorry, that something isn't here' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Sorry, that something isn't here' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "mixcloud",
+      "platform_name": "Mixcloud",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"username\":' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"username\":' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '\"type\": \"UserNotFoundException\"' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '\"type\": \"UserNotFoundException\"' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "lastfm",
+      "platform_name": "Last.fm",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'header-title' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'header-title' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Page Not Found' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Page Not Found' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "goodreads",
+      "platform_name": "Goodreads",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'userProfileName' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'userProfileName' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Page not found' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Page not found' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "letterboxd",
+      "platform_name": "Letterboxd",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'person-summary' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'person-summary' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Sorry, we can't find the page' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Sorry, we can't find the page' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "untappd",
+      "platform_name": "Untappd",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'user-info' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'user-info' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'We couldn't find that page' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'We couldn't find that page' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "strava",
+      "platform_name": "Strava",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'athlete-profile' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'athlete-profile' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Page Not Found' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Page Not Found' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "chess_com",
+      "platform_name": "Chess.com",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"player_id\":' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"player_id\":' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '\"code\": 0' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '\"code\": 0' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "lichess",
+      "platform_name": "Lichess",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"id\":' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"id\":' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Not found' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Not found' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "steam",
+      "platform_name": "Steam Community",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'actual_persona_name' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'actual_persona_name' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'The specified profile could not be found' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'The specified profile could not be found' (HTTP 200)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "speedrun",
+      "platform_name": "Speedrun.com",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"data\":' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"data\":' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'could not be found' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'could not be found' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "itch_io",
+      "platform_name": "itch.io",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'user_profile' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'user_profile' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Couldn't find that page' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Couldn't find that page' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "behance",
+      "platform_name": "Behance",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'UserInfo' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'UserInfo' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Oops! We can't find that page' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Oops! We can't find that page' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "dribbble",
+      "platform_name": "Dribbble",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'profile-masthead' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'profile-masthead' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Whoops, that page is gone' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Whoops, that page is gone' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "deviantart",
+      "platform_name": "DeviantArt",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'deviantart.com/{username}' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'deviantart.com/{username}' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Page Not Found' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Page Not Found' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "artstation",
+      "platform_name": "ArtStation",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"id\":' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"id\":' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '404' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '404' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "unsplash",
+      "platform_name": "Unsplash",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'unsplash.com/@' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'unsplash.com/@' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Page not found' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Page not found' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "flickr",
+      "platform_name": "Flickr",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'person-profile' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'person-profile' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'This is not the page you're looking for' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'This is not the page you're looking for' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "500px",
+      "platform_name": "500px",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"username\":\"{username}\"' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"username\":\"{username}\"' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '\"users\":[]' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '\"users\":[]' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "pexels",
+      "platform_name": "Pexels",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'pexels.com/@' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'pexels.com/@' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Page Not Found' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Page Not Found' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "pixabay",
+      "platform_name": "Pixabay",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'user_about' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'user_about' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Page not found' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Page not found' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "giphy",
+      "platform_name": "GIPHY",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'giphy.com/{username}' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'giphy.com/{username}' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Oops! There's nothing here' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Oops! There's nothing here' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "imgur",
+      "platform_name": "Imgur",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"id\":' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"id\":' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '\"errors\":' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '\"errors\":' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "gravatar",
+      "platform_name": "Gravatar Profile",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"preferredUsername\":' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"preferredUsername\":' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'User not found' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'User not found' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "aboutme",
+      "platform_name": "about.me",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'about.me/{username}' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'about.me/{username}' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Page Not Found' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Page Not Found' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "linktree",
+      "platform_name": "Linktree",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'linktr.ee/{username}' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'linktr.ee/{username}' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'The page you\u2019re looking for doesn\u2019t exist' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'The page you\u2019re looking for doesn\u2019t exist' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "carrd",
+      "platform_name": "Carrd",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '<title>' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '<title>' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Page not found' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Page not found' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "patreon",
+      "platform_name": "Patreon",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'patreon.com/{username}' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'patreon.com/{username}' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'This page is no longer available' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'This page is no longer available' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "kofi",
+      "platform_name": "Ko-fi",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'ko-fi.com/{username}' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'ko-fi.com/{username}' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Page Not Found' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Page Not Found' (HTTP 200)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "buymeacoffee",
+      "platform_name": "Buy Me a Coffee",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'buymeacoffee.com/{username}' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'buymeacoffee.com/{username}' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Page not found' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Page not found' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "producthunt",
+      "platform_name": "Product Hunt",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'producthunt.com/@' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'producthunt.com/@' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'We seem to have lost this page' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'We seem to have lost this page' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "slideshare",
+      "platform_name": "SlideShare",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'slideshare.net/{username}' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'slideshare.net/{username}' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Could not find that page' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Could not find that page' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "speakerdeck",
+      "platform_name": "Speaker Deck",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'speakerdeck.com/{username}' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'speakerdeck.com/{username}' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Page Not Found' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Page Not Found' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "scribd",
+      "platform_name": "Scribd",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'scribd.com/{username}' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'scribd.com/{username}' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'The page you were looking for doesn't exist' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'The page you were looking for doesn't exist' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "issuu",
+      "platform_name": "Issuu",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'issuu.com/{username}' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'issuu.com/{username}' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Page not found' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Page not found' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "academia",
+      "platform_name": "Academia.edu",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'academia.edu/{username}' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'academia.edu/{username}' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Page Not Found' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Page Not Found' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "researchgate",
+      "platform_name": "ResearchGate",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'researchgate.net/profile/' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'researchgate.net/profile/' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Page not found' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Page not found' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "orcid",
+      "platform_name": "ORCID",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"name\":' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"name\":' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '404 Not Found' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '404 Not Found' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "codeforces",
+      "platform_name": "Codeforces",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"status\":\"OK\"' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"status\":\"OK\"' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '\"status\":\"FAILED\"' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '\"status\":\"FAILED\"' (HTTP 200)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "leetcode",
+      "platform_name": "LeetCode",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'leetcode.com' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'leetcode.com' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Page Not Found' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Page Not Found' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "hackerrank",
+      "platform_name": "HackerRank",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"model\":' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"model\":' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Not Found' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Not Found' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "codewars",
+      "platform_name": "Codewars",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"username\":' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"username\":' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '\"reason\":\"not found\"' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '\"reason\":\"not found\"' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "exercism",
+      "platform_name": "Exercism",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'exercism.org/profiles/' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'exercism.org/profiles/' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Page not found' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Page not found' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "tryhackme",
+      "platform_name": "TryHackMe",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"success\":true' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"success\":true' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '\"success\":false' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '\"success\":false' (HTTP 200)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "hackthebox",
+      "platform_name": "HackTheBox Forums",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"user\":' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"user\":' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '\"errors\":' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '\"errors\":' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "bugcrowd",
+      "platform_name": "Bugcrowd",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'bugcrowd.com/{username}' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'bugcrowd.com/{username}' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'The page you were looking for doesn't exist' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'The page you were looking for doesn't exist' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "hackerone",
+      "platform_name": "HackerOne",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'hackerone.com/{username}' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'hackerone.com/{username}' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Page not found' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Page not found' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "packetstorm",
+      "platform_name": "PacketStorm",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'User Profile' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'User Profile' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Page Not Found' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Page Not Found' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "wakatime",
+      "platform_name": "WakaTime",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'wakatime.com/@' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'wakatime.com/@' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '404 - Page Not Found' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '404 - Page Not Found' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "packagist",
+      "platform_name": "Packagist",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'packages' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature 'packages' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Not Found' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature 'Not Found' (HTTP 404)"
+        }
+      ]
+    },
+    {
+      "module": "username_footprint",
+      "platform_id": "hex_pm",
+      "platform_name": "Hex.pm",
+      "probes_run": 4,
+      "probes_correct": 4,
+      "accuracy": 1.0,
+      "wilson_95_ci": [
+        0.5101,
+        1.0
+      ],
+      "status": "PASS",
+      "drift_reason": null,
+      "probes": [
+        {
+          "probe": "known_true_1",
+          "target": "torvalds",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"username\":' (HTTP 200)"
+        },
+        {
+          "probe": "known_true_2",
+          "target": "rabi_sec_ops",
+          "expected_state": "EXISTS",
+          "observed_state": "EXISTS",
+          "correct": true,
+          "reason": "Matched existence body signature '\"username\":' (HTTP 200)"
+        },
+        {
+          "probe": "known_false_1",
+          "target": "redloop_nonexistent_canary_alpha",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '\"status\":404' (HTTP 404)"
+        },
+        {
+          "probe": "known_false_2",
+          "target": "redloop_nonexistent_canary_bravo",
+          "expected_state": "NOT_FOUND",
+          "observed_state": "NOT_FOUND",
+          "correct": true,
+          "reason": "Matched not-found body signature '\"status\":404' (HTTP 404)"
+        }
+      ]
+    }
+  ]
+}

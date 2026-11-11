@@ -12618,6 +12618,15 @@ def register_workbench_routes(
 
     audit = AuditLogger(db_path)
 
+    from redloop.assessment.person_scope_gate import (
+        PersonScopeGate,
+        PersonScopeRequiredError,
+    )
+    wb_person_gate = getattr(getattr(app, "state", None), "person_scope_gate", None) or PersonScopeGate(
+        scope_manager=scope_manager,
+        audit_logger=audit,
+    )
+
     try:
         from redloop.workbench import register_workbench_routers
         register_workbench_routers(app)
@@ -14335,47 +14344,64 @@ def register_workbench_routes(
 
         orch = TaskOrchestrator(scope_manager=scope_manager, audit_db=db_path)
 
+        parsed_intent = orch.parse_intent(prompt, context)
+        act_name = parsed_intent.get("action", "")
+        if act_name in ("osint_email", "osint_username", "osint_phone"):
+            id_type_map = {
+                "osint_email": "email",
+                "osint_username": "username",
+                "osint_phone": "phone",
+            }
+            id_type = id_type_map[act_name]
+            person_target = str(
+                parsed_intent.get(id_type)
+                or parsed_intent.get("target")
+                or body.get("target")
+                or ""
+            ).strip()
+            operator_id = (
+                str(body.get("operator_identifier") or request.headers.get("X-Operator-Identifier") or "").strip()
+                or None
+            )
+            try:
+                gate_decision = wb_person_gate.enforce(
+                    target=person_target,
+                    identifier_type=id_type,
+                    entry_point="chat",
+                    operator_identifier=operator_id,
+                )
+            except PersonScopeRequiredError as exc:
+                err_payload = exc.to_response_dict()
+                err_payload["conversation_id"] = conv_id
+                return JSONResponse(err_payload, status_code=403)
+        else:
+            gate_decision = None
+
 
 
         result = await orch.execute_task(
 
-
-
             prompt=prompt,
-
-
 
             conversation_id=conv_id,
 
-
-
             context=context,
-
-
 
             model_choice=model,
 
-
-
             effort_choice=effort,
-
-
 
             token_usage_store=token_store,
 
-
-
             history=body.get("history") or [],
-
-
 
             attachment_context=str(body.get("attachment_context") or ""),
 
-
-
         )
-
-
+        if gate_decision is not None:
+            result["authorization_basis"] = gate_decision.authorization_basis
+            result["why_this_result_is_shown"] = gate_decision.why_this_result_is_shown
+            result["ui_banner"] = f"[{gate_decision.authorization_basis.upper()}] {gate_decision.why_this_result_is_shown}"
 
         return JSONResponse(result)
 
@@ -15671,6 +15697,27 @@ def register_workbench_routes(
         from redloop.osint_engine import get_osint_engine, populate_investigation_graph_from_osint
         engine = get_osint_engine()
 
+        gate_decision = None
+        if query_type in ("email", "username", "phone"):
+            operator_id = (
+                str(
+                    (body.get("operator_identifier") if request.method == "POST" and isinstance(body, dict) else None)
+                    or request.query_params.get("operator_identifier")
+                    or request.headers.get("X-Operator-Identifier")
+                    or ""
+                ).strip()
+                or None
+            )
+            try:
+                gate_decision = wb_person_gate.enforce(
+                    target=indicator,
+                    identifier_type=query_type,
+                    entry_point="rest",
+                    operator_identifier=operator_id,
+                )
+            except PersonScopeRequiredError as exc:
+                return JSONResponse(exc.to_response_dict(), status_code=403)
+
         if query_type == "ip":
             res = engine.investigate_ip(indicator)
         elif query_type == "domain":
@@ -15706,6 +15753,9 @@ def register_workbench_routes(
 
         out = res.model_dump(mode="json")
         out["success"] = True
+        if gate_decision is not None:
+            out["authorization_basis"] = gate_decision.authorization_basis
+            out["why_this_result_is_shown"] = gate_decision.why_this_result_is_shown
         return JSONResponse(out)
 
 
@@ -15863,230 +15913,113 @@ def register_workbench_routes(
 
 
     @app.post("/api/osint/email")
-
-
-
     async def osint_email_endpoint(request: Request):
-
-
-
         _require_same_origin(request)
-
-
-
         body = await request.json()
-
-
-
         email = str(body.get("email") or body.get("target") or "").strip()
-
-
+        operator_id = (
+            str(body.get("operator_identifier") or request.headers.get("X-Operator-Identifier") or "").strip()
+            or None
+        )
+        try:
+            gate_decision = wb_person_gate.enforce(
+                target=email,
+                identifier_type="email",
+                entry_point="rest",
+                operator_identifier=operator_id,
+            )
+        except PersonScopeRequiredError as exc:
+            return JSONResponse(exc.to_response_dict(), status_code=403)
 
         headers = body.get("headers")
-
-
-
         inv_id = body.get("investigation_id")
-
-
-
         from redloop.osint_engine import get_osint_engine, populate_investigation_graph_from_osint
-
-
-
         engine = get_osint_engine()
-
-
-
         res = engine.investigate_email(email, raw_headers=headers)
-
-
-
         if inv_id:
-
-
-
             inv_store = get_investigation_store()
-
-
-
             inv = inv_store.get(inv_id)
-
-
-
             if inv:
-
-
-
                 inv.add_event("evidence", f"OSINT Email: {res.indicator}", res.actual_finding, "INFO", {"evidence_id": res.evidence_id, "evidence_hash": res.evidence_hash})
-
-
-
                 inv_store.save(inv)
-
-
-
                 graph = InvestigationGraph(investigation_id=inv.id)
-
-
-
                 populate_investigation_graph_from_osint(graph, res)
-
-
-
-        return JSONResponse(res.model_dump(mode="json"))
-
-
-
-
-
-
+        out = res.model_dump(mode="json")
+        out["authorization_basis"] = gate_decision.authorization_basis
+        out["why_this_result_is_shown"] = gate_decision.why_this_result_is_shown
+        return JSONResponse(out)
 
     @app.post("/api/osint/username")
-
-
-
     async def osint_username_endpoint(request: Request):
-
-
-
         _require_same_origin(request)
-
-
-
         body = await request.json()
-
-
-
         username = str(body.get("username") or body.get("target") or "").strip()
-
-
+        operator_id = (
+            str(body.get("operator_identifier") or request.headers.get("X-Operator-Identifier") or "").strip()
+            or None
+        )
+        try:
+            gate_decision = wb_person_gate.enforce(
+                target=username,
+                identifier_type="username",
+                entry_point="rest",
+                operator_identifier=operator_id,
+            )
+        except PersonScopeRequiredError as exc:
+            return JSONResponse(exc.to_response_dict(), status_code=403)
 
         inv_id = body.get("investigation_id")
-
-
-
         from redloop.osint_engine import get_osint_engine, populate_investigation_graph_from_osint
-
-
-
         engine = get_osint_engine()
-
-
-
         res = engine.investigate_username(username)
-
-
-
         if inv_id:
-
-
-
             inv_store = get_investigation_store()
-
-
-
             inv = inv_store.get(inv_id)
-
-
-
             if inv:
-
-
-
                 inv.add_event("evidence", f"OSINT Username: {res.indicator}", res.actual_finding, "INFO", {"evidence_id": res.evidence_id, "evidence_hash": res.evidence_hash})
-
-
-
                 inv_store.save(inv)
-
-
-
                 graph = InvestigationGraph(investigation_id=inv.id)
-
-
-
                 populate_investigation_graph_from_osint(graph, res)
-
-
-
-        return JSONResponse(res.model_dump(mode="json"))
-
-
-
-
-
-
+        out = res.model_dump(mode="json")
+        out["authorization_basis"] = gate_decision.authorization_basis
+        out["why_this_result_is_shown"] = gate_decision.why_this_result_is_shown
+        return JSONResponse(out)
 
     @app.post("/api/osint/phone")
-
-
-
     async def osint_phone_endpoint(request: Request):
-
-
-
         _require_same_origin(request)
-
-
-
         body = await request.json()
-
-
-
         phone = str(body.get("phone") or body.get("target") or "").strip()
-
-
+        operator_id = (
+            str(body.get("operator_identifier") or request.headers.get("X-Operator-Identifier") or "").strip()
+            or None
+        )
+        try:
+            gate_decision = wb_person_gate.enforce(
+                target=phone,
+                identifier_type="phone",
+                entry_point="rest",
+                operator_identifier=operator_id,
+            )
+        except PersonScopeRequiredError as exc:
+            return JSONResponse(exc.to_response_dict(), status_code=403)
 
         inv_id = body.get("investigation_id")
-
-
-
         from redloop.osint_engine import get_osint_engine, populate_investigation_graph_from_osint
-
-
-
         engine = get_osint_engine()
-
-
-
         res = engine.investigate_phone(phone)
-
-
-
         if inv_id:
-
-
-
             inv_store = get_investigation_store()
-
-
-
             inv = inv_store.get(inv_id)
-
-
-
             if inv:
-
-
-
                 inv.add_event("evidence", f"OSINT Phone: {res.indicator}", res.actual_finding, "INFO", {"evidence_id": res.evidence_id, "evidence_hash": res.evidence_hash})
-
-
-
                 inv_store.save(inv)
-
-
-
                 graph = InvestigationGraph(investigation_id=inv.id)
-
-
-
                 populate_investigation_graph_from_osint(graph, res)
-
-
-
-        return JSONResponse(res.model_dump(mode="json"))
+        out = res.model_dump(mode="json")
+        out["authorization_basis"] = gate_decision.authorization_basis
+        out["why_this_result_is_shown"] = gate_decision.why_this_result_is_shown
+        return JSONResponse(out)
 
 
 
@@ -16315,61 +16248,32 @@ def register_workbench_routes(
 
 
     @app.post("/api/osint/email/footprint")
-
-
-
     async def osint_email_footprint(body: EmailFootprintRequest, request: Request):
-
-
-
         _require_same_origin(request)
-
-
+        operator_id = (request.headers.get("X-Operator-Identifier") or "").strip() or None
+        try:
+            gate_decision = wb_person_gate.enforce(
+                target=body.email,
+                identifier_type="email",
+                entry_point="rest",
+                operator_identifier=operator_id,
+            )
+        except PersonScopeRequiredError as exc:
+            return JSONResponse(exc.to_response_dict(), status_code=403)
 
         report = EmailFootprintEngine(network_enabled=body.live).investigate(body.email)
-
-
-
         payload = report.to_dict()
-
-
-
+        payload["authorization_basis"] = gate_decision.authorization_basis
+        payload["why_this_result_is_shown"] = gate_decision.why_this_result_is_shown
         audit.log(
-
-
-
             "email_footprint",
-
-
-
             "email_footprint_lookup",
-
-
-
             "osint",
-
-
-
             "success" if report.valid else "failure",
-
-
-
             classification=report.classification,
-
-
-
             network_enabled=report.network_enabled,
-
-
-
             domain=report.domain,
-
-
-
         )
-
-
-
         return JSONResponse(payload)
 
 

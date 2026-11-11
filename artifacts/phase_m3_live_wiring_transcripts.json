@@ -1,0 +1,90 @@
+{
+  "server_base_url": "http://127.0.0.1:8769",
+  "audit_db_path": "C:\\Users\\rabig\\OneDrive\\Desktop\\claude code project\\my-new-project\\artifacts\\phase_m3_live_audit.db",
+  "hash_chain_valid": {
+    "status": "INTEGRITY_VERIFIED",
+    "valid": true,
+    "verified": true,
+    "verification_state": "UNANCHORED",
+    "anchored": false,
+    "total_events": 2,
+    "verified_events": 2,
+    "expected_events": null,
+    "first_id": 1,
+    "last_id": 2,
+    "head_hash": "5a8482098fd8bd3f0eb974e8fbc03088aca489385784f4053aa418cebe3aeb2a",
+    "message": "All 2 events are internally consistent, but no trusted chain anchor exists, so truncation cannot be excluded.",
+    "error": null,
+    "broken_at_id": null,
+    "failure": null,
+    "checks": {
+      "hashes": true,
+      "previous_hash_links": true,
+      "sequence_continuity": true,
+      "canonical_serialization": true,
+      "anchor": false
+    },
+    "anchor": {
+      "present": false,
+      "status": "MISSING",
+      "head_hash": null,
+      "last_id": null,
+      "event_count": null,
+      "sealed_at": null
+    }
+  },
+  "rest_entry_point": {
+    "curl_command": "curl.exe -s -i -X POST http://127.0.0.1:8769/api/osint/email -H \"Content-Type: application/json\" -H \"Origin: http://127.0.0.1:8769\" -d '{\"email\": \"stranger@unscoped-external.org\"}'",
+    "raw_http_response": "HTTP/1.1 403 Forbidden\ndate: Wed, 11 Nov 2026 09:34:05 GMT\nserver: uvicorn\ncontent-length: 664\ncontent-type: application/json\nx-correlation-id: corr-83cd365eacd4\ncontent-security-policy: default-src 'none'; script-src 'sha256-lkff14kwp6qRYvZVJ0MlxRiHQrbEwecMSC5dZyMAujE=' 'sha256-nlhHPA3QznQUFyhBv+qH7XP5HPH14L2Q9xZsUhfLruU=' 'sha256-SKxGX+iWRUKM3T393b6vWbACMANJI5xarc1f7+jAGco=' 'sha256-4eQYiZoT9+v08fGBtvSKPtjwbh2Q9l6HJxNa6xUwh2k=' 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' http://localhost:8080 http://127.0.0.1:8080 http://localhost:8765 http://127.0.0.1:8765; form-action 'self'; base-uri 'none'; frame-ancestors 'none'\nx-content-type-options: nosniff\nx-frame-options: DENY\nreferrer-policy: no-referrer\n\n{\"status\":\"error\",\"http_status\":403,\"error_code\":\"SCOPE_REQUIRED\",\"message\":\"403 SCOPE_REQUIRED: Person-identifying lookup for email 'stranger@unscoped-external.org' via rest is blocked. Target is neither (a) the operator's own verified identifier nor (b) listed in an active, signed EngagementScope.\",\"target\":\"stranger@unscoped-external.org\",\"identifier_type\":\"email\",\"entry_point\":\"rest\",\"authorization_basis\":\"denied_scope_required\",\"why_this_result_is_shown\":\"Blocked (403 SCOPE_REQUIRED): Target 'stranger@unscoped-external.org' (email) is neither (a) the operator's verified identifier nor (b) inside an active, signed EngagementScope.\",\"audit_logged\":true}",
+    "matching_audit_row": {
+      "id": 1,
+      "timestamp": "2026-11-11T09:34:05.379893+00:00",
+      "target": "stranger@unscoped-external.org",
+      "action": "person_osint:email",
+      "module": "assessment",
+      "status": "BLOCKED_SCOPE_REQUIRED",
+      "details": "{\"category\": \"person_scope_gate:rest\", \"details\": {\"identifier_type\": \"email\", \"entry_point\": \"rest\", \"authorization_basis\": \"denied_scope_required\", \"why_this_result_is_shown\": \"Blocked (403 SCOPE_REQUIRED): Target 'stranger@unscoped-external.org' (email) is neither (a) the operator's verified identifier nor (b) inside an active, signed EngagementScope.\"}}",
+      "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+      "event_hash": "6b7b98f4bf7ce3c8fc728a74e413458ffd384b8497f3b65174c7d6831e91db5e"
+    }
+  },
+  "chat_entry_point": {
+    "curl_command": "curl.exe -s -i -X POST http://127.0.0.1:8769/api/chat/message -H \"Content-Type: application/json\" -H \"Origin: http://127.0.0.1:8769\" -d '{\"message\": \"Investigate username @unscoped_target_handle_99\", \"conversation_id\": \"live-m3-chat\"}'",
+    "raw_http_response": "HTTP/1.1 403 Forbidden\ndate: Wed, 11 Nov 2026 09:34:05 GMT\nserver: uvicorn\ncontent-length: 691\ncontent-type: application/json\nx-correlation-id: corr-36f4341f5908\ncontent-security-policy: default-src 'none'; script-src 'sha256-lkff14kwp6qRYvZVJ0MlxRiHQrbEwecMSC5dZyMAujE=' 'sha256-nlhHPA3QznQUFyhBv+qH7XP5HPH14L2Q9xZsUhfLruU=' 'sha256-SKxGX+iWRUKM3T393b6vWbACMANJI5xarc1f7+jAGco=' 'sha256-4eQYiZoT9+v08fGBtvSKPtjwbh2Q9l6HJxNa6xUwh2k=' 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' http://localhost:8080 http://127.0.0.1:8080 http://localhost:8765 http://127.0.0.1:8765; form-action 'self'; base-uri 'none'; frame-ancestors 'none'\nx-content-type-options: nosniff\nx-frame-options: DENY\nreferrer-policy: no-referrer\n\n{\"status\":\"error\",\"http_status\":403,\"error_code\":\"SCOPE_REQUIRED\",\"message\":\"403 SCOPE_REQUIRED: Person-identifying lookup for username 'unscoped_target_handle_99' via chat is blocked. Target is neither (a) the operator's own verified identifier nor (b) listed in an active, signed EngagementScope.\",\"target\":\"unscoped_target_handle_99\",\"identifier_type\":\"username\",\"entry_point\":\"chat\",\"authorization_basis\":\"denied_scope_required\",\"why_this_result_is_shown\":\"Blocked (403 SCOPE_REQUIRED): Target 'unscoped_target_handle_99' (username) is neither (a) the operator's verified identifier nor (b) inside an active, signed EngagementScope.\",\"audit_logged\":true,\"conversation_id\":\"live-m3-chat\"}",
+    "matching_audit_row": {
+      "id": 2,
+      "timestamp": "2026-11-11T09:34:10.147098+00:00",
+      "target": "unscoped_target_handle_99",
+      "action": "person_osint:username",
+      "module": "assessment",
+      "status": "BLOCKED_SCOPE_REQUIRED",
+      "details": "{\"category\": \"person_scope_gate:chat\", \"details\": {\"identifier_type\": \"username\", \"entry_point\": \"chat\", \"authorization_basis\": \"denied_scope_required\", \"why_this_result_is_shown\": \"Blocked (403 SCOPE_REQUIRED): Target 'unscoped_target_handle_99' (username) is neither (a) the operator's verified identifier nor (b) inside an active, signed EngagementScope.\"}}",
+      "prev_hash": "6b7b98f4bf7ce3c8fc728a74e413458ffd384b8497f3b65174c7d6831e91db5e",
+      "event_hash": "5a8482098fd8bd3f0eb974e8fbc03088aca489385784f4053aa418cebe3aeb2a"
+    }
+  },
+  "all_audit_rows": [
+    {
+      "id": 1,
+      "timestamp": "2026-11-11T09:34:05.379893+00:00",
+      "target": "stranger@unscoped-external.org",
+      "action": "person_osint:email",
+      "module": "assessment",
+      "status": "BLOCKED_SCOPE_REQUIRED",
+      "details": "{\"category\": \"person_scope_gate:rest\", \"details\": {\"identifier_type\": \"email\", \"entry_point\": \"rest\", \"authorization_basis\": \"denied_scope_required\", \"why_this_result_is_shown\": \"Blocked (403 SCOPE_REQUIRED): Target 'stranger@unscoped-external.org' (email) is neither (a) the operator's verified identifier nor (b) inside an active, signed EngagementScope.\"}}",
+      "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+      "event_hash": "6b7b98f4bf7ce3c8fc728a74e413458ffd384b8497f3b65174c7d6831e91db5e"
+    },
+    {
+      "id": 2,
+      "timestamp": "2026-11-11T09:34:10.147098+00:00",
+      "target": "unscoped_target_handle_99",
+      "action": "person_osint:username",
+      "module": "assessment",
+      "status": "BLOCKED_SCOPE_REQUIRED",
+      "details": "{\"category\": \"person_scope_gate:chat\", \"details\": {\"identifier_type\": \"username\", \"entry_point\": \"chat\", \"authorization_basis\": \"denied_scope_required\", \"why_this_result_is_shown\": \"Blocked (403 SCOPE_REQUIRED): Target 'unscoped_target_handle_99' (username) is neither (a) the operator's verified identifier nor (b) inside an active, signed EngagementScope.\"}}",
+      "prev_hash": "6b7b98f4bf7ce3c8fc728a74e413458ffd384b8497f3b65174c7d6831e91db5e",
+      "event_hash": "5a8482098fd8bd3f0eb974e8fbc03088aca489385784f4053aa418cebe3aeb2a"
+    }
+  ]
+}

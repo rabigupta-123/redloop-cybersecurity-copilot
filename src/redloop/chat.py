@@ -1949,11 +1949,20 @@ def register_chat_routes(
     app: FastAPI,
     db_path: str | Path,
     scope_manager: ScopeManager | None = None,
+    person_scope_gate: Any = None,
 ) -> None:
     router = APIRouter()
     store = _ConversationStore(f"{db_path}.chats.sqlite")
     token_usage = TokenUsageStore(f"{db_path}.chats.sqlite")
     audit = AuditLogger(db_path)
+    from redloop.assessment.person_scope_gate import (
+        PersonScopeGate,
+        PersonScopeRequiredError,
+    )
+    chat_person_gate = person_scope_gate or getattr(getattr(app, "state", None), "person_scope_gate", None) or PersonScopeGate(
+        scope_manager=scope_manager,
+        audit_logger=audit,
+    )
     sessions: OrderedDict[str, _ChatSession] = OrderedDict()
     sessions_lock = threading.Lock()
     active_generations: dict[str, tuple[str, asyncio.Task]] = {}
@@ -2531,11 +2540,44 @@ def register_chat_routes(
             if m.get("position") != user_pos
         ]
 
-        # 2. Execute Task
+        # 2. Execute Task (Enforce L.0 PersonScopeGate on person-identifying OSINT lookups)
         orchestrator = TaskOrchestrator(
             scope_manager=scope_manager,
             audit_db=db_path,
         )
+        parsed_intent = orchestrator.parse_intent(prompt, context)
+        action_name = parsed_intent.get("action", "")
+        if action_name in ("osint_email", "osint_username", "osint_phone"):
+            id_type_map = {
+                "osint_email": "email",
+                "osint_username": "username",
+                "osint_phone": "phone",
+            }
+            id_type = id_type_map[action_name]
+            person_target = str(
+                parsed_intent.get(id_type)
+                or parsed_intent.get("target")
+                or body.get("target")
+                or ""
+            ).strip()
+            operator_id = (
+                str(body.get("operator_identifier") or request.headers.get("X-Operator-Identifier") or "").strip()
+                or None
+            )
+            try:
+                gate_decision = chat_person_gate.enforce(
+                    target=person_target,
+                    identifier_type=id_type,
+                    entry_point="chat",
+                    operator_identifier=operator_id,
+                )
+            except PersonScopeRequiredError as exc:
+                err_payload = exc.to_response_dict()
+                err_payload["conversation_id"] = conv_id
+                return JSONResponse(err_payload, status_code=403)
+        else:
+            gate_decision = None
+
         result = await orchestrator.execute_task(
             prompt=prompt,
             conversation_id=conv_id,
@@ -2546,6 +2588,10 @@ def register_chat_routes(
             history=history,
             attachment_context=str(body.get("attachment_context") or ""),
         )
+        if gate_decision is not None:
+            result["authorization_basis"] = gate_decision.authorization_basis
+            result["why_this_result_is_shown"] = gate_decision.why_this_result_is_shown
+            result["ui_banner"] = f"[{gate_decision.authorization_basis.upper()}] {gate_decision.why_this_result_is_shown}"
 
         # 3. Extract output fields
         response_text = result.get("markdown") or result.get("summary") or result.get("response") or ""
@@ -2965,7 +3011,31 @@ def register_chat_routes(
         if prompt and mode not in ("ctf",):
             orch = TaskOrchestrator(scope_manager=scope_manager, audit_db=db_path)
             intent = orch.parse_intent(prompt)
-            if intent.get("action") not in ("general_chat",):
+            action_name = intent.get("action", "")
+            if action_name in ("osint_email", "osint_username", "osint_phone"):
+                id_type_map = {
+                    "osint_email": "email",
+                    "osint_username": "username",
+                    "osint_phone": "phone",
+                }
+                id_type = id_type_map[action_name]
+                person_target = str(intent.get(id_type) or intent.get("target") or "").strip()
+                operator_id = (request.headers.get("X-Operator-Identifier") or "").strip() or None
+                try:
+                    chat_person_gate.enforce(
+                        target=person_target,
+                        identifier_type=id_type,
+                        entry_point="chat",
+                        operator_identifier=operator_id,
+                    )
+                except PersonScopeRequiredError as exc:
+                    return attach_session_cookie(
+                        _render_chat(session, error=exc.message, status_code=403, conversations=store.list(token)),
+                        request,
+                        token,
+                        is_new=False,
+                    )
+            if action_name not in ("general_chat",):
                 orch_result = await orch.execute_task(
                     prompt=prompt,
                     conversation_id=session.conversation_id or "default",

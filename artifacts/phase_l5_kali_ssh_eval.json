@@ -84,7 +84,7 @@
     "exit_code": -1,
     "stdout": "",
     "stderr": "SCOPE_VIOLATION: Target '8.8.8.8' is not present in signed scope (ENG-PHASE-L-2026)",
-    "duration_ms": 16.0,
+    "duration_ms": 15.0,
     "help_validation": {
       "allowed": true,
       "tool_name": "nmap",

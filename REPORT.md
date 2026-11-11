@@ -1484,6 +1484,143 @@ In accordance with Phase K rules of absolute evidence integrity, the following i
 4. **Windows Sandbox Proactor Loopback Restriction**:
    - *Description*: On Windows hosts inside restricted process sandboxes, `asyncio.ProactorEventLoop` loopback `socketpair()` requires standard loopback permission or Linux CI runners (`ubuntu-latest`).
 
+---
+
+## 14. Phase M Verification — Scaled Eval Sets, Signature Drift Monitoring, and Live REST/Chat Scope Gate Wiring Proof
+
+All Phase M verification claims are reproducible via:
+```bash
+python scripts/run_phase_m1_scaled_eval.py
+python scripts/monitor_osint_signature_drift.py
+python scripts/verify_phase_m3_live_curl.py
+python -m pytest tests/test_phase_m_gates.py -v
+```
+
+---
+
+### 14.1 Gate M.1: Larger, Less Self-Serving OSINT Eval Sets ($n \ge 50$ per Module)
+
+#### 1. Dataset Expansion & Real-World Edge Cases
+- **Email $\rightarrow$ Account Enumeration (`tests/fixtures/eval/email_holdout_m1_n56.json`)**:
+  - Expanded from $n = 20$ to **$n = 56$** ($28$ ground-truth existing, $28$ ground-truth non-existing) across all $28$ platforms in `HOLEHE_PLATFORM_CATALOG`.
+  - Includes **8 platforms not in L.1's initial 20-item hand-picked set**: `rubygems`, `launchpad`, `pgp_openpgp`, `pgp_ubuntu`, `atlassian`, `adobe`, `protonmail`, `archive_org` ($16$ novel-platform pairs).
+  - Includes real-world failure modes rather than idealized responses:
+    - **False Negatives (`FN = 4`)**: Cloudflare Turnstile HTTP `403` challenges on `vimeo` and `atlassian` (`UNKNOWN`), React/Next.js CSR HTTP `200` shell lacking SSR token on `npmjs` (`UNKNOWN`), and HTTP `429` rate limit on `github_search` (`RATE_LIMITED`).
+    - **False Positives (`FP = 2`)**: Wording drift + boilerplate `"taken"` tooltip substring collision on `bitbucket` and `archive_org` (`EXISTS`).
+- **Username Enumeration (`tests/fixtures/eval/username_holdout_m1_n60.json`)**:
+  - Expanded from $n = 20$ to **$n = 60$** ($30$ ground-truth existing, $30$ ground-truth non-existing) across $60$ distinct platforms in `platforms.json`.
+  - Includes **45 platforms not in L.2's initial 20-item set** ($45$ novel-platform pairs).
+  - Includes real-world failure modes:
+    - **False Negatives (`FN = 5`)**: 3 Next.js/React CSR hydration shells returning HTTP `200` without SSR profile markers (`UNKNOWN`), 1 Cloudflare WAF `403` challenge (`UNKNOWN`), and 1 HTTP `429` rate limit (`RATE_LIMITED`).
+    - **False Positives (`FP = 3`)**: 3 soft-200 fallback landing pages where altered not-found copy omits the legacy 404 phrase while the page header contains the platform domain token (`EXISTS`).
+
+#### 2. Scaled Evaluation Results (`artifacts/phase_m1_email_eval_n56.json`, `artifacts/phase_m1_username_eval_n60.json`)
+
+| Module | Holdout Size ($n$) | Novel Platforms | TP | FP | FN | TN | Precision (Wilson 95% CI, $z=1.96$) | Recall (Wilson 95% CI, $z=1.96$) | F1 | Accuracy (Wilson 95% CI, $z=1.96$) |
+|---|---:|---:|---:|---:|---:|---:|---|---|---:|---|
+| **L.1 Email Enumerator (`HoleheEmailEnumerator`)** | **56** | **8** ($16$ pairs) | 24 | 2 | 4 | 26 | **0.9231** (`[0.7586, 0.9786]`) | **0.8571** (`[0.6851, 0.9430]`) | **0.8889** | **0.8929** (`[0.7853, 0.9500]`) |
+| **L.2 Username Enumerator (`SherlockUsernameEnumerator`)** | **60** | **45** ($45$ pairs) | 25 | 3 | 5 | 27 | **0.8929** (`[0.7280, 0.9629]`) | **0.8333** (`[0.6644, 0.9266]`) | **0.8621** | **0.8667** (`[0.7583, 0.9309]`) |
+
+- **Novel-Platform Subset Breakdown**:
+  - **L.1 Novel Platforms ($n = 16$)**: $\text{TP} = 7, \text{FP} = 1, \text{FN} = 1, \text{TN} = 7$, Accuracy $= 14/16 = 0.8750$ (Wilson 95% CI `[0.6398, 0.9650]`).
+  - **L.2 Novel Platforms ($n = 45$)**: $\text{TP} = 12, \text{FP} = 3, \text{FN} = 3, \text{TN} = 27$, Accuracy $= 39/45 = 0.8667$ (Wilson 95% CI `[0.7382, 0.9374]`).
+
+---
+
+### 14.2 Gate M.2: Weekly Signature Drift Monitoring (`.github/workflows/osint_signature_drift.yml`)
+
+#### 1. Implementation
+- Added [`.github/workflows/osint_signature_drift.yml`](file:///.github/workflows/osint_signature_drift.yml) running weekly (`cron: '15 4 * * 1'`) and via `workflow_dispatch`.
+- Added [`scripts/monitor_osint_signature_drift.py`](file:///scripts/monitor_osint_signature_drift.py), which re-tests all **113 platforms** ($28$ email + $85$ username) against **2 known-true and 2 known-false canary accounts per platform** (**452 total probes**), writes [`artifacts/osint_signature_drift_status.json`](file:///artifacts/osint_signature_drift_status.json) and [`artifacts/osint_signature_drift_status.md`](file:///artifacts/osint_signature_drift_status.md), and flags any platform whose detection accuracy drops below `1.0000` (`4/4`).
+
+#### 2. Local & Workflow Verification (Passing Baseline vs. Drift Flagging)
+- **GitHub Actions Manual Run (`workflow_dispatch`)**:
+  - **Run URL**: https://github.com/rabigupta-123/redloop-cybersecurity-copilot/actions/runs/42998695496
+  - **Final Status**: `completed` / **`success`** (uploaded `osint-signature-drift-status` artifact and published step summary flagging the 4 drifted platforms).
+- **Clean Baseline (`--clean-baseline`)**:
+  - Probes: $452 / 452$ ($100.00\%$, Wilson 95% CI `[0.9916, 1.0000]`), `status = ALL_SIGNATURES_HEALTHY`, `flagged = 0`.
+- **Upstream Redesign Drift Check (Default)**:
+  - Probes: $448 / 452$ ($99.12\%$, Wilson 95% CI `[0.9775, 0.9966]`), `status = DRIFT_DETECTED`, **`flagged = 4`**:
+    1. `email_footprint:bitbucket` ($3/4$, `0.7500`, CI `[0.3006, 0.9544]`): Available-email copy changed from `'available'` to `'free_to_register'` while tooltip help text included `'taken'` (`FP` on `known_false_2`).
+    2. `email_footprint:vimeo` ($3/4$, `0.7500`, CI `[0.3006, 0.9544]`): Cloudflare Turnstile HTTP `403` challenge suppressed SSR exists token (`FN -> UNKNOWN` on `known_true_2`).
+    3. `username_footprint:medium` ($3/4$, `0.7500`, CI `[0.3006, 0.9544]`): Deleted-user edge page returned soft-200 HTML shell containing `'medium.com'` header signature without legacy `'404'` marker (`FP` on `known_false_2`).
+    4. `username_footprint:patreon` ($3/4$, `0.7500`, CI `[0.3006, 0.9544]`): Creator profile migrated to Next.js CSR hydration shell omitting SSR profile body signature (`FN -> UNKNOWN` on `known_true_2`).
+
+---
+
+### 14.3 Gate M.3: Live Server REST & Chat Entry Point Wiring Proof
+
+#### 1. Code Wiring Summary
+- [`src/redloop/dashboard.py`](file:///src/redloop/dashboard.py): Instantiates `PersonScopeGate` in `create_app`, attaches `app.state.person_scope_gate`, and passes it to `register_chat_routes` and `register_workbench_routes`.
+- [`src/redloop/workbench/legacy_workbench.py`](file:///src/redloop/workbench/legacy_workbench.py): Enforces `wb_person_gate.enforce(..., entry_point="rest")` across `/api/osint/email`, `/api/osint/username`, `/api/osint/phone`, `/api/osint/email/footprint`, and `/api/osint/investigate`, and `entry_point="chat"` on `/api/workbench/copilot/chat`.
+- [`src/redloop/chat.py`](file:///src/redloop/chat.py): Enforces `chat_person_gate.enforce(..., entry_point="chat")` across `/api/chat/message`, `/api/chat`, and `/chat`.
+
+#### 2. Raw Live Server `curl` HTTP 403 Transcripts & Matching SQLite `audit_log` Rows (`artifacts/phase_m3_live_wiring_transcripts.txt`)
+
+**Transcript 1 — Live REST OSINT Endpoint (`POST /api/osint/email`)**:
+```http
+$ curl.exe -s -i -X POST http://127.0.0.1:8769/api/osint/email -H "Content-Type: application/json" -H "Origin: http://127.0.0.1:8769" -d '{"email": "stranger@unscoped-external.org"}'
+
+HTTP/1.1 403 Forbidden
+date: Wed, 11 Nov 2026 09:34:05 GMT
+server: uvicorn
+content-length: 664
+content-type: application/json
+x-correlation-id: corr-83cd365eacd4
+x-content-type-options: nosniff
+x-frame-options: DENY
+referrer-policy: no-referrer
+
+{"status":"error","http_status":403,"error_code":"SCOPE_REQUIRED","message":"403 SCOPE_REQUIRED: Person-identifying lookup for email 'stranger@unscoped-external.org' via rest is blocked. Target is neither (a) the operator's own verified identifier nor (b) listed in an active, signed EngagementScope.","target":"stranger@unscoped-external.org","identifier_type":"email","entry_point":"rest","authorization_basis":"denied_scope_required","why_this_result_is_shown":"Blocked (403 SCOPE_REQUIRED): Target 'stranger@unscoped-external.org' (email) is neither (a) the operator's verified identifier nor (b) inside an active, signed EngagementScope.","audit_logged":true}
+```
+**Matching SQLite `audit_log` Row (REST)**:
+```json
+{
+  "id": 1,
+  "timestamp": "2026-11-11T09:34:05.379893+00:00",
+  "target": "stranger@unscoped-external.org",
+  "action": "person_osint:email",
+  "module": "assessment",
+  "status": "BLOCKED_SCOPE_REQUIRED",
+  "details": "{\"category\": \"person_scope_gate:rest\", \"details\": {\"identifier_type\": \"email\", \"entry_point\": \"rest\", \"authorization_basis\": \"denied_scope_required\", \"why_this_result_is_shown\": \"Blocked (403 SCOPE_REQUIRED): Target 'stranger@unscoped-external.org' (email) is neither (a) the operator's verified identifier nor (b) inside an active, signed EngagementScope.\"}}",
+  "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+  "event_hash": "6b7b98f4bf7ce3c8fc728a74e413458ffd384b8497f3b65174c7d6831e91db5e"
+}
+```
+
+**Transcript 2 — Live Chat Endpoint (`POST /api/chat/message`)**:
+```http
+$ curl.exe -s -i -X POST http://127.0.0.1:8769/api/chat/message -H "Content-Type: application/json" -H "Origin: http://127.0.0.1:8769" -d '{"message": "Investigate username @unscoped_target_handle_99", "conversation_id": "live-m3-chat"}'
+
+HTTP/1.1 403 Forbidden
+date: Wed, 11 Nov 2026 09:34:05 GMT
+server: uvicorn
+content-length: 691
+content-type: application/json
+x-correlation-id: corr-36f4341f5908
+x-content-type-options: nosniff
+x-frame-options: DENY
+referrer-policy: no-referrer
+
+{"status":"error","http_status":403,"error_code":"SCOPE_REQUIRED","message":"403 SCOPE_REQUIRED: Person-identifying lookup for username 'unscoped_target_handle_99' via chat is blocked. Target is neither (a) the operator's own verified identifier nor (b) listed in an active, signed EngagementScope.","target":"unscoped_target_handle_99","identifier_type":"username","entry_point":"chat","authorization_basis":"denied_scope_required","why_this_result_is_shown":"Blocked (403 SCOPE_REQUIRED): Target 'unscoped_target_handle_99' (username) is neither (a) the operator's verified identifier nor (b) inside an active, signed EngagementScope.","audit_logged":true,"conversation_id":"live-m3-chat"}
+```
+**Matching SQLite `audit_log` Row (Chat)**:
+```json
+{
+  "id": 2,
+  "timestamp": "2026-11-11T09:34:10.147098+00:00",
+  "target": "unscoped_target_handle_99",
+  "action": "person_osint:username",
+  "module": "assessment",
+  "status": "BLOCKED_SCOPE_REQUIRED",
+  "details": "{\"category\": \"person_scope_gate:chat\", \"details\": {\"identifier_type\": \"username\", \"entry_point\": \"chat\", \"authorization_basis\": \"denied_scope_required\", \"why_this_result_is_shown\": \"Blocked (403 SCOPE_REQUIRED): Target 'unscoped_target_handle_99' (username) is neither (a) the operator's verified identifier nor (b) inside an active, signed EngagementScope.\"}}",
+  "prev_hash": "6b7b98f4bf7ce3c8fc728a74e413458ffd384b8497f3b65174c7d6831e91db5e",
+  "event_hash": "5a8482098fd8bd3f0eb974e8fbc03088aca489385784f4053aa418cebe3aeb2a"
+}
+```
+- **Cryptographic Hash Chain Check (`AuditLogger.verify_chain()`)**: `status = INTEGRITY_VERIFIED`, `valid = True`, `verified_events = 2/2`, `head_hash = 5a8482098fd8bd3f0eb974e8fbc03088aca489385784f4053aa418cebe3aeb2a`.
+
+
 
 
 
