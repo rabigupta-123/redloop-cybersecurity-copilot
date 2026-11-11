@@ -46,5 +46,5 @@ jobs:
 
       - name: Run Tests
         run: |
-          pytest -v tests/test_single_choke_point.py tests/test_phase4_accuracy.py tests/test_production_hardening.py tests/test_connectors_and_mcp_gate2.py tests/test_accuracy_pipeline.py tests/test_target_resolver_handles.py
+          pytest -v tests/test_single_choke_point.py tests/test_phase4_accuracy.py tests/test_production_hardening.py tests/test_connectors_and_mcp_gate2.py tests/test_accuracy_pipeline.py tests/test_target_resolver_handles.py tests/test_release_hygiene.py
 

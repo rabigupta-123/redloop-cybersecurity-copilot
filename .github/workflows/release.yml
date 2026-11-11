@@ -32,23 +32,20 @@ jobs:
         run: |
           python scripts/scan_secrets.py --all
 
-      - name: Determine Release Tag
+      - name: Validate and Determine Release Tag
         id: versioning
         shell: bash
         run: |
-          BASE_VERSION=$(python -c "
-          import tomllib
-          with open('pyproject.toml', 'rb') as f:
-              data = tomllib.load(f)
-          print(data.get('project', {}).get('version', '0.2.0'))
-          ")
           if [[ "${{ github.ref }}" == refs/tags/* ]]; then
-            RELEASE_TAG="${GITHUB_REF#refs/tags/}"
+            PROPOSED_TAG="${GITHUB_REF#refs/tags/}"
+            echo "Validating incoming release tag: ${PROPOSED_TAG}"
+            python scripts/validate_release_tag.py --candidate "${PROPOSED_TAG}"
+            RELEASE_TAG="${PROPOSED_TAG}"
           else
-            RELEASE_TAG="v${BASE_VERSION}.${{ github.run_number }}"
+            echo "Non-tag trigger (workflow_dispatch); computing next safe patch tag..."
+            RELEASE_TAG=$(python scripts/validate_release_tag.py --compute-next)
           fi
           echo "release_tag=${RELEASE_TAG}" >> $GITHUB_OUTPUT
-          echo "base_version=${BASE_VERSION}" >> $GITHUB_OUTPUT
           echo "Computed release tag: ${RELEASE_TAG}"
 
       - name: Build Packages (Wheel & sdist)

@@ -1221,24 +1221,83 @@ To ensure 100% full-suite coverage without impacting fast pull-request feedback:
 
 ---
 
-### 11.4 Gate J.4: Verification & GitHub Actions Live Status
+## 12. Phase K — Release Hygiene, Nightly Suite Verification & Current Known Issues
 
-- **Repository**: `https://github.com/rabigupta-123/redloop-cybersecurity-copilot`
-- **Release Version**: `v0.2.0`
-- **Phase J Commit**: `9a540f1` ("fix: username/coding-research recall, ci test coverage")
-- **Live GitHub Actions Runs & Verification**:
-  - **`feat/connectors-bounty`**:
-    - URL: [Run 42841255939](https://github.com/rabigupta-123/redloop-cybersecurity-copilot/actions/runs/42841255939)
-    - Status: `completed` | Conclusion: **`success`** :white_check_mark:
-    - Steps Verified: Set up job (success), Checkout (success), Python setup (success), Install Dependencies (success), Static Type Checking mypy (success - 0 errors), Secret Scanner Check (success - clean), Dependency Vulnerability Audit pip-audit (success - 0 vulnerabilities), Run Tests (success - 83 passed).
-  - **`main`**:
-    - URL: [Run 42841276251](https://github.com/rabigupta-123/redloop-cybersecurity-copilot/actions/runs/42841276251)
-    - Status: `completed` | Conclusion: **`success`** :white_check_mark:
-    - Steps Verified: Set up job (success), Checkout (success), Python setup (success), Install Dependencies (success), Static Type Checking mypy (success - 0 errors), Secret Scanner Check (success - clean), Dependency Vulnerability Audit pip-audit (success - 0 vulnerabilities), Run Tests (success - 83 passed).
-  - **Automated Release (`v0.2.0`)**:
-    - URL: [Run 42841287351](https://github.com/rabigupta-123/redloop-cybersecurity-copilot/actions/runs/42841287351)
-    - Status: `completed` | Conclusion: **`success`** :white_check_mark:
-    - Steps Verified: Set up job (success), Checkout (success), Python setup (success), Install Build Tooling (success), Verify Secret Hygiene (success), Determine Release Tag (success - `v0.2.0`), Build Packages (Wheel & sdist: success), Upload Distribution Artifacts (success), Create or Update GitHub Release (success).
+### 12.1 Gate K.1: Fix the Stray Tag (v10.0.0 Resolution & SemVer Guards)
+
+#### 1. Root Cause Analysis
+- **Root Cause**: During earlier Phase 10 development (commit `ef59024` on Thu Nov 5 2026, *"feat(hunting): add advanced threat hunting and investigation intelligence"*), an operator manually created a tag named `v10.0.0` to match "Phase 10". In addition, the version-determination step in `.github/workflows/release.yml` lacked sanity guards to prevent major version leaps, meaning any arbitrary git tag pushed to the remote was automatically promoted to a GitHub release.
+- **De-Tagging and Release Removal**:
+  - Remotely deleted tag `v10.0.0` from GitHub:
+    ```bash
+    git push origin :refs/tags/v10.0.0
+    # Output: - [deleted] v10.0.0
+    ```
+  - Locally deleted tag:
+    ```bash
+    git tag -d v10.0.0
+    # Output: Deleted tag 'v10.0.0'
+    ```
+  - Verified remote release deletion via GitHub REST API: querying `https://api.github.com/repos/rabigupta-123/redloop-cybersecurity-copilot/releases/435138044` returned `HTTPError: 404` (confirmed purged).
+- **SemVer Regression Guards & Next Tag Calculation**:
+  - Developed [`scripts/validate_release_tag.py`](file:///scripts/validate_release_tag.py):
+    - Strictly parses SemVer strings (`major.minor.patch[.build]`).
+    - Validates progression: rejects regressions, duplicate tags, and wild version jumps (`major > current.major + 1`, `minor > current.minor + 1`, or `patch > current.patch + 1`).
+    - Computes next safe tag: with current latest tag `v0.2.0`, `scripts/validate_release_tag.py --compute-next` outputs `v0.2.1`.
+  - Added unit test suite [`tests/test_release_hygiene.py`](file:///tests/test_release_hygiene.py) (13 tests):
+    - Verifies SemVer parsing, rejects `v10.0.0` jump from `v0.2.0`, ensures `v10.0.0` is absent from git tags, and confirms next tag calculation `v0.2.1`.
+    - **Result**: `13 passed in 0.67s` (`100% pass`).
+  - Integrated into `.github/workflows/release.yml` and `.github/workflows/ci.yml`.
+
+---
+
+### 12.2 Gate K.2: Nightly Full Suite Verification (`nightly_full_suite.yml`)
+
+#### 1. Manual Dispatch & Initial Live Execution
+- Triggered `.github/workflows/nightly_full_suite.yml` manually via GitHub API `workflow_dispatch` on branch `feat/connectors-bounty`.
+- **Initial Run URL**: [Run 42964655352](https://github.com/rabigupta-123/redloop-cybersecurity-copilot/actions/runs/42964655352)
+- **Status**: `completed` | **Conclusion**: `failure`
+
+#### 2. Root Cause Breakdown of Initial Failure
+- **Error in CI Logs**:
+  ```text
+  ERROR collecting self-learning-agent/tests/test_self_learning.py
+  ImportError while importing test module '.../self-learning-agent/tests/test_self_learning.py':
+  self-learning-agent/database/connection.py:1: in <module>
+      from sqlalchemy import create_engine
+  E   ModuleNotFoundError: No module named 'sqlalchemy'
+  !!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+  ```
+- **Analysis**: Pytest in repository root automatically discovered the auxiliary `self-learning-agent/tests/test_self_learning.py` module. While the main RedLoop package does not depend on SQLAlchemy, `self-learning-agent` requires `sqlalchemy` and `pydantic-settings`. The `nightly_full_suite.yml` environment only installed the root package dependencies, causing pytest collection to halt with exit code 2 before executing tests.
+- **Remediation**:
+  - Updated `.github/workflows/nightly_full_suite.yml` to install `sqlalchemy pydantic-settings` alongside core dependencies.
+
+---
+
+### 12.3 Gate K.3: Current Known Issues
+
+In accordance with Phase K rules of absolute evidence integrity, the following items represent known architectural, environment, and operational boundaries currently tracked in the RedLoop platform:
+
+1. **Excluded Full-Suite Tests (Integration & Docker Constraints)**:
+   - *Description*: While the fast blocking CI suite runs 96 critical invariant tests in ~40 seconds, the full repository corpus (~1,260 tests) includes legacy integration tests that target local Docker daemons (e.g. container provisioning in `tests/test_vuln_lab.py`), live external OSINT APIs (e.g. unmocked internet queries), and long-running CTF challenges.
+   - *Impact*: In clean, uncontainerized, or offline CI runners without Docker-in-Docker or live network access, integration tests requiring local Docker daemons or external network calls fail or skip.
+   - *Status*: Segregated into `nightly_full_suite.yml` with scheduled cron (`0 2 * * *`) and `workflow_dispatch`.
+
+2. **Windows Sandbox Proactor Loopback Restriction**:
+   - *Description*: On Windows environments running under strict sandbox process isolation, `asyncio.ProactorEventLoop`'s internal self-pipe creation (`socket.socketpair()`) attempts loopback binding/connection which is blocked by the Windows sandboxed process boundary unless elevated or executed under `WindowsSelectorEventLoopPolicy`.
+   - *Impact*: Async tests using `httpx.ASGITransport` hang during socketpair handshakes unless run with elevated network loopback permissions or on Linux runners.
+   - *Status*: Standard Linux CI runners (GitHub Actions `ubuntu-latest`) execute without issue.
+
+3. **External LLM Provider Deprecation Cycles**:
+   - *Description*: Fast model deprecations by cloud providers (e.g. Groq, OpenRouter) can make hardcoded model slugs obsolete over time. Currently `qwen/qwen3.8-27b` is verified active on Groq.
+   - *Impact*: If a provider deprecates a model slug, calls fall back to alternative providers or trigger circuit breakers.
+   - *Status*: LLMCircuitBreaker and provider fallback routing automatically route around dead model endpoints; periodic `/models` discovery audits are recommended.
+
+4. **Single-Worker High-Concurrency Saturation**:
+   - *Description*: Under Locust load tests exceeding 35–40 concurrent users on a single local ASGI Uvicorn process, median latency rises due to CPU-bound embedding vector similarity computation and single-worker queue contention.
+   - *Impact*: Requests past the concurrency queue depth (35) are shed with HTTP 429 (`QUEUE_CAPACITY_EXCEEDED`) rather than letting latency balloon unbounded.
+   - *Status*: Multi-worker deployment (e.g. `gunicorn -w 4 -k uvicorn.workers.UvicornWorker`) or Redis-backed task queue recommended for production enterprise scale.
+
 
 
 
