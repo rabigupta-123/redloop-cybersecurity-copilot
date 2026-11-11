@@ -1,6 +1,6 @@
 [project]
 name = "redloop"
-version = "0.2.0"
+version = "0.2.1"
 description = "Locally-run autonomous security testing agent for authorized pentesting, learning labs, and CTFs."
 readme = "README.md"
 requires-python = ">=3.11"

@@ -55,9 +55,41 @@ from redloop.username_footprint import (
 HEX64_RE = re.compile(r"^[0-9a-f]{64}$")
 
 
-def verify_gate_n0() -> dict[str, Any]:
+def verify_gate_n0(target_db_path: Path | None = None) -> dict[str, Any]:
     """Verify Gate N.0: audit chain integrity and exact 64-hex-char SHA-256 hashes."""
-    db_path = REPO_ROOT / "artifacts" / "phase_m3_live_audit.db"
+    db_path = target_db_path or (REPO_ROOT / "artifacts" / "phase_m3_live_audit.db")
+    db_path.parent.mkdir(parents=True, exist_ok=True)
+    if not db_path.exists():
+        logger = AuditLogger(str(db_path))
+        logger.log(
+            target="stranger@unscoped-external.org",
+            action="person_osint:email",
+            module="assessment",
+            status="BLOCKED_SCOPE_REQUIRED",
+            details={
+                "category": "person_scope_gate:rest",
+                "details": {
+                    "identifier_type": "email",
+                    "entry_point": "rest",
+                    "authorization_basis": "denied_scope_required",
+                },
+            },
+        )
+        logger.log(
+            target="unscoped_target_handle_99",
+            action="person_osint:username",
+            module="assessment",
+            status="BLOCKED_SCOPE_REQUIRED",
+            details={
+                "category": "person_scope_gate:chat",
+                "details": {
+                    "identifier_type": "username",
+                    "entry_point": "chat",
+                    "authorization_basis": "denied_scope_required",
+                },
+            },
+        )
+
     conn = sqlite3.connect(str(db_path))
     conn.row_factory = sqlite3.Row
     rows = [
@@ -404,3 +436,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

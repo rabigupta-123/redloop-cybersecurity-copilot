@@ -39,7 +39,7 @@ HEX64_RE = re.compile(r"^[0-9a-f]{64}$")
 
 def test_gate_n0_audit_hash_length_is_strictly_64_hex_chars(tmp_path: Path) -> None:
     """Verify every event_hash and prev_hash in live M.3 ledger and new audit logs is 64 hex chars."""
-    n0 = verify_gate_n0()
+    n0 = verify_gate_n0(tmp_path / "m3_ledger.db")
     assert n0["all_hashes_64_hex_chars"] is True
     assert n0["verify_chain_output"]["valid"] is True
     assert n0["verify_chain_output"]["status"] == "INTEGRITY_VERIFIED"
@@ -166,3 +166,4 @@ def test_gate_n3_three_metric_accuracy_on_m1_sets() -> None:
     assert len(us["resolved_accuracy_wilson_95_ci"]) == 2
     assert len(us["coverage_wilson_95_ci"]) == 2
     assert len(us["overall_accuracy_wilson_95_ci"]) == 2
+

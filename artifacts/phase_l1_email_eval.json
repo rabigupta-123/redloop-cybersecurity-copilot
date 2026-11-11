@@ -15,6 +15,36 @@
     1.0
   ],
   "f1": 1.0,
+  "resolved_accuracy": 1.0,
+  "resolved_accuracy_wilson_95_ci": [
+    0.8389,
+    1.0
+  ],
+  "resolved_k": 20,
+  "resolved_n": 20,
+  "strict_answered_accuracy": 1.0,
+  "strict_answered_wilson_95_ci": [
+    0.8389,
+    1.0
+  ],
+  "strict_answered_n": 20,
+  "coverage": 1.0,
+  "coverage_wilson_95_ci": [
+    0.8389,
+    1.0
+  ],
+  "strict_answered_coverage": 1.0,
+  "strict_answered_coverage_wilson_95_ci": [
+    0.8389,
+    1.0
+  ],
+  "overall_accuracy": 1.0,
+  "overall_accuracy_wilson_95_ci": [
+    0.8389,
+    1.0
+  ],
+  "unknown_count": 0,
+  "rate_limited_count": 0,
   "items": [
     {
       "email": "alice.sec@redloop.io",
@@ -22,7 +52,10 @@
       "expected_exists": true,
       "predicted_state": "EXISTS",
       "outcome": "TP",
-      "reason": "Matched existence body signature '\"entry\"' (HTTP 200)"
+      "reason": "Matched positive existence signature '\"entry\"' (HTTP 200)",
+      "fast_path_latency_ms": 0.003,
+      "headless_fallback_used": false,
+      "headless_latency_ms": 0.0
     },
     {
       "email": "alice.sec@redloop.io",
@@ -30,7 +63,10 @@
       "expected_exists": true,
       "predicted_state": "EXISTS",
       "outcome": "TP",
-      "reason": "Matched existence body signature '\"total_count\":1' (HTTP 200)"
+      "reason": "Matched positive existence signature '\"total_count\":1' (HTTP 200)",
+      "fast_path_latency_ms": 0.002,
+      "headless_fallback_used": false,
+      "headless_latency_ms": 0.0
     },
     {
       "email": "alice.sec@redloop.io",
@@ -38,7 +74,10 @@
       "expected_exists": true,
       "predicted_state": "EXISTS",
       "outcome": "TP",
-      "reason": "Matched existence body signature '\"exists\":true' (HTTP 200)"
+      "reason": "Matched positive existence signature '\"exists\":true' (HTTP 200)",
+      "fast_path_latency_ms": 0.001,
+      "headless_fallback_used": false,
+      "headless_latency_ms": 0.0
     },
     {
       "email": "alice.sec@redloop.io",
@@ -46,7 +85,10 @@
       "expected_exists": true,
       "predicted_state": "EXISTS",
       "outcome": "TP",
-      "reason": "Matched existence body signature 'already registered' (HTTP 200)"
+      "reason": "Matched positive existence signature 'already registered' (HTTP 200)",
+      "fast_path_latency_ms": 0.001,
+      "headless_fallback_used": false,
+      "headless_latency_ms": 0.0
     },
     {
       "email": "alice.sec@redloop.io",
@@ -54,7 +96,10 @@
       "expected_exists": true,
       "predicted_state": "EXISTS",
       "outcome": "TP",
-      "reason": "Matched existence body signature 'already in use' (HTTP 200)"
+      "reason": "Matched positive existence signature 'already in use' (HTTP 200)",
+      "fast_path_latency_ms": 0.001,
+      "headless_fallback_used": false,
+      "headless_latency_ms": 0.0
     },
     {
       "email": "alice.sec@redloop.io",
@@ -62,7 +107,10 @@
       "expected_exists": true,
       "predicted_state": "EXISTS",
       "outcome": "TP",
-      "reason": "Matched existence body signature 'email address is already' (HTTP 200)"
+      "reason": "Matched positive existence signature 'email address is already' (HTTP 200)",
+      "fast_path_latency_ms": 0.001,
+      "headless_fallback_used": false,
+      "headless_latency_ms": 0.0
     },
     {
       "email": "alice.sec@redloop.io",
@@ -70,7 +118,10 @@
       "expected_exists": true,
       "predicted_state": "EXISTS",
       "outcome": "TP",
-      "reason": "Matched existence body signature 'already exists' (HTTP 200)"
+      "reason": "Matched positive existence signature 'already exists' (HTTP 200)",
+      "fast_path_latency_ms": 0.001,
+      "headless_fallback_used": false,
+      "headless_latency_ms": 0.0
     },
     {
       "email": "alice.sec@redloop.io",
@@ -78,7 +129,10 @@
       "expected_exists": true,
       "predicted_state": "EXISTS",
       "outcome": "TP",
-      "reason": "Matched existence body signature '\"users\":[{' (HTTP 200)"
+      "reason": "Matched positive existence signature '\"users\":[{' (HTTP 200)",
+      "fast_path_latency_ms": 0.001,
+      "headless_fallback_used": false,
+      "headless_latency_ms": 0.0
     },
     {
       "email": "alice.sec@redloop.io",
@@ -86,7 +140,10 @@
       "expected_exists": true,
       "predicted_state": "EXISTS",
       "outcome": "TP",
-      "reason": "Matched existence body signature '\"passwordless\"' (HTTP 200)"
+      "reason": "Matched positive existence signature '\"passwordless\"' (HTTP 200)",
+      "fast_path_latency_ms": 0.0,
+      "headless_fallback_used": false,
+      "headless_latency_ms": 0.0
     },
     {
       "email": "alice.sec@redloop.io",
@@ -94,7 +151,10 @@
       "expected_exists": true,
       "predicted_state": "EXISTS",
       "outcome": "TP",
-      "reason": "Matched existence body signature '\"status\":20' (HTTP 200)"
+      "reason": "Matched positive existence signature '\"status\":20' (HTTP 200)",
+      "fast_path_latency_ms": 0.0,
+      "headless_fallback_used": false,
+      "headless_latency_ms": 0.0
     },
     {
       "email": "alice.sec@redloop.io",
@@ -102,7 +162,10 @@
       "expected_exists": true,
       "predicted_state": "EXISTS",
       "outcome": "TP",
-      "reason": "Matched existence body signature '\"them\":[{' (HTTP 200)"
+      "reason": "Matched positive existence signature '\"them\":[{' (HTTP 200)",
+      "fast_path_latency_ms": 0.001,
+      "headless_fallback_used": false,
+      "headless_latency_ms": 0.0
     },
     {
       "email": "alice.sec@redloop.io",
@@ -110,7 +173,10 @@
       "expected_exists": false,
       "predicted_state": "NOT_FOUND",
       "outcome": "TN",
-      "reason": "Matched not-found body signature '\"exists\":false' (HTTP 200)"
+      "reason": "Matched non-existence availability token '\"exists\":false' (HTTP 200)",
+      "fast_path_latency_ms": 0.001,
+      "headless_fallback_used": false,
+      "headless_latency_ms": 0.0
     },
     {
       "email": "alice.sec@redloop.io",
@@ -118,7 +184,10 @@
       "expected_exists": false,
       "predicted_state": "NOT_FOUND",
       "outcome": "TN",
-      "reason": "Matched not-found body signature '\"users\":[]' (HTTP 200)"
+      "reason": "Matched not-found body signature '\"users\":[]' (HTTP 200)",
+      "fast_path_latency_ms": 0.001,
+      "headless_fallback_used": false,
+      "headless_latency_ms": 0.0
     },
     {
       "email": "alice.sec@redloop.io",
@@ -126,7 +195,10 @@
       "expected_exists": false,
       "predicted_state": "NOT_FOUND",
       "outcome": "TN",
-      "reason": "Matched not-found body signature 'available' (HTTP 404)"
+      "reason": "Matched not-found body signature 'available' (HTTP 404)",
+      "fast_path_latency_ms": 0.0,
+      "headless_fallback_used": false,
+      "headless_latency_ms": 0.0
     },
     {
       "email": "alice.sec@redloop.io",
@@ -134,7 +206,10 @@
       "expected_exists": false,
       "predicted_state": "NOT_FOUND",
       "outcome": "TN",
-      "reason": "Matched not-found body signature '\"data\":false' (HTTP 200)"
+      "reason": "Matched not-found body signature '\"data\":false' (HTTP 200)",
+      "fast_path_latency_ms": 0.0,
+      "headless_fallback_used": false,
+      "headless_latency_ms": 0.0
     },
     {
       "email": "alice.sec@redloop.io",
@@ -142,7 +217,10 @@
       "expected_exists": false,
       "predicted_state": "NOT_FOUND",
       "outcome": "TN",
-      "reason": "Matched not-found body signature '\"valid\":true' (HTTP 200)"
+      "reason": "Matched not-found body signature '\"valid\":true' (HTTP 200)",
+      "fast_path_latency_ms": 0.0,
+      "headless_fallback_used": false,
+      "headless_latency_ms": 0.0
     },
     {
       "email": "alice.sec@redloop.io",
@@ -150,7 +228,10 @@
       "expected_exists": false,
       "predicted_state": "NOT_FOUND",
       "outcome": "TN",
-      "reason": "Matched not-found body signature '\"exists\":false' (HTTP 200)"
+      "reason": "Matched non-existence availability token '\"exists\":false' (HTTP 200)",
+      "fast_path_latency_ms": 0.0,
+      "headless_fallback_used": false,
+      "headless_latency_ms": 0.0
     },
     {
       "email": "alice.sec@redloop.io",
@@ -158,7 +239,10 @@
       "expected_exists": false,
       "predicted_state": "NOT_FOUND",
       "outcome": "TN",
-      "reason": "Matched not-found body signature 'true' (HTTP 200)"
+      "reason": "Matched not-found body signature 'true' (HTTP 200)",
+      "fast_path_latency_ms": 0.001,
+      "headless_fallback_used": false,
+      "headless_latency_ms": 0.0
     },
     {
       "email": "alice.sec@redloop.io",
@@ -166,7 +250,10 @@
       "expected_exists": false,
       "predicted_state": "NOT_FOUND",
       "outcome": "TN",
-      "reason": "Matched not-found body signature '[]' (HTTP 200)"
+      "reason": "Matched not-found body signature '[]' (HTTP 200)",
+      "fast_path_latency_ms": 0.0,
+      "headless_fallback_used": false,
+      "headless_latency_ms": 0.0
     },
     {
       "email": "alice.sec@redloop.io",
@@ -174,7 +261,10 @@
       "expected_exists": false,
       "predicted_state": "NOT_FOUND",
       "outcome": "TN",
-      "reason": "Matched not-found body signature '\"status\":\"available\"' (HTTP 200)"
+      "reason": "Matched not-found body signature '\"status\":\"available\"' (HTTP 200)",
+      "fast_path_latency_ms": 0.0,
+      "headless_fallback_used": false,
+      "headless_latency_ms": 0.0
     }
   ]
 }

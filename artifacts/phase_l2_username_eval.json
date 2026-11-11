@@ -15,6 +15,36 @@
     1.0
   ],
   "f1": 1.0,
+  "resolved_accuracy": 1.0,
+  "resolved_accuracy_wilson_95_ci": [
+    0.8389,
+    1.0
+  ],
+  "resolved_k": 20,
+  "resolved_n": 20,
+  "strict_answered_accuracy": 1.0,
+  "strict_answered_wilson_95_ci": [
+    0.8389,
+    1.0
+  ],
+  "strict_answered_n": 20,
+  "coverage": 1.0,
+  "coverage_wilson_95_ci": [
+    0.8389,
+    1.0
+  ],
+  "strict_answered_coverage": 1.0,
+  "strict_answered_coverage_wilson_95_ci": [
+    0.8389,
+    1.0
+  ],
+  "overall_accuracy": 1.0,
+  "overall_accuracy_wilson_95_ci": [
+    0.8389,
+    1.0
+  ],
+  "unknown_count": 0,
+  "rate_limited_count": 0,
   "items": [
     {
       "username": "torvalds",
@@ -22,7 +52,10 @@
       "expected_exists": true,
       "predicted_state": "EXISTS",
       "outcome": "TP",
-      "reason": "Matched existence body signature 'vcard-names' (HTTP 200)"
+      "reason": "Matched positive identity signature 'vcard-names' (HTTP 200)",
+      "fast_path_latency_ms": 0.017,
+      "headless_fallback_used": false,
+      "headless_latency_ms": 0.0
     },
     {
       "username": "torvalds",
@@ -30,7 +63,10 @@
       "expected_exists": true,
       "predicted_state": "EXISTS",
       "outcome": "TP",
-      "reason": "Matched existence body signature 'user-profile' (HTTP 200)"
+      "reason": "Matched positive identity signature 'user-profile' (HTTP 200)",
+      "fast_path_latency_ms": 0.011,
+      "headless_fallback_used": false,
+      "headless_latency_ms": 0.0
     },
     {
       "username": "torvalds",
@@ -38,7 +74,10 @@
       "expected_exists": true,
       "predicted_state": "EXISTS",
       "outcome": "TP",
-      "reason": "Matched existence body signature '\"id\":' (HTTP 200)"
+      "reason": "Matched positive identity signature '\"id\":' (HTTP 200)",
+      "fast_path_latency_ms": 0.007,
+      "headless_fallback_used": false,
+      "headless_latency_ms": 0.0
     },
     {
       "username": "torvalds",
@@ -46,7 +85,10 @@
       "expected_exists": true,
       "predicted_state": "EXISTS",
       "outcome": "TP",
-      "reason": "Matched existence body signature '\"kind\": \"t2\"' (HTTP 200)"
+      "reason": "Matched positive identity signature '\"kind\": \"t2\"' (HTTP 200)",
+      "fast_path_latency_ms": 0.012,
+      "headless_fallback_used": false,
+      "headless_latency_ms": 0.0
     },
     {
       "username": "torvalds",
@@ -54,7 +96,10 @@
       "expected_exists": true,
       "predicted_state": "EXISTS",
       "outcome": "TP",
-      "reason": "Matched existence body signature '\"username\":' (HTTP 200)"
+      "reason": "Matched positive identity signature '\"username\":' (HTTP 200)",
+      "fast_path_latency_ms": 0.006,
+      "headless_fallback_used": false,
+      "headless_latency_ms": 0.0
     },
     {
       "username": "torvalds",
@@ -62,7 +107,10 @@
       "expected_exists": true,
       "predicted_state": "EXISTS",
       "outcome": "TP",
-      "reason": "Matched existence body signature 'profile-section' (HTTP 200)"
+      "reason": "Matched positive identity signature 'profile-section' (HTTP 200)",
+      "fast_path_latency_ms": 0.005,
+      "headless_fallback_used": false,
+      "headless_latency_ms": 0.0
     },
     {
       "username": "torvalds",
@@ -70,7 +118,10 @@
       "expected_exists": true,
       "predicted_state": "EXISTS",
       "outcome": "TP",
-      "reason": "Matched existence body signature '~{username}' (HTTP 200)"
+      "reason": "Matched positive identity signature '~{username}' (HTTP 200)",
+      "fast_path_latency_ms": 0.006,
+      "headless_fallback_used": false,
+      "headless_latency_ms": 0.0
     },
     {
       "username": "torvalds",
@@ -78,7 +129,10 @@
       "expected_exists": true,
       "predicted_state": "EXISTS",
       "outcome": "TP",
-      "reason": "Matched existence body signature '\"user\":' (HTTP 200)"
+      "reason": "Matched positive identity signature '\"user\":' (HTTP 200)",
+      "fast_path_latency_ms": 0.004,
+      "headless_fallback_used": false,
+      "headless_latency_ms": 0.0
     },
     {
       "username": "torvalds",
@@ -86,7 +140,10 @@
       "expected_exists": true,
       "predicted_state": "EXISTS",
       "outcome": "TP",
-      "reason": "Matched existence body signature 'profile-heading' (HTTP 200)"
+      "reason": "Matched positive identity signature 'profile-heading' (HTTP 200)",
+      "fast_path_latency_ms": 0.005,
+      "headless_fallback_used": false,
+      "headless_latency_ms": 0.0
     },
     {
       "username": "torvalds",
@@ -94,7 +151,10 @@
       "expected_exists": true,
       "predicted_state": "EXISTS",
       "outcome": "TP",
-      "reason": "Matched existence body signature 'profile' (HTTP 200)"
+      "reason": "Matched positive identity signature 'profile' (HTTP 200)",
+      "fast_path_latency_ms": 0.005,
+      "headless_fallback_used": false,
+      "headless_latency_ms": 0.0
     },
     {
       "username": "octocat",
@@ -102,7 +162,10 @@
       "expected_exists": false,
       "predicted_state": "NOT_FOUND",
       "outcome": "TN",
-      "reason": "Matched not-found body signature '404' (HTTP 404)"
+      "reason": "Matched not-found body signature '404' (HTTP 404)",
+      "fast_path_latency_ms": 0.01,
+      "headless_fallback_used": false,
+      "headless_latency_ms": 0.0
     },
     {
       "username": "octocat",
@@ -110,7 +173,10 @@
       "expected_exists": false,
       "predicted_state": "NOT_FOUND",
       "outcome": "TN",
-      "reason": "Matched not-found body signature '404' (HTTP 404)"
+      "reason": "Matched not-found body signature '404' (HTTP 404)",
+      "fast_path_latency_ms": 0.008,
+      "headless_fallback_used": false,
+      "headless_latency_ms": 0.0
     },
     {
       "username": "octocat",
@@ -118,7 +184,10 @@
       "expected_exists": false,
       "predicted_state": "NOT_FOUND",
       "outcome": "TN",
-      "reason": "Matched not-found body signature '404' (HTTP 404)"
+      "reason": "Matched not-found body signature '404' (HTTP 404)",
+      "fast_path_latency_ms": 0.005,
+      "headless_fallback_used": false,
+      "headless_latency_ms": 0.0
     },
     {
       "username": "octocat",
@@ -126,7 +195,10 @@
       "expected_exists": false,
       "predicted_state": "NOT_FOUND",
       "outcome": "TN",
-      "reason": "Matched not-found body signature 'Page Not Found' (HTTP 404)"
+      "reason": "Matched not-found body signature 'Page Not Found' (HTTP 404)",
+      "fast_path_latency_ms": 0.005,
+      "headless_fallback_used": false,
+      "headless_latency_ms": 0.0
     },
     {
       "username": "octocat",
@@ -134,7 +206,10 @@
       "expected_exists": false,
       "predicted_state": "NOT_FOUND",
       "outcome": "TN",
-      "reason": "Matched not-found body signature '\"errors\":' (HTTP 404)"
+      "reason": "Matched not-found body signature '\"errors\":' (HTTP 404)",
+      "fast_path_latency_ms": 0.005,
+      "headless_fallback_used": false,
+      "headless_latency_ms": 0.0
     },
     {
       "username": "octocat",
@@ -142,7 +217,10 @@
       "expected_exists": false,
       "predicted_state": "NOT_FOUND",
       "outcome": "TN",
-      "reason": "Matched not-found body signature '\"success\":false' (HTTP 404)"
+      "reason": "Matched not-found body signature '\"success\":false' (HTTP 404)",
+      "fast_path_latency_ms": 0.006,
+      "headless_fallback_used": false,
+      "headless_latency_ms": 0.0
     },
     {
       "username": "octocat",
@@ -150,7 +228,10 @@
       "expected_exists": false,
       "predicted_state": "NOT_FOUND",
       "outcome": "TN",
-      "reason": "Matched not-found body signature 'The page you were looking for doesn't exist' (HTTP 404)"
+      "reason": "Matched not-found body signature 'The page you were looking for doesn't exist' (HTTP 404)",
+      "fast_path_latency_ms": 0.006,
+      "headless_fallback_used": false,
+      "headless_latency_ms": 0.0
     },
     {
       "username": "octocat",
@@ -158,7 +239,10 @@
       "expected_exists": false,
       "predicted_state": "NOT_FOUND",
       "outcome": "TN",
-      "reason": "Matched not-found body signature 'Page not found' (HTTP 404)"
+      "reason": "Matched not-found body signature 'Page not found' (HTTP 404)",
+      "fast_path_latency_ms": 0.005,
+      "headless_fallback_used": false,
+      "headless_latency_ms": 0.0
     },
     {
       "username": "octocat",
@@ -166,7 +250,10 @@
       "expected_exists": false,
       "predicted_state": "NOT_FOUND",
       "outcome": "TN",
-      "reason": "Matched not-found body signature 'PAGE NOT FOUND' (HTTP 200)"
+      "reason": "Matched not-found body signature 'PAGE NOT FOUND' (HTTP 200)",
+      "fast_path_latency_ms": 0.006,
+      "headless_fallback_used": false,
+      "headless_latency_ms": 0.0
     },
     {
       "username": "octocat",
@@ -174,7 +261,10 @@
       "expected_exists": false,
       "predicted_state": "NOT_FOUND",
       "outcome": "TN",
-      "reason": "Matched not-found body signature 'This page does not exist' (HTTP 404)"
+      "reason": "Matched not-found body signature 'This page does not exist' (HTTP 404)",
+      "fast_path_latency_ms": 0.006,
+      "headless_fallback_used": false,
+      "headless_latency_ms": 0.0
     }
   ]
 }

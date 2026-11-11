@@ -138,14 +138,17 @@ def main() -> int:
     current = args.current or get_latest_git_tag()
     base_ver = get_pyproject_version()
 
-    # Align current with pyproject if git tag is behind
-    try:
-        c_parsed = parse_semver(current)
-        b_parsed = parse_semver(base_ver)
-        if (b_parsed[0], b_parsed[1], b_parsed[2]) > (c_parsed[0], c_parsed[1], c_parsed[2]):
-            current = f"v{base_ver}"
-    except Exception:
-        pass
+    # Align current with pyproject if computing next and git tag is behind
+    if args.compute_next and not args.current:
+        try:
+            c_parsed = parse_semver(current)
+            b_parsed = parse_semver(base_ver)
+            if (b_parsed[0], b_parsed[1], b_parsed[2]) > (c_parsed[0], c_parsed[1], c_parsed[2]):
+                # If pyproject has been bumped to base_ver, that is the candidate tag
+                print(f"v{base_ver}")
+                return 0
+        except Exception:
+            pass
 
     if args.compute_next:
         next_tag = calculate_next_tag(current, bump_type="patch")

@@ -183,26 +183,16 @@ class SherlockUsernameEnumerator:
         # 3. Strip <header>...</header> navigation chrome before matching positive EXISTS signatures
         # so a site's header/domain token on a soft-200 deleted-user page cannot trigger EXISTS.
         content_without_header = _HEADER_CHROME_RE.sub("", body_lower)
-        has_positive_profile_container = (
-            any(m in content_without_header for m in _POSITIVE_PROFILE_CONTAINER_MARKERS)
-            or f"@{uname_lower}" in content_without_header
-        )
 
         if status_code in spec.exists_status_codes:
             if spec.exists_body_signatures:
                 for ex_sig in spec.exists_body_signatures:
                     resolved_sig = ex_sig.replace("{username}", uname_lower).lower()
-                    if (
-                        resolved_sig
-                        and resolved_sig in content_without_header
-                        and has_positive_profile_container
-                    ):
+                    if resolved_sig and resolved_sig in content_without_header:
                         return ACCOUNT_EXISTS, f"Matched positive identity signature '{ex_sig}' (HTTP {status_code})"
                 # Status code is 200, but no positive identity-confirming signature was found in profile body -> UNKNOWN
                 return ACCOUNT_UNKNOWN, f"HTTP {status_code} returned without positive identity-confirming profile signature"
-            if has_positive_profile_container:
-                return ACCOUNT_EXISTS, f"HTTP {status_code} matched with positive profile container"
-            return ACCOUNT_UNKNOWN, f"HTTP {status_code} lacked positive profile container"
+            return ACCOUNT_EXISTS, f"HTTP {status_code} matched"
 
         return ACCOUNT_UNKNOWN, f"Ambiguous HTTP {status_code}; refusing to guess"
 

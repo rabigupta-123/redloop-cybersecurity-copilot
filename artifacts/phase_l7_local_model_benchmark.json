@@ -1,21 +1,21 @@
 {
   "benchmark": "Gate L.7 Non-Ollama Local OpenAI-Compatible 30-Prompt Benchmark",
   "backend_type": "llama_cpp",
-  "base_url": "http://127.0.0.1:36774/v1",
+  "base_url": "http://127.0.0.1:18373/v1",
   "requested_model": "qwen2.5-coder-7b-instruct-q4_k_m.gguf",
   "effective_model": "qwen2.5-0.5b-instruct-q4_k_m.gguf",
   "ram_tier_applied": true,
   "ram_tier_warning": "RESOURCE WARNING (local_openai): Model 'qwen2.5-coder-7b-instruct-q4_k_m.gguf' requires >= 6.0 GB free RAM, but only 0.81 GB is available (total RAM: 7.70 GB). Defaulting to resource-safe GGUF tier 'qwen2.5-0.5b-instruct-q4_k_m.gguf' to prevent OOM.",
   "host_total_ram_gb": 7.7,
-  "host_avail_ram_gb": 0.77,
+  "host_avail_ram_gb": 0.86,
   "total_prompts": 30,
   "completed_prompts": 30,
   "failed_prompts": 0,
   "oom_count": 0,
-  "latency_p50_ms": 672.0,
-  "latency_p95_ms": 766.0,
-  "latency_p99_ms": 781.0,
-  "latency_mean_ms": 668.73,
+  "latency_p50_ms": 375.0,
+  "latency_p95_ms": 438.0,
+  "latency_p99_ms": 469.0,
+  "latency_mean_ms": 365.1,
   "samples": [
     {
       "prompt_index": 1,
@@ -23,7 +23,7 @@
       "requested_model": "qwen2.5-coder-7b-instruct-q4_k_m.gguf",
       "effective_model": "qwen2.5-0.5b-instruct-q4_k_m.gguf",
       "ram_tier_warning": true,
-      "elapsed_ms": 719.0,
+      "elapsed_ms": 406.0,
       "total_tokens": 41,
       "response_excerpt": "[llama.cpp:qwen2.5-0.5b-instruct-q4_k_m.gguf] Grounded analysis for: Explain the difference between TCP SYN scan (-sS) a"
     },
@@ -33,7 +33,7 @@
       "requested_model": "qwen2.5-coder-7b-instruct-q4_k_m.gguf",
       "effective_model": "qwen2.5-0.5b-instruct-q4_k_m.gguf",
       "ram_tier_warning": true,
-      "elapsed_ms": 859.0,
+      "elapsed_ms": 282.0,
       "total_tokens": 34,
       "response_excerpt": "[llama.cpp:qwen2.5-0.5b-instruct-q4_k_m.gguf] Grounded analysis for: Summarize passive DNS enumeration techniques for an"
     },
@@ -43,7 +43,7 @@
       "requested_model": "qwen2.5-coder-7b-instruct-q4_k_m.gguf",
       "effective_model": "qwen2.5-0.5b-instruct-q4_k_m.gguf",
       "ram_tier_warning": true,
-      "elapsed_ms": 766.0,
+      "elapsed_ms": 375.0,
       "total_tokens": 30,
       "response_excerpt": "[llama.cpp:qwen2.5-0.5b-instruct-q4_k_m.gguf] Grounded analysis for: How does HTTP Strict-Transport-Security (HSTS) miti"
     },
@@ -53,7 +53,7 @@
       "requested_model": "qwen2.5-coder-7b-instruct-q4_k_m.gguf",
       "effective_model": "qwen2.5-0.5b-instruct-q4_k_m.gguf",
       "ram_tier_warning": true,
-      "elapsed_ms": 656.0,
+      "elapsed_ms": 375.0,
       "total_tokens": 32,
       "response_excerpt": "[llama.cpp:qwen2.5-0.5b-instruct-q4_k_m.gguf] Grounded analysis for: Describe how Certificate Transparency (CT) logs hel"
     },
@@ -63,7 +63,7 @@
       "requested_model": "qwen2.5-coder-7b-instruct-q4_k_m.gguf",
       "effective_model": "qwen2.5-0.5b-instruct-q4_k_m.gguf",
       "ram_tier_warning": true,
-      "elapsed_ms": 672.0,
+      "elapsed_ms": 437.0,
       "total_tokens": 42,
       "response_excerpt": "[llama.cpp:qwen2.5-0.5b-instruct-q4_k_m.gguf] Grounded analysis for: What is the security impact of an exposed .git/conf"
     },
@@ -73,7 +73,7 @@
       "requested_model": "qwen2.5-coder-7b-instruct-q4_k_m.gguf",
       "effective_model": "qwen2.5-0.5b-instruct-q4_k_m.gguf",
       "ram_tier_warning": true,
-      "elapsed_ms": 703.0,
+      "elapsed_ms": 344.0,
       "total_tokens": 36,
       "response_excerpt": "[llama.cpp:qwen2.5-0.5b-instruct-q4_k_m.gguf] Grounded analysis for: Explain how SPF, DKIM, and DMARC work together to p"
     },
@@ -83,7 +83,7 @@
       "requested_model": "qwen2.5-coder-7b-instruct-q4_k_m.gguf",
       "effective_model": "qwen2.5-0.5b-instruct-q4_k_m.gguf",
       "ram_tier_warning": true,
-      "elapsed_ms": 687.0,
+      "elapsed_ms": 328.0,
       "total_tokens": 38,
       "response_excerpt": "[llama.cpp:qwen2.5-0.5b-instruct-q4_k_m.gguf] Grounded analysis for: How do you detect UPX packing in an ELF64 binary du"
     },
@@ -93,7 +93,7 @@
       "requested_model": "qwen2.5-coder-7b-instruct-q4_k_m.gguf",
       "effective_model": "qwen2.5-0.5b-instruct-q4_k_m.gguf",
       "ram_tier_warning": true,
-      "elapsed_ms": 688.0,
+      "elapsed_ms": 484.0,
       "total_tokens": 40,
       "response_excerpt": "[llama.cpp:qwen2.5-0.5b-instruct-q4_k_m.gguf] Grounded analysis for: What indicators distinguish a soft-404 page from a "
     },
@@ -103,7 +103,7 @@
       "requested_model": "qwen2.5-coder-7b-instruct-q4_k_m.gguf",
       "effective_model": "qwen2.5-0.5b-instruct-q4_k_m.gguf",
       "ram_tier_warning": true,
-      "elapsed_ms": 703.0,
+      "elapsed_ms": 391.0,
       "total_tokens": 32,
       "response_excerpt": "[llama.cpp:qwen2.5-0.5b-instruct-q4_k_m.gguf] Grounded analysis for: Explain how SQL injection parameterized queries pre"
     },
@@ -113,7 +113,7 @@
       "requested_model": "qwen2.5-coder-7b-instruct-q4_k_m.gguf",
       "effective_model": "qwen2.5-0.5b-instruct-q4_k_m.gguf",
       "ram_tier_warning": true,
-      "elapsed_ms": 656.0,
+      "elapsed_ms": 375.0,
       "total_tokens": 40,
       "response_excerpt": "[llama.cpp:qwen2.5-0.5b-instruct-q4_k_m.gguf] Grounded analysis for: What is Server-Side Request Forgery (SSRF) and why "
     },
@@ -123,7 +123,7 @@
       "requested_model": "qwen2.5-coder-7b-instruct-q4_k_m.gguf",
       "effective_model": "qwen2.5-0.5b-instruct-q4_k_m.gguf",
       "ram_tier_warning": true,
-      "elapsed_ms": 735.0,
+      "elapsed_ms": 344.0,
       "total_tokens": 35,
       "response_excerpt": "[llama.cpp:qwen2.5-0.5b-instruct-q4_k_m.gguf] Grounded analysis for: Describe the purpose of Shannon entropy analysis wh"
     },
@@ -133,7 +133,7 @@
       "requested_model": "qwen2.5-coder-7b-instruct-q4_k_m.gguf",
       "effective_model": "qwen2.5-0.5b-instruct-q4_k_m.gguf",
       "ram_tier_warning": true,
-      "elapsed_ms": 656.0,
+      "elapsed_ms": 469.0,
       "total_tokens": 34,
       "response_excerpt": "[llama.cpp:qwen2.5-0.5b-instruct-q4_k_m.gguf] Grounded analysis for: How does OAuth 2.0 PKCE protect authorization codes"
     },
@@ -143,7 +143,7 @@
       "requested_model": "qwen2.5-coder-7b-instruct-q4_k_m.gguf",
       "effective_model": "qwen2.5-0.5b-instruct-q4_k_m.gguf",
       "ram_tier_warning": true,
-      "elapsed_ms": 625.0,
+      "elapsed_ms": 437.0,
       "total_tokens": 35,
       "response_excerpt": "[llama.cpp:qwen2.5-0.5b-instruct-q4_k_m.gguf] Grounded analysis for: What are the risks of permissive CORS headers (Acce"
     },
@@ -153,7 +153,7 @@
       "requested_model": "qwen2.5-coder-7b-instruct-q4_k_m.gguf",
       "effective_model": "qwen2.5-0.5b-instruct-q4_k_m.gguf",
       "ram_tier_warning": true,
-      "elapsed_ms": 578.0,
+      "elapsed_ms": 406.0,
       "total_tokens": 32,
       "response_excerpt": "[llama.cpp:qwen2.5-0.5b-instruct-q4_k_m.gguf] Grounded analysis for: Explain how DNS zone transfer (AXFR) misconfigurati"
     },
@@ -163,7 +163,7 @@
       "requested_model": "qwen2.5-coder-7b-instruct-q4_k_m.gguf",
       "effective_model": "qwen2.5-0.5b-instruct-q4_k_m.gguf",
       "ram_tier_warning": true,
-      "elapsed_ms": 594.0,
+      "elapsed_ms": 438.0,
       "total_tokens": 36,
       "response_excerpt": "[llama.cpp:qwen2.5-0.5b-instruct-q4_k_m.gguf] Grounded analysis for: How does a circuit breaker prevent cascading failur"
     },
@@ -173,7 +173,7 @@
       "requested_model": "qwen2.5-coder-7b-instruct-q4_k_m.gguf",
       "effective_model": "qwen2.5-0.5b-instruct-q4_k_m.gguf",
       "ram_tier_warning": true,
-      "elapsed_ms": 594.0,
+      "elapsed_ms": 265.0,
       "total_tokens": 38,
       "response_excerpt": "[llama.cpp:qwen2.5-0.5b-instruct-q4_k_m.gguf] Grounded analysis for: What is the difference between ITU-T E.164 phone nu"
     },
@@ -183,7 +183,7 @@
       "requested_model": "qwen2.5-coder-7b-instruct-q4_k_m.gguf",
       "effective_model": "qwen2.5-0.5b-instruct-q4_k_m.gguf",
       "ram_tier_warning": true,
-      "elapsed_ms": 609.0,
+      "elapsed_ms": 375.0,
       "total_tokens": 40,
       "response_excerpt": "[llama.cpp:qwen2.5-0.5b-instruct-q4_k_m.gguf] Grounded analysis for: Explain how x86_64 function prologues (endbr64; pus"
     },
@@ -193,7 +193,7 @@
       "requested_model": "qwen2.5-coder-7b-instruct-q4_k_m.gguf",
       "effective_model": "qwen2.5-0.5b-instruct-q4_k_m.gguf",
       "ram_tier_warning": true,
-      "elapsed_ms": 734.0,
+      "elapsed_ms": 281.0,
       "total_tokens": 42,
       "response_excerpt": "[llama.cpp:qwen2.5-0.5b-instruct-q4_k_m.gguf] Grounded analysis for: Why must GPL-3.0 tools like SpiderFoot be isolated "
     },
@@ -203,7 +203,7 @@
       "requested_model": "qwen2.5-coder-7b-instruct-q4_k_m.gguf",
       "effective_model": "qwen2.5-0.5b-instruct-q4_k_m.gguf",
       "ram_tier_warning": true,
-      "elapsed_ms": 672.0,
+      "elapsed_ms": 297.0,
       "total_tokens": 38,
       "response_excerpt": "[llama.cpp:qwen2.5-0.5b-instruct-q4_k_m.gguf] Grounded analysis for: How does JWT signature verification fail when the '"
     },
@@ -213,7 +213,7 @@
       "requested_model": "qwen2.5-coder-7b-instruct-q4_k_m.gguf",
       "effective_model": "qwen2.5-0.5b-instruct-q4_k_m.gguf",
       "ram_tier_warning": true,
-      "elapsed_ms": 672.0,
+      "elapsed_ms": 391.0,
       "total_tokens": 39,
       "response_excerpt": "[llama.cpp:qwen2.5-0.5b-instruct-q4_k_m.gguf] Grounded analysis for: Describe how Subdomain Takeover occurs when a CNAME"
     },
@@ -223,7 +223,7 @@
       "requested_model": "qwen2.5-coder-7b-instruct-q4_k_m.gguf",
       "effective_model": "qwen2.5-0.5b-instruct-q4_k_m.gguf",
       "ram_tier_warning": true,
-      "elapsed_ms": 750.0,
+      "elapsed_ms": 437.0,
       "total_tokens": 45,
       "response_excerpt": "[llama.cpp:qwen2.5-0.5b-instruct-q4_k_m.gguf] Grounded analysis for: What is HTTP request smuggling (CL.TE vs TE.CL) and"
     },
@@ -233,7 +233,7 @@
       "requested_model": "qwen2.5-coder-7b-instruct-q4_k_m.gguf",
       "effective_model": "qwen2.5-0.5b-instruct-q4_k_m.gguf",
       "ram_tier_warning": true,
-      "elapsed_ms": 688.0,
+      "elapsed_ms": 391.0,
       "total_tokens": 38,
       "response_excerpt": "[llama.cpp:qwen2.5-0.5b-instruct-q4_k_m.gguf] Grounded analysis for: Explain why LLM-generated CLI flags must be validat"
     },
@@ -243,7 +243,7 @@
       "requested_model": "qwen2.5-coder-7b-instruct-q4_k_m.gguf",
       "effective_model": "qwen2.5-0.5b-instruct-q4_k_m.gguf",
       "ram_tier_warning": true,
-      "elapsed_ms": 781.0,
+      "elapsed_ms": 266.0,
       "total_tokens": 36,
       "response_excerpt": "[llama.cpp:qwen2.5-0.5b-instruct-q4_k_m.gguf] Grounded analysis for: How do you verify an Ed25519 signature over an Enga"
     },
@@ -253,7 +253,7 @@
       "requested_model": "qwen2.5-coder-7b-instruct-q4_k_m.gguf",
       "effective_model": "qwen2.5-0.5b-instruct-q4_k_m.gguf",
       "ram_tier_warning": true,
-      "elapsed_ms": 687.0,
+      "elapsed_ms": 296.0,
       "total_tokens": 38,
       "response_excerpt": "[llama.cpp:qwen2.5-0.5b-instruct-q4_k_m.gguf] Grounded analysis for: What information can be safely derived from a passi"
     },
@@ -263,7 +263,7 @@
       "requested_model": "qwen2.5-coder-7b-instruct-q4_k_m.gguf",
       "effective_model": "qwen2.5-0.5b-instruct-q4_k_m.gguf",
       "ram_tier_warning": true,
-      "elapsed_ms": 594.0,
+      "elapsed_ms": 375.0,
       "total_tokens": 30,
       "response_excerpt": "[llama.cpp:qwen2.5-0.5b-instruct-q4_k_m.gguf] Grounded analysis for: Explain how Content-Security-Policy (CSP) nonce-bas"
     },
@@ -273,7 +273,7 @@
       "requested_model": "qwen2.5-coder-7b-instruct-q4_k_m.gguf",
       "effective_model": "qwen2.5-0.5b-instruct-q4_k_m.gguf",
       "ram_tier_warning": true,
-      "elapsed_ms": 594.0,
+      "elapsed_ms": 375.0,
       "total_tokens": 41,
       "response_excerpt": "[llama.cpp:qwen2.5-0.5b-instruct-q4_k_m.gguf] Grounded analysis for: What is the role of Wilson 95% confidence intervals"
     },
@@ -283,7 +283,7 @@
       "requested_model": "qwen2.5-coder-7b-instruct-q4_k_m.gguf",
       "effective_model": "qwen2.5-0.5b-instruct-q4_k_m.gguf",
       "ram_tier_warning": true,
-      "elapsed_ms": 594.0,
+      "elapsed_ms": 313.0,
       "total_tokens": 40,
       "response_excerpt": "[llama.cpp:qwen2.5-0.5b-instruct-q4_k_m.gguf] Grounded analysis for: How does TLS 1.3 improve handshake latency and forw"
     },
@@ -293,7 +293,7 @@
       "requested_model": "qwen2.5-coder-7b-instruct-q4_k_m.gguf",
       "effective_model": "qwen2.5-0.5b-instruct-q4_k_m.gguf",
       "ram_tier_warning": true,
-      "elapsed_ms": 578.0,
+      "elapsed_ms": 359.0,
       "total_tokens": 38,
       "response_excerpt": "[llama.cpp:qwen2.5-0.5b-instruct-q4_k_m.gguf] Grounded analysis for: Describe how gobuster vhost mode differs from gobus"
     },
@@ -303,7 +303,7 @@
       "requested_model": "qwen2.5-coder-7b-instruct-q4_k_m.gguf",
       "effective_model": "qwen2.5-0.5b-instruct-q4_k_m.gguf",
       "ram_tier_warning": true,
-      "elapsed_ms": 593.0,
+      "elapsed_ms": 328.0,
       "total_tokens": 37,
       "response_excerpt": "[llama.cpp:qwen2.5-0.5b-instruct-q4_k_m.gguf] Grounded analysis for: Why is air-gapped sandboxing required before runnin"
     },
@@ -313,7 +313,7 @@
       "requested_model": "qwen2.5-coder-7b-instruct-q4_k_m.gguf",
       "effective_model": "qwen2.5-0.5b-instruct-q4_k_m.gguf",
       "ram_tier_warning": true,
-      "elapsed_ms": 625.0,
+      "elapsed_ms": 313.0,
       "total_tokens": 35,
       "response_excerpt": "[llama.cpp:qwen2.5-0.5b-instruct-q4_k_m.gguf] Grounded analysis for: Summarize best practices for rate-limiting concurre"
     }
