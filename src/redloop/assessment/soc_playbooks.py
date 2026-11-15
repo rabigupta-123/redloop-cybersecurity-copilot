@@ -105,8 +105,13 @@ class PlaybookApprovalStore:
     @classmethod
     def get_instance(cls, db_path: Optional[Path | str] = None) -> "PlaybookApprovalStore":
         with cls._lock:
-            if cls._instance is None:
-                cls._instance = cls(db_path=db_path)
+            if db_path is not None:
+                p = Path(db_path)
+                if cls._instance is None or cls._instance.db_path != p:
+                    cls._instance = cls(db_path=p)
+                return cls._instance
+            if cls._instance is None or not cls._instance.db_path.parent.exists():
+                cls._instance = cls()
             return cls._instance
 
     @staticmethod
@@ -121,6 +126,7 @@ class PlaybookApprovalStore:
         return Path("data/audit.db")
 
     def _get_connection(self) -> sqlite3.Connection:
+        self.db_path.parent.mkdir(parents=True, exist_ok=True)
         conn = sqlite3.connect(str(self.db_path), check_same_thread=False, timeout=10.0)
         conn.row_factory = sqlite3.Row
         return conn

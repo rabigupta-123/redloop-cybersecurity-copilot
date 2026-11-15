@@ -129,7 +129,7 @@ Held-out dataset immutability is strictly enforced (`tests/fixtures/eval/intent_
 
 ## 5. Component Inventory
 
-Total inspected modules: **157**
+Total inspected modules: **165**
 
 | Module | Purpose / Docstring | Public API | Tests | Coverage |
 | :--- | :--- | :--- | :--- | :--- |
@@ -176,6 +176,7 @@ Total inspected modules: **157**
 | `src/redloop/assessment/models.py` | Domain models, schemas, and enums for RedLoop Security Assessment Engine. | `Severity, Confidence, OperationClass, AssessmentDepth, StageStatus, EvidenceProvenance...` | `tests/integration/ or suite` | 98.7% |
 | `src/redloop/assessment/network.py` | Deep network assessment module (TCP, UDP, service detection, banners, protocols). | `NetworkAssessor, probe_service_banner` | `tests/integration/ or suite` | 77.3% |
 | `src/redloop/assessment/orchestrator.py` | Unified Cybersecurity Task Orchestrator & Copilot Engine for RedLoop. | `Task, TaskStore, TaskOrchestrator` | `tests/integration/ or suite` | 66.4% |
+| `src/redloop/assessment/person_scope_gate.py` | Person-Identifying OSINT Scope Gate (Phase L.0). | `PersonScopeDecision, PersonScopeRequiredError, PersonScopeGate, normalize_person_identifier, handle_rest_person_lookup, handle_chat_person_lookup...` | `tests/integration/ or suite` | N/A |
 | `src/redloop/assessment/phase4_reports.py` | Phase 4.1 Comprehensive Security Report Generation Engine. | `Phase4ReportGenerator` | `tests/integration/ or suite` | 92.0% |
 | `src/redloop/assessment/reporting.py` | Multi-tier security assessment reporting engine for RedLoop. | `ReportingEngine` | `tests/test_reporting.py` | 70.3% |
 | `src/redloop/assessment/risk.py` | Deterministic CVSS-aligned risk calculation engine. | `calculate_risk` | `tests/integration/ or suite` | 80.6% |
@@ -218,9 +219,12 @@ Total inspected modules: **157**
 | `src/redloop/config.py` | Runtime configuration for RedLoop. | `Settings` | `tests/test_config.py` | 92.9% |
 | `src/redloop/connectors/__init__.py` | REDLOOP Connectors and MCP Layer. | `` | `tests/integration/ or suite` | N/A |
 | `src/redloop/connectors/circuit_breaker.py` | Per-connector circuit breaker (Phase 2.2). | `CircuitBreakerOpenError, CircuitBreaker` | `tests/integration/ or suite` | N/A |
+| `src/redloop/connectors/kali_ssh_connector.py` | SSH-based Kali Remote Execution Connector + Cached --help Flag Validator (Phase L, Gate L.5). | `CommandBlockedError, ValidatedCommand, ScopeEnforcementResult, FlagCitation, ToolHelpValidationResult, KaliToolHelpKnowledgeBase...` | `tests/integration/ or suite` | N/A |
 | `src/redloop/connectors/mcp_server.py` | REDLOOP as an MCP Server (Phase 2.1). | `MCPSecurityError, RedloopMCPServer` | `tests/integration/ or suite` | N/A |
 | `src/redloop/connectors/models.py` | Data models and manifests for REDLOOP Connector Layer (Phase 2). | `TransportType, RiskLevel, CircuitState, ConnectorTool, ConnectorManifest, ConnectorTelemetry` | `tests/integration/ or suite` | N/A |
+| `src/redloop/connectors/re_connector.py` | Air-Gapped Reverse-Engineering Connector for radare2 / r2pipe & Ghidra Headless (Phase L, Gate L.6). | `ReverseEngineeringRestrictionError, UploadedBinaryRecord, UploadedBinaryRegistry, ReverseEngineeringConnector, compute_shannon_entropy, build_test_crackme_elf...` | `tests/integration/ or suite` | N/A |
 | `src/redloop/connectors/registry.py` | REDLOOP Connector Registry and Execution Gateway (Phase 2.2 & 2.4). | `ConnectorSecurityError, ConnectorNotFoundError, ConnectorRegistry, get_connector_registry` | `tests/integration/ or suite` | N/A |
+| `src/redloop/connectors/spiderfoot_connector.py` | SpiderFoot Isolated REST Connector (Phase L.4). | `SpiderFootConnector, get_spiderfoot_manifest` | `tests/integration/ or suite` | N/A |
 | `src/redloop/connectors/untrusted.py` | Untrusted tool output handling and prompt injection defense (Phase 2.2). | `UntrustedDataResult, process_untrusted_output` | `tests/integration/ or suite` | N/A |
 | `src/redloop/ctf.py` | In-process CTF workflow simulator with synthetic targets and outcomes. | `CTFChallenge, SimulatedExploitResult, CTFSimulator` | `tests/test_ctf.py` | 90.9% |
 | `src/redloop/ctf_files.py` | Bounded, in-memory CTF archive triage without executing sample content. | `FileCategory, CTFFileFinding, CTFArchiveReport, FlagDetector, CTFArchiveAnalyzer, find_flags` | `tests/test_ctf_files.py` | 78.4% |
@@ -237,6 +241,7 @@ Total inspected modules: **157**
 | `src/redloop/forensics.py` | Bounded, static-only file triage. Uploaded content is never executed. | `FileProfile, ExtractedIOCs, YaraMatch, ForensicsReport, YaraScanner, ForensicsAnalyzer` | `tests/test_forensics.py` | 74.1% |
 | `src/redloop/forensics_advanced.py` | Advanced Blue Team and Digital Forensics Analysis Engine for REDLOOP. | `IOCItem, ForensicsReport, AdvancedForensicsEngine, get_advanced_forensics_engine` | `tests/test_forensics_advanced.py` | 50.0% |
 | `src/redloop/hardening.py` | Production Hardening Suite (Phase G.3). | `TokenBucket, RateLimiter, StructuredJsonFormatter, LLMCircuitBreaker, ProductionHardeningMiddleware, redact_secrets...` | `tests/integration/ or suite` | N/A |
+| `src/redloop/headless_fallback.py` | Targeted Headless-Render Fallback for CSR / Hydration-Shell OSINT Platforms (Phase N.2). | `SlowPathRateLimiter, HeadlessRenderResult, HeadlessRenderFallback, is_antibot_or_captcha_response, is_csr_hydration_shell, render_html_with_playwright` | `tests/integration/ or suite` | N/A |
 | `src/redloop/identity_correlation.py` | Unified identity correlation and analyst review for RedLoop. | `IdentityObservation, IdentityCluster, IdentityCorrelationStore, get_identity_correlation_store` | `tests/test_identity_correlation.py` | 83.9% |
 | `src/redloop/integrations/__init__.py` | REDLOOP Enterprise Security Integrations Gateway (Phase 8). | `` | `tests/integration/ or suite` | 100.0% |
 | `src/redloop/integrations/adapters/__init__.py` | Provider Adapters Package (Phase 8). | `` | `tests/integration/ or suite` | 100.0% |
@@ -259,10 +264,12 @@ Total inspected modules: **157**
 | `src/redloop/investigation.py` | Investigation-first architecture for REDLOOP cybersecurity platform. | `TimelineEvent, Investigation, InvestigationStore, utc_now_iso, get_investigation_store` | `tests/integration/ or suite` | 80.3% |
 | `src/redloop/investigation_graph.py` | Dual-Graph Investigation System, Replay Engine, Remediation Verification, and Multi-Model Evaluator. | `ProvenanceType, NodeType, GraphNode, GraphEdge, InvestigationGraph, RemediationVerifier...` | `tests/test_investigation_graph.py` | 83.8% |
 | `src/redloop/llm.py` | Provider-neutral LLM calls and runtime configuration for RedLoop. | `Provider, ProviderStatus, CompletionResult, LLMError, InsufficientMemoryError, ProviderNotConfiguredError...` | `tests/test_llm.py` | 59.6% |
+| `src/redloop/local_openai_adapter.py` | Generalized Local OpenAI-Compatible Endpoint Adapter (Phase L, Gate L.7). | `LocalOpenAIEndpointConfig, LocalOpenAICompletion, LocalOpenAIClient, select_resource_aware_local_openai_model, run_local_openai_30_prompt_benchmark` | `tests/integration/ or suite` | N/A |
 | `src/redloop/memory.py` | Local episodic memory with bounded lexical similarity retrieval. | `MemoryRecord, MemoryMatch, EpisodicMemory` | `tests/test_memory.py` | 96.5% |
 | `src/redloop/osint_engine.py` | Unified OSINT Intelligence Engine for REDLOOP. | `OSINTVerificationState, OSINTResult, OSINTCache, OSINTEngine, classify_ip_address, request_with_backoff...` | `tests/test_osint_engine.py` | 76.3% |
 | `src/redloop/overview_enhanced.py` | Enhanced Overview Dashboard — Professional security console view. | `` | `tests/integration/ or suite` | 0.0% |
 | `src/redloop/performance.py` | Performance Monitoring Dashboard for RedLoop Mythos Agent. | `QueryMetric, MetricsCollector, TokenUsageStore, utc_now, record_query_metric` | `tests/integration/ or suite` | 98.4% |
+| `src/redloop/phone_footprint.py` | Phone Number OSINT & ITU-T E.164 Metadata Engine (Phase L.3). | `PhoneFieldEvidence, PhoneFootprintReport, PhoneFootprintEngine` | `tests/integration/ or suite` | N/A |
 | `src/redloop/provider_gateway.py` | Multi-Provider AI Gateway & Encrypted Key Storage for REDLOOP. | `ProviderStatus, SSRFValidationError, SSRFValidator, ProviderKeyStore, ProviderDescriptor, ProviderRuntimeConfig...` | `tests/test_provider_gateway.py` | 73.5% |
 | `src/redloop/rag_engine.py` | Retrieval-Augmented Generation (RAG) & Continuous Improvement Engine for REDLOOP. | `PromptInjectionSanitizer, DocumentChunk, SearchResult, FeedbackLesson, RAGEngine, get_rag_engine` | `tests/integration/ or suite` | 89.1% |
 | `src/redloop/recon.py` | Narrow, explicitly port-scoped Nmap checks for literal loopback addresses. | `PortResult, ReconResult, ReconError, ReconDependencyError, ReconExecutionError, ReconProfile...` | `tests/test_recon.py` | 87.8% |
@@ -275,6 +282,7 @@ Total inspected modules: **157**
 | `src/redloop/tls.py` | Read-only TLS configuration and certificate inspection for explicitly scoped targets. | `TLSError, UnsafeTLSTargetError, TLSConnectionError, TLSCertificateInfo, TLSFinding, TLSReport...` | `tests/test_tls.py` | 62.5% |
 | `src/redloop/transport.py` | Hardened HTTP transport and clients for RedLoop. | `SecurityTransportError, BlockedDestinationError, DNSRebindingError, HardenedSyncBackend, HardenedAsyncBackend, HardenedHTTPTransport...` | `tests/integration/ or suite` | N/A |
 | `src/redloop/unified_app.py` | Unified RedLoop Single-Page Application Console. | `generate_pdf_report, generate_pptx_report, is_loopback_host, validate_server_host, create_unified_app, get_app` | `tests/integration/ or suite` | 94.6% |
+| `src/redloop/username_footprint.py` | Sherlock-Style Username Enumeration Engine (Phase L.2). | `UsernamePlatformSpec, UsernamePlatformResult, GlobalRateLimiter, SherlockUsernameEnumerator, load_platforms_catalog, evaluate_username_enumeration_benchmark` | `tests/integration/ or suite` | N/A |
 | `src/redloop/virustotal.py` | VirusTotal API v3 client for RedLoop. | `VirusTotalResult, VirusTotalClient, get_virustotal_client` | `tests/test_virustotal.py` | 82.3% |
 | `src/redloop/webapp.py` | Non-invasive HTTP metadata inspection restricted to explicitly scoped loopback. | `WebAppCheckError, UnsafeWebTargetError, WebAppRequestError, WebAppFinding, WebAppReport, WebAppChecker` | `tests/test_webapp.py` | 91.4% |
 | `src/redloop/workbench/__init__.py` | Workbench package exposing modular routers and legacy registration facade. | `register_workbench_routers` | `tests/integration/ or suite` | N/A |
@@ -381,7 +389,7 @@ Total declared endpoints: **259**
 | `GET` | `/api/hunting/queries/saved` | `list_saved_hunting_queries_endpoint` | Loopback Only | None |
 | `POST` | `/api/hunting/queries/saved` | `save_hunting_query_endpoint` | Loopback Only | None |
 | `DELETE` | `/api/hunting/queries/saved/{query_id}` | `delete_saved_hunting_query_endpoint` | Loopback Only | None |
-| `POST` | `/api/hunting/query` | `execute_hunting_query_endpoint` | Loopback Only | None |
+| `POST` | `/api/hunting/query` | `execute_hunting_query_v2_endpoint` | Loopback Only | None |
 | `POST` | `/api/hunting/query/execute` | `execute_hunting_query_endpoint` | Loopback Only | None |
 | `POST` | `/api/hunting/query/plan` | `plan_hunting_query_endpoint` | Loopback Only | None |
 | `POST` | `/api/hunting/reconstruction/process-tree` | `reconstruct_process_tree_endpoint` | Loopback Only | None |

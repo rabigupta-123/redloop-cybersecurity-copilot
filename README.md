@@ -11,7 +11,7 @@
 [![Person Scope Gate](https://img.shields.io/badge/Person_Scope_Gate-39%2F39_(0_Bypass)-2EA44F?style=for-the-badge)](#-deep-osint--specialized-security-tooling-phase-l)
 [![Router Accuracy](https://img.shields.io/badge/Router_Accuracy-92.16%25_(Wilson_CI_%5B0.8764%2C_0.9511%5D)-2EA44F?style=for-the-badge)](#-two-stage-semantic-intent-router-9216-accuracy)
 [![Deep OSINT](https://img.shields.io/badge/Deep_OSINT-28_Email_%7C_85_Username_%7C_E.164_Phone-00B4D8?style=for-the-badge)](#-deep-osint--specialized-security-tooling-phase-l)
-[![Release](https://img.shields.io/badge/Release-v0.2.0-blue?style=for-the-badge&logo=github&logoColor=white)](https://github.com/rabigupta-123/redloop-cybersecurity-copilot/releases)
+[![Release](https://img.shields.io/badge/Release-v0.2.1-blue?style=for-the-badge&logo=github&logoColor=white)](https://github.com/rabigupta-123/redloop-cybersecurity-copilot/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-F59E0B?style=for-the-badge)](LICENSE)
 
 *Cryptographically scope-enforced cybersecurity engineering platform, Model Context Protocol (MCP) server, Deep OSINT intelligence engine, air-gapped reverse-engineering workbench, and autonomous AI bug-bounty copilot.*

@@ -1782,6 +1782,7 @@ class _ConversationStore:
 
 _PROVIDER_LABELS = {
     Provider.OLLAMA: "Ollama",
+    Provider.LOCAL_OPENAI: "Local OpenAI",
     Provider.OPENROUTER: "OpenRouter",
     Provider.ANTHROPIC: "Anthropic",
     Provider.GROQ: "Groq",
@@ -1794,6 +1795,7 @@ _PROVIDER_LABELS = {
 
 _MODEL_SETTING_NAMES = {
     Provider.OLLAMA: "llm_model",
+    Provider.LOCAL_OPENAI: "local_openai_model",
     Provider.OPENROUTER: "openrouter_model",
     Provider.ANTHROPIC: "anthropic_model",
     Provider.GROQ: "groq_model",
@@ -3008,6 +3010,33 @@ def register_chat_routes(
         session.model_choice = model_choice
         session.effort_choice = effort
 
+        _OPERATIONAL_ACTIONS = {
+            "run_assessment",
+            "authorized_recon",
+            "vulnerability_assessment",
+            "osint_email",
+            "osint_username",
+            "osint_phone",
+            "osint_ip",
+            "osint_domain",
+            "kali_execute",
+            "kali_copilot",
+            "tool_nmap",
+            "tool_nikto",
+            "tool_gobuster",
+            "tool_tls",
+            "tool_web",
+            "tool_api",
+            "tool_dns",
+            "tool_ports",
+            "forensics_analysis",
+            "ctf_analysis",
+            "report_generate",
+            "audit_verify",
+            "target_clarification_required",
+            "file_metadata_analysis",
+        }
+
         if prompt and mode not in ("ctf",):
             orch = TaskOrchestrator(scope_manager=scope_manager, audit_db=db_path)
             intent = orch.parse_intent(prompt)
@@ -3035,7 +3064,20 @@ def register_chat_routes(
                         token,
                         is_new=False,
                     )
-            if action_name not in ("general_chat",):
+
+            conf = float(intent.get("confidence", 0.0))
+            if attachment_names:
+                is_explicit_metadata = action_name == "file_metadata_analysis" and any(
+                    k in prompt.lower() for k in (
+                        "extract metadata", "image metadata", "exif", "pe header", "file signature",
+                        "sha256 of file", "inspect image metadata"
+                    )
+                )
+                should_execute_task = is_explicit_metadata and conf >= 0.50
+            else:
+                should_execute_task = action_name in _OPERATIONAL_ACTIONS and conf >= 0.50
+
+            if should_execute_task:
                 orch_result = await orch.execute_task(
                     prompt=prompt,
                     conversation_id=session.conversation_id or "default",

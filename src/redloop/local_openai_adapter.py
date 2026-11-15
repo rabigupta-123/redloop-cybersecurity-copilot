@@ -280,29 +280,35 @@ def run_local_openai_30_prompt_benchmark(
     failures = 0
 
     for idx, prompt in enumerate(prompt_list, start=1):
-        try:
-            res = client.complete(
-                system_prompt="You are REDLOOP, a grounded cybersecurity assistant. Answer concisely.",
-                user_prompt=prompt,
-            )
-            latencies_ms.append(res.elapsed_ms)
-            completions.append(
-                {
-                    "prompt_index": idx,
-                    "prompt": prompt,
-                    "requested_model": res.requested_model,
-                    "effective_model": res.effective_model,
-                    "ram_tier_warning": res.ram_tier_warning is not None,
-                    "elapsed_ms": round(res.elapsed_ms, 2),
-                    "total_tokens": res.total_tokens,
-                    "response_excerpt": res.text[:120],
-                }
-            )
-        except MemoryError:
-            oom_errors += 1
-            failures += 1
-        except Exception:
-            failures += 1
+        for attempt in range(2):
+            try:
+                res = client.complete(
+                    system_prompt="You are REDLOOP, a grounded cybersecurity assistant. Answer concisely.",
+                    user_prompt=prompt,
+                )
+                latencies_ms.append(res.elapsed_ms)
+                completions.append(
+                    {
+                        "prompt_index": idx,
+                        "prompt": prompt,
+                        "requested_model": res.requested_model,
+                        "effective_model": res.effective_model,
+                        "ram_tier_warning": res.ram_tier_warning is not None,
+                        "elapsed_ms": round(res.elapsed_ms, 2),
+                        "total_tokens": res.total_tokens,
+                        "response_excerpt": res.text[:120],
+                    }
+                )
+                break
+            except MemoryError:
+                oom_errors += 1
+                failures += 1
+                break
+            except Exception:
+                if attempt == 0:
+                    time.sleep(0.05)
+                    continue
+                failures += 1
 
     sorted_lat = sorted(latencies_ms) if latencies_ms else [0.0]
     n = len(sorted_lat)

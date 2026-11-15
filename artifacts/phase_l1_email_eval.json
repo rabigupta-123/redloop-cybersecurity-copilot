@@ -53,7 +53,7 @@
       "predicted_state": "EXISTS",
       "outcome": "TP",
       "reason": "Matched positive existence signature '\"entry\"' (HTTP 200)",
-      "fast_path_latency_ms": 0.003,
+      "fast_path_latency_ms": 0.002,
       "headless_fallback_used": false,
       "headless_latency_ms": 0.0
     },
@@ -97,7 +97,7 @@
       "predicted_state": "EXISTS",
       "outcome": "TP",
       "reason": "Matched positive existence signature 'already in use' (HTTP 200)",
-      "fast_path_latency_ms": 0.001,
+      "fast_path_latency_ms": 0.0,
       "headless_fallback_used": false,
       "headless_latency_ms": 0.0
     },
@@ -108,7 +108,7 @@
       "predicted_state": "EXISTS",
       "outcome": "TP",
       "reason": "Matched positive existence signature 'email address is already' (HTTP 200)",
-      "fast_path_latency_ms": 0.001,
+      "fast_path_latency_ms": 0.0,
       "headless_fallback_used": false,
       "headless_latency_ms": 0.0
     },
@@ -119,7 +119,7 @@
       "predicted_state": "EXISTS",
       "outcome": "TP",
       "reason": "Matched positive existence signature 'already exists' (HTTP 200)",
-      "fast_path_latency_ms": 0.001,
+      "fast_path_latency_ms": 0.0,
       "headless_fallback_used": false,
       "headless_latency_ms": 0.0
     },
@@ -130,7 +130,7 @@
       "predicted_state": "EXISTS",
       "outcome": "TP",
       "reason": "Matched positive existence signature '\"users\":[{' (HTTP 200)",
-      "fast_path_latency_ms": 0.001,
+      "fast_path_latency_ms": 0.0,
       "headless_fallback_used": false,
       "headless_latency_ms": 0.0
     },
@@ -163,7 +163,7 @@
       "predicted_state": "EXISTS",
       "outcome": "TP",
       "reason": "Matched positive existence signature '\"them\":[{' (HTTP 200)",
-      "fast_path_latency_ms": 0.001,
+      "fast_path_latency_ms": 0.0,
       "headless_fallback_used": false,
       "headless_latency_ms": 0.0
     },
@@ -174,7 +174,7 @@
       "predicted_state": "NOT_FOUND",
       "outcome": "TN",
       "reason": "Matched non-existence availability token '\"exists\":false' (HTTP 200)",
-      "fast_path_latency_ms": 0.001,
+      "fast_path_latency_ms": 0.0,
       "headless_fallback_used": false,
       "headless_latency_ms": 0.0
     },
@@ -185,7 +185,7 @@
       "predicted_state": "NOT_FOUND",
       "outcome": "TN",
       "reason": "Matched not-found body signature '\"users\":[]' (HTTP 200)",
-      "fast_path_latency_ms": 0.001,
+      "fast_path_latency_ms": 0.0,
       "headless_fallback_used": false,
       "headless_latency_ms": 0.0
     },
@@ -207,7 +207,7 @@
       "predicted_state": "NOT_FOUND",
       "outcome": "TN",
       "reason": "Matched not-found body signature '\"data\":false' (HTTP 200)",
-      "fast_path_latency_ms": 0.0,
+      "fast_path_latency_ms": 0.001,
       "headless_fallback_used": false,
       "headless_latency_ms": 0.0
     },
@@ -218,7 +218,7 @@
       "predicted_state": "NOT_FOUND",
       "outcome": "TN",
       "reason": "Matched not-found body signature '\"valid\":true' (HTTP 200)",
-      "fast_path_latency_ms": 0.0,
+      "fast_path_latency_ms": 0.001,
       "headless_fallback_used": false,
       "headless_latency_ms": 0.0
     },
@@ -229,7 +229,7 @@
       "predicted_state": "NOT_FOUND",
       "outcome": "TN",
       "reason": "Matched non-existence availability token '\"exists\":false' (HTTP 200)",
-      "fast_path_latency_ms": 0.0,
+      "fast_path_latency_ms": 0.001,
       "headless_fallback_used": false,
       "headless_latency_ms": 0.0
     },
@@ -240,7 +240,7 @@
       "predicted_state": "NOT_FOUND",
       "outcome": "TN",
       "reason": "Matched not-found body signature 'true' (HTTP 200)",
-      "fast_path_latency_ms": 0.001,
+      "fast_path_latency_ms": 0.0,
       "headless_fallback_used": false,
       "headless_latency_ms": 0.0
     },
@@ -251,7 +251,7 @@
       "predicted_state": "NOT_FOUND",
       "outcome": "TN",
       "reason": "Matched not-found body signature '[]' (HTTP 200)",
-      "fast_path_latency_ms": 0.0,
+      "fast_path_latency_ms": 0.001,
       "headless_fallback_used": false,
       "headless_latency_ms": 0.0
     },

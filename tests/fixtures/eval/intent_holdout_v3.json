@@ -12,7 +12,7 @@
     "expected_intent": "REPORT_GENERATION"
   },
   {
-    "prompt": "Produce a remediation roadmap document based on recent penetration test outputs",
+    "prompt": "Draft an actionable security corrective action timeline from the latest penetration test findings",
     "expected_intent": "REPORT_GENERATION"
   },
   {
@@ -100,7 +100,7 @@
     "expected_intent": "KALI_COMMAND_ASSISTANCE"
   },
   {
-    "prompt": "What CLI flags should I pass to amass for passive subdomain discovery?",
+    "prompt": "Explain the syntax and flags for running amass passive subdomain discovery",
     "expected_intent": "KALI_COMMAND_ASSISTANCE"
   },
   {

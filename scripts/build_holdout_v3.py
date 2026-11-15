@@ -30,7 +30,7 @@ ITEMS = [
     {"prompt": "Compile an assessment briefing summarizing findings on host 198.51.100.22", "expected_intent": "REPORT_GENERATION"},
     {"prompt": "Export a structured Markdown executive summary of all scanned vulnerabilities", "expected_intent": "REPORT_GENERATION"},
     {"prompt": "Generate a PDF audit report documenting open ports and discovered security flaws", "expected_intent": "REPORT_GENERATION"},
-    {"prompt": "Produce a remediation roadmap document based on recent penetration test outputs", "expected_intent": "REPORT_GENERATION"},
+    {"prompt": "Draft an actionable security corrective action timeline from the latest penetration test findings", "expected_intent": "REPORT_GENERATION"},
     {"prompt": "Publish an assessment synthesis covering the external attack perimeter evaluation", "expected_intent": "REPORT_GENERATION"},
     {"prompt": "Draft an engagement debrief docket detailing discovered exposures and CVSS metrics", "expected_intent": "REPORT_GENERATION"},
     {"prompt": "Assemble a comprehensive compliance summary report for SOC2 readiness assessment", "expected_intent": "REPORT_GENERATION"},
@@ -56,7 +56,7 @@ ITEMS = [
 
     # 3. KALI_COMMAND_ASSISTANCE (Bug Class 3: CLI syntax queries vs log analysis) - 12 items
     {"prompt": "How do I invoke feroxbuster with custom recursion limits and wordlists?", "expected_intent": "KALI_COMMAND_ASSISTANCE"},
-    {"prompt": "What CLI flags should I pass to amass for passive subdomain discovery?", "expected_intent": "KALI_COMMAND_ASSISTANCE"},
+    {"prompt": "Explain the syntax and flags for running amass passive subdomain discovery", "expected_intent": "KALI_COMMAND_ASSISTANCE"},
     {"prompt": "Show syntax for chisel client tunneling over reverse socks5 proxies", "expected_intent": "KALI_COMMAND_ASSISTANCE"},
     {"prompt": "Provide command examples for arpspoof targeting local broadcast gateways", "expected_intent": "KALI_COMMAND_ASSISTANCE"},
     {"prompt": "How can I configure sqlmap to perform tamper script transformations against WAFs?", "expected_intent": "KALI_COMMAND_ASSISTANCE"},

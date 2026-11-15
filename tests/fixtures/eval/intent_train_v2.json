@@ -4568,7 +4568,7 @@
   {
     "expected_intent": "CODING_AND_RESEARCH",
     "category": "coding",
-    "prompt": "Explain how memory corruption bugs like buffer overflows are mitigated by ASLR.",
+    "prompt": "Write a C snippet demonstrating how a buffer overflow corrupts return addresses before ASLR mitigation.",
     "id": "train-phase-i-0762"
   },
   {

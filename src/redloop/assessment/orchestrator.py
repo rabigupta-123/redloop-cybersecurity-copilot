@@ -645,17 +645,10 @@ class TaskOrchestrator:
                 "write a secure", "implement a constant-time", "implement a token bucket",
                 "construct a secure", "create a go function", "deserialization parser in rust",
                 "review this python", "review this code", "insecure deserialization",
-                "how does memory corruption", "use-after-free occur", "server-side request forgery vulnerabilities",
-                "pivot to cloud metadata", "content security policy headers mitigate", "oauth 2.0 pkce flow",
-                "reflected cross-site scripting and dom-based", "reflected xss and dom",
                 "research and summarize how", "research and explain how"
             ))
             or bool(re.search(
                 r"\b(?:write|create|implement|show\s+me\s+an?|show\s+how\s+to|construct|develop|review)\s+.*?\b(?:python|rust|golang|go|c|c\+\+|java|bash|node\.js|node|fastapi|asyncpg|serde|script|code|snippet|function|query|limiter|handler|parser|algorithm|flaw|vulnerability)\b",
-                prompt_lower,
-            ))
-            or bool(re.search(
-                r"\b(?:explain\s+(?:the\s+technical\s+difference|how|how\s+the|the\s+mechanics)|how\s+does|research\s+and\s+summarize)\b.*?\b(?:xss|csrf|ssrf|oauth|pkce|jwt|csp|aslr|rop|buffer\s+overflow|use-after-free|memory\s+corruption|deserialization|sqli|injection|mitigate|c\+\+|python|rsa|ecc)\b",
                 prompt_lower,
             ))
             or any(tech in prompt_lower for tech in ("argon2id", "hkdf-sha256", "hmac-sha512", "asyncpg", "serde"))

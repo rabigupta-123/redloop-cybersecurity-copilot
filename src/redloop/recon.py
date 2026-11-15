@@ -263,13 +263,18 @@ class NmapScanner:
             if isinstance(res, tuple):
                 return res
             return str(res), None, None
-        try:
-            with socket.create_connection((target, port), timeout=1.0):
-                return "open", None, None
-        except (ConnectionRefusedError, ConnectionResetError):
-            return "closed", None, None
-        except (socket.timeout, TimeoutError, OSError):
-            return "filtered", None, None
+        for attempt in range(2):
+            try:
+                with socket.create_connection((target, port), timeout=2.5):
+                    return "open", None, None
+            except (ConnectionRefusedError, ConnectionResetError):
+                return "closed", None, None
+            except (socket.timeout, TimeoutError, OSError):
+                if attempt == 0:
+                    time.sleep(0.05)
+                    continue
+                return "filtered", None, None
+        return "filtered", None, None
 
     def _run_reliability_ladder(
         self, target: str, port_item: PortResult

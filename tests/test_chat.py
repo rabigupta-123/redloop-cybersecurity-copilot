@@ -41,6 +41,9 @@ class FakeLLM:
             "elapsed_seconds": 0.12,
         }
 
+    async def acomplete(self, system_prompt, user_prompt, **kwargs):
+        return self.complete(system_prompt, user_prompt, **kwargs)
+
 
 def make_client(app):
     return httpx.AsyncClient(

@@ -1243,9 +1243,9 @@ To ensure 100% full-suite coverage without impacting fast pull-request feedback:
   - Developed [`scripts/validate_release_tag.py`](file:///scripts/validate_release_tag.py):
     - Strictly parses SemVer strings (`major.minor.patch[.build]`).
     - Validates progression: rejects regressions, duplicate tags, and wild version jumps (`major > current.major + 1`, `minor > current.minor + 1`, or `patch > current.patch + 1`).
-    - Computes next safe tag: with current latest tag `v0.2.0`, `scripts/validate_release_tag.py --compute-next` outputs `v0.2.1`.
+    - Computes next safe tag: with current latest tag `v0.2.1`, `scripts/validate_release_tag.py --compute-next` outputs `v0.2.2`.
   - Added unit test suite [`tests/test_release_hygiene.py`](file:///tests/test_release_hygiene.py) (13 tests):
-    - Verifies SemVer parsing, rejects `v10.0.0` jump from `v0.2.0`, ensures `v10.0.0` is absent from git tags, and confirms next tag calculation `v0.2.1`.
+    - Verifies SemVer parsing, rejects `v10.0.0` jump, ensures `v10.0.0` is absent from git tags, and confirms next tag calculation `v0.2.2`.
     - **Result**: `13 passed in 0.67s` (`100% pass`).
   - Integrated into `.github/workflows/release.yml` and `.github/workflows/ci.yml`.
 

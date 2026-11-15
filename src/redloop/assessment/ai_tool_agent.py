@@ -531,6 +531,8 @@ class AIToolCallingAgent:
             status = "COMPLETED"
         elif any(r.exit_code == 0 for r in tool_records):
             status = "PARTIAL"
+        elif not tool_records and (messages[-1].get("content") or "").strip():
+            status = "COMPLETED"
         else:
             status = "FAILED"
 
@@ -632,7 +634,10 @@ class AIToolCallingAgent:
         final_content: str,
     ) -> str:
         """Render all 6 standardized chat execution blocks."""
-        status = "COMPLETED" if all(r.exit_code == 0 for r in records) else ("PARTIAL" if any(r.exit_code == 0 for r in records) else "FAILED")
+        if not records and (final_content or "").strip():
+            status = "COMPLETED"
+        else:
+            status = "COMPLETED" if all(r.exit_code == 0 for r in records) else ("PARTIAL" if any(r.exit_code == 0 for r in records) else "FAILED")
 
         lines = [
             "# REDLOOP AUTONOMOUS COPILOT ASSESSMENT REPORT",
